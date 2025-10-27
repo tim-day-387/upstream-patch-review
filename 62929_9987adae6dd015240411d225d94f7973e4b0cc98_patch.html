@@ -1,0 +1,21 @@
+<html lang="en">
+<body>
+<pre>
+LU-17000 lnet: Fix overflow return in lnet_net_cmd
+
+In case nla_strscpy fails. It seets rc = len.
+Since rc is int and len is ssize_t, it could
+lead to overflow. This patch checks if the
+return len is a valid int range and then safely
+casts and assigns to rc. In case it is out of
+INT min/max range it sets ERANGE to rc.
+
+CoverityID: 429517 ("Overflowed return value")
+Test-Parameters: trivial testlist=sanity-lnet
+Fixes: 8f8f6e2f3 ("LU-10003 lnet: use Netlink to support old and new NI APIs")
+Signed-off-by: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Change-Id: I293cfb559fc8e33d84ce012bf072c5b5299ec074
+
+</pre>
+</body>
+</html>

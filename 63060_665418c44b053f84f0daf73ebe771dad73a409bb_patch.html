@@ -1,0 +1,29 @@
+<html lang="en">
+<body>
+<pre>
+LU-19709 osc: fix LASSERT failure on osc_extent_find()
+
+The customer hits the following LBUG on a client:
+(osc_cache.c:735:osc_extent_find()) ASSERTION( *grants >=
+chunksize + cli->cl_grant_extent_tax ) failed: 0/4096/24576.
+
+The reason is that an OES_ACTIVE extent being used by a writer
+may be written back and changed into the other state at any
+time.
+If the original extent (@ext) comes from @osc_extent_expand(),
+the value of @grants will be set with 0.
+This may result in the panic at the above assertion when try to
+restart finding a new extent in @osc_extent_find().
+
+The patch resets @tmp value and @grants value by calling
+@osc_enter_cache() and compensate the accounted grant, fixing the
+panic accrodingly.
+
+Fixes: c413d2ede5df ("LU-19014 memcg: fix client hang in balance_dirty_pages()")
+
+Signed-off-by: Yingjin Qian <qian@ddn.com>
+Change-Id: I83b750b2a35d97a52072a4cee0dd4097edec6242
+
+</pre>
+</body>
+</html>

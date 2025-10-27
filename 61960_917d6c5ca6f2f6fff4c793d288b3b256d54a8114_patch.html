@@ -1,0 +1,39 @@
+<html lang="en">
+<body>
+<pre>
+LU-19079 krb: use nodemap name from principal
+
+With Kerberos, we do not have control over the content of the
+authentication token carried out between client and server sides.
+We use the Lustre specific client principal name with the following
+syntax to convey information about the nodemap:
+lustre_root/<hostname>/<nodemap_name>@<REALM>
+The / character can be used as a separator, as it is not allowed in
+FQDN hostnames. Service Principal Names (SPN) are limited to 1023
+chars, realm names to 64 chars, and FQDN to 253 chars. So the nodemap
+name (16 chars) can fit into the SPN.
+
+This nodemap name is extracted from the SPN when the userspace daemon
+lsvcgssd carries out authentication on server side. Then the rest of
+the authentication process is carried out with this nodemap name,
+putting it in the rsc downcall data, to let the kernel know it should
+be using it. The client will only be accepted as a member of the
+nodemap if the gss identification property is set.
+
+This is safe to use the SPN to convey the nodemap information because
+the SPN is cryptographically protected in the authentication token,
+just like the FQDN.
+
+Test-Parameters: trivial
+Test-Parameters: testgroup=review-dne-selinux-ssk-part-1
+Test-Parameters: testgroup=review-dne-selinux-ssk-part-2
+Test-Parameters: kerberos=true testlist=sanity-krb5
+Signed-off-by: Sebastien Buisson <sbuisson@ddn.com>
+Change-Id: I2d2fb6959822ca9e6951043cd5862101e8c7ffae
+Was-Change-Id: Ic2006206e9eee3fbb37f57690d1960fb9522c8be
+Reviewed-by: Marc Vef <mvef@whamcloud.com>
+Reviewed-by: Andreas Dilger <adilger@whamcloud.com>
+
+</pre>
+</body>
+</html>

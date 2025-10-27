@@ -1,0 +1,29 @@
+<html lang="en">
+<body>
+<pre>
+LU-8229 ssk: support auth against multiple similar keys
+
+Enhance server-side authentication routine in userspace (lsvcgssd) to
+support multiple similar keys. This can be useful for implementing a
+key rotation mechanism.
+
+Server-side now cycles through all keys in the kernel keyring whose
+description starts with 'lustre:<fsname>:<nodemap name>', instead of
+an exact match.  If authentication fails with the first key in the
+keyring, then the authentication process is restarted with other
+matching keys, until all keys have been tried.
+
+sanity-sec test_103 is added to exercise the ability to add multiple
+keys on server side, and carry out authentication on any of them used
+by clients.
+
+Test-Parameters: trivial
+Test-Parameters: testgroup=review-dne-selinux-ssk-part-1
+Test-Parameters: testgroup=review-dne-selinux-ssk-part-2
+Test-Parameters: kerberos=true testlist=sanity-krb5
+Signed-off-by: Sebastien Buisson <sbuisson@ddn.com>
+Change-Id: I020fe31ee006612d9dc7d8633f5a7b498cd2f08e
+
+</pre>
+</body>
+</html>

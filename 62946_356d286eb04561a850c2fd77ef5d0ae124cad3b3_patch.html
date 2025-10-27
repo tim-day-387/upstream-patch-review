@@ -1,0 +1,53 @@
+<html lang="en">
+<body>
+<pre>
+LU-19598 utils: implement ltrash_purge tool
+
+This patch implements ltrash_purge daemon to automatically
+purge files from Lustre Trash Can based on the different
+configurable policies.
+
+It has the following features:
+ 1.Multiple purging policies:
+   - Space-based policy for mdt and ost (default: 90%)
+   - Age-based policy (default: 30 days)
+   - User-based policy (UID/GID/PROJID)
+ 2.Different operational modes:
+   - Daemon mode: continuous monitoring with scan intervals
+     (default: 60s)
+   - Dry-run mode: scan and report without deleting files
+   - Empty mode: purge all files from Trash Can regardless of
+     filters
+ 3.Performance optimizations:
+   - Efficient traversal using new defined llapi_find_with_cb()
+     based on pfind framework with custom callbacks
+   - Parallel scanning and purging (default: 4 threads)
+   - Usage checks every N deletions to avoid excessive overhead
+ 4.Statistics and monitoring:
+   - Enable(by default) and disable statistics tracking
+     (scanned/purged objects, freed bytes)
+   - Yaml-formatted stat dump on SIGUSR1 signal
+   - Configurable dump file location
+ 5.Configuration:
+   - Config file at /etc/ltrash_purge.conf by default
+   - Command-line options override config file settings
+   - PID file locking to prevent multiple instances
+     (default: /var/run/ltrash_purge.pid)
+ 6.Signal handling:
+   - SIGUSR1: dump statistics to file
+   - SIGINT/SIGTERM: graceful shutdown
+
+The following tests are added to sanityn.sh to verify this patch:
+ - test_119a: dry-run and empty modes
+ - test_119b: space-based purging with MDT/OST watermarks
+ - test_119c: age-based purging with max_age filter
+ - test_119d: ID-based filtering (UID/GID/PROJID)
+ - test_119e: config file and --disable-stats option
+
+Test-Parameters: fortestonly trivial
+Change-Id: I8f80107c785ee6a4796eb543bc5fd36336509b50
+Signed-off-by: Emoly Liu <emoly@whamcloud.com>
+
+</pre>
+</body>
+</html>

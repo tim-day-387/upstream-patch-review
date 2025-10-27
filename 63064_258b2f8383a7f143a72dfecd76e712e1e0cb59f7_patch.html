@@ -1,0 +1,24 @@
+<html lang="en">
+<body>
+<pre>
+LU-17000 ldiskfs: Fix overflow return in ext4_ldiskfs_ext_map_blocks
+
+Fix overflow return in ext4_ldiskfs_ext_map_blocks.
+While the function is defined to return an 'int'.
+Under case where convert_initialized_extent() is
+called and it returns success or zero. The return
+could overflow as variable 'allocated' is defined
+as unsigned int.
+
+This patch checks if the 'allocated' variable is a
+valid int range and then safely casts and returns.
+Else it returns an INT_MAX
+
+CoverityID: 429528 ("Overflowed return value")
+Test-Parameters: trivial
+Signed-off-by: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Change-Id: I6249612526cb71669050ddfe3984ef6a165dd069
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<html lang="en">
+<body>
+<pre>
+LU-19704 mdd: process all changelog users during init
+
+changelog_user_init_cb(), called during server initialization, is
+responsible for processing all previously registered changelog users
+and computing the union of their masks so that the correct changelog
+records are kept.
+
+However, it was returning LLOG_PROC_BREAK immediately and so would
+only process a single changelog user. This meant that after
+remounting an MDT, changelog records could be missed.
+
+It looks like changelog_user_init_cb() has been returning
+LLOG_PROC_BREAK since it was first implemented in 2c74bfcb7a0
+("multiple changelog consumer registration"). At that time, this was
+likely correct behavior.
+
+However, a15eb4f13224 ("per-user changelog names and mask") introduced
+a per-user mask and updated changelog_user_init_cb() to process each
+user's mask during server init. That commit probably should have
+updated the function to return 0 so that all users would be processed.
+
+Fixes: a15eb4f13224 ("LU-13055 mdd: per-user changelog names and mask")
+Signed-off-by: Thomas Bertschinger <bertschinger@lanl.gov>
+Change-Id: Ic498be0a43d6d22c7b9d2ba9de2aa8560f1c5b5d
+
+</pre>
+</body>
+</html>

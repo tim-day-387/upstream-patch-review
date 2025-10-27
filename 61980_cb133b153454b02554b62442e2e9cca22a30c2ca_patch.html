@@ -1,0 +1,44 @@
+<html lang="en">
+<body>
+<pre>
+LU-19079 ssk: mount-point specific key
+
+By default, SSK key on client side is loaded in the kernel keyring
+with a key description in the form "lustre:<fsname>", as the client is
+not aware of the nodemap it belongs to. But this means only one SSK
+key can be loaded at a time: if a new key is loaded, it will use the
+same key desc, and replace the previous one in the kernel keyring.
+However, there is a need to support multiple SSK keys at the same time
+on the client, for instance in the context of GSS based identification
+to allow different mount points on the same client to be considered
+part of different nodemaps.
+To address this need, this patch changes the format of the key
+descriptor used on client side for single keys loaded at mount time
+(via the -o skpath option), to be in the form:
+"lustre:<fsname>:<client uuid>"
+SSK keys loaded manually via the 'lgss_sk -l' command continue to use
+the legacy key descriptor format, unless the new '-u <mount_path>'
+option is also specified. In this case, the command fetches the client
+uuid corresponding to the provided mount point, and updates the
+key with descriptor "lustre:<fsname>:<client uuid>" in the keyring.
+Having the client UUID in the key desc allows request_key() to find
+this client-specific key by putting the UUID into the callout info for
+context negotiation that happens in userspace.
+Note that we have to make use of a temporary kernel keyring key, as
+the UUID is computed at mount in kernel space, whereas the SSK keys
+are loaded in userspace by the mount command before filling the
+superblock.
+
+sanity-sec test_79 is extended to exercise this feature.
+
+Signed-off-by: Sebastien Buisson <sbuisson@ddn.com>
+Change-Id: Ie2212e28b8c541039198aa388fe91c121985ab7b
+Was-Change-Id: Ie1d3f77a98bbc7779dbeecbbf7fd03112bbfc822
+Was-Change-Id: I590b3879ded885d54ba6fd8ff03cb03c4e51d90d
+Was-Change-Id: I0b7acc87ee8b2ce1d081ae82c578dcf6f740971d
+Reviewed-by: Marc Vef <mvef@whamcloud.com>
+Reviewed-by: Andreas Dilger <adilger@whamcloud.com>
+
+</pre>
+</body>
+</html>

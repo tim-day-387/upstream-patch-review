@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: unmount targets in parallel
+
+Unmount targets (clients, OSTs, and MDTs) in parallel to
+speed up test cluster teardown. This complements the
+parallel formatting and mounting functionality.
+
+The parallel unmount functionality is gated behind the
+PARALLEL_MOUNT_OPS variable (same as mount/format),
+which defaults to 0 (serial behavior). Setting
+PARALLEL_MOUNT_OPS=1 enables parallel unmounting of
+clients, OSTs, and MDTs.
+
+This change modifies stopall() and unmountoss() to
+unmount targets in parallel when PARALLEL_MOUNT_OPS=1.
+When enabled, client unmounts are backgrounded and run
+in parallel with server unmounts.
+
+Performance improvement (1 MDS, 4 OSTs, 1 client):
+- Sequential unmount: 63.8 seconds
+- Parallel unmount: 12.0 seconds (5.3x speedup)
+
+The speedup scales with the number of targets.
+
+Test-Parameters: forjanitoronly testlist=conf-sanity,sanityn mdscount=2 mdtcount=4
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Ie71afdee3ab7daaecb51ec6fac09f914d476e611
+
+</pre>
+</body>
+</html>
