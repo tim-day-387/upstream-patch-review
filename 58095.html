@@ -1,0 +1,862 @@
+From f1b6ca3a2867b9f0a885d4c782cd958161bfed8a Mon Sep 17 00:00:00 2001
+From: Rahul Bansal <rahulmay94@gmail.com>
+Date: Sat, 15 Feb 2025 10:54:30 -0500
+Subject: [PATCH 1/1] LU-18635 ptlrpc: add max_mb_per_rpc_read/write parameters
+
+Added "max_mb_per_rpc_read" and "max_mb_per_rpc_write" parameters to
+get and set RPC size in terms of megabytes instead of number of pages
+with "max_pages_per_rpc" parameter.
+
+New parameters will allow the user to pass decimal values
+(e.g.: 0.00390625G, 3.5M, etc.).
+
+Parameter "max_pages_per_rpc" can now accept size values smaller
+than 1M (e.g.: 768K, 0.5M, etc.).
+
+Signed-off-by: Rahul Bansal <rahulmay94@gmail.com>
+Change-Id: I0681952a3898892d24ccc7fd639cc4161177092d
+---
+ lustre/include/lprocfs_status.h  |   8 ++
+ lustre/include/obd.h             |  20 +++--
+ lustre/ldlm/ldlm_lib.c           |   3 +-
+ lustre/llite/llite_lib.c         |  14 +--
+ lustre/lov/lov_obd.c             |  13 ++-
+ lustre/mdc/lproc_mdc.c           |   4 +
+ lustre/mdc/mdc_dev.c             |   2 +-
+ lustre/mdc/mdc_request.c         |   2 +-
+ lustre/obdclass/lprocfs_status.c | 143 ++++++++++++++++++++++++++-----
+ lustre/osc/lproc_osc.c           |   4 +
+ lustre/osc/osc_cache.c           |  27 +++---
+ lustre/osc/osc_io.c              |   9 +-
+ lustre/osc/osc_page.c            |  28 +++---
+ lustre/osc/osc_request.c         |  22 +++--
+ lustre/ptlrpc/import.c           |  23 +++--
+ lustre/tests/sanity.sh           | 104 +++++++++++++++++++++-
+ 16 files changed, 339 insertions(+), 87 deletions(-)
+
+diff --git a/lustre/include/lprocfs_status.h b/lustre/include/lprocfs_status.h
+index b8c2e5f360..38d3b0fced 100644
+--- a/lustre/include/lprocfs_status.h
++++ b/lustre/include/lprocfs_status.h
+@@ -971,6 +971,14 @@ ssize_t max_pages_per_rpc_show(struct kobject *kobj, struct attribute *attr,
+ 			       char *buf);
+ ssize_t max_pages_per_rpc_store(struct kobject *kobj, struct attribute *attr,
+ 				const char *buffer, size_t count);
++ssize_t max_mb_per_rpc_read_show(struct kobject *kobj, struct attribute *attr,
++				 char *buf);
++ssize_t max_mb_per_rpc_read_store(struct kobject *kobj, struct attribute *attr,
++				  const char *buffer, size_t count);
++ssize_t max_mb_per_rpc_write_show(struct kobject *kobj, struct attribute *attr,
++				  char *buf);
++ssize_t max_mb_per_rpc_write_store(struct kobject *kobj, struct attribute *attr,
++				   const char *buffer, size_t count);
+ ssize_t short_io_bytes_show(struct kobject *kobj, struct attribute *attr,
+ 			    char *buf);
+ ssize_t short_io_bytes_store(struct kobject *kobj, struct attribute *attr,
+diff --git a/lustre/include/obd.h b/lustre/include/obd.h
+index b4177d2fe8..4f5aee31b7 100644
+--- a/lustre/include/obd.h
++++ b/lustre/include/obd.h
+@@ -258,7 +258,8 @@ struct client_obd {
+ 	/* just a sum of the loi/lop pending numbers to be exported by /proc */
+ 	atomic_t		cl_pending_w_pages;
+ 	atomic_t		cl_pending_r_pages;
+-	u32			cl_max_pages_per_rpc;
++	u32			cl_max_pages_per_rpc_read;
++	u32			cl_max_pages_per_rpc_write;
+ 	u32			cl_max_rpcs_in_flight;
+ 	u32			cl_max_short_io_bytes;
+ 	ktime_t			cl_stats_init;
+@@ -860,7 +861,9 @@ static inline bool obd_mdt_recovery_abort(struct obd_device *obd)
+ #define KEY_CACHE_LRU_SHRINK	"cache_lru_shrink"
+ #define KEY_OSP_CONNECTED	"osp_connected"
+ #define KEY_FID2IDX		"fid2idx"
+-#define KEY_MAX_PAGES_PER_RPC	"max_pages_per_rpc"
++
++#define KEY_MAX_PAGES_PER_RPC_READ      "max_pages_per_rpc_read"
++#define KEY_MAX_PAGES_PER_RPC_WRITE     "max_pages_per_rpc_write"
+ 
+ #define KEY_UNEVICT_CACHE_SHRINK	"unevict_cache_shrink"
+ 
+@@ -1480,10 +1483,17 @@ bad_format:
+ 	return false;
+ }
+ 
+-static inline int cli_brw_size(struct obd_device *obd)
++static inline __u32 cli_brw_size(struct obd_device *obd)
+ {
++	struct client_obd *cli;
++	__u32 max_ppr;
++
+ 	LASSERT(obd != NULL);
+-	return obd->u.cli.cl_max_pages_per_rpc << PAGE_SHIFT;
++	cli = &(obd->u.cli);
++	max_ppr = max(cli->cl_max_pages_per_rpc_read,
++		     cli->cl_max_pages_per_rpc_write);
++
++	return max_ppr << PAGE_SHIFT;
+ }
+ 
+ /*
+@@ -1500,7 +1510,7 @@ static inline void client_adjust_max_dirty(struct client_obd *cli)
+ 			(OSC_MAX_DIRTY_DEFAULT * 1024 * 1024) >> PAGE_SHIFT;
+ 	} else {
+ 		unsigned long dirty_max = cli->cl_max_rpcs_in_flight *
+-					  cli->cl_max_pages_per_rpc;
++					  cli->cl_max_pages_per_rpc_write;
+ 
+ 		if (dirty_max > cli->cl_dirty_max_pages)
+ 			cli->cl_dirty_max_pages = dirty_max;
+diff --git a/lustre/ldlm/ldlm_lib.c b/lustre/ldlm/ldlm_lib.c
+index 79d47e3f01..53a5f35994 100644
+--- a/lustre/ldlm/ldlm_lib.c
++++ b/lustre/ldlm/ldlm_lib.c
+@@ -481,7 +481,8 @@ int client_obd_setup(struct obd_device *obd, struct lustre_cfg *lcfg)
+ 	 * Set it to possible maximum size. It may be reduced by ocd_brw_size
+ 	 * from OFD after connecting.
+ 	 */
+-	cli->cl_max_pages_per_rpc = PTLRPC_MAX_BRW_PAGES;
++	cli->cl_max_pages_per_rpc_read = PTLRPC_MAX_BRW_PAGES;
++	cli->cl_max_pages_per_rpc_write = PTLRPC_MAX_BRW_PAGES;
+ 
+ 	cli->cl_max_short_io_bytes = OBD_DEF_SHORT_IO_BYTES;
+ 
+diff --git a/lustre/llite/llite_lib.c b/lustre/llite/llite_lib.c
+index c083175cb8..2c2623ac78 100644
+--- a/lustre/llite/llite_lib.c
++++ b/lustre/llite/llite_lib.c
+@@ -840,18 +840,18 @@ retry_connect:
+ 
+ 	/* Don't change value if it was specified in the config log */
+ 	if (sbi->ll_ra_info.ra_max_read_ahead_whole_pages == -1) {
+-		u32 max_pages_per_rpc;
++		u32 max_pages_per_rpc_read;
+ 
+-		size = sizeof(max_pages_per_rpc);
++		size = sizeof(max_pages_per_rpc_read);
+ 		err = obd_get_info(NULL, sbi->ll_dt_exp,
+-				   sizeof(KEY_MAX_PAGES_PER_RPC),
+-				   KEY_MAX_PAGES_PER_RPC, &size,
+-				   &max_pages_per_rpc);
++				   sizeof(KEY_MAX_PAGES_PER_RPC_READ),
++				   KEY_MAX_PAGES_PER_RPC_READ, &size,
++				   &max_pages_per_rpc_read);
+ 		if (err)
+-			max_pages_per_rpc = 0;
++			max_pages_per_rpc_read = 0;
+ 		sbi->ll_ra_info.ra_max_read_ahead_whole_pages =
+ 			max_t(u32, SBI_DEFAULT_READ_AHEAD_WHOLE_MAX,
+-			      max_pages_per_rpc);
++			      max_pages_per_rpc_read);
+ 		if (sbi->ll_ra_info.ra_max_read_ahead_whole_pages >
+ 		    sbi->ll_ra_info.ra_max_pages_per_file)
+ 			sbi->ll_ra_info.ra_max_read_ahead_whole_pages =
+diff --git a/lustre/lov/lov_obd.c b/lustre/lov/lov_obd.c
+index 59f3422524..559d00843c 100644
+--- a/lustre/lov/lov_obd.c
++++ b/lustre/lov/lov_obd.c
+@@ -1151,10 +1151,12 @@ static int lov_get_info(const struct lu_env *env, struct obd_export *exp,
+ 		*((u32 *)val) = lov_mds_md_size(def_stripe_count, LOV_MAGIC_V3);
+ 	} else if (KEY_IS(KEY_TGT_COUNT)) {
+ 		*((int *)val) = ld->ld_tgt_count;
+-	} else if (KEY_IS(KEY_MAX_PAGES_PER_RPC)) {
++	} else if (KEY_IS(KEY_MAX_PAGES_PER_RPC_READ) ||
++		   KEY_IS(KEY_MAX_PAGES_PER_RPC_WRITE)) {
+ 		struct lov_tgt_desc *tgt;
+ 		struct client_obd *cli;
+ 		struct obd_import *imp;
++		u32 max_ppr;
+ 		u32 result = 0;
+ 
+ 		lov_foreach_tgt(&obd->u.lov, tgt) {
+@@ -1168,11 +1170,14 @@ static int lov_get_info(const struct lu_env *env, struct obd_export *exp,
+ 			if (imp == NULL || imp->imp_state != LUSTRE_IMP_FULL)
+ 				continue;
+ 
++			max_ppr = KEY_IS(KEY_MAX_PAGES_PER_RPC_READ) ?
++					cli->cl_max_pages_per_rpc_read :
++					cli->cl_max_pages_per_rpc_write;
++
+ 			if (result == 0)
+-				result = cli->cl_max_pages_per_rpc;
++				result = max_ppr;
+ 			else
+-				result = min_t(u32, cli->cl_max_pages_per_rpc,
+-					       result);
++				result = min_t(u32, result, max_ppr);
+ 		}
+ 
+ 		*((u32 *)val) = result;
+diff --git a/lustre/mdc/lproc_mdc.c b/lustre/mdc/lproc_mdc.c
+index d92c015a74..326f81482e 100644
+--- a/lustre/mdc/lproc_mdc.c
++++ b/lustre/mdc/lproc_mdc.c
+@@ -135,6 +135,8 @@ static ssize_t max_mod_rpcs_in_flight_store(struct kobject *kobj,
+ LUSTRE_RW_ATTR(max_mod_rpcs_in_flight);
+ 
+ LUSTRE_RW_ATTR(max_pages_per_rpc);
++LUSTRE_RW_ATTR(max_mb_per_rpc_read);
++LUSTRE_RW_ATTR(max_mb_per_rpc_write);
+ 
+ static ssize_t max_dirty_mb_show(struct kobject *kobj,
+ 				 struct attribute *attr,
+@@ -708,6 +710,8 @@ static struct attribute *mdc_attrs[] = {
+ 	&lustre_attr_max_rpcs_in_flight.attr,
+ 	&lustre_attr_max_mod_rpcs_in_flight.attr,
+ 	&lustre_attr_max_pages_per_rpc.attr,
++	&lustre_attr_max_mb_per_rpc_read.attr,
++	&lustre_attr_max_mb_per_rpc_write.attr,
+ 	&lustre_attr_max_dirty_mb.attr,
+ 	&lustre_attr_mds_conn_uuid.attr,
+ 	&lustre_attr_conn_uuid.attr,
+diff --git a/lustre/mdc/mdc_dev.c b/lustre/mdc/mdc_dev.c
+index 1817ff879d..a03933c784 100644
+--- a/lustre/mdc/mdc_dev.c
++++ b/lustre/mdc/mdc_dev.c
+@@ -1159,7 +1159,7 @@ static int mdc_io_read_ahead(const struct lu_env *env,
+ 		ldlm_lock_decref(&lockh, dlmlock->l_req_mode);
+ 	}
+ 
+-	ra->cra_rpc_pages = osc_cli(osc)->cl_max_pages_per_rpc;
++	ra->cra_rpc_pages = osc_cli(osc)->cl_max_pages_per_rpc_read;
+ 	ra->cra_end_idx = CL_PAGE_EOF;
+ 	ra->cra_release = osc_read_ahead_release;
+ 	ra->cra_dlmlock = dlmlock;
+diff --git a/lustre/mdc/mdc_request.c b/lustre/mdc/mdc_request.c
+index 4081f0b32f..944f76ddae 100644
+--- a/lustre/mdc/mdc_request.c
++++ b/lustre/mdc/mdc_request.c
+@@ -1337,7 +1337,7 @@ static int ll_mdc_read_page_remote(void *data, struct page *page0)
+ 	gfp_t gfp;
+ 
+ 	ENTRY;
+-	max_pages = rp->rp_exp->exp_obd->u.cli.cl_max_pages_per_rpc;
++	max_pages = rp->rp_exp->exp_obd->u.cli.cl_max_pages_per_rpc_read;
+ 	inode = op_data->op_data;
+ 	fid = &op_data->op_fid1;
+ 	LASSERT(inode != NULL);
+diff --git a/lustre/obdclass/lprocfs_status.c b/lustre/obdclass/lprocfs_status.c
+index b4627851ed..2610c98fa3 100644
+--- a/lustre/obdclass/lprocfs_status.c
++++ b/lustre/obdclass/lprocfs_status.c
+@@ -2629,60 +2629,163 @@ const struct sysfs_ops lustre_sysfs_ops = {
+ };
+ EXPORT_SYMBOL_GPL(lustre_sysfs_ops);
+ 
+-ssize_t max_pages_per_rpc_show(struct kobject *kobj, struct attribute *attr,
+-			       char *buf)
++static ssize_t max_mb_per_rpc_show(struct kobject *kobj, struct attribute *attr,
++			     char *buf, u32 (*get_mppr)(struct client_obd *cli))
+ {
+ 	struct obd_device *obd = container_of(kobj, struct obd_device,
+ 					      obd_kset.kobj);
+ 	struct client_obd *cli = &obd->u.cli;
++	u32 mppr;
++	unsigned int mb_int;
++	unsigned int pg_frac;
++	unsigned int mb_frac;
+ 	int rc;
+ 
+ 	spin_lock(&cli->cl_loi_list_lock);
+-	rc = scnprintf(buf, PAGE_SIZE, "%u\n", cli->cl_max_pages_per_rpc);
++	mppr = get_mppr(cli);
+ 	spin_unlock(&cli->cl_loi_list_lock);
++
++	mb_int = PAGES_TO_MiB(mppr);
++	pg_frac = mppr - MiB_TO_PAGES(mb_int);
++	mb_frac = PAGES_TO_MiB(pg_frac * 1000);
++
++	if (mb_frac)
++		rc = scnprintf(buf, PAGE_SIZE, "%u.%03u\n", mb_int, mb_frac);
++	else
++		rc = scnprintf(buf, PAGE_SIZE, "%u\n", mb_int);
+ 	return rc;
+ }
+-EXPORT_SYMBOL(max_pages_per_rpc_show);
+ 
+-ssize_t max_pages_per_rpc_store(struct kobject *kobj, struct attribute *attr,
+-				const char *buffer, size_t count)
++static ssize_t max_rpc_store(struct kobject *kobj, struct attribute *attr,
++			     const char *buffer, size_t count,
++			     void (*store_val)(u64 val, struct client_obd *cli),
++			     bool store_pages)
+ {
+ 	struct obd_device *obd = container_of(kobj, struct obd_device,
+ 					      obd_kset.kobj);
+ 	struct client_obd *cli = &obd->u.cli;
+ 	struct obd_import *imp;
+-	struct obd_connect_data *ocd;
+-	int chunk_mask, rc;
+ 	u64 val;
++	int rc;
+ 
+-	rc = sysfs_memparse(buffer, count, &val, "B");
++	rc = sysfs_memparse(buffer, count, &val, store_pages ? "B" : "M");
+ 	if (rc)
+ 		return rc;
+ 
+-	/* if the max_pages is specified in bytes, convert to pages */
+-	if (val >= ONE_MB_BRW_SIZE)
+-		val >>= PAGE_SHIFT;
++	/* if pages specified without units then convert to bytes */
++	if (store_pages && val <= PTLRPC_MAX_BRW_PAGES)
++		val <<= PAGE_SHIFT;
++
++	if (val < LOV_MIN_STRIPE_SIZE || val > PTLRPC_MAX_BRW_SIZE)
++		return -ERANGE;
++
++	/* convert bytes to pages */
++	val >>= PAGE_SHIFT;
+ 
+ 	with_imp_locked(obd, imp, rc) {
+-		ocd = &imp->imp_connect_data;
++		struct obd_connect_data *ocd = &imp->imp_connect_data;
++		int chunk_mask;
++
++		spin_lock(&cli->cl_loi_list_lock);
+ 		chunk_mask = ~((1 << (cli->cl_chunkbits - PAGE_SHIFT)) - 1);
+ 		/* max_pages_per_rpc must be chunk aligned */
+ 		val = (val + ~chunk_mask) & chunk_mask;
+ 		if (val == 0 || (ocd->ocd_brw_size != 0 &&
+-				 val > ocd->ocd_brw_size >> PAGE_SHIFT)) {
++				 val > ocd->ocd_brw_size >> PAGE_SHIFT))
+ 			rc = -ERANGE;
+-		} else {
+-			spin_lock(&cli->cl_loi_list_lock);
+-			cli->cl_max_pages_per_rpc = val;
+-			client_adjust_max_dirty(cli);
+-			spin_unlock(&cli->cl_loi_list_lock);
+-		}
++		else
++			store_val(val, cli);
++		spin_unlock(&cli->cl_loi_list_lock);
+ 	}
+ 
+ 	return rc ?: count;
+ }
++
++ssize_t max_pages_per_rpc_show(struct kobject *kobj, struct attribute *attr,
++			       char *buf)
++{
++	struct obd_device *obd = container_of(kobj, struct obd_device,
++					      obd_kset.kobj);
++	struct client_obd *cli = &obd->u.cli;
++	u32 min_ppr;
++
++	spin_lock(&cli->cl_loi_list_lock);
++	min_ppr = min(cli->cl_max_pages_per_rpc_read,
++		     cli->cl_max_pages_per_rpc_write);
++	spin_unlock(&cli->cl_loi_list_lock);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n", min_ppr);
++}
++EXPORT_SYMBOL(max_pages_per_rpc_show);
++
++static void max_pages_per_rpc_store_callback(u64 val, struct client_obd *cli)
++{
++	cli->cl_max_pages_per_rpc_read = val;
++	cli->cl_max_pages_per_rpc_write = val;
++	client_adjust_max_dirty(cli);
++}
++
++ssize_t max_pages_per_rpc_store(struct kobject *kobj, struct attribute *attr,
++				const char *buffer, size_t count)
++{
++	return max_rpc_store(kobj, attr, buffer, count,
++			     &max_pages_per_rpc_store_callback, true);
++}
+ EXPORT_SYMBOL(max_pages_per_rpc_store);
+ 
++static u32 max_mb_per_rpc_read_show_callback(struct client_obd *cli)
++{
++	return cli->cl_max_pages_per_rpc_read;
++}
++
++ssize_t max_mb_per_rpc_read_show(struct kobject *kobj, struct attribute *attr,
++				 char *buf)
++{
++	return max_mb_per_rpc_show(kobj, attr, buf,
++				   &max_mb_per_rpc_read_show_callback);
++}
++EXPORT_SYMBOL(max_mb_per_rpc_read_show);
++
++static void max_mb_per_rpc_read_store_callback(u64 val, struct client_obd *cli)
++{
++	cli->cl_max_pages_per_rpc_read = val;
++}
++
++ssize_t max_mb_per_rpc_read_store(struct kobject *kobj, struct attribute *attr,
++				  const char *buffer, size_t count)
++{
++	return max_rpc_store(kobj, attr, buffer, count,
++			     &max_mb_per_rpc_read_store_callback, false);
++}
++EXPORT_SYMBOL(max_mb_per_rpc_read_store);
++
++static u32 max_mb_per_rpc_write_show_callback(struct client_obd *cli)
++{
++	return cli->cl_max_pages_per_rpc_write;
++}
++
++ssize_t max_mb_per_rpc_write_show(struct kobject *kobj, struct attribute *attr,
++				  char *buf)
++{
++	return max_mb_per_rpc_show(kobj, attr, buf,
++				   &max_mb_per_rpc_write_show_callback);
++}
++EXPORT_SYMBOL(max_mb_per_rpc_write_show);
++
++static void max_mb_per_rpc_write_store_callback(u64 val, struct client_obd *cli)
++{
++	cli->cl_max_pages_per_rpc_write = val;
++	client_adjust_max_dirty(cli);
++}
++
++ssize_t max_mb_per_rpc_write_store(struct kobject *kobj, struct attribute *attr,
++				   const char *buffer, size_t count)
++{
++	return max_rpc_store(kobj, attr, buffer, count,
++			     &max_mb_per_rpc_write_store_callback, false);
++}
++EXPORT_SYMBOL(max_mb_per_rpc_write_store);
++
+ ssize_t short_io_bytes_show(struct kobject *kobj, struct attribute *attr,
+ 			    char *buf)
+ {
+diff --git a/lustre/osc/lproc_osc.c b/lustre/osc/lproc_osc.c
+index 372ff630de..79ab4a7458 100644
+--- a/lustre/osc/lproc_osc.c
++++ b/lustre/osc/lproc_osc.c
+@@ -515,6 +515,8 @@ static ssize_t destroys_in_flight_show(struct kobject *kobj,
+ LUSTRE_RO_ATTR(destroys_in_flight);
+ 
+ LUSTRE_RW_ATTR(max_pages_per_rpc);
++LUSTRE_RW_ATTR(max_mb_per_rpc_read);
++LUSTRE_RW_ATTR(max_mb_per_rpc_write);
+ LUSTRE_RW_ATTR(short_io_bytes);
+ 
+ static int osc_unstable_stats_seq_show(struct seq_file *m, void *v)
+@@ -913,6 +915,8 @@ static struct attribute *osc_attrs[] = {
+ 	&lustre_attr_destroys_in_flight.attr,
+ 	&lustre_attr_grant_shrink_interval.attr,
+ 	&lustre_attr_max_dirty_mb.attr,
++	&lustre_attr_max_mb_per_rpc_read.attr,
++	&lustre_attr_max_mb_per_rpc_write.attr,
+ 	&lustre_attr_max_pages_per_rpc.attr,
+ 	&lustre_attr_max_rpcs_in_flight.attr,
+ 	&lustre_attr_osc_unevict_cached_mb.attr,
+diff --git a/lustre/osc/osc_cache.c b/lustre/osc/osc_cache.c
+index aff67cf855..1fe31813f0 100644
+--- a/lustre/osc/osc_cache.c
++++ b/lustre/osc/osc_cache.c
+@@ -690,7 +690,7 @@ static struct osc_extent *osc_extent_find(const struct lu_env *env,
+ 	chunk      = index >> ppc_bits;
+ 
+ 	/* align end to RPC edge. */
+-	max_pages = cli->cl_max_pages_per_rpc;
++	max_pages = cli->cl_max_pages_per_rpc_write;
+ 	if ((max_pages & ~chunk_mask) != 0) {
+ 		CERROR("max_pages: %#x chunkbits: %u chunk_mask: %#lx\n",
+ 		       max_pages, cli->cl_chunkbits, chunk_mask);
+@@ -1226,7 +1226,7 @@ static void osc_extent_tree_dump0(int mask, struct osc_object *obj,
+ 		return;
+ 
+ 	CDEBUG(mask, "Dump object %p extents at %s:%d, mppr: %u.\n",
+-	       obj, func, line, osc_cli(obj)->cl_max_pages_per_rpc);
++	       obj, func, line, osc_cli(obj)->cl_max_pages_per_rpc_write);
+ 
+ 	/* osc_object_lock(obj); */
+ 	cnt = 1;
+@@ -1917,7 +1917,7 @@ static unsigned int get_write_extents(struct osc_object *obj,
+ 	struct extent_rpc_data data = {
+ 		.erd_rpc_list	= rpclist,
+ 		.erd_page_count	= 0,
+-		.erd_max_pages	= cli->cl_max_pages_per_rpc,
++		.erd_max_pages	= cli->cl_max_pages_per_rpc_write,
+ 		.erd_max_chunks	= osc_max_write_chunks(cli),
+ 		.erd_max_extents = 256,
+ 	};
+@@ -2044,7 +2044,7 @@ static unsigned int get_read_extents(struct osc_object *obj,
+ 	struct extent_rpc_data data = {
+ 		.erd_rpc_list	= rpclist,
+ 		.erd_page_count	= 0,
+-		.erd_max_pages	= cli->cl_max_pages_per_rpc,
++		.erd_max_pages	= cli->cl_max_pages_per_rpc_read,
+ 		.erd_max_chunks	= UINT_MAX,
+ 		.erd_max_extents = UINT_MAX,
+ 	};
+@@ -2616,7 +2616,8 @@ int osc_queue_dio_pages(const struct lu_env *env, struct cl_io *io,
+ 	struct osc_lock *oscl;
+ 	struct cl_page *page;
+ 	struct osc_page *opg;
+-	int mppr = cli->cl_max_pages_per_rpc;
++	int mppr = brw_flags & OBD_BRW_READ ? cli->cl_max_pages_per_rpc_read :
++					      cli->cl_max_pages_per_rpc_write;
+ 	pgoff_t start = CL_PAGE_EOF;
+ 	bool can_merge = true;
+ 	enum cl_req_type crt;
+@@ -2751,15 +2752,17 @@ int osc_queue_sync_pages(const struct lu_env *env, struct cl_io *io,
+ 			 int brw_flags)
+ {
+ 	struct osc_io *oio = osc_env_io(env);
+-	struct client_obd     *cli = osc_cli(obj);
+-	struct osc_extent     *ext;
++	struct client_obd *cli = osc_cli(obj);
++	struct osc_extent *ext;
+ 	struct osc_async_page *oap;
+-	int     page_count = 0;
+-	int     mppr       = cli->cl_max_pages_per_rpc;
+-	bool	can_merge   = true;
+-	pgoff_t start      = CL_PAGE_EOF;
+-	pgoff_t end        = 0;
++	int page_count = 0;
++	int mppr = brw_flags & OBD_BRW_READ ? cli->cl_max_pages_per_rpc_read :
++					      cli->cl_max_pages_per_rpc_write;
++	bool can_merge = true;
++	pgoff_t start = CL_PAGE_EOF;
++	pgoff_t end = 0;
+ 	enum cl_req_type crt;
++
+ 	ENTRY;
+ 
+ 	if (brw_flags & OBD_BRW_READ)
+diff --git a/lustre/osc/osc_io.c b/lustre/osc/osc_io.c
+index 68fb12dbc5..9956f61ac5 100644
+--- a/lustre/osc/osc_io.c
++++ b/lustre/osc/osc_io.c
+@@ -78,7 +78,7 @@ static int osc_io_read_ahead(const struct lu_env *env,
+ 			ldlm_lock_decref(&lockh, dlmlock->l_req_mode);
+ 		}
+ 
+-		ra->cra_rpc_pages = osc_cli(osc)->cl_max_pages_per_rpc;
++		ra->cra_rpc_pages = osc_cli(osc)->cl_max_pages_per_rpc_read;
+ 		ra->cra_end_idx =
+ 			dlmlock->l_policy_data.l_extent.end >> PAGE_SHIFT;
+ 		ra->cra_release = osc_read_ahead_release;
+@@ -131,7 +131,8 @@ int osc_io_submit(const struct lu_env *env, struct cl_io *io,
+ 
+ 	osc = cl2osc(ios->cis_obj);
+ 	cli = osc_cli(osc);
+-	max_pages = cli->cl_max_pages_per_rpc;
++	max_pages = crt == CRT_READ ? cli->cl_max_pages_per_rpc_read :
++				      cli->cl_max_pages_per_rpc_write;
+ 	ppc_bits = cli->cl_chunkbits - PAGE_SHIFT;
+ 	ppc = 1 << ppc_bits;
+ 
+@@ -253,7 +254,9 @@ int osc_dio_submit(const struct lu_env *env, struct cl_io *io,
+ 	LIST_HEAD(list);
+ 	/* pages per chunk bits */
+ 	unsigned int ppc_bits = cli->cl_chunkbits - PAGE_SHIFT;
+-	unsigned int max_pages = cli->cl_max_pages_per_rpc;
++	unsigned int max_pages = crt == CRT_READ ?
++				 cli->cl_max_pages_per_rpc_read :
++				 cli->cl_max_pages_per_rpc_write;
+ 	unsigned int ppc = 1 << ppc_bits;
+ 	unsigned int total_queued = 0;
+ 	unsigned int queued = 0;
+diff --git a/lustre/osc/osc_page.c b/lustre/osc/osc_page.c
+index 3c1c4b9cfe..b2cd1fbaea 100644
+--- a/lustre/osc/osc_page.c
++++ b/lustre/osc/osc_page.c
+@@ -332,7 +332,7 @@ static DECLARE_WAIT_QUEUE_HEAD(osc_lru_waitq);
+  */
+ static inline int lru_shrink_min(struct client_obd *cli)
+ {
+-	return cli->cl_max_pages_per_rpc * 2;
++	return cli->cl_max_pages_per_rpc_write * 2;
+ }
+ 
+ /**
+@@ -340,7 +340,7 @@ static inline int lru_shrink_min(struct client_obd *cli)
+  */
+ static inline int lru_shrink_max(struct client_obd *cli)
+ {
+-	return cli->cl_max_pages_per_rpc * cli->cl_max_rpcs_in_flight;
++	return cli->cl_max_rpcs_in_flight * cli->cl_max_pages_per_rpc_write;
+ }
+ 
+ /**
+@@ -953,7 +953,7 @@ static long osc_lru_reclaim(struct client_obd *cli, unsigned long npages)
+ 	if (IS_ERR(env))
+ 		RETURN(rc);
+ 
+-	npages = max_t(int, npages, cli->cl_max_pages_per_rpc);
++	npages = max_t(int, npages, cli->cl_max_pages_per_rpc_write);
+ 	CDEBUG(D_CACHE, "%s: start to reclaim %ld pages from LRU\n",
+ 	       cli_name(cli), npages);
+ 	rc = osc_lru_shrink(env, cli, npages, true, NULL);
+@@ -1125,7 +1125,8 @@ again:
+ 		goto again;
+ 	}
+ 
+-	max_pages = cli->cl_max_pages_per_rpc * cli->cl_max_rpcs_in_flight;
++	max_pages = cli->cl_max_pages_per_rpc_write *
++		    cli->cl_max_rpcs_in_flight;
+ 	if (atomic_long_read(cli->cl_lru_left) < max_pages) {
+ 		/* If there aren't enough pages in the per-OSC LRU then
+ 		 * wake up the LRU thread to try and clear out space, so
+@@ -1379,7 +1380,7 @@ bool osc_over_unstable_soft_limit(struct client_obd *cli)
+ 	 * SOFT_SYNC request so active OSCs will have more chance to carry
+ 	 * the flag, this is reasonable. */
+ 	return unstable_nr > cli->cl_cache->ccc_lru_max >> 2 &&
+-	       osc_unstable_count > cli->cl_max_pages_per_rpc *
++	       osc_unstable_count > cli->cl_max_pages_per_rpc_write *
+ 				    cli->cl_max_rpcs_in_flight;
+ }
+ 
+@@ -1470,19 +1471,16 @@ unsigned long osc_cache_shrink_scan(struct shrinker *sk,
+ 			goto out;
+ 		}
+ 
+-		/* shrink no more than max_pages_per_rpc for an OSC;
++		/* shrink no more than max_pages_per_rpc_write for an OSC;
+ 		 * bound by remaining scan budget
+ 		 */
+-		target_for_this_osc = (sc->nr_to_scan - total_scanned) >
+-				      cli->cl_max_pages_per_rpc ?
+-				      cli->cl_max_pages_per_rpc :
+-				      sc->nr_to_scan - total_scanned;
++		target_for_this_osc = min_t(u32, sc->nr_to_scan - total_scanned,
++					    cli->cl_max_pages_per_rpc_write);
++		/* It's essential we set nr_scanned, or the kernel will
++		 * call this in a loop if we're unable to free memory
++		 * but not reporting nr_scanned (see do_shrink_slab())
++		 */
+ 		rc = osc_lru_shrink(env, cli, target_for_this_osc, true,
+-				    /* It's essential we set nr_scanned or the
+-				     * kernel will call us in a loop if we're
+-				     * not able to free memory but not reporting
+-				     * nr_scanned (see do_shrink_slab())
+-				     */
+ 				    &local_scanned);
+ 
+ 		CDEBUG(D_CACHE, "%s: target %ld shrank %d scanned %ld\n",
+diff --git a/lustre/osc/osc_request.c b/lustre/osc/osc_request.c
+index ea578902a6..10f1f443ad 100644
+--- a/lustre/osc/osc_request.c
++++ b/lustre/osc/osc_request.c
+@@ -689,7 +689,7 @@ static void osc_announce_cached(struct client_obd *cli, struct obdo *oa,
+ 		unsigned long nrpages;
+ 		unsigned long undirty;
+ 
+-		nrpages = cli->cl_max_pages_per_rpc;
++		nrpages = cli->cl_max_pages_per_rpc_write;
+ 		nrpages *= cli->cl_max_rpcs_in_flight + 1;
+ 		nrpages = max(nrpages, cli->cl_dirty_max_pages);
+ 		undirty = nrpages << PAGE_SHIFT;
+@@ -806,11 +806,11 @@ static void osc_shrink_grant_local(struct client_obd *cli, struct obdo *oa)
+ static int osc_shrink_grant(struct client_obd *cli)
+ {
+ 	__u64 target_bytes = (cli->cl_max_rpcs_in_flight + 1) *
+-			     (cli->cl_max_pages_per_rpc << PAGE_SHIFT);
++			     (cli->cl_max_pages_per_rpc_write << PAGE_SHIFT);
+ 
+ 	spin_lock(&cli->cl_loi_list_lock);
+ 	if (cli->cl_avail_grant <= target_bytes)
+-		target_bytes = cli->cl_max_pages_per_rpc << PAGE_SHIFT;
++		target_bytes = cli->cl_max_pages_per_rpc_write << PAGE_SHIFT;
+ 	spin_unlock(&cli->cl_loi_list_lock);
+ 
+ 	return osc_shrink_grant_to_target(cli, target_bytes);
+@@ -827,8 +827,8 @@ int osc_shrink_grant_to_target(struct client_obd *cli, __u64 target_bytes)
+ 	 * We don't want to shrink below a single RPC, as that will negatively
+ 	 * impact block allocation and long-term performance.
+ 	 */
+-	if (target_bytes < cli->cl_max_pages_per_rpc << PAGE_SHIFT)
+-		target_bytes = cli->cl_max_pages_per_rpc << PAGE_SHIFT;
++	if (target_bytes < cli->cl_max_pages_per_rpc_write << PAGE_SHIFT)
++		target_bytes = cli->cl_max_pages_per_rpc_write << PAGE_SHIFT;
+ 
+ 	if (target_bytes >= cli->cl_avail_grant) {
+ 		spin_unlock(&cli->cl_loi_list_lock);
+@@ -871,6 +871,10 @@ out_free:
+ static int osc_should_shrink_grant(struct client_obd *client)
+ {
+ 	time64_t next_shrink = client->cl_next_shrink_grant;
++	u32 max_ppr;
++
++	max_ppr = max(client->cl_max_pages_per_rpc_read,
++		      client->cl_max_pages_per_rpc_write);
+ 
+ 	if (client->cl_import == NULL)
+ 		return 0;
+@@ -886,7 +890,7 @@ static int osc_should_shrink_grant(struct client_obd *client)
+ 		 * cli_brw_size(obd->u.cli.cl_import->imp_obd->obd_self_export)
+ 		 * Keep comment here so that it can be found by searching.
+ 		 */
+-		int brw_size = client->cl_max_pages_per_rpc << PAGE_SHIFT;
++		int brw_size = max_ppr << PAGE_SHIFT;
+ 
+ 		if (client->cl_import->imp_state == LUSTRE_IMP_FULL &&
+ 		    client->cl_avail_grant > brw_size)
+@@ -1025,8 +1029,10 @@ void osc_init_grant(struct client_obd *cli, struct obd_connect_data *ocd)
+ 					  ocd->ocd_grant_blkbits);
+ 		/* max_pages_per_rpc must be chunk aligned */
+ 		chunk_mask = ~((1 << (cli->cl_chunkbits - PAGE_SHIFT)) - 1);
+-		cli->cl_max_pages_per_rpc = (cli->cl_max_pages_per_rpc +
+-					     ~chunk_mask) & chunk_mask;
++		cli->cl_max_pages_per_rpc_write = chunk_mask &
++			(cli->cl_max_pages_per_rpc_write + ~chunk_mask);
++		cli->cl_max_pages_per_rpc_read = chunk_mask &
++			(cli->cl_max_pages_per_rpc_read + ~chunk_mask);
+ 		/* determine maximum extent size, in #pages */
+ 		size = (u64)ocd->ocd_grant_max_blks << ocd->ocd_grant_blkbits;
+ 		cli->cl_max_extent_pages = (size >> PAGE_SHIFT) ?: 1;
+diff --git a/lustre/ptlrpc/import.c b/lustre/ptlrpc/import.c
+index ee0668791a..1459d76c51 100644
+--- a/lustre/ptlrpc/import.c
++++ b/lustre/ptlrpc/import.c
+@@ -913,16 +913,23 @@ static int ptlrpc_connect_set_flags(struct obd_import *imp,
+ 						  cli->cl_supp_cksum_types,
+ 						  cli->cl_preferred_cksum_type);
+ 
+-	if (ocd->ocd_connect_flags & OBD_CONNECT_BRW_SIZE)
+-		cli->cl_max_pages_per_rpc =
++	if (ocd->ocd_connect_flags & OBD_CONNECT_BRW_SIZE) {
++		cli->cl_max_pages_per_rpc_write =
+ 			min(ocd->ocd_brw_size >> PAGE_SHIFT,
+-			    cli->cl_max_pages_per_rpc);
+-	else if (imp->imp_connect_op == MDS_CONNECT ||
+-		 imp->imp_connect_op == MGS_CONNECT)
+-		cli->cl_max_pages_per_rpc = 1;
++			    cli->cl_max_pages_per_rpc_write);
++		cli->cl_max_pages_per_rpc_read =
++			min(ocd->ocd_brw_size >> PAGE_SHIFT,
++			    cli->cl_max_pages_per_rpc_read);
++	} else if (imp->imp_connect_op == MDS_CONNECT ||
++		   imp->imp_connect_op == MGS_CONNECT) {
++		cli->cl_max_pages_per_rpc_write = 1;
++		cli->cl_max_pages_per_rpc_read = 1;
++	}
+ 
+-	LASSERT((cli->cl_max_pages_per_rpc <= PTLRPC_MAX_BRW_PAGES) &&
+-		(cli->cl_max_pages_per_rpc > 0));
++	LASSERT((cli->cl_max_pages_per_rpc_write <= PTLRPC_MAX_BRW_PAGES) &&
++		(cli->cl_max_pages_per_rpc_write > 0));
++	LASSERT((cli->cl_max_pages_per_rpc_read <= PTLRPC_MAX_BRW_PAGES) &&
++		(cli->cl_max_pages_per_rpc_read > 0));
+ 
+ 	client_adjust_max_dirty(cli);
+ 
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index 4db631d717..d07aaef88f 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -6334,7 +6334,7 @@ test_48f() {
+ }
+ run_test 48f "non-zero nlink dir unlink won't LBUG()"
+ 
+-test_49() { # LU-1030
++test_49a() {	# LU-1030	# was test_49
+ 	[ $PARALLEL == "yes" ] && skip "skip parallel run"
+ 	remote_ost_nodsh && skip "remote OST with nodsh"
+ 
+@@ -6361,7 +6361,107 @@ test_49() { # LU-1030
+ 	$LCTL set_param $osc1_mppc=$orig_mppc
+ 	rm $DIR/$tfile || error "rm $DIR/$tfile failed"
+ }
+-run_test 49 "Change max_pages_per_rpc won't break osc extent"
++run_test 49a "Change max_pages_per_rpc won't break osc extent"
++
++test_49b() {
++	local tgt="$FSNAME-OST0000-osc-*"
++	local max_pages_per_rpc="osc.$tgt.max_pages_per_rpc"
++	local max_mb_per_rpc_read="osc.$tgt.max_mb_per_rpc_read"
++	local max_mb_per_rpc_write="osc.$tgt.max_mb_per_rpc_write"
++
++	local old_brw=$(import_param "$tgt" max_brw_size)
++	local old_pages=$($LCTL get_param -n "$max_mb_per_rpc_read")
++	stack_trap "$LCTL set_param $max_mb_per_rpc_read=$old_pages"
++	local old_pages=$($LCTL get_param -n "$max_mb_per_rpc_write")
++	stack_trap "$LCTL set_param $max_mb_per_rpc_write=$old_pages"
++
++	local expect="1"
++	$LCTL set_param "$max_pages_per_rpc=1M"
++	local actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++	[[ "$expect" == "$actual" ]] ||
++		error "wrong max_mb_per_rpc_read: $expect != $actual"
++	local actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++	[[ "$expect" == "$actual" ]] ||
++		error "wrong max_mb_per_rpc_write: $expect != $actual"
++
++	if [ "$ost1_FSTYPE" == ldiskfs ]; then
++		expect="0.500"
++		$LCTL set_param "$max_pages_per_rpc=512K"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++		[[ "$expect" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_read: $expect != $actual"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++		[[ "$expect" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_write: $expect != $actual"
++
++		expect="3.500"
++		$LCTL set_param "$max_pages_per_rpc=3.5M"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++		[[ "$expect" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_read: $expect != $actual"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++		[[ "$expect" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_write: $expect != $actual"
++
++		expect="4"
++		$LCTL set_param "$max_pages_per_rpc=0.00390625G"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++		[[ "$expect" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_read: $expect != $actual"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++		[[ "$expect" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_write: $expect != $actual"
++	fi
++}
++run_test 49b "verify max_mb_per_rpc_read/write after setting max_pages_per_rpc"
++
++test_49c() {
++	local tgt="$FSNAME-OST0000-osc-*"
++	local max_pages_per_rpc="osc.$tgt.max_pages_per_rpc"
++	local max_mb_per_rpc_read="osc.$tgt.max_mb_per_rpc_read"
++	local max_mb_per_rpc_write="osc.$tgt.max_mb_per_rpc_write"
++
++	local old_brw=$(import_param "$tgt" max_brw_size)
++	local old_pages=$($LCTL get_param -n "$max_mb_per_rpc_read")
++	stack_trap "$LCTL set_param $max_mb_per_rpc_read=$old_pages"
++	local old_pages=$($LCTL get_param -n "$max_mb_per_rpc_write")
++	stack_trap "$LCTL set_param $max_mb_per_rpc_write=$old_pages"
++
++	local expect="1"
++	$LCTL set_param "$max_mb_per_rpc_read=1"
++	local actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++	[[ "$expect" == "$actual" ]] ||
++		error "wrong max_mb_per_rpc_read: $expect != $actual"
++	$LCTL set_param "$max_mb_per_rpc_write=1"
++	local actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++	[[ "$expect" == "$actual" ]] ||
++		error "wrong max_mb_per_rpc_write: $expect != $actual"
++
++	if [ "$ost1_FSTYPE" == ldiskfs ]; then
++		local expect_r="2.500"
++		local expect_w="0.500"
++		$LCTL set_param "$max_mb_per_rpc_read=2560K"
++		$LCTL set_param "$max_mb_per_rpc_write=0.5M"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++		[[ "$expect_r" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_read: $expect_r != $actual"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++		[[ "$expect_w" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_write: $expect_w != $actual"
++
++		local expect_r="0.500"
++		local expect_w="2.500"
++		$LCTL set_param "$max_mb_per_rpc_read=0.5M"
++		$LCTL set_param "$max_mb_per_rpc_write=2560K"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_read")
++		[[ "$expect_r" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_read: $expect_r != $actual"
++		actual=$($LCTL get_param -n "$max_mb_per_rpc_write")
++		[[ "$expect_w" == "$actual" ]] ||
++			error "wrong max_mb_per_rpc_write: $expect_w != $actual"
++	fi
++}
++run_test 49c "verify max_mb_per_rpc_read/write"
+ 
+ test_50() {
+ 	# bug 1485

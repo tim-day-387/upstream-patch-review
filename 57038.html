@@ -1,0 +1,408 @@
+From ab0176d51bff35c3982a035c511ab782c5e33179 Mon Sep 17 00:00:00 2001
+From: Qian Yingjin <qian@ddn.com>
+Date: Fri, 15 Nov 2024 17:04:51 +0800
+Subject: [PATCH 1/1] LU-18449 llite: handle kernel readahead for VM_HUGEPAGE
+ vma
+
+In Lustre, the kernel readahead is ususally disabled by setting
+ra_pages with zero.
+However, the new kernel will still trigger kernel readahead for
+mmap() I/O as follow:
+do_sync_mmap_readahead() {
+	...
+	/* Use the readahead code, even if readahead is disable */
+	if (vm_flags & VM_HUGEPAGE) {
+		...
+		ra->size = HPAGE_PMD_NR;
+		...
+		page_cache_ra_order();
+		return fpin;
+	}
+	...
+}
+
+When the vma for the reading page is flagged with VM_HUGEPAGE, it
+will trigger the kernel readahead which is out the control of
+Lustre.
+This can happen when an application sets mmap()ed region with
+VM_HUGEPAGE via MADV_HUGEPAGE madvise().
+
+The main reason to avoid the kernel readahead is because that the
+reading pages may be not covered by a DLM extent lock.
+
+To solve the readahead problem caused by HUGEPAGE, in ->readpage()
+we first do DLM lock match for readahead page. If found a matched
+lock, perform I/O under this lock. Otherwise, return the error
+code AOP_TRUNCATED_PAGE. And the kernel will redo the I/O again
+under Lustre CLIO engine.
+
+Signed-off-by: Qian Yingjin <qian@ddn.com>
+Change-Id: I56fb83f4141d4fdad9f29fb21c43bc69352e1330
+---
+ Documentation/clio.txt     |  6 +++---
+ lustre/include/cl_object.h | 14 +++++++-------
+ lustre/llite/rw.c          | 22 +++++++++++++++++-----
+ lustre/llite/vvp_io.c      |  8 ++++----
+ lustre/lov/lov_io.c        | 20 ++++++++++----------
+ lustre/mdc/mdc_dev.c       | 18 +++++++++---------
+ lustre/obdclass/cl_io.c    | 13 +++++++------
+ lustre/osc/osc_io.c        | 18 +++++++++---------
+ lustre/tests/multiop.c     |  8 ++++++++
+ lustre/tests/sanity.sh     | 26 ++++++++++++++++++++++++++
+ 10 files changed, 100 insertions(+), 53 deletions(-)
+
+diff --git a/Documentation/clio.txt b/Documentation/clio.txt
+index 224e2b5d9a..7bb87105c8 100644
+--- a/Documentation/clio.txt
++++ b/Documentation/clio.txt
+@@ -1231,9 +1231,9 @@ decides if it's necessary to read ahead more pages by calling ll_readahead().
+ The number of pages to be read ahead is determined by the read pattern, also
+ it will factor in the requirements from different layers in CLIO stack, for
+ example, stripe alignment on the LOV layer and DLM lock coverage on the OSC
+-layer. The callback ->cio_read_ahead() is used to gather the requirements from
+-each layer. Please refer to lov_io_read_ahead() and osc_io_read_ahead() for
+-details.
++layer. The callback ->cio_read_ahead_prep() is used to gather the requirements
++from each layer. Please refer to lov_io_read_ahead_prep() and
++osc_io_read_ahead_prep() for details.
+ 
+ ll_readahead() populates a queue by a target page and pages from read-ahead
+ window. The resulting queue is then submitted for immediate transfer by calling
+diff --git a/lustre/include/cl_object.h b/lustre/include/cl_object.h
+index 421b6fb858..29a93a9d4c 100644
+--- a/lustre/include/cl_object.h
++++ b/lustre/include/cl_object.h
+@@ -1577,9 +1577,9 @@ struct cl_io_operations {
+ 	 *
+ 	 * \pre io->ci_type == CIT_READ
+ 	 */
+-	int (*cio_read_ahead)(const struct lu_env *env,
+-			      const struct cl_io_slice *slice,
+-			      pgoff_t start, struct cl_read_ahead *ra);
++	int (*cio_read_ahead_prep)(const struct lu_env *env,
++				   const struct cl_io_slice *slice,
++				   pgoff_t start, struct cl_read_ahead *ra);
+ 	/**
+ 	 *
+ 	 * Reserve LRU slots before IO.
+@@ -2419,10 +2419,10 @@ void  cl_io_extent_release(const struct lu_env *env, struct cl_io *io,
+ 			   enum cl_io_priority prio);
+ int cl_io_lru_reserve(const struct lu_env *env, struct cl_io *io,
+ 		      loff_t pos, size_t bytes);
+-int   cl_io_read_ahead(const struct lu_env *env, struct cl_io *io,
+-		       pgoff_t start, struct cl_read_ahead *ra);
+-void  cl_io_rw_advance(const struct lu_env *env, struct cl_io *io,
+-		       size_t bytes);
++int cl_io_read_ahead_prep(const struct lu_env *env, struct cl_io *io,
++			  pgoff_t start, struct cl_read_ahead *ra);
++void cl_io_rw_advance(const struct lu_env *env, struct cl_io *io,
++		      size_t bytes);
+ 
+ /**
+  * True, iff \a io is an O_APPEND write(2).
+diff --git a/lustre/llite/rw.c b/lustre/llite/rw.c
+index d7825a5e77..3d2ccd591d 100644
+--- a/lustre/llite/rw.c
++++ b/lustre/llite/rw.c
+@@ -449,7 +449,8 @@ ll_read_ahead_pages(const struct lu_env *env, struct cl_io *io,
+ 					break;
+ 
+ 				INIT_LIST_HEAD(&ra->cra_linkage);
+-				rc = cl_io_read_ahead(env, io, page_idx, ra);
++				rc = cl_io_read_ahead_prep(env, io, page_idx,
++							   ra);
+ 				if (rc < 0) {
+ 					OBD_FREE_PTR(ra);
+ 					break;
+@@ -2112,7 +2113,8 @@ int ll_readpage(struct file *file, struct page *vmpage)
+ 			       "pgno:%ld, beyond read end_index:%ld\n",
+ 			       vmpage->index, lcc->lcc_end_index);
+ 
+-			result = cl_io_read_ahead(env, io, vmpage->index, &ra);
++			result = cl_io_read_ahead_prep(env, io,
++						       vmpage->index, &ra);
+ 			if (result < 0 || vmpage->index > ra.cra_end_idx) {
+ 				cl_read_ahead_release(env, &ra);
+ 				unlock_page(vmpage);
+@@ -2121,15 +2123,26 @@ int ll_readpage(struct file *file, struct page *vmpage)
+ 		}
+ 	}
+ 
++	vio = vvp_env_io(env);
+ 	/* this is a sequence of checks verifying that kernel readahead is
+ 	 * truly disabled
+ 	 */
+-	if (lcc && lcc->lcc_type == LCC_MMAP) {
+-		if (io->u.ci_fault.ft_index != vmpage->index) {
++	if (lcc && lcc->lcc_type == LCC_MMAP &&
++	    io->u.ci_fault.ft_index != vmpage->index) {
++		if (!(vio->u.fault.ft_vma->vm_flags & VM_HUGEPAGE)) {
++
+ 			CERROR("%s: ft_index %lu, vmpage index %lu\n",
+ 			       sbi->ll_fsname, io->u.ci_fault.ft_index,
+ 			       vmpage->index);
+ 			ra_assert = true;
++		} else {
++			result = cl_io_read_ahead_prep(env, io,
++						       vmpage->index, &ra);
++			if (result < 0 || vmpage->index > ra.cra_end_idx) {
++				cl_read_ahead_release(env, &ra);
++				unlock_page(vmpage);
++				RETURN(AOP_TRUNCATED_PAGE);
++			}
+ 		}
+ 	}
+ 
+@@ -2151,7 +2164,6 @@ int ll_readpage(struct file *file, struct page *vmpage)
+ 	if (ra_assert)
+ 		LASSERT(!ra_assert);
+ 
+-	vio = vvp_env_io(env);
+ 	/*
+ 	 * Direct read can fall back to buffered read, but DIO is done
+ 	 * with lockless i/o, and buffered requires LDLM locking, so in
+diff --git a/lustre/llite/vvp_io.c b/lustre/llite/vvp_io.c
+index e7d15544e9..c7f534e002 100644
+--- a/lustre/llite/vvp_io.c
++++ b/lustre/llite/vvp_io.c
+@@ -1700,9 +1700,9 @@ static void vvp_io_fsync_end(const struct lu_env *env,
+ 		ll_merge_attr_try(env, inode);
+ }
+ 
+-static int vvp_io_read_ahead(const struct lu_env *env,
+-			     const struct cl_io_slice *ios,
+-			     pgoff_t start, struct cl_read_ahead *ra)
++static int vvp_io_read_ahead_prep(const struct lu_env *env,
++				  const struct cl_io_slice *ios,
++				  pgoff_t start, struct cl_read_ahead *ra)
+ {
+ 	int result = 0;
+ 
+@@ -1821,7 +1821,7 @@ static const struct cl_io_operations vvp_io_ops = {
+ 			.cio_end       = vvp_io_lseek_end,
+ 		},
+ 	},
+-	.cio_read_ahead = vvp_io_read_ahead
++	.cio_read_ahead_prep	= vvp_io_read_ahead_prep,
+ };
+ 
+ int vvp_io_init(const struct lu_env *env, struct cl_object *obj,
+diff --git a/lustre/lov/lov_io.c b/lustre/lov/lov_io.c
+index b5dcbac55f..27895316cf 100644
+--- a/lustre/lov/lov_io.c
++++ b/lustre/lov/lov_io.c
+@@ -1187,9 +1187,9 @@ static void lov_io_unlock(const struct lu_env *env,
+ 	EXIT;
+ }
+ 
+-static int lov_io_read_ahead(const struct lu_env *env,
+-			     const struct cl_io_slice *ios,
+-			     pgoff_t start, struct cl_read_ahead *ra)
++static int lov_io_read_ahead_prep(const struct lu_env *env,
++				  const struct cl_io_slice *ios,
++				  pgoff_t start, struct cl_read_ahead *ra)
+ {
+ 	struct lov_io		*lio = cl2lov_io(env, ios);
+ 	struct lov_object	*loo = lio->lis_object;
+@@ -1225,8 +1225,8 @@ static int lov_io_read_ahead(const struct lu_env *env,
+ 		RETURN(PTR_ERR(sub));
+ 
+ 	lov_stripe_offset(loo->lo_lsm, index, offset, stripe, &suboff);
+-	rc = cl_io_read_ahead(sub->sub_env, &sub->sub_io,
+-			      suboff >> PAGE_SHIFT, ra);
++	rc = cl_io_read_ahead_prep(sub->sub_env, &sub->sub_io,
++				   suboff >> PAGE_SHIFT, ra);
+ 
+ 	CDEBUG(D_READA, DFID " cra_end = %lu, stripes = %d, rc = %d\n",
+ 	       PFID(lu_object_fid(lov2lu(loo))), ra->cra_end_idx,
+@@ -1806,11 +1806,11 @@ static const struct cl_io_operations lov_io_ops = {
+ 			.cio_fini      = lov_io_fini
+ 		}
+ 	},
+-	.cio_read_ahead                = lov_io_read_ahead,
+-	.cio_lru_reserve	       = lov_io_lru_reserve,
+-	.cio_submit                    = lov_io_submit,
+-	.cio_dio_submit                = lov_dio_submit,
+-	.cio_commit_async              = lov_io_commit_async,
++	.cio_read_ahead_prep		= lov_io_read_ahead_prep,
++	.cio_lru_reserve		= lov_io_lru_reserve,
++	.cio_submit			= lov_io_submit,
++	.cio_dio_submit			= lov_dio_submit,
++	.cio_commit_async		= lov_io_commit_async,
+ };
+ 
+ /**
+diff --git a/lustre/mdc/mdc_dev.c b/lustre/mdc/mdc_dev.c
+index 1817ff879d..647d220638 100644
+--- a/lustre/mdc/mdc_dev.c
++++ b/lustre/mdc/mdc_dev.c
+@@ -1136,9 +1136,9 @@ static int mdc_io_setattr_start(const struct lu_env *env,
+ 	return rc;
+ }
+ 
+-static int mdc_io_read_ahead(const struct lu_env *env,
+-			     const struct cl_io_slice *ios,
+-			     pgoff_t start, struct cl_read_ahead *ra)
++static int mdc_io_read_ahead_prep(const struct lu_env *env,
++				  const struct cl_io_slice *ios,
++				  pgoff_t start, struct cl_read_ahead *ra)
+ {
+ 	struct osc_object *osc = cl2osc(ios->cis_obj);
+ 	struct osc_io *oio = cl2osc_io(env, ios);
+@@ -1386,12 +1386,12 @@ static const struct cl_io_operations mdc_io_ops = {
+ 			.cio_end    = osc_io_lseek_end,
+ 		},
+ 	},
+-	.cio_read_ahead   = mdc_io_read_ahead,
+-	.cio_lru_reserve  = osc_io_lru_reserve,
+-	.cio_submit	  = osc_io_submit,
+-	.cio_dio_submit	  = osc_dio_submit,
+-	.cio_commit_async = osc_io_commit_async,
+-	.cio_extent_release = osc_io_extent_release,
++	.cio_read_ahead_prep	= mdc_io_read_ahead_prep,
++	.cio_lru_reserve	= osc_io_lru_reserve,
++	.cio_submit		= osc_io_submit,
++	.cio_dio_submit		= osc_dio_submit,
++	.cio_commit_async	= osc_io_commit_async,
++	.cio_extent_release	= osc_io_extent_release,
+ };
+ 
+ static int mdc_io_init(const struct lu_env *env, struct cl_object *obj,
+diff --git a/lustre/obdclass/cl_io.c b/lustre/obdclass/cl_io.c
+index d4a9f89f9d..33d1a94b16 100644
+--- a/lustre/obdclass/cl_io.c
++++ b/lustre/obdclass/cl_io.c
+@@ -567,10 +567,10 @@ EXPORT_SYMBOL(cl_io_end);
+ /*
+  * Called by read IO, to decide the readahead extent
+  *
+- * see cl_io_operations::cio_read_ahead()
++ * see cl_io_operations::cio_read_ahead_prep()
+  */
+-int cl_io_read_ahead(const struct lu_env *env, struct cl_io *io,
+-		     pgoff_t start, struct cl_read_ahead *ra)
++int cl_io_read_ahead_prep(const struct lu_env *env, struct cl_io *io,
++			  pgoff_t start, struct cl_read_ahead *ra)
+ {
+ 	const struct cl_io_slice *scan;
+ 	int result = 0;
+@@ -583,16 +583,17 @@ int cl_io_read_ahead(const struct lu_env *env, struct cl_io *io,
+ 	ENTRY;
+ 
+ 	list_for_each_entry(scan, &io->ci_layers, cis_linkage) {
+-		if (scan->cis_iop->cio_read_ahead == NULL)
++		if (scan->cis_iop->cio_read_ahead_prep == NULL)
+ 			continue;
+ 
+-		result = scan->cis_iop->cio_read_ahead(env, scan, start, ra);
++		result = scan->cis_iop->cio_read_ahead_prep(env, scan,
++							    start, ra);
+ 		if (result != 0)
+ 			break;
+ 	}
+ 	RETURN(result > 0 ? 0 : result);
+ }
+-EXPORT_SYMBOL(cl_io_read_ahead);
++EXPORT_SYMBOL(cl_io_read_ahead_prep);
+ 
+ /*
+  * Called before IO start, to reserve enough LRU slots to avoid
+diff --git a/lustre/osc/osc_io.c b/lustre/osc/osc_io.c
+index 68fb12dbc5..e6346db7ce 100644
+--- a/lustre/osc/osc_io.c
++++ b/lustre/osc/osc_io.c
+@@ -53,9 +53,9 @@ void osc_read_ahead_release(const struct lu_env *env, struct cl_read_ahead *ra)
+ }
+ EXPORT_SYMBOL(osc_read_ahead_release);
+ 
+-static int osc_io_read_ahead(const struct lu_env *env,
+-			     const struct cl_io_slice *ios,
+-			     pgoff_t start, struct cl_read_ahead *ra)
++static int osc_io_read_ahead_prep(const struct lu_env *env,
++				  const struct cl_io_slice *ios,
++				  pgoff_t start, struct cl_read_ahead *ra)
+ {
+ 	struct osc_object *osc = cl2osc(ios->cis_obj);
+ 	struct osc_io *oio = cl2osc_io(env, ios);
+@@ -1446,12 +1446,12 @@ static const struct cl_io_operations osc_io_ops = {
+ 			.cio_fini   = osc_io_fini
+ 		}
+ 	},
+-	.cio_read_ahead		    = osc_io_read_ahead,
+-	.cio_lru_reserve	    = osc_io_lru_reserve,
+-	.cio_submit                 = osc_io_submit,
+-	.cio_dio_submit		    = osc_dio_submit,
+-	.cio_commit_async           = osc_io_commit_async,
+-	.cio_extent_release         = osc_io_extent_release
++	.cio_read_ahead_prep	= osc_io_read_ahead_prep,
++	.cio_lru_reserve	= osc_io_lru_reserve,
++	.cio_submit		= osc_io_submit,
++	.cio_dio_submit		= osc_dio_submit,
++	.cio_commit_async	= osc_io_commit_async,
++	.cio_extent_release	= osc_io_extent_release
+ };
+ 
+ /*****************************************************************************
+diff --git a/lustre/tests/multiop.c b/lustre/tests/multiop.c
+index 4528efcd63..5a96057200 100644
+--- a/lustre/tests/multiop.c
++++ b/lustre/tests/multiop.c
+@@ -64,6 +64,7 @@ char usage[] =
+ "	 H[num] create HSM released file with num stripes\n"
+ "	 I  fiemap\n"
+ "	 i  random fadvise\n"
++"	 J  madvise(MADV_HUGEPAGE)\n"
+ "	 K  link path to filename\n"
+ "	 L  link\n"
+ "	 l  symlink filename to path\n"
+@@ -508,6 +509,13 @@ int main(int argc, char **argv)
+ 			if (flock(fd, LOCK_EX) == -1)
+ 				errx(-1, "flock()");
+ 			break;
++		case 'J':
++			if (madvise(mmap_ptr, mmap_len, MADV_HUGEPAGE)) {
++				save_errno = errno;
++				perror("madvise()");
++				exit(save_errno);
++			}
++			break;
+ 		case 'K':
+ 			oldpath = POP_ARG();
+ 			if (!oldpath)
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index a6e1b0ff52..facaa17fa6 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -35327,6 +35327,32 @@ test_833() {
+ }
+ run_test 833 "Mixed buffered/direct read and write should not return -EIO"
+ 
++test_834() {
++	local file=$DIR/$tfile
++
++	dd if=/dev/zero of=$file bs=1M count=100 ||
++		error "failed to write $file"
++	cancel_lru_locks $OSC
++	$LCTL set_param llite.*.read_ahead_stats=clear
++	# Unfortunately we can not reproduce the panic with the following mmap
++	# read with madvise(MADV_HUGEPAGE)...
++	$MULTIOP $file OSMJRUc || "failed to $MULTIOP $file"
++	$LCTL get_param llite.*.read_ahead_stats
++
++	which fio || skip_env "no fio installed"
++	fio --enghelp=mmap | grep 'thp' ||
++		skip_env "fio mmap I/O engine does not support THP"
++
++	$TRUNCATE $file $((5 * 1024 * 1024 * 1024)) ||
++		error "failed to truncate $file"
++	# "--thp=1" indicates to use MADV_HUGEPAGE madvise for fio testing
++	# with mmap I/O engine.
++	# However, this fio test still can not reproduce the panic also...
++	fio --name=read_test --ioengine=mmap --filename=$file --rw=read \
++		--bs=1m --thp=1 || error "failed to run fio on $file"
++}
++run_test 834 "mmap readahead for madvise with MADV_HUGEPAGE"
++
+ test_842() {
+ 	(( $MDS1_VERSION >= $(version_code 2.15.62) )) ||
+ 		skip "Need MDS version at least 2.15.62 for ldlm_extent module"

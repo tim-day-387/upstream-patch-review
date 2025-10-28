@@ -1,0 +1,880 @@
+From 6386315f8afecbe38d3c552dd892e056e415ff2a Mon Sep 17 00:00:00 2001
+From: Alexey Lyashkov <alexey.lyashkov@hpe.com>
+Date: Wed, 20 Nov 2024 15:09:59 +0300
+Subject: [PATCH 1/1] LU-18461 layout: allow to be started from zero offset.
+
+Traditional PFL objects have a hole at the start to accommodate the DoM
+object if it needs to be migrated. This is not always necessary, however,
+as the hole can prevent the use of large files with a small number of OST
+objects in the ldiskfs backend.
+
+Introducing the ability to eliminate this
+hole at the beginning could provide an opportunity for OST objects to be
+moved across components and offsets, and allow for a greater number of OST
+objects to be stored in larger files. Additionally, multiple files could be
+combined into one, similar to the join file feature of the past, once
+components are able to be relocated.
+
+Signed-off-by: Alexey Lyashkov <alexey.lyashkov@hpe.com>
+Change-Id: I730c66c695a3ff718c78cb82dab878b4f720bf55
+---
+ lustre/include/lustre/lustreapi.h             |   1 +
+ .../include/uapi/linux/lustre/lustre_user.h   |   7 +-
+ lustre/lov/lov_cl_internal.h                  |  11 +-
+ lustre/lov/lov_ea.c                           |   3 +-
+ lustre/lov/lov_internal.h                     |   7 +
+ lustre/lov/lov_io.c                           |  43 ++-
+ lustre/lov/lov_offset.c                       |  26 +-
+ lustre/osc/osc_cache.c                        |   3 +-
+ lustre/osc/osc_lock.c                         |   2 +-
+ lustre/tests/Makefile.am                      |   1 +
+ lustre/tests/sanity-zero.sh                   | 362 ++++++++++++++++++
+ lustre/utils/lfs.c                            |  21 +-
+ lustre/utils/liblustreapi_layout.c            |  15 +-
+ lustre/utils/wirecheck.c                      |   1 +
+ 14 files changed, 474 insertions(+), 29 deletions(-)
+ create mode 100644 lustre/tests/sanity-zero.sh
+
+diff --git a/lustre/include/lustre/lustreapi.h b/lustre/include/lustre/lustreapi.h
+index c6e02b6473..c0a241bc9b 100644
+--- a/lustre/include/lustre/lustreapi.h
++++ b/lustre/include/lustre/lustreapi.h
+@@ -1014,6 +1014,7 @@ int llapi_layout_merge(struct llapi_layout **dst_layout,
+ #define LLAPI_LAYOUT_OVERSTRIPING	0x00000004ULL
+ #define LLAPI_LAYOUT_FOREIGN		0x00000008ULL
+ #define LLAPI_LAYOUT_COMPRESS		0x00000010ULL
++#define LLAPI_LAYOUT_ZEROSTART		0x00000020ULL
+ 
+ /**
+  * The layout includes a specific set of OSTs on which to allocate.
+diff --git a/lustre/include/uapi/linux/lustre/lustre_user.h b/lustre/include/uapi/linux/lustre/lustre_user.h
+index ced4b58b5e..93e0663506 100644
+--- a/lustre/include/uapi/linux/lustre/lustre_user.h
++++ b/lustre/include/uapi/linux/lustre/lustre_user.h
+@@ -29,6 +29,8 @@
+ # define __USE_XOPEN2K8  1
+ # define FILEID_LUSTRE 0x97 /* for name_to_handle_at() (and llapi_fd2fid()) */
+ # define U32_MAX	UINT32_MAX
++#define BIT(nr)		(1ULL << (nr))
++
+ #endif /* !__KERNEL__ */
+ 
+ #include <linux/fs.h>
+@@ -112,6 +114,7 @@ typedef struct stat     lstat_t;
+ #endif
+ #endif /* DECLARE_FLEX_ARRAY */
+ 
++
+ #ifndef STATX_BASIC_STATS
+ /*
+  * Timestamp structure for the timestamps in struct statx.
+@@ -787,6 +790,7 @@ enum lov_pattern {
+ 	LOV_PATTERN_OVERSTRIPING =	0x200,
+ 	LOV_PATTERN_FOREIGN =		0x400,
+ 	LOV_PATTERN_COMPRESS =		0x800,
++	LOV_PATTERN_ZEROSTART =		0x1000,
+ 
+ 	/* combine exclusive patterns as a bad pattern */
+ 	LOV_PATTERN_BAD =		(LOV_PATTERN_RAID1 | LOV_PATTERN_MDT |
+@@ -807,6 +811,7 @@ static inline bool lov_pattern_supported(enum lov_pattern pattern)
+ 
+ 	return pattern_base == LOV_PATTERN_RAID0 ||
+ 	       pattern_base == (LOV_PATTERN_RAID0 | LOV_PATTERN_OVERSTRIPING) ||
++	       pattern_base == (LOV_PATTERN_RAID0 | LOV_PATTERN_ZEROSTART) ||
+ 	       pattern_base == LOV_PATTERN_MDT;
+ }
+ 
+@@ -817,8 +822,8 @@ static inline bool lov_pattern_supported(enum lov_pattern pattern)
+ static inline bool lov_pattern_supported_normal_comp(enum lov_pattern pattern)
+ {
+ 	return pattern == LOV_PATTERN_RAID0 ||
++	       pattern == (LOV_PATTERN_RAID0 | LOV_PATTERN_ZEROSTART) ||
+ 	       pattern == (LOV_PATTERN_RAID0 | LOV_PATTERN_OVERSTRIPING);
+-
+ }
+ 
+ #define LOV_MAXPOOLNAME 15
+diff --git a/lustre/lov/lov_cl_internal.h b/lustre/lov/lov_cl_internal.h
+index 89f323ef80..93dc77ba37 100644
+--- a/lustre/lov/lov_cl_internal.h
++++ b/lustre/lov/lov_cl_internal.h
+@@ -126,7 +126,8 @@ static inline __u32 lov_entry_type(struct lov_stripe_md_entry *lsme)
+ 	    (lov_pattern(lsme->lsme_pattern) & LOV_PATTERN_MDT) ||
+ 	    (lov_pattern(lsme->lsme_pattern) == LOV_PATTERN_FOREIGN))
+ 		return lov_pattern(lsme->lsme_pattern &
+-			   ~(LOV_PATTERN_OVERSTRIPING | LOV_PATTERN_COMPRESS));
++			   ~(LOV_PATTERN_OVERSTRIPING | LOV_PATTERN_COMPRESS |
++			     LOV_PATTERN_ZEROSTART));
+ 	return 0;
+ }
+ 
+@@ -596,12 +597,16 @@ static inline struct lu_extent *lov_io_extent(struct lov_io *io, int i)
+ }
+ 
+ /* For layout entries within @ext. */
+-#define lov_foreach_io_layout(ind, lio, ext)				\
+-	for (ind = lov_io_layout_at(lio, (ext)->e_start);		\
++#define lov_foreach_io_layout_from(ind, lio, ext)			\
++	for (;								\
+ 	     ind >= 0 &&						\
+ 	     lu_extent_is_overlapped(lov_io_extent(lio, ind), ext);	\
+ 	     ind = lov_io_layout_at(lio, lov_io_extent(lio, ind)->e_end))
+ 
++#define lov_foreach_io_layout(ind, lio, ext)				\
++	ind = lov_io_layout_at(lio, (ext)->e_start);			\
++	lov_foreach_io_layout_from(ind, lio, ext)
++
+ /*
+  * Type conversions.
+  *
+diff --git a/lustre/lov/lov_ea.c b/lustre/lov/lov_ea.c
+index ced3e2cc34..f875dbd9cc 100644
+--- a/lustre/lov/lov_ea.c
++++ b/lustre/lov/lov_ea.c
+@@ -750,9 +750,10 @@ void dump_lsm(unsigned int level, const struct lov_stripe_md *lsm)
+ 				   (int)sizeof(lse->lsme_uuid), lse->lsme_uuid);
+ 		} else {
+ 			CDEBUG_LIMIT(level,
+-				   DEXT ": id: %u, flags: %x, magic 0x%08X, layout_gen %u, stripe count %u, sstripe size %u, pool: ["LOV_POOLNAMEF"]\n",
++				   DEXT ": id: %u, flags: %x, magic 0x%08X, layout %x layout_gen %u, stripe count %u, sstripe size %u, pool: ["LOV_POOLNAMEF"]\n",
+ 				   PEXT(&lse->lsme_extent), lse->lsme_id,
+ 				   lse->lsme_flags, lse->lsme_magic,
++				   lse->lsme_pattern,
+ 				   lse->lsme_layout_gen, lse->lsme_stripe_count,
+ 				   lse->lsme_stripe_size, lse->lsme_pool_name);
+ 			if (!lsme_inited(lse) ||
+diff --git a/lustre/lov/lov_internal.h b/lustre/lov/lov_internal.h
+index 21e83e2c36..cae14f88c7 100644
+--- a/lustre/lov/lov_internal.h
++++ b/lustre/lov/lov_internal.h
+@@ -63,6 +63,13 @@ static inline bool lsme_is_dom(struct lov_stripe_md_entry *lsme)
+ 	return (lov_pattern(lsme->lsme_pattern) & LOV_PATTERN_MDT);
+ }
+ 
++static inline bool lsme_is_zerostart(struct lov_stripe_md_entry *lsme)
++{
++	return ((lov_pattern(lsme->lsme_pattern) &
++		(LOV_PATTERN_RAID0 | LOV_PATTERN_ZEROSTART)) ==
++		(LOV_PATTERN_RAID0 | LOV_PATTERN_ZEROSTART));
++}
++
+ static inline void copy_lsm_entry(struct lov_stripe_md_entry *dst,
+ 				  struct lov_stripe_md_entry *src)
+ {
+diff --git a/lustre/lov/lov_io.c b/lustre/lov/lov_io.c
+index b5dcbac55f..4dab597f5b 100644
+--- a/lustre/lov/lov_io.c
++++ b/lustre/lov/lov_io.c
+@@ -826,6 +826,7 @@ static int lov_io_iter_init(const struct lu_env *env,
+ 	bool is_trunc = cl_io_is_trunc(ios->cis_io);
+ 	struct lov_io_sub *sub;
+ 	struct lu_extent ext;
++	struct lu_extent ext1;
+ 	int index;
+ 	int rc = 0;
+ 
+@@ -833,15 +834,41 @@ static int lov_io_iter_init(const struct lu_env *env,
+ 
+ 	ext.e_start = lio->lis_pos;
+ 	ext.e_end = lio->lis_endpos;
++	ext1 = ext;
++
++	index = lov_io_layout_at(lio, ext.e_start);
+ 
+ 	if (is_trunc) {
+-		OBD_ALLOC_PTR_ARRAY(lio->lis_trunc_stripe_index,
+-				    lio->lis_object->u.composite.lo_entry_count);
++		int i;
++		int count = lio->lis_object->u.composite.lo_entry_count;
++		struct lov_stripe_md_entry *lse = lsm->lsm_entries[index];
++
++		OBD_ALLOC_PTR_ARRAY(lio->lis_trunc_stripe_index, count);
+ 		if (lio->lis_trunc_stripe_index == NULL)
+ 			RETURN(-ENOMEM);
++
++		for (i = 0; i < count; i++)
++			lio->lis_trunc_stripe_index[i] = -1;
++
++		if (index < 0)
++			RETURN(rc);
++
++		if (lsme_is_zerostart(lse)) {
++			if ((index > 0) &&
++			    (ext.e_start == lse->lsme_extent.e_start)) {
++				index--;
++				/* which stripe holds an previous offset in the
++				 * previous component
++				 */
++				ext1.e_start--;
++				lio->lis_trunc_stripe_index[index] =
++					lov_stripe_number(lsm, index,
++							  ext1.e_start);
++			}
++		}
+ 	}
+ 
+-	lov_foreach_io_layout(index, lio, &ext) {
++	lov_foreach_io_layout_from(index, lio, &ext1) {
+ 		struct lov_layout_entry *le = lov_entry(lio->lis_object, index);
+ 		struct lov_layout_raid0 *r0 = &le->lle_raid0;
+ 		u64 start;
+@@ -849,9 +876,6 @@ static int lov_io_iter_init(const struct lu_env *env,
+ 		int stripe;
+ 		bool tested_trunc_stripe = false;
+ 
+-		if (is_trunc)
+-			lio->lis_trunc_stripe_index[index] = -1;
+-
+ 		CDEBUG(D_VFSTRACE, "component[%d] flags %#x\n",
+ 		       index, lsm->lsm_entries[index]->lsme_flags);
+ 		if (!lsm_entry_inited(lsm, index)) {
+@@ -2063,7 +2087,7 @@ int lov_io_layout_at(struct lov_io *lio, __u64 offset)
+ 
+ 	/* This is actual file offset so nothing can cover eof. */
+ 	if (offset == LUSTRE_EOF)
+-		return -1;
++		RETURN(-1);
+ 
+ 	if (lov_is_flr(lov)) {
+ 		struct lov_mirror_entry *lre;
+@@ -2079,15 +2103,14 @@ int lov_io_layout_at(struct lov_io *lio, __u64 offset)
+ 		struct lov_layout_entry *lle = lov_entry(lov, i);
+ 
+ 		LASSERT(!lsme_is_foreign(lle->lle_lsme));
+-
+ 		if ((offset >= lle->lle_extent->e_start &&
+ 		     offset < lle->lle_extent->e_end) ||
+ 		    (offset == OBD_OBJECT_EOF &&
+ 		     lle->lle_extent->e_end == OBD_OBJECT_EOF))
+-			return i;
++			RETURN(i);
+ 	}
+ 
+-	return -1;
++	RETURN(-1);
+ }
+ 
+ /** @} lov */
+diff --git a/lustre/lov/lov_offset.c b/lustre/lov/lov_offset.c
+index 7360aeab26..c68d3834da 100644
+--- a/lustre/lov/lov_offset.c
++++ b/lustre/lov/lov_offset.c
+@@ -1,4 +1,3 @@
+-// SPDX-License-Identifier: GPL-2.0
+ 
+ /*
+  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+@@ -33,7 +32,8 @@ u64 stripe_width(struct lov_stripe_md *lsm, unsigned int index)
+ u64 lov_stripe_size(struct lov_stripe_md *lsm, int index, u64 ost_size,
+ 		    int stripeno)
+ {
+-	u64 ssize = lsm->lsm_entries[index]->lsme_stripe_size;
++	struct lov_stripe_md_entry *lse = lsm->lsm_entries[index];
++	u64 ssize = lse->lsme_stripe_size;
+ 	u32 stripe_size;
+ 	u64 swidth;
+ 	u64 lov_size;
+@@ -51,6 +51,9 @@ u64 lov_stripe_size(struct lov_stripe_md *lsm, int index, u64 ost_size,
+ 	else
+ 		lov_size = (ost_size - 1) * swidth + (stripeno + 1) * ssize;
+ 
++	if (lsme_is_zerostart(lse))
++		lov_size += lse->lsme_extent.e_start;
++
+ 	RETURN(lov_size);
+ }
+ 
+@@ -121,17 +124,21 @@ pgoff_t lov_stripe_pgoff(struct lov_stripe_md *lsm, int index,
+ int lov_stripe_offset(struct lov_stripe_md *lsm, int index, loff_t lov_off,
+ 		      int stripeno, loff_t *obdoff)
+ {
+-	unsigned long ssize  = lsm->lsm_entries[index]->lsme_stripe_size;
++	struct lov_stripe_md_entry *lse = lsm->lsm_entries[index];
++	unsigned long ssize = lse->lsme_stripe_size;
+ 	u64 stripe_off, this_stripe, swidth;
+ 	int ret = 0;
+ 
+ 	if (lov_off == OBD_OBJECT_EOF) {
+ 		*obdoff = OBD_OBJECT_EOF;
+-		return 0;
++		RETURN(0);
+ 	}
+ 
+ 	swidth = stripe_width(lsm, index);
+ 
++	if (lsme_is_zerostart(lse))
++		lov_off -= lse->lsme_extent.e_start;
++
+ 	lov_off = div64_u64_rem(lov_off, swidth, &stripe_off);
+ 
+ 	this_stripe = (u64)stripeno * ssize;
+@@ -148,7 +155,7 @@ int lov_stripe_offset(struct lov_stripe_md *lsm, int index, loff_t lov_off,
+ 	}
+ 
+ 	*obdoff = lov_off * ssize + stripe_off;
+-	return ret;
++	RETURN(ret);
+ }
+ 
+ /*
+@@ -187,6 +194,9 @@ loff_t lov_size_to_stripe(struct lov_stripe_md *lsm, int index, u64 file_size,
+ 	if (file_size < comp_start)
+ 		return 0;
+ 
++	if (lsme_is_zerostart(lse))
++		file_size -= comp_start;
++
+ 	swidth = stripe_width(lsm, index);
+ 
+ 	file_size = div64_u64_rem(file_size, swidth, &stripe_off);
+@@ -273,12 +283,16 @@ int lov_stripe_intersects(struct lov_stripe_md *lsm, int index, int stripeno,
+ /* compute which stripe number "lov_off" will be written into */
+ int lov_stripe_number(struct lov_stripe_md *lsm, int index, u64 lov_off)
+ {
+-	unsigned long ssize = lsm->lsm_entries[index]->lsme_stripe_size;
++	struct lov_stripe_md_entry *lse = lsm->lsm_entries[index];
++	unsigned long ssize = lse->lsme_stripe_size;
+ 	u64 stripe_off;
+ 	u64 swidth;
+ 
+ 	swidth = stripe_width(lsm, index);
+ 
++	if (lsme_is_zerostart(lse))
++		lov_off -= lse->lsme_extent.e_start;
++
+ 	lov_off = div64_u64_rem(lov_off, swidth, &stripe_off);
+ 
+ 	/* Puts stripe_off/ssize result into stripe_off */
+diff --git a/lustre/osc/osc_cache.c b/lustre/osc/osc_cache.c
+index aff67cf855..cbdc11ad1e 100644
+--- a/lustre/osc/osc_cache.c
++++ b/lustre/osc/osc_cache.c
+@@ -676,7 +676,8 @@ static struct osc_extent *osc_extent_find(const struct lu_env *env,
+ 		RETURN(ERR_PTR(-ENOMEM));
+ 
+ 	olck = osc_env_io(env)->oi_write_osclock;
+-	LASSERTF(olck != NULL, "page %lu is not covered by lock\n", index);
++	LASSERTF(olck != NULL, "io %px page %lu is not covered by lock\n",
++		 osc_env_io(env), index);
+ 	LASSERT(olck->ols_state == OLS_GRANTED);
+ 
+ 	descr = &olck->ols_cl.cls_lock->cll_descr;
+diff --git a/lustre/osc/osc_lock.c b/lustre/osc/osc_lock.c
+index 237d20c1c1..b55d997984 100644
+--- a/lustre/osc/osc_lock.c
++++ b/lustre/osc/osc_lock.c
+@@ -1156,6 +1156,7 @@ void osc_lock_set_writer(const struct lu_env *env, const struct cl_io *io,
+ 	struct cl_lock_descr *descr = &oscl->ols_cl.cls_lock->cll_descr;
+ 	pgoff_t io_start;
+ 	pgoff_t io_end;
++	struct osc_io *oio = osc_env_io(env);
+ 
+ 	if (!cl_object_same(io->ci_obj, obj))
+ 		return;
+@@ -1172,7 +1173,6 @@ void osc_lock_set_writer(const struct lu_env *env, const struct cl_io *io,
+ 	if (descr->cld_mode >= CLM_WRITE &&
+ 	    (cl_io_is_append(io) ||
+ 	     (descr->cld_start <= io_start && descr->cld_end >= io_end))) {
+-		struct osc_io *oio = osc_env_io(env);
+ 
+ 		/* There must be only one lock to match the write region */
+ 		LASSERT(oio->oi_write_osclock == NULL);
+diff --git a/lustre/tests/Makefile.am b/lustre/tests/Makefile.am
+index 9ededb0b35..de98c0b3d0 100644
+--- a/lustre/tests/Makefile.am
++++ b/lustre/tests/Makefile.am
+@@ -40,6 +40,7 @@ noinst_SCRIPTS += posix.sh sanity-scrub.sh scrub-performance.sh ha.sh pjdfstest.
+ noinst_SCRIPTS += sanity-lfsck.sh lfsck-performance.sh
+ noinst_SCRIPTS += sanity-hsm.sh sanity-lsnapshot.sh sanity-pfl.sh sanity-flr.sh
+ noinst_SCRIPTS += sanity-dom.sh sanity-pcc.sh dom-performance.sh sanity-lnet.sh
++noinst_SCRIPTS += sanity-zero.sh
+ nobase_noinst_SCRIPTS = cfg/local.sh
+ nobase_noinst_SCRIPTS += test-groups/regression test-groups/regression-mpi
+ nobase_noinst_SCRIPTS += acl/make-tree acl/run cfg/ncli.sh
+diff --git a/lustre/tests/sanity-zero.sh b/lustre/tests/sanity-zero.sh
+new file mode 100644
+index 0000000000..543aec5521
+--- /dev/null
++++ b/lustre/tests/sanity-zero.sh
+@@ -0,0 +1,362 @@
++#!/bin/bash
++# SPDX-License-Identifier: GPL-2.0
++#
++# Run select tests by setting ONLY, or as arguments to the script.
++# Skip specific tests by setting EXCEPT.
++#
++
++set -e
++
++ONLY=${ONLY:-"$*"}
++
++LUSTRE=${LUSTRE:-$(dirname $0)/..}
++. $LUSTRE/tests/test-framework.sh
++init_test_env "$@"
++init_logging
++
++# bug number for skipped test:
++ALWAYS_EXCEPT="$SANITY_ZERO_EXCEPT"
++# UPDATE THE COMMENT ABOVE WITH BUG NUMBERS WHEN CHANGING ALWAYS_EXCEPT!
++
++build_test_filter
++
++MOUNT_2=${MOUNT_2:-"yes"}
++FAIL_ON_ERROR=false
++DOM_SIZE=${DOM_SIZE:-"$((1024*1024))"}
++
++
++check_and_setup_lustre
++
++# $RUNAS_ID may get set incorrectly somewhere else
++if [[ $UID -eq 0 && $RUNAS_ID -eq 0 ]]; then
++	skip_env "\$RUNAS_ID set to 0, but \$UID is also 0!" && exit
++fi
++check_runas_id $RUNAS_ID $RUNAS_GID $RUNAS
++
++
++mkdir -p $MOUNT2
++mount_client $MOUNT2
++
++test_1()
++{
++	local sz
++	local sz_new
++
++	stack_trap "rm -f $DIR/$tfile*" EXIT
++
++	rm -f $DIR/$tfile
++	$LFS setstripe -E 10M -Z -c2 -E EOF -Z -C 4  $DIR1/$tfile
++	dd if=/dev/zero of=$DIR/$tfile bs=1M count=8 oflag=sync
++
++	sz=$((10 * 1024 * 1024))
++	/bin/truncate -s $sz $DIR/$tfile
++	sz_new=$(stat -c "%s" $DIR/$tfile)
++	[ $sz -ne $sz_new ] && error "bad size $sz_new"
++
++	return 0
++}
++run_test 1 "right size after truncate UP to component boundary"
++
++test_2()
++{
++	local sz
++	local sz_new
++
++	stack_trap "rm -f $DIR/$tfile" EXIT
++
++	rm -f $DIR/$tfile
++	$LFS setstripe -E 10M -Z -c2 -E EOF -Z -C 4  $DIR1/$tfile
++
++	dd if=/dev/zero of=$DIR/$tfile bs=1M count=20 oflag=sync
++	sz=$((10 * 1024 * 1024))
++	/bin/truncate -s $sz $DIR/$tfile
++	sz_new=$(stat -c "%s" $DIR/$tfile)
++	[ $sz -ne $sz_new ] && error "bad size $sz_new"
++
++	return 0
++}
++run_test 2 "right size after truncate DOWN to stripe boundary"
++
++# copy-paste sanity :: 272
++test_3a() {
++	[ $MDS1_VERSION -lt $(version_code 2.11.50) ] &&
++		skip "Need MDS version at least 2.11.50"
++
++	local dom=$DIR/$tdir/dom
++	mkdir -p $DIR/$tdir
++
++	$LFS setstripe -E 256K -L mdt -E -1 -Z  -c1 $dom
++	dd if=/dev/urandom of=$dom bs=512K count=1 ||
++		error "failed to write data into $dom"
++	local old_md5=$(md5sum $dom)
++
++	$LFS migrate -E 256K -L mdt -E -1 -Z -c2 $dom ||
++		error "failed to migrate to the same DoM component"
++
++	local new_md5=$(md5sum $dom)
++
++	[ "$old_md5" == "$new_md5" ] ||
++		error "md5sum differ: $old_md5, $new_md5"
++
++	[ $($LFS getstripe -c $dom) -eq 2 ] ||
++		error "bad final stripe count: $($LFS getstripe -c $dom) != 2"
++}
++run_test 3a "DoM migration: new layout with the same DOM component"
++
++test_3b() {
++	[ $MDS1_VERSION -lt $(version_code 2.11.50) ] &&
++		skip "Need MDS version at least 2.11.50"
++
++	local dom=$DIR/$tdir/dom
++	mkdir -p $DIR/$tdir
++	$LFS setstripe -E 1M -L mdt -E -1 -Z -c1 $dom
++	stack_trap "rm -rf $DIR/$tdir"
++
++	local mdtidx=$($LFS getstripe -m $dom)
++	local mdtname=MDT$(printf %04x $mdtidx)
++	local facet=mds$((mdtidx + 1))
++
++	local mdtfree1=$(do_facet $facet \
++		lctl get_param -n osd*.*$mdtname.kbytesfree)
++	dd if=/dev/urandom of=$dom bs=2M count=1 ||
++		error "failed to write data into $dom"
++	local old_md5=$(md5sum $dom)
++	cancel_lru_locks mdc
++	local mdtfree1=$(do_facet $facet \
++		lctl get_param -n osd*.*$mdtname.kbytesfree)
++
++	$LFS migrate -Z -c2 $dom ||
++		error "failed to migrate to the new composite layout"
++	[[ $($LFS getstripe --component-start=0 -L $dom) != 'mdt' ]] ||
++		error "MDT stripe was not removed"
++	! getfattr -n trusted.dataver $dom &> /dev/null ||
++		error "$dir1 shouldn't have DATAVER EA"
++
++	cancel_lru_locks mdc
++	local new_md5=$(md5sum $dom)
++	[ "$old_md5" == "$new_md5" ] ||
++		error "$old_md5 != $new_md5"
++
++	# Skip free space checks with ZFS
++	if [ "$(facet_fstype $facet)" != "zfs" ]; then
++		local mdtfree2=$(do_facet $facet \
++				lctl get_param -n osd*.*$mdtname.kbytesfree)
++		[ $mdtfree2 -gt $mdtfree1 ] ||
++			error "MDT space is not freed after migration"
++	fi
++	return 0
++}
++run_test 3b "DoM migration: DOM file to the OST-striped file (plain)"
++
++test_3c() {
++	[ $MDS1_VERSION -lt $(version_code 2.11.50) ] &&
++		skip "Need MDS version at least 2.11.50"
++
++	local dom=$DIR/$tdir/$tfile
++	mkdir -p $DIR/$tdir
++	$LFS setstripe -E 1M -L mdt -E -1 -Z -c1 $dom
++	stack_trap "rm -rf $DIR/$tdir"
++
++	local mdtidx=$($LFS getstripe -m $dom)
++	local mdtname=MDT$(printf %04x $mdtidx)
++	local facet=mds$((mdtidx + 1))
++
++	dd if=/dev/urandom of=$dom bs=2M count=1 oflag=direct ||
++		error "failed to write data into $dom"
++	local old_md5=$(md5sum $dom)
++	cancel_lru_locks mdc
++	local mdtfree1=$(do_facet $facet \
++		lctl get_param -n osd*.*$mdtname.kbytesfree)
++
++	$LFS migrate -E 2M -Z -c1 -E -1 -Z -c2 $dom ||
++		error "failed to migrate to the new composite layout"
++	[[ $($LFS getstripe --component-start=0 -L $dom) != 'mdt' ]] ||
++		error "MDT stripe was not removed"
++
++	cancel_lru_locks mdc
++	local new_md5=$(md5sum $dom)
++	[ "$old_md5" == "$new_md5" ] ||
++		error "$old_md5 != $new_md5"
++
++	# Skip free space checks with ZFS
++	if [ "$(facet_fstype $facet)" != "zfs" ]; then
++		local mdtfree2=$(do_facet $facet \
++				lctl get_param -n osd*.*$mdtname.kbytesfree)
++		[ $mdtfree2 -gt $mdtfree1 ] ||
++			error "MDS space is not freed after migration"
++	fi
++	return 0
++}
++run_test 3c "DoM migration: DOM file to the OST-striped file (composite)"
++
++test_3d() {
++	[ $MDS1_VERSION -lt $(version_code 2.12.55) ] &&
++		skip "Need MDS version at least 2.12.55"
++
++	local dom=$DIR/$tdir/$tfile
++	mkdir -p $DIR/$tdir
++	$LFS setstripe -E 1M -L mdt -E -1 -Z -c1 $dom
++	stack_trap "rm -f $dom"
++
++	local mdtidx=$($LFS getstripe -m $dom)
++	local mdtname=MDT$(printf %04x $mdtidx)
++	local facet=mds$((mdtidx + 1))
++
++	dd if=/dev/urandom of=$dom bs=2M count=1 oflag=direct ||
++		error "failed to write data into $dom"
++	local old_md5=$(md5sum $dom)
++	cancel_lru_locks mdc
++	local mdtfree1=$(do_facet $facet \
++		lctl get_param -n osd*.*$mdtname.kbytesfree)
++
++	$LFS mirror extend -N -E 2M -Z -c1 -E -1 -Z -c2 $dom ||
++		error "failed mirroring to the new composite layout"
++	$LFS mirror resync $dom ||
++		error "failed mirror resync"
++	$LFS mirror split --mirror-id 1 -d $dom ||
++		error "failed mirror split"
++
++	[ $($LFS getstripe -L $dom) != 'mdt' ] ||
++		error "MDT stripe was not removed"
++
++	cancel_lru_locks mdc
++	local new_md5=$(md5sum $dom)
++	[ "$old_md5" == "$new_md5" ] ||
++		error "$old_md5 != $new_md5"
++
++	# Skip free space checks with ZFS
++	if [ "$(facet_fstype $facet)" != "zfs" ]; then
++		local mdtfree2=$(do_facet $facet \
++				lctl get_param -n osd*.*$mdtname.kbytesfree)
++		[ $mdtfree2 -gt $mdtfree1 ] ||
++			error "MDS space is not freed after DOM mirror deletion"
++	fi
++	return 0
++}
++run_test 3d "DoM mirroring: OST-striped mirror to DOM file"
++
++test_3e() {
++	[ $MDS1_VERSION -lt $(version_code 2.12.55) ] &&
++		skip "Need MDS version at least 2.12.55"
++
++	local dom=$DIR/$tdir/$tfile
++	mkdir -p $DIR/$tdir
++	$LFS setstripe -c 2 $dom
++	stack_trap "rm -f $dom"
++
++	dd if=/dev/urandom of=$dom bs=2M count=1 oflag=direct ||
++		error "failed to write data into $dom"
++	local old_md5=$(md5sum $dom)
++	cancel_lru_locks
++
++	$LFS mirror extend -N -E 1M -L mdt -E eof -Z -c2 $dom ||
++		error "failed mirroring to the DOM layout"
++	$LFS mirror resync $dom ||
++		error "failed mirror resync"
++	$LFS mirror split --mirror-id 1 -d $dom ||
++		error "failed mirror split"
++
++	[[ $($LFS getstripe -L --component-start=0 $dom) == 'mdt' ]] ||
++		error "MDT stripe wasn't set"
++
++	cancel_lru_locks
++	local new_md5=$(md5sum $dom)
++	[ "$old_md5" == "$new_md5" ] ||
++		error "$old_md5 != $new_md5"
++
++	return 0
++}
++run_test 3e "DoM mirroring: DOM mirror to the OST-striped file"
++
++test_3f() {
++	[ $MDS1_VERSION -lt $(version_code 2.12.55) ] &&
++		skip "Need MDS version at least 2.12.55"
++
++	local dom=$DIR/$tdir/$tfile
++	mkdir -p $DIR/$tdir
++	$LFS setstripe -c 2 $dom
++	stack_trap "rm -f $dom"
++
++	dd if=/dev/urandom of=$dom bs=2M count=1 oflag=direct ||
++		error "failed to write data into $dom"
++	local old_md5=$(md5sum $dom)
++	cancel_lru_locks
++
++	$LFS migrate -E 1M -L mdt -E eof -Z -c2 -v $dom ||
++		error "failed migrating to the DOM file"
++
++	[[ $($LFS getstripe -L --component-start=0 $dom) == 'mdt' ]] ||
++		error "MDT stripe wasn't set"
++
++	cancel_lru_locks
++	local new_md5=$(md5sum $dom)
++	[ "$old_md5" != "$new_md5" ] &&
++		error "$old_md5 != $new_md5"
++
++	return 0
++}
++run_test 3f "DoM migration: OST-striped file to DOM file"
++
++test_fsx() {
++	local file1=$DIR1/$tfile
++	local file2=$DIR2/$tfile
++
++	save_layout_restore_at_exit $DIR1
++	$LFS setstripe -E 10M -Z -c2 -E EOF -Z -C 4  $DIR1
++	check_set_fallocate
++
++	touch $file1
++	touch $file2
++	$FSX -c 50 -p 100 -N 1000 -l $((40960*256)) -S 0 -d -d $file1 $file2
++}
++run_test fsx "Dual-mount fsx with zero offset files"
++
++test_sanity()
++{
++	local testlist="36 39 40 41 42d 42e 43 46 56r 101e 119a \
++			131 150a 155a 155b 155c 155d 207 241 251"
++
++	# Fallocate tests
++	(( $MDS1_VERSION >= $(version_code 2.14.52) )) &&
++		testlist+=" 150b 150bb 150c 150d 150f 150g"
++
++	SANITY_ONLY=${SANITY_ONLY:-$testlist}
++	SANITY_REPEAT=${SANITY_REPEAT:-1}
++	# XXX: to fix 45. Add 42a, c when LU-9693 fixed.
++	# Add 42b when LU-6493 fixed
++	save_layout_restore_at_exit $DIR1
++	$LFS setstripe -E 10M -Z -c2 -S 2M -E EOF -Z -C 2 -S 2M  $DIR1
++
++	ONLY=$SANITY_ONLY ONLY_REPEAT=$SANITY_REPEAT bash sanity.sh
++
++	return 0
++}
++run_test sanity "Run sanity with zero offset files"
++
++test_sanityn()
++{
++	local testlist="1 2 4 5 6 7 8 9 10 11 12 14 17 19 20 \
++			23 27 39 51a 51c 51d"
++
++	if [[ $MDS1_VERSION -ge $(version_code 2.13.55) ]]; then
++		testlist+=" 107"
++	fi
++
++	SANITYN_ONLY=${SANITYN_ONLY:-$testlist}
++	SANITYN_REPEAT=${SANITYN_REPEAT:-1}
++	# XXX: to fix 60
++
++	save_layout_restore_at_exit $DIR1
++	$LFS setstripe -E 10M -Z -c2 -S 2M -E EOF -Z -C 4 -S 2M  $DIR1
++
++	ONLY=$SANITYN_ONLY ONLY_REPEAT=$SANITYN_REPEAT bash sanityn.sh
++
++	return 0
++}
++run_test sanityn "Run sanityn with zero offset files"
++
++complete_test $SECONDS
++check_and_cleanup_lustre
++declare -a logs=($ONLY)
++logs=("${logs[@]/#/$TMP/}")
++exit_status "$(echo "${logs[@]/%/.log}")"
+diff --git a/lustre/utils/lfs.c b/lustre/utils/lfs.c
+index 9a0b830640..aa4fc7dd3b 100644
+--- a/lustre/utils/lfs.c
++++ b/lustre/utils/lfs.c
+@@ -3058,7 +3058,8 @@ new_comp:
+ 		}
+ 		/* Data-on-MDT component has always single stripe up to end */
+ 		lsa->lsa_stripe_size = lsa->lsa_comp_end;
+-	} else if (lsa->lsa_pattern == LLAPI_LAYOUT_OVERSTRIPING) {
++	} else if (lsa->lsa_pattern == LLAPI_LAYOUT_OVERSTRIPING ||
++		   lsa->lsa_pattern == LLAPI_LAYOUT_ZEROSTART) {
+ 		rc = llapi_layout_pattern_set(layout, lsa->lsa_pattern);
+ 		if (rc) {
+ 			fprintf(stderr, "Set stripe pattern %#llx failed. %s\n",
+@@ -3853,6 +3854,7 @@ static int lfs_setstripe_internal(int argc, char **argv,
+ 	{ .val = 'z',   .name = "ext-size",	.has_arg = required_argument},
+ 	{ .val = 'z',   .name = "extension-size", .has_arg = required_argument},
+ 	{ .val = LFS_MIGRATE_NOFIX, .name = "clear-fixed", .has_arg = no_argument},
++	{ .val = 'Z',	.name = "zero-start",	.has_arg = no_argument},
+ 	{ .name = NULL } };
+ 
+ 	setstripe_args_init(&lsa);
+@@ -3879,7 +3881,7 @@ static int lfs_setstripe_internal(int argc, char **argv,
+ 	}
+ 
+ 	while ((c = getopt_long(argc, argv,
+-				"0bc:C:dDE:f:FhH:i:I:m:N::no:p:L:s:S:vx:W:y:z:",
++				"0bc:C:dDE:f:FhH:i:I:m:N::no:p:L:s:S:vx:W:y:z:Z",
+ 				long_opts, NULL)) >= 0) {
+ 		size_units = 1;
+ 		switch (c) {
+@@ -4064,7 +4066,9 @@ static int lfs_setstripe_internal(int argc, char **argv,
+ 				goto usage_error;
+ 			}
+ 			overstriped = true;
+-			lsa.lsa_pattern = LLAPI_LAYOUT_OVERSTRIPING;
++			/** zero offset supports overstripe */
++			if (lsa.lsa_pattern == LLAPI_LAYOUT_RAID0)
++				lsa.lsa_pattern = LLAPI_LAYOUT_OVERSTRIPING;
+ 			fallthrough;
+ 		case 'c':
+ 			errno = 0;
+@@ -4452,6 +4456,17 @@ create_mirror:
+ 
+ 			lsa.lsa_extension_comp = true;
+ 			break;
++		case 'Z':
++			errno = 0;
++			if ((lsa.lsa_pattern == LLAPI_LAYOUT_RAID0) ||
++			    (lsa.lsa_pattern == LLAPI_LAYOUT_OVERSTRIPING)) {
++				lsa.lsa_pattern = LLAPI_LAYOUT_ZEROSTART;
++				break;
++			} else {
++				fprintf(stderr, "layout %llx can't converted "
++					"to zerooffset\n", lsa.lsa_pattern);
++				goto usage_error;
++			}
+ 		default:
+ 			fprintf(stderr, "%s: unrecognized option '%s'\n",
+ 				progname, argv[optind - 1]);
+diff --git a/lustre/utils/liblustreapi_layout.c b/lustre/utils/liblustreapi_layout.c
+index cbcc8b2c03..bf6875acd4 100644
+--- a/lustre/utils/liblustreapi_layout.c
++++ b/lustre/utils/liblustreapi_layout.c
+@@ -658,6 +658,9 @@ struct llapi_layout *llapi_layout_get_by_xattr(void *lov_xattr,
+ 
+ 		if (v1->lmm_pattern == LOV_PATTERN_RAID0)
+ 			comp->llc_pattern = LLAPI_LAYOUT_RAID0;
++		else if (v1->lmm_pattern == (LOV_PATTERN_RAID0 |
++					 LOV_PATTERN_ZEROSTART))
++			comp->llc_pattern = LLAPI_LAYOUT_ZEROSTART;
+ 		else if (v1->lmm_pattern == (LOV_PATTERN_RAID0 |
+ 					 LOV_PATTERN_OVERSTRIPING))
+ 			comp->llc_pattern = LLAPI_LAYOUT_OVERSTRIPING;
+@@ -801,6 +804,9 @@ enum lov_pattern llapi_pattern_to_lov(uint64_t llapi_pattern)
+ 	case LLAPI_LAYOUT_OVERSTRIPING:
+ 		lov_pattern = LOV_PATTERN_OVERSTRIPING | LOV_PATTERN_RAID0;
+ 		break;
++	case LLAPI_LAYOUT_ZEROSTART:
++		lov_pattern = LOV_PATTERN_ZEROSTART | LOV_PATTERN_RAID0;
++		break;
+ 	default:
+ 		lov_pattern = EINVAL;
+ 	}
+@@ -1604,9 +1610,11 @@ int llapi_layout_pattern_set(struct llapi_layout *layout, uint64_t pattern)
+ 		return -1;
+ 
+ 	if (pattern != LLAPI_LAYOUT_DEFAULT &&
+-	    pattern != LLAPI_LAYOUT_RAID0 && pattern != LLAPI_LAYOUT_MDT
+-	    && pattern != LLAPI_LAYOUT_OVERSTRIPING &&
+-	    pattern != LLAPI_LAYOUT_FOREIGN) {
++	    pattern != LLAPI_LAYOUT_RAID0 &&
++	    pattern != LLAPI_LAYOUT_MDT &&
++	    pattern != LLAPI_LAYOUT_OVERSTRIPING &&
++	    pattern != LLAPI_LAYOUT_FOREIGN &&
++	    pattern != LLAPI_LAYOUT_ZEROSTART) {
+ 		errno = EOPNOTSUPP;
+ 		return -1;
+ 	}
+@@ -2023,6 +2031,7 @@ static struct {
+ 	{ LOV_PATTERN_F_HOLE,		"hole" },
+ 	{ LOV_PATTERN_F_RELEASED,	"released" },
+ 	{ LOV_PATTERN_DEFAULT,		"default" },
++	{ LOV_PATTERN_ZEROSTART,	"zerostart" },
+ 	{ 0, NULL }
+ };
+ 
+diff --git a/lustre/utils/wirecheck.c b/lustre/utils/wirecheck.c
+index 7a12d12c3d..6132af25e1 100644
+--- a/lustre/utils/wirecheck.c
++++ b/lustre/utils/wirecheck.c
+@@ -865,6 +865,7 @@ check_lov_mds_md_v3(void)
+ 	CHECK_VALUE_X(LOV_PATTERN_PARITY);
+ 	CHECK_VALUE_X(LOV_PATTERN_MDT);
+ 	CHECK_VALUE_X(LOV_PATTERN_OVERSTRIPING);
++	CHECK_VALUE_X(LOV_PATTERN_ZEROSTART);
+ }
+ 
+ static void
