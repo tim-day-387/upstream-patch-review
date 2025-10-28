@@ -1,0 +1,642 @@
+From 37fc91931e648076499af2e2a92c49767bc96d72 Mon Sep 17 00:00:00 2001
+From: Andreas Dilger <adilger@whamcloud.com>
+Date: Thu, 24 Apr 2025 21:31:51 -0600
+Subject: [PATCH 1/1] LU-18951 utils: lctl lcfg_erase erase fsname params
+
+When the "lctl lcfg_erase" command erases the filesystem
+configuration logs, it should also erase the persistent
+"lctl set_param" parameters for that filesystem from the MGS.
+
+Fix snapshot_create() and snapshot_destroy() to have a proper
+NULL-terminated argv[] array.  Previously, it only checked
+argc, and was not using getopt_long() so it didn't crash.
+
+Fix netlink YAML processing when running on a system without it.
+
+Add a missing unmountmds() helper function to test-framework.sh.
+Add conf-sanity.sh test_250 to test this.
+
+Test-Parameters: testlist=conf-sanity env=ONLY=250,ONLY_REPEAT=100 fstype=zfs
+Fixes: ba0d5ffc1c ("LU-9680 utils: new llapi_param_display_value().")
+Fixes: 86ba46c244 ("LU-9680 obdclass: user netlink to collect devices information")
+Fixes: d73849a05e ("LU-8900 snapshot: user space snapshot tools")
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+Change-Id: I237a4f6906dabd64aa2106b6917e9660a959fd72
+---
+ lustre/doc/lctl-lcfg_erase.8   |  42 +++++++-
+ lustre/tests/conf-sanity.sh    |  53 +++++++++
+ lustre/tests/test-framework.sh |  84 +++++++++------
+ lustre/utils/lctl.c            |   6 +-
+ lustre/utils/lsnapshot.c       |  18 ++--
+ lustre/utils/lustre_cfg.c      |   2 +-
+ lustre/utils/obd.c             | 190 ++++++++++++++++++++++++++++-----
+ 7 files changed, 314 insertions(+), 81 deletions(-)
+
+diff --git a/lustre/doc/lctl-lcfg_erase.8 b/lustre/doc/lctl-lcfg_erase.8
+index 41c88b485c..6712208f96 100644
+--- a/lustre/doc/lctl-lcfg_erase.8
++++ b/lustre/doc/lctl-lcfg_erase.8
+@@ -1,8 +1,8 @@
+-.TH LCTL-LCFG_ERASE 8 2024-08-13 Lustre "Lustre Configuration Utilities"
++.TH LCTL-LCFG_ERASE 8 2025-04-24 Lustre "Lustre Configuration Utilities"
+ .SH NAME
+ lctl-lcfg_erase \- erase filesystem config llog
+ .SH SYNOPSIS
+-.SY "lctl lcfg_erase"
++.SY "lctl [-h|\-\-help] [-q|\-\-quiet] lcfg_erase"
+ .I FSNAME
+ .YS
+ .SH DESCRIPTION
+@@ -13,9 +13,40 @@ permanently erases the configuration for the filesystem named
+ .IR FSNAME .
+ The MGS should be mounted when this command is run. It can be used to
+ remove the backup configuration or delete inactive filesystem (or snapshot)
+-from a shared MGS. To see the available configuration logs, use
+-.B lctl
+-.BR llog_catlist .
++from a shared MGS.
++It will also erase the persistent parameters that contain
++.I FSNAME
++in their name from the
++.B params
++configuration log.
++This command must be run on the MGS node with the MGS device mounted.
++.SH OPTIONS
++.TP
++.BR \-h ", " \-\-help
++Show a brief usage message.
++.TP
++.BR \-q ", " \-\-quiet
++Suppress informational messages about erased parameters.
++.SH EXAMPLES
++To erase all configuration logs and persistent params for filesystem
++.BR testfs ,
++including parameters like
++.BR mdt.testfs-MDT0000.hsm_control .
++.RS
++.EX
++.B # lctl lcfg_erase testfs
++.EE
++.RE
++.PP
++To check the available configuration logs and configuration parameters that
++will be erased, run the following commands on the MGS node:
++.EX
++.RS
++.B # lctl llog_catlist | grep testfs
++.br
++.B # lctl llog_print params | grep testfs
++.RE
++.EE
+ .SH AVAILABILITY
+ .B lctl-lcfg_erase
+ is part of the
+@@ -27,5 +58,6 @@ filesystem package since release 2.10.0
+ .BR lctl-lcfg_clear (8),
+ .BR lctl-lcfg_fork (8),
+ .BR lctl-llog_catlist (8),
++.BR lctl-llog_print (8),
+ .BR lctl-snapshot-create (8),
+ .BR lctl-snapshot-destroy (8)
+diff --git a/lustre/tests/conf-sanity.sh b/lustre/tests/conf-sanity.sh
+index 5a42388945..3aa0bb5ae0 100755
+--- a/lustre/tests/conf-sanity.sh
++++ b/lustre/tests/conf-sanity.sh
+@@ -12639,6 +12639,59 @@ test_200e() {
+ }
+ run_test 200e "set CPU pattern using relative core exclusion"
+ 
++test_250() {
++	export FSNAME=tst250fs
++	(( $MGS_VERSION >= $(version_code 2.16.54.86) )) ||
++		skip "need MGS >= 2.16.54.86 to erase FSNAME params"
++
++	# Set up a new filesystem
++	formatall || error "Failed to format filesystem"
++	stack_trap "stopall; export FSNAME=$FSNAME; formatall"
++
++	mountmgs || error "Failed to mount MGS"
++	mountmds || error "Failed to mount MDS"
++	mountoss || error "Failed to mount OST"
++
++	do_facet mgs $LCTL llog_catlist
++
++	# Set some test parameters that include the fsname
++	do_facet mgs $LCTL set_param -P osc.$FSNAME-*.max_rpcs_in_flight=16 ||
++		error "Failed to set OSC parameter"
++	do_facet mgs $LCTL set_param -P mdt.$FSNAME-*.enable_pin_gid=-1 ||
++		error "Failed to set MDT parameter"
++	do_facet mgs $LCTL set_param -P llite.$FSNAME-*.max_read_ahead_mb=32 ||
++		error "Failed to set llite parameter"
++	# Set a parameter that does not include the fsname
++	do_facet mgs $LCTL set_param -P osc.*.max_dirty_mb=512 ||
++		error "Failed to set OSC parameter"
++
++	# Verify parameters were set
++	local params=$(do_facet mgs $LCTL llog_print params)
++	[[ -n "$params" ]] || error "No parameters found for $FSNAME"
++	echo -e "Found parameters:\n$params"
++
++	local output=$(do_facet mgs $LCTL lcfg_erase $FSNAME 2>&1) ||
++		error "lcfg_erase failed"
++	echo -e "lcfg_erase output:\n$output"
++	[[ "$output" =~ "erased 3 parameters" ]] ||
++		error "lcfg_erase did not list erased parameters"
++	do_facet mgs "sync; sleep 5; sync"
++	do_facet mgs $LCTL llog_catlist | grep $FSNAME &&
++		error "lcfg_erase did not remove $FSNAME logs"
++
++	# Verify all parameters for $FSNAME were removed
++	params=$(do_facet mgs $LCTL llog_print params | grep $FSNAME)
++	echo -e "remaining $FSNAME params:\n$params"
++	[[ -z "$params" ]] || error "$FSNAME parameters left after lcfg_erase"
++
++	# Verify parameter not including $FSNAME was not removed
++	params=$(do_facet mgs $LCTL llog_print params)
++	echo -e "remaining params:\n$params"
++	[[ "$params" =~ "max_dirty_mb" ]] ||
++		error "Non-$FSNAME parameter 'osc.*.max_dirty_mb' removed"
++}
++run_test 250 "verify lcfg_erase removes filesystem parameters"
++
+ #
+ # (This was sanity/802a)
+ #
+diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
+index 91fa67f589..97b5d0e387 100755
+--- a/lustre/tests/test-framework.sh
++++ b/lustre/tests/test-framework.sh
+@@ -5309,20 +5309,10 @@ stopall() {
+ 	# if we use do_facet <facet> only after the facet added, but
+ 	# currently we use do_facet mds in local.sh
+ 	local num
+-	for num in `seq $MDSCOUNT`; do
+-		stop mds$num -f
+-		rm -f ${TMP}/mds${num}active
+-	done
++	unmountmds
+ 	combined_mgs_mds && rm -f $TMP/mgsactive
+-
+-	for num in `seq $OSTCOUNT`; do
+-		stop ost$num -f
+-		rm -f $TMP/ost${num}active
+-	done
+-
+-	if ! combined_mgs_mds ; then
+-		stop mgs
+-	fi
++	unmountoss
++	unmountmgs
+ 
+ 	if $SHARED_KEY; then
+ 		export SK_MOUNTED=false
+@@ -5743,6 +5733,13 @@ writeconf_all () {
+ 	return $rc
+ }
+ 
++unmountmgs() {
++	if ! combined_mgs_mds ; then
++		stop mgs -f
++		rm -f $TMP/mgsactive
++	fi
++}
++
+ mountmgs() {
+ 	if ! combined_mgs_mds ; then
+ 		start mgs $(mgsdevname) $MGS_MOUNT_OPTS
+@@ -5750,20 +5747,33 @@ mountmgs() {
+ 	fi
+ }
+ 
++unmountmds() {
++	local mdsnum
++
++	for ((mdsnum=1; mdsnum <= $MDSCOUNT; mdsnum++)); do
++		local facet=mds$mdsnum
++
++		stop $facet -f
++		rm -f $TMP/${facet}active
++	done
++}
++
+ mountmds() {
+-	local num
+-	local devname
+-	local host
+-	local varname
+-	for num in $(seq $MDSCOUNT); do
+-		devname=$(mdsdevname $num)
+-		start mds$num $devname $MDS_MOUNT_OPTS
++	local mdsnum
++
++	for ((mdsnum=1; mdsnum <= $MDSCOUNT; mdsnum++)); do
++		local devname=$(mdsdevname $mdsnum)
++		local facet=mds$mdsnum
++
++		start $facet $devname $MDS_MOUNT_OPTS
+ 
+ 		# We started mds$num, now we should set mds${num}_HOST
+ 		# and mds${num}failover_HOST variables properly if they
+ 		# are not set.
+-		host=$(facet_host mds$num)
+-		for varname in mds${num}_HOST mds${num}failover_HOST; do
++		local host=$(facet_host $facet)
++		local varname
++
++		for varname in ${facet}_HOST ${facet}failover_HOST; do
+ 			if [[ -z "${!varname}" ]]; then
+ 				eval $varname=$host
+ 			fi
+@@ -5778,28 +5788,32 @@ mountmds() {
+ }
+ 
+ unmountoss() {
+-	local num
++	local ostnum
+ 
+-	for num in $(seq $OSTCOUNT); do
+-		stop ost$num -f
+-		rm -f $TMP/ost${num}active
++	for ((ostnum=1; ostnum <= $OSTCOUNT; ostnum++)); do
++		local facet=ost$ostnum
++
++		stop $facet -f
++		rm -f $TMP/${facet}active
+ 	done
+ }
+ 
+ mountoss() {
+-	local num
+-	local devname
+-	local host
+-	local varname
+-	for num in $(seq $OSTCOUNT); do
+-		devname=$(ostdevname $num)
+-		start ost$num $devname $OST_MOUNT_OPTS
++	local ostnum
++
++	for ((ostnum=1; ostnum <= $OSTCOUNT; ostnum++)); do
++		local devname=$(ostdevname $ostnum)
++		local facet=ost$ostnum
++
++		start $facet $devname $OST_MOUNT_OPTS
+ 
+ 		# We started ost$num, now we should set ost${num}_HOST
+ 		# and ost${num}failover_HOST variables properly if they
+ 		# are not set.
+-		host=$(facet_host ost$num)
+-		for varname in ost${num}_HOST ost${num}failover_HOST; do
++		local host=$(facet_host $facet)
++		local varname
++
++		for varname in ${facet}_HOST ${facet}failover_HOST; do
+ 			if [[ -z "${!varname}" ]]; then
+ 				eval $varname=$host
+ 			fi
+diff --git a/lustre/utils/lctl.c b/lustre/utils/lctl.c
+index 534b2ecb67..d3ab06283d 100644
+--- a/lustre/utils/lctl.c
++++ b/lustre/utils/lctl.c
+@@ -751,15 +751,15 @@ command_t cmdlist[] = {
+ 	{"lcfg_clear", jt_lcfg_clear, 0,
+ 	 "drop unused config llog records for a device or filesystem.\n"
+ 	 "clients and servers must be unmounted during this operation.\n"
+-	 "usage: clear_conf {FSNAME|DEVNAME}"},
++	 "usage: lcfg_clear {FSNAME|DEVNAME}"},
+ 	{"clear_conf", jt_lcfg_clear, 0, "alias for 'lcfg_clear'\n"},
+ 	{"lcfg_fork", jt_lcfg_fork, 0,
+ 	 "copy configuration logs for named filesystem with given name\n"
+-	 "usage: fork_lcfg FSNAME NEWNAME"},
++	 "usage: lcfg_fork FSNAME NEWNAME"},
+ 	{"fork_lcfg", jt_lcfg_fork, 0, "alias for 'lcfg_fork'\n"},
+ 	{"lcfg_erase", jt_lcfg_erase, 0,
+ 	 "permanently erase configuration logs for the named filesystem\n"
+-	 "usage: erase_lcfg FSNAME"},
++	 "usage: lcfg_erase [--help] [--quiet] FSNAME"},
+ 	{"erase_lcfg", jt_lcfg_erase, 0, "alias for 'lcfg_erase'\n"},
+ #endif /* HAVE_SERVER_SUPPORT */
+ 
+diff --git a/lustre/utils/lsnapshot.c b/lustre/utils/lsnapshot.c
+index f0777f56ec..7d92cb9181 100644
+--- a/lustre/utils/lsnapshot.c
++++ b/lustre/utils/lsnapshot.c
+@@ -1366,7 +1366,7 @@ static int __snapshot_destroy(struct snapshot_instance *si,
+ 
+ static int snapshot_create(struct snapshot_instance *si)
+ {
+-	char *__argv[3];
++	char *__argv[4] = { NULL };
+ 	char buf[MAX_BUF_SIZE];
+ 	struct timeval tv;
+ 	char new_fsname[9];
+@@ -1464,8 +1464,8 @@ out:
+ 		snapshot_wait(si, &rc2);
+ 
+ 		__argv[0] = "erase_lcfg";
+-		__argv[1] = new_fsname;
+-		__argv[2] = "-q";
++		__argv[1] = "-q";
++		__argv[2] = new_fsname;
+ 		jt_lcfg_erase(3, __argv);
+ 	}
+ 
+@@ -1723,18 +1723,18 @@ static int snapshot_destroy(struct snapshot_instance *si)
+ 
+ 	/* 3. Erase config llog from MGS */
+ 	if ((!rc && !rc1 && !rc2) || si->si_force) {
+-		char *__argv[3];
++		char *__argv[4] = { NULL };
+ 
+ 		__argv[0] = "erase_lcfg";
+-		__argv[1] = fsname;
+-		__argv[2] = "-q";
++		__argv[1] = "-q";
++		__argv[2] = fsname;
+ 		rc3 = jt_lcfg_erase(3, __argv);
+ 		if (rc3 && errno == ENOENT)
+ 			rc3 = 0;
+ 		if (rc3)
+-			SNAPSHOT_ADD_LOG(si, "Can't erase config for destroy "
+-					 "snapshot %s, fsname %s: rc = %d\n",
+-					 si->si_ssname, fsname, rc3);
++			SNAPSHOT_ADD_LOG(si,
++					 "%s: cannot erase config for snapshot '%s' destroy: rc = %d\n",
++					 fsname, si->si_ssname, rc3);
+ 	}
+ 
+ 	return rc ? rc : (rc1 ? rc1 : (rc2 ? rc2 : rc3));
+diff --git a/lustre/utils/lustre_cfg.c b/lustre/utils/lustre_cfg.c
+index c36864e1b8..26e6eb784a 100644
+--- a/lustre/utils/lustre_cfg.c
++++ b/lustre/utils/lustre_cfg.c
+@@ -734,7 +734,7 @@ error:
+ 	if (rc == 0) {
+ 		yaml_emitter_log_error(&request, stderr);
+ 		yaml_emitter_cleanup(&request);
+-		rc = -EINVAL;
++		rc = -EOPNOTSUPP;
+ 		goto free_reply;
+ 	}
+ 	yaml_emitter_cleanup(&request);
+diff --git a/lustre/utils/obd.c b/lustre/utils/obd.c
+index c4b8f5369d..bddc5caa1d 100644
+--- a/lustre/utils/obd.c
++++ b/lustre/utils/obd.c
+@@ -2533,43 +2533,178 @@ int jt_lcfg_fork(int argc, char **argv)
+ 	return rc;
+ }
+ 
+-int jt_lcfg_erase(int argc, char **argv)
++static int jt_llog_print_iter(char *logname, long start, long end,
++			     int (record_cb)(const char *record, void *private),
++			     void *private, bool reverse, bool raw);
++
++struct erase_callback_data {
++	char	*ecd_fsname;
++	int	ecd_count;
++	int	ecd_error;
++	int	ecd_quiet;
++};
++
++static int erase_param_cb(const char *record, void *cb_data)
+ {
+-	struct obd_ioctl_data data;
+-	char rawbuf[MAX_IOC_BUFLEN], *buf = rawbuf;
++	struct erase_callback_data *ecd = cb_data;
++	struct obd_ioctl_data data = { 0 };
++	char rawbuf[MAX_IOC_BUFLEN] = "", *buf = rawbuf;
++	char *param_name, *end;
++	char *index;
+ 	int rc;
+ 
+-	if (argc == 3) {
+-		if (strncmp(argv[2], "-q", strlen("-q")) != 0 &&
+-		    strncmp(argv[2], "--quiet", strlen("--quiet")) != 0)
++	/* Parameter records look like:
++	 * - { index: 14, event: set_param, device: general,
++	 *     parameter: jobid_var, value: nodelocal }
++	 * - { index: 23, event: set_param, device: general,
++	 *     parameter: jobid_name, value: %H:%e:%u }
++	 * - { index: 32, event: set_param, device: general,
++	 *     parameter: osc.myth-OST*.grant_shrink_interval, value: 120 }
++	 *
++	 * Skip records that aren't set_param events
++	 */
++	if (!strstr(record, "event: set_param"))
++		return 0;
++
++	param_name = strstr(record, "parameter: ");
++	if (!param_name)
++		return 0;
++	param_name += strlen("parameter: ");
++
++	/* Find the end of the parameter name */
++	end = strstr(param_name, ",");
++	if (!end)
++		return 0;
++	*end = '\0';
++
++	/* Check if fsname appears anywhere in the parameter name */
++	if (!strstr(param_name, ecd->ecd_fsname))
++		return 0;
++
++	index = strstr(record, "index: ");
++	if (!index)
++		return 0;
++	index += strlen("index: ");
++	end = strstr(index, ",");
++	*end = '\0';
++
++	/* Found a matching parameter, prepare to cancel it */
++	data.ioc_dev = get_mgs_device();
++	data.ioc_inlbuf1 = "params";
++	data.ioc_inllen1 = strlen("params") + 1;	/* catalog name */
++	data.ioc_inlbuf3 = index;
++	data.ioc_inllen3 = strlen(index) + 1;	/* index to cancel */
++
++	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
++	if (rc) {
++		fprintf(stderr, "failed to pack param '%s': %s\n",
++			param_name, strerror(-rc));
++		if (!ecd->ecd_error)
++			ecd->ecd_error = rc;
++		return rc;
++	}
++
++	rc = l_ioctl(OBD_DEV_ID, OBD_IOC_LLOG_CANCEL, buf);
++	if (rc) {
++		if (!ecd->ecd_quiet)
++			fprintf(stderr, "failed to cancel param '%s': %s\n",
++				param_name, strerror(errno));
++		if (!ecd->ecd_error)
++			ecd->ecd_error = rc;
++		return rc;
++	}
++	if (!ecd->ecd_quiet)
++		printf("- cancelled param '%s'\n", param_name);
++
++	ecd->ecd_count++;
++
++	return 0;
++}
++
++/* erase the configuration log for the named filesystem and all persistent
++ * params that contain the fsname from the "params" log on the MGS.
++ */
++int jt_lcfg_erase(int argc, char **argv)
++{
++	struct obd_ioctl_data data = { 0 };
++	char rawbuf[MAX_IOC_BUFLEN] = "", *buf = rawbuf;
++	struct erase_callback_data ecd = { 0 };
++	char *fsname = NULL;
++	char *cmd = argv[0];
++	bool quiet = false;
++	int rc, c;
++
++	static const struct option long_opts[] = {
++	{ .val = 'h',	.name = "help",		.has_arg = no_argument },
++	{ .val = 'q',	.name = "quiet",	.has_arg = no_argument },
++	{ .name = NULL }
++	};
++
++	while ((c = getopt_long(argc, argv, "qh", long_opts, NULL)) != -1) {
++		switch (c) {
++		case 'q':
++			quiet = true;
++			break;
++		case 'h':
++		default:
+ 			return CMD_HELP;
+-	} else if (argc != 2) {
+-		return CMD_HELP;
++		}
+ 	}
+ 
+-	memset(&data, 0, sizeof(data));
++	if (optind > argc)
++		return CMD_HELP;
++
++	fsname = argv[optind];
++
++	if (!quiet)
++		printf("%s: erasing config log and params for fsname '%s'\n",
++		       jt_cmdname(cmd), fsname);
++
++	/* First do the normal lcfg_erase operation */
+ 	rc = data.ioc_dev = get_mgs_device();
+ 	if (rc < 0)
+ 		return rc;
+ 
+-	data.ioc_inllen1 = strlen(argv[1]) + 1;
+-	data.ioc_inlbuf1 = argv[1];
++	data.ioc_inllen1 = strlen(fsname) + 1;
++	data.ioc_inlbuf1 = fsname;
+ 
+-	memset(buf, 0, sizeof(rawbuf));
+ 	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
+ 	if (rc) {
+-		fprintf(stderr, "error: %s: invalid ioctl\n",
+-			jt_cmdname(argv[0]));
+-		return rc;
++		fprintf(stderr, "%s: ioctl_pack failed: %s\n",
++			jt_cmdname(cmd), strerror(-rc));
++		goto out;
+ 	}
+ 
+ 	rc = l_ioctl(OBD_DEV_ID, OBD_IOC_LCFG_ERASE, buf);
+-	if (rc < 0)
+-		fprintf(stderr, "error: %s: OBD_IOC_LCFG_ERASE failed: %s\n",
+-			jt_cmdname(argv[0]), strerror(errno));
++	if (rc < 0) {
++		fprintf(stderr, "%s: OBD_IOC_LCFG_ERASE failed: %s\n",
++			jt_cmdname(cmd), strerror(-rc));
++		goto out;
++	}
++
++	/* Now handle the params configuration log */
++	ecd.ecd_fsname = fsname;
++	ecd.ecd_quiet = quiet;
++	rc = jt_llog_print_iter("params", 1, -1, erase_param_cb, &ecd,
++				false, false);
++	if (rc) {
++		fprintf(stderr, "%s: failed params log iteration: %s\n",
++			jt_cmdname(cmd), strerror(-rc));
++		goto out;
++	}
++
++	if (ecd.ecd_error)
++		rc = ecd.ecd_error;
++
++	if (!quiet) /* below message is checked in conf-sanity.sh test_250 */
++		printf("%s: erased %d parameter%s matching fsname '%s'\n",
++		       jt_cmdname(cmd), ecd.ecd_count,
++		       ecd.ecd_count > 1 ? "s" : "", fsname);
+ 
++out:
+ 	return rc;
+ }
++
+ #else /* !HAVE_SERVER_SUPPORT */
+ int jt_lcfg_clear(int argc, char **argv)
+ {
+@@ -2717,12 +2852,11 @@ int jt_llog_info(int argc, char **argv)
+ 		return CMD_HELP;
+ 	}
+ 
+-	/* Manage default device */
+ 	if (llog_default_device(LLOG_DFLT_MGS_SET))
+ 		return CMD_INCOMPLETE;
+ 
+ 	data.ioc_dev = cur_device;
+-	data.ioc_inllen1 = strlen(catalog) + 1;
++	data.ioc_inllen1 = strlen(catalog) + 1; /* catalog name */
+ 	data.ioc_inlbuf1 = catalog;
+ 	data.ioc_inllen2 = sizeof(rawbuf) - __ALIGN_KERNEL(sizeof(data), 8) -
+ 			   __ALIGN_KERNEL(data.ioc_inllen1, 8);
+@@ -2808,9 +2942,9 @@ out:
+  * \retval		0 on success
+  *			others handled by the caller
+  */
+-int jt_llog_print_iter(char *logname, long start, long end,
+-		       int (record_cb)(const char *record, void *private),
+-		       void *private, bool reverse, bool raw)
++static int jt_llog_print_iter(char *logname, long start, long end,
++			     int (record_cb)(const char *record, void *private),
++			     void *private, bool reverse, bool raw)
+ {
+ 	struct obd_ioctl_data data = { 0 };
+ 	char rawbuf[MAX_IOC_BUFLEN], *buf = rawbuf;
+@@ -2825,7 +2959,7 @@ int jt_llog_print_iter(char *logname, long start, long end,
+ 
+ 	data.ioc_dev = cur_device;
+ 	data.ioc_inlbuf1 = logname;
+-	data.ioc_inllen1 = strlen(logname) + 1;
++	data.ioc_inllen1 = strlen(logname) + 1; /* log name */
+ 
+ 	/*
+ 	 * Estimate about 128 characters per configuration record.  Not all
+@@ -3123,12 +3257,12 @@ int jt_llog_cancel(int argc, char **argv)
+ 	 */
+ 	if (argc == 1) {
+ 		data.ioc_inllen3 = strlen(argv[0]) + 1;
+-		data.ioc_inlbuf3 = argv[0];
++		data.ioc_inlbuf3 = argv[0];	/* log index to cancel */
+ 	} else if (argc == 2) {
+ 		data.ioc_inllen2 = strlen(argv[0]) + 1;
+-		data.ioc_inlbuf2 = argv[0];
++		data.ioc_inlbuf2 = argv[0];	/* log_id (ignored) */
+ 		data.ioc_inllen3 = strlen(argv[1]) + 1;
+-		data.ioc_inlbuf3 = argv[1];
++		data.ioc_inlbuf3 = argv[1];	/* log index to cancel */
+ 	}
+ 
+ 	if (!data.ioc_inlbuf1 || !data.ioc_inlbuf3) {
+@@ -3234,7 +3368,7 @@ int jt_llog_remove(int argc, char **argv)
+ 		}
+ 
+ 		data.ioc_inllen2 = strlen(argv[0]) + 1;
+-		data.ioc_inlbuf2 = argv[0];
++		data.ioc_inlbuf2 = argv[0];	/* llog name */
+ 	}
+ 
+ 	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));

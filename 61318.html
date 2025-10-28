@@ -1,0 +1,812 @@
+From e0cec8f968ff8fdfe52dcf3b281e3b907c62a338 Mon Sep 17 00:00:00 2001
+From: Frederick Dilger <fdilger@whamcloud.com>
+Date: Sat, 13 Sep 2025 22:53:43 -0600
+Subject: [PATCH 1/1] LU-17231 doc: updated man page script
+
+Updated the generate-manpage.sh script to generate better parameter
+man pages.
+
+Now uses --param to create a parameter man page, and they are no
+longer headed by lctl-param as it could be confused with
+lctl-{get,list,set}_param, and also makes looking for parameters
+easier.
+
+Added lctl help_param to open the man file for a parameter which
+includes tab completion for intermediate directories to make it
+easier to find groups of parameter man pages.
+
+The man pages cpu_partition_table(4) and cpu_partition_distance(4)
+have been added as an example for formatting.
+
+Test-Parameters: trivial
+Change-Id: I2a3b64331c1d423caa1d1ebfd6f9a8316b0da489
+Signed-off-by: Frederick Dilger <fdilger@whamcloud.com>
+---
+ Documentation/Makefile.am                   |   2 +-
+ Documentation/man4/Makefile.am              |  38 +++++
+ Documentation/man4/cpu_npartitions.4        |   1 +
+ Documentation/man4/cpu_partition_distance.4 |  61 ++++++++
+ Documentation/man4/cpu_partition_table.4    |  49 ++++++
+ Documentation/man4/cpu_pattern.4            | 160 ++++++++++++++++++++
+ config/lustre-build.m4                      |   1 +
+ contrib/scripts/checkpatch-man.pl           |   7 +-
+ contrib/scripts/generate-manpage.sh         |  83 +++++-----
+ lustre/doc/lctl-get_param.8                 |   1 +
+ lustre/doc/lctl-help_param.8                |  40 +++++
+ lustre/doc/lctl-list_param.8                |   1 +
+ lustre/doc/lctl-set_param.8                 |   1 +
+ lustre/scripts/bash-completion/lustre       |   8 +-
+ lustre/utils/lctl.c                         |   4 +
+ lustre/utils/lustre_param.c                 | 108 +++++++++++++
+ lustre/utils/obdctl.h                       |   1 +
+ 17 files changed, 519 insertions(+), 47 deletions(-)
+ create mode 100644 Documentation/man4/Makefile.am
+ create mode 100644 Documentation/man4/cpu_npartitions.4
+ create mode 100644 Documentation/man4/cpu_partition_distance.4
+ create mode 100644 Documentation/man4/cpu_partition_table.4
+ create mode 100644 Documentation/man4/cpu_pattern.4
+ create mode 100644 lustre/doc/lctl-help_param.8
+
+diff --git a/Documentation/Makefile.am b/Documentation/Makefile.am
+index 657c130df7..54557a6c3f 100644
+--- a/Documentation/Makefile.am
++++ b/Documentation/Makefile.am
+@@ -4,6 +4,6 @@
+ # This file is part of Lustre, http://www.lustre.org/
+ #
+ 
+-ALWAYS_SUBDIRS = man1 man3 man5 man7 man8
++ALWAYS_SUBDIRS = man1 man3 man4 man5 man7 man8
+ SUBDIRS := $(ALWAYS_SUBDIRS)
+ DIST_SUBDIRS := $(ALWAYS_SUBDIRS)
+diff --git a/Documentation/man4/Makefile.am b/Documentation/man4/Makefile.am
+new file mode 100644
+index 0000000000..bbe4c669ea
+--- /dev/null
++++ b/Documentation/man4/Makefile.am
+@@ -0,0 +1,38 @@
++# SPDX-License-Identifier: GPL-2.0
++
++#
++# This file is part of Lustre, http://www.lustre.org/
++#
++
++MANFILES =					\
++	cpu_partition_table.4			\
++	cpu_partition_distance.4
++
++MANFILES_CLIENT =
++
++MANFILES_SERVER =				\
++	cpu_npartitions.4			\
++	cpu_pattern.4
++
++if MANPAGES
++if UTILS
++man_MANS = $(MANFILES)
++if CLIENT
++man_MANS += $(MANFILES_CLIENT)
++endif
++if SERVER
++man_MANS += $(MANFILES_SERVER)
++endif
++endif
++endif
++
++CLEANFILES = *.aux *.tex *.log *.pdf
++EXTRA_DIST = $(MANFILES)
++if CLIENT
++EXTRA_DIST += $(MANFILES_CLIENT)
++endif
++if SERVER
++EXTRA_DIST += $(MANFILES_SERVER)
++endif
++
++all:
+diff --git a/Documentation/man4/cpu_npartitions.4 b/Documentation/man4/cpu_npartitions.4
+new file mode 100644
+index 0000000000..ce919a189c
+--- /dev/null
++++ b/Documentation/man4/cpu_npartitions.4
+@@ -0,0 +1 @@
++.so man4/cpu_pattern.4
+diff --git a/Documentation/man4/cpu_partition_distance.4 b/Documentation/man4/cpu_partition_distance.4
+new file mode 100644
+index 0000000000..b611f57dbd
+--- /dev/null
++++ b/Documentation/man4/cpu_partition_distance.4
+@@ -0,0 +1,61 @@
++.TH CPU_PARTITION_DISTANCE 4 2025-09-15 Lustre "Lustre Kernel Interfaces"
++.SH NAME
++cpu_partition_distance \-
++.SH SYNOPSIS
++.SS PROPERTIES
++.TP
++.B Perms
++.BR 444 " | " -r--r--r--.
++.TP
++.B Scope
++Global
++.TP
++.B Config
++always present
++.SH DESCRIPTION
++.B cpu_partition_distance
++shows the maximum NUMA distance between all source nodes to all destination
++nodes in each partition. The distance values are used to determine the best
++network interface for each thread to use when sending messages,
++in order to minimize cross-NUMA memory access.
++The NUMA distance reported between two nodes the ratio of the latency to access
++memory on the destination node from the source node compared to that of
++accessing local memory, the values are normalized to 10 (1.0x) meaning that if
++the distance between two nodes is
++.IR DIST ,
++then there will be
++.RI ( DIST /10)x
++more latency to access remote memory.
++These values are taken from `/sys/devices/system/node/*/distance`
++parameters provided by the kernel.
++.PP
++The distance output is formatted as follows:
++.EX
++CPT0	: CPT0:DIST00 CPT1:DIST01 ...
++CPT1	: CPT0:DIST10 CPT1:DIST11 ...
++\&...
++.EE
++.SH MODULES
++This parameter is in the following modules:
++.EX
++.B cpu_partition_distance
++.EE
++.SH EXAMPLES
++For a system with 4 partitions:
++.RS
++.EX
++cpu_partition_distance=
++0	: 0:10 1:12 2:10 3:11
++1	: 0:12 1:10 2:14 3:10
++2	: 0:10 1:14 2:10 3:11
++3	: 0:11 1:10 2:11 3:10
++.EE
++.RE
++.SH AVAILABILITY
++.B cpu_partition_distance
++is part of the
++.BR lustre (7)
++filesystem package.
++.\" commit #
++.SH SEE ALSO
++.BR cpu_partition_table (4)
+diff --git a/Documentation/man4/cpu_partition_table.4 b/Documentation/man4/cpu_partition_table.4
+new file mode 100644
+index 0000000000..862f7ffd07
+--- /dev/null
++++ b/Documentation/man4/cpu_partition_table.4
+@@ -0,0 +1,49 @@
++.TH CPU_PARTITION_TABLE 4 2025-09-15 Lustre "Lustre Kernel Interfaces"
++.SH NAME
++cpu_partition_table \- Display of the CPU format
++.SH SYNOPSIS
++.SS PROPERTIES
++.TP
++.B Perms
++.BR 444 " | " -r--r--r--.
++.TP
++.B Scope
++Global
++.TP
++.B Config
++always present
++.SH DESCRIPTION
++.B cpu_partition_table
++is a representation of how the CPU cores are distributed across mutliple
++partitions. The table is formatted as follows:
++.EX
++PART0	: CPU_CORE [CPU_CORE ...]
++PART1	: CPU_CORE [CPU_CORE ...]
++\&...
++.EE
++where
++.IR PART0 ", " PART1 ,
++etc. are the partition numbers and CPU_CORE is the
++id of the CPU core.
++.SH MODULES
++This parameter is in the following modules:
++.EX
++.B cpu_partition_table
++.EE
++.SH EXAMPLES
++The default CPT layout puts 4 cores in each partition, for a system with 16
++cores:
++.EX
++.B cpu_partition_table=0	: 0 1 2 3
++1	: 4 5 6 7
++2	: 8 9 10 11
++3	: 12 13 14 15
++.EE
++.SH AVAILABILITY
++.B cpu_partition_table
++is part of the
++.BR lustre (7)
++filesystem package.
++.\" commit #
++.SH SEE ALSO
++.BR cpu_partition_distance (4)
+diff --git a/Documentation/man4/cpu_pattern.4 b/Documentation/man4/cpu_pattern.4
+new file mode 100644
+index 0000000000..3184dc79a0
+--- /dev/null
++++ b/Documentation/man4/cpu_pattern.4
+@@ -0,0 +1,160 @@
++.TH CPU_PATTERN 4 2025-10-18 Lustre "Lustre Kernel Interfaces"
++.SH NAME
++cpu_pattern \- CPU partitions pattern
++cpu_npartitions \- number of CPU partitions
++.SH SYNOPSIS
++.SS PROPERTIES
++.TP
++.B Perms
++.BR 444 " | " -r--r--r--.
++.BR 444 " | " -r--r--r--.
++.TP
++.B Scope
++Glabal
++.TP
++.B Config
++always present
++.SH DESCRIPTION
++.B cpu_pattern
++and
++.B cpu_npartitions
++are used to configure the CPU partition table.
++If no pattern is specifified then there will be a partition for every 4 cores
++in the system.
++This is a module option that can only be set during module initialization using
++the
++.B cpu_pattern
++and
++.B cpu_npartitions
++options in
++.BR /etc/modprobe.d/lustre.conf .
++.PP
++A user can specify CPU partitions by string pattern with the following
++behaviors:
++.RS
++.EX
++cpu_pattern="0[CORE0, CORE1, ...] 1[CORE2, CORE3, ...] ..."
++.EE
++.RE
++This pattern allows you to specify a set of CPU cores for each partition. The
++cores do not have to be contiguous and do not need to contain all available
++cores. However, cores in a CPT should be in the same NUMA node, according to
++.BR numactl (8) " -s" .
++.RS
++.EX
++cpu_npartitions=N
++.EE
++.RE
++This pattern allows you to specify the number of CPU partitions. The cores
++will be evenly split into the specified number of partitions. This is overridden
++by the
++.B cpu_pattern="N"
++option, but can otherwise be combined with other patterns.
++.RS
++.EX
++cpu_pattern="N 0[NODE0, NODE1, ...] 1[NODE2, NODE3, ...] ..."
++.EE
++.RE
++This pattern allows you to specify a set of NUMA nodes for each partition. The
++nodes do not have to be contiguous and do not need to contain all available
++nodes.
++.RS
++.EX
++cpu_pattern="C[INDEX0, INDEX1, ...]"
++.EE
++.RE
++This pattern allows you to exclude a set of cores from each partition.
++The CPT is first initialized, using npartitions, NUMA
++nodes, or the default layout.
++Then cores are removed from each partition that match the specified indeces.
++.RS
++.EX
++cpu_pattern="X[CORE0, CORE1, ...]"
++.EE
++.RE
++This pattern allows you to exclude a set of cores from the CPT that they
++belong to. The CPT is first initialized, using npartitions, NUMA nodes,
++or the default layout.
++.SS CPU partition
++The CPU partition is virtual processing unit. It can present 1-N cores,
++or 1-N NUMA nodes, in other words, CPU partition is a pool of processors.
++The ID of a CPU partition always starts from 0.
++.SS CPU Partition Table (CPT)
++A CPT is a set of CPU partitions. There are two modes for CPT:
++.B CFS_CPU_MODE_NUMA
++and
++.BR CFS_CPU_MODE_SMP.
++.SH MODULES
++This parameter is in the following modules:
++.EX
++.B /etc/modprobe.d/lustre.conf
++.EE
++.SH EXAMPLES
++The default pattern for the CPT will put 4 cores in each partitions:
++.RS
++.EX
++options libcfs cpu_pattern=
++cpu_partition_table=0	: 0 1 2 3
++1	: 4 5 6 7
++2	: 8 9 10 11
++3	: 12 13 14 15
++.EE
++.RE
++The modifying the npartitions for the CPT will split the cores evenly:
++.RS
++.EX
++options libcfs cpu_npartitions=3
++cpu_partition_table=0	: 0 1 2 3 4 5
++1	: 6 7 8 9 10
++2	: 11 12 13 14 15
++.EE
++.RE
++Use a default mapping of the CPT to the NUMA node layout that has 4 nodes:
++.RS
++.EX
++options libcfs cpu_pattern=N
++cpu_partition_table=0	: 0 1 2 3
++1	: 4 5 6 7
++2	: 8 9 10 11
++3	: 12 13 14 15
++.EE
++.RE
++Put several NUMA nodes into one partition:
++.RS
++.EX
++options libcfs cpu_pattern=N 0[0,1] 1[2-3]
++cpu_partition_table=0	: 0 1 2 3 4 5 6 7
++1	: 8 9 10 11 12 13 14 15
++.EE
++.RE
++Exclude the first two cores from each partition:
++.RS
++.EX
++options libcfs cpu_pattern=C[0,1]
++cpu_partition_table=0	: 2 3
++1	: 6 7
++2	: 10 11
++3	: 14 15
++.EE
++.RE
++Exclude cores 0 and 10 to reseerve them for non-Lustre tasks:
++.RS
++.EX
++options libcfs cpu_pattern=X[0,10]
++options libcfs cpu_npartitions=3
++cpu_partition_table=0	: 1 2 3 4 5
++1	: 6 7 8 9
++2	: 11 12 13 14 15
++.EE
++.RE
++.SH AVAILABILITY
++.B cpu_pattern
++is part of the
++.BR lustre (7)
++filesystem package.
++.\" commit #
++.SH SEE ALSO
++.BR cpu_npartitions (4),
++.BR cpu_partition_distance (4),
++.BR cpu_partition_table (4),
++.BR numa (7)
+diff --git a/config/lustre-build.m4 b/config/lustre-build.m4
+index f92111d829..914cdcf046 100644
+--- a/config/lustre-build.m4
++++ b/config/lustre-build.m4
+@@ -450,6 +450,7 @@ AC_DEFUN([LB_CONFIG_FILES], [
+ 		Documentation/Makefile
+ 		Documentation/man1/Makefile
+ 		Documentation/man3/Makefile
++		Documentation/man4/Makefile
+ 		Documentation/man5/Makefile
+ 		Documentation/man7/Makefile
+ 		Documentation/man8/Makefile
+diff --git a/contrib/scripts/checkpatch-man.pl b/contrib/scripts/checkpatch-man.pl
+index 6dffe137b3..735c1b8d6b 100755
+--- a/contrib/scripts/checkpatch-man.pl
++++ b/contrib/scripts/checkpatch-man.pl
+@@ -435,9 +435,10 @@ sub process {
+ 	my $stashrawline="";
+ 
+ 	@standard_headers = ('NAME', 'LIBRARY', 'SYNOPSIS', 'CONFIGURATION',
+-		'DESCRIPTION', 'OPTIONS', 'EXIT STATUS', 'RETURN VALUE', 'ERRORS',
+-		'ENVIRONMENT', 'FILES', 'ATTRIBUTES', 'VERSIONS', 'HISTORY', 'NOTES',
+-		'CAVEATS', 'BUGS', 'EXAMPLES', 'AUTHORS', 'AVAILABILITY', 'SEE ALSO');
++		'DESCRIPTION', 'OPTIONS', 'EXIT STATUS', 'RETURN VALUE',
++		'ERRORS', 'ENVIRONMENT', 'MODULES', 'FILES', 'ATTRIBUTES',
++		'VERSIONS', 'HISTORY', 'NOTES', 'CAVEATS', 'BUGS', 'EXAMPLES',
++		'AUTHORS', 'AVAILABILITY', 'SEE ALSO');
+ 	my $valid_header_order = 1;
+ 
+ 	my $subjectline = '';
+diff --git a/contrib/scripts/generate-manpage.sh b/contrib/scripts/generate-manpage.sh
+index 824a668d94..485a2a06e8 100644
+--- a/contrib/scripts/generate-manpage.sh
++++ b/contrib/scripts/generate-manpage.sh
+@@ -1,43 +1,43 @@
+ #!/bin/bash
+ 
+ # Generate a man page with section-specific content
+-# Usage: ./generate_manpage.sh NAME SECTION [OUTPUT_FILE]
+-# Usage: ./generate_manpage.sh MANUAL_FILE
+ 
+ show_usage() {
+ 	cat >&2 <<EOF
+-Usage: $0 NAME (1-8) [OUTPUT_FILE]
+-       $0 [DIR/]NAME.(1-8)
++Usage: $0 [-o OUTPUT_FILE] NAME (1-8)
++       $0 --param MODULE.PARAM
+ EOF
+ }
+ 
++PARAM=0
++for arg in "$@"; do
++	shift
++	case "$arg" in
++		-o)
++			OUTPUT="$1"
++			shift
++			;;
++		-p|--param)
++			SECTION=4
++			PARAM=1
++			;;
++		*)
++			set -- "$@" "$arg"
++			;;
++	esac
++done
+ if (( $# < 1 )); then
+-	echo "Error: Missing arguments" >&2
++	echo "Error: Missing parameters" >&2
+ 	show_usage
+ 	exit 1
+-elif (( $# == 1 )); then
+-	if [[ "$1" =~ ^([^.]*/)?(.*)\.([1-8])$ ]]; then
+-		NAME="${BASH_REMATCH[2]}"
+-		SECTION="${BASH_REMATCH[3]}"
+-		OUTPUT="$1"
+-	else
+-		echo "Error: $1 must be in NAME.SECTION format (SECTION 1-8)" >&2
+-		show_usage
+-		exit 1
+-	fi
+-elif (( $# == 2 )); then
+-	NAME="$1"
+-	SECTION="$2"
+-	OUTPUT="Documentation/man$SECTION/$NAME.$SECTION"
+-elif (( $# == 3 )); then
+-	NAME="$1"
+-	SECTION="$2"
+-	OUTPUT="$3"
+-else
++elif (( $# > 2 )); then
+ 	echo "Error: Too many arguments" >&2
+ 	show_usage
+ 	exit 1
+ fi
++NAME="$1"
++[[ -n "$SECTION" ]] || SECTION="$2"
++[[ -n "$OUTPUT" ]] || OUTPUT="Documentation/man$SECTION/$NAME.$SECTION"
+ 
+ # Validate section number
+ if ! [[ "$SECTION" =~ ^[1-8]$ ]]; then
+@@ -57,7 +57,7 @@ fi
+ 
+ # Don't overwrite non-empty files
+ if [[ -s $OUTPUT ]]; then
+-	echo "Error: $OUTPUT is not empty"
++	echo "Error: $OUTPUT is not empty, if you want to overwrite it, please remove it first"
+ 	exit 1
+ fi
+ 
+@@ -117,34 +117,37 @@ EOF
+ 	printf -v ERRORS "\n.SH ERRORS\n"
+ 	;;
+ 	4)
+-	if [[ $NAME =~ "lctl-param-" ]]; then
+-		NAME=${NAME/lctl-param-/}
+-		[[ -n "$($LCTL get_param -r "$NAME")" ]] || {
+-			echo "could not read parameter: '$NAME'"
++	if (( PARAM )); then
++		opts="-Nb"
++		PARAM=$(lctl find_param $opts ${NAME//./[.]?[^.]*[.]} | head -1)
++		[[ -n "$PARAM" ]] || {
++			opts="-Nbo"
++			PARAM=$(lctl find_param $opts ${NAME//./[.]?[^.]*[.]})
++		}
++		[[ -n "$PARAM" ]] || {
++			echo "Error: Parameter $NAME not found" >&2
+ 			exit 1
+ 		}
+-		[[ "$(git grep PARM_DESC 82f2bdb17ae~1 -- | grep "$NAME",)" =~ $NAME,\ \"([^\"]+)\" ]] &&
++		[[ "$(git grep PARM_DESC | grep $(echo $PARAM | awk -F. '{print $NF}'),)" =~ $NAME,\ \"([^\"]+)\" ]] &&
+ 			NAMEDESC=" ${BASH_REMATCH[1]}"
+-		printf -v PARAM ".EX\n$($LCTL get_param ${NAME//.-/.*})\n.EE"
+-		param_path=$($LCTL list_param -p ${NAME//.-/.*})
+-		printf -v FILES "\n.SH FILES\nThis parameter is located at:\n.P\n.B $param_path"
++		param_modules=$(lctl find_param $opts ${NAME//./[.]?[^.]*[.]} | awk '{print ".B "$1}')
++		printf -v FILES "\n.SH MODULES\nThis parameter is in the following modules:\n.EX\n$param_modules\n.EE"
+ 		# actual path
+-		param_path=$(readlink -f $param_path)
+-		code_location=$(git grep -E "LDEBUGFS_SEQ_FOPS|LUSTRE_[RW][OW]_ATTR" 82f2bdb17ae~1 -- | grep ${NAME##*\.})
++		param_path=$(readlink -f $($LCTL find_param ${opts}p $PARAM))
++		$LCTL get_param $PARAM && PARAM=$($LCTL get_param $PARAM) || PARAM=""
+ 		printf -v SYNOPSIS ".SY \"lctl set_param\"\n.YS
+ .SS PROPERTIES
+ .TP\n.B Perms\n.BR $(stat -c "%a" $param_path) \" | \" $(ls -l $param_path | awk '{print $1}')
+-[.PP param resets upon write]
++[.PP\nparam resets upon write]
+ .TP\n.B Scope\nPer-Device | Global
+ .TP\n.B Config\nalways present | present if ...
+-.B PARAMETER DECLARATION POTENTIAL LOCATIONS
+-.PP\nlocated at:\n.EX\n$code_location\n.EE"
++[.TP\n.B Default\n.RB param= DEFAULT]"
+ 	fi
+-	printf -v EXAMPLES "\n.SH EXAMPLES\n$PARAM"
++
++	printf -v EXAMPLES "\n.SH EXAMPLES\n.EX\n$PARAM\n.EE"
+ 	;;
+ esac
+ 
+-
+ # Generate the man page
+ cat > "$OUTPUT" <<EOF
+ .TH ${NAME^^} $SECTION $DATE Lustre "$DESC"
+diff --git a/lustre/doc/lctl-get_param.8 b/lustre/doc/lctl-get_param.8
+index 5a35e5ce98..4d4bec88a1 100644
+--- a/lustre/doc/lctl-get_param.8
++++ b/lustre/doc/lctl-get_param.8
+@@ -180,5 +180,6 @@ filesystem package since release 1.7.0
+ .BR lustre (7),
+ .BR lctl (8),
+ .BR lctl-find_param (8),
++.BR lctl-help_param (8),
+ .BR lctl-list_param (8),
+ .BR lctl-set_param (8)
+diff --git a/lustre/doc/lctl-help_param.8 b/lustre/doc/lctl-help_param.8
+new file mode 100644
+index 0000000000..f6a850679f
+--- /dev/null
++++ b/lustre/doc/lctl-help_param.8
+@@ -0,0 +1,40 @@
++.TH LCTL-HELP_PARAM 8 "2025-09-17" Lustre "Lustre Configuration Utilities"
++.SH NAME
++lctl-help_param \- show documentation for Lustre parameters
++.SH SYNOPSIS
++.SY "lctl help_param"
++.I PARAM
++.YS
++.SH DESCRIPTION
++Opens the man page documentation for
++.IR PARAM .
++This is helpful because the man page files do not always match the parameter
++name since the OBD-device-specific part of the parameter is excluded from the
++man page title. Additionally, the tab completion support allows users to look
++through each subset of parameters if they are not sure of the exact name.
++.SH OPTIONS
++.B lctl help_param
++does not currently support any options.
++.SH EXAMPLES
++Find which params are available for fld.cli-*:
++.EX
++.RS
++.B # lctl help_param fld.cli-lustre-clilmv-ffff907f78edc000.
++.I fld.cli-lustre-clilmv-ffff907f78edc000.cache_flush
++.I fld.cli-lustre-clilmv-ffff907f78edc000.hash
++.I fld.cli-lustre-clilmv-ffff907f78edc000.targets
++.RE
++.EE
++.SH AVAILABILITY
++.B lctl help_param
++is part of the
++.BR lustre (7)
++filesystem package since release 2.17.0
++.\" Added in commit v2_16_XX
++.SH SEE ALSO
++.BR lfs (1),
++.BR lustre (7),
++.BR lctl-find_param (8),
++.BR lctl-get_param (8),
++.BR lctl-list_param (8),
++.BR lctl-set_param (8)
+diff --git a/lustre/doc/lctl-list_param.8 b/lustre/doc/lctl-list_param.8
+index f45426371d..31511f31fa 100644
+--- a/lustre/doc/lctl-list_param.8
++++ b/lustre/doc/lctl-list_param.8
+@@ -250,4 +250,5 @@ filesystem package since release 1.7.0
+ .BR lustre (7),
+ .BR lctl-find_param (8),
+ .BR lctl-get_param (8),
++.BR lctl-help_param (8),
+ .BR lctl-set_param (8)
+diff --git a/lustre/doc/lctl-set_param.8 b/lustre/doc/lctl-set_param.8
+index 36d4f14455..d2f24b75db 100644
+--- a/lustre/doc/lctl-set_param.8
++++ b/lustre/doc/lctl-set_param.8
+@@ -178,6 +178,7 @@ filesystem package since release 1.7.0
+ .BR lctl (8),
+ .BR lctl-find_param (8),
+ .BR lctl-get_param (8),
++.BR lctl-help_param (8),
+ .BR lctl-list_param (8),
+ .BR lctl-llog_catlist (8),
+ .BR lctl-llog_print (8)
+diff --git a/lustre/scripts/bash-completion/lustre b/lustre/scripts/bash-completion/lustre
+index 51afc07be4..3b99d9de9a 100644
+--- a/lustre/scripts/bash-completion/lustre
++++ b/lustre/scripts/bash-completion/lustre
+@@ -300,13 +300,15 @@ _lctl()
+ 		fi
+ 		return 0
+ 		;;
+-	get_param|list_param|set_param)
++	get_param|list_param|set_param|find_param|help_param)
+ 		local filter="s/=$//"
++		local opts=""
+ 		[[ "$sub" == "set_param" ]] && filter="/[^=/]$/d"
++		[[ "$sub" == "help_param" ]] && opts="-b"
+ 		mapfile -t COMPREPLY < <(
+-		    "$cmd" list_param -F "${cur#[\"\']}*" 2>/dev/null |
++		    "$cmd" list_param -F $opts "${cur#[\"\']}*" 2>/dev/null |
+ 		    sed -e "$filter" -e 's#/$#.#' \
+-			-e "s#^${cur//\*/[^.]*}#$cur#"
++		        -e "s#^${cur//\*/[^.]*}#$cur#"
+ 		)
+ 		compopt -o nospace
+ 
+diff --git a/lustre/utils/lctl.c b/lustre/utils/lctl.c
+index 2eb4b2f756..11320c2694 100644
+--- a/lustre/utils/lctl.c
++++ b/lustre/utils/lctl.c
+@@ -484,6 +484,10 @@ command_t cmdlist[] = {
+ 	 "		    [--merge|-m] [--no-merge|-M] [--module|-o] [--path|-p]\n"
+ 	 "		    PATTERN1 [PATTERN2 ...]\n"
+ 	 "Search recursively for parameters matching the given pattern(s).\n"},
++	 {"help_param", jt_lctl_helpparam, 0,
++	 "show the man page for a Lustre or LNet parameter\n"
++	 "usage: help_param PARAM\n"
++	 "Show help for the specified Lustre or LNet parameter.\n"},
+ 	{"del_ost", jt_del_ost, 0, "permanently delete OST records\n"
+ 	 "usage: del_ost [--dryrun] --target FSNAME-OSTxxxx\n"
+ 	 "Cancel the config records for a specific OST to forget about it.\n"},
+diff --git a/lustre/utils/lustre_param.c b/lustre/utils/lustre_param.c
+index 8d66304012..c06aed26dd 100644
+--- a/lustre/utils/lustre_param.c
++++ b/lustre/utils/lustre_param.c
+@@ -1221,6 +1221,114 @@ int jt_lctl_findparam(int argc, char **argv)
+ 	return rc;
+ }
+ 
++/**
++ * Modifies param to remove any device name.
++ * Ex. NNN.lustre-OST0000.MMM -> NNN.MMM
++ * \param[in] param	parameter name
++ *
++ * \retval 0		success
++ * \retval -errno	error
++ */
++static int man_path(char *param)
++{
++	char *tmp;
++	char *dot;
++	char *dot2;
++
++	tmp = strstr(param, "llite");
++	if (tmp) {
++		dot = strchr(tmp, '.');
++		if (!dot) {
++			*tmp = '\0';
++			return 0;
++		}
++		if (tmp == param)
++			param = dot + 1;
++	}
++
++	dot = strchr(param, '.');
++	while (dot) {
++		dot2 = strchr(dot + 1, '.');
++		tmp = strchr(dot, '-');
++		if (tmp) {
++			if (!dot2) {
++				*tmp = '\0';
++				break;
++			}
++			if (tmp < dot2) {
++				memmove(dot+1, dot2+1, strlen(dot2+1) + 1);
++				dot = dot2;
++			}
++		}
++		tmp = strchr(dot, '@');
++		if (tmp) {
++			if (!dot2) {
++				*tmp = '\0';
++				break;
++			}
++			if (tmp < dot2) {
++				memmove(dot+1, dot2+1, strlen(dot2+1) + 1);
++				dot = dot2;
++			}
++		}
++		dot = dot2;
++	}
++
++	return 0;
++}
++
++static int helpparam_cmdline(int argc, char **argv, struct param_opts *popt)
++{
++	popt->po_show_name = 0;
++	popt->po_only_name = 1;
++	popt->po_follow_symlinks = 1;
++	popt->po_merge = 1;
++	popt->po_dshbak = 1;
++
++	return param_out_cmdline(argc, argv, popt, "");
++}
++
++int jt_lctl_helpparam(int argc, char **argv)
++{
++	int rc = 0, index;
++	struct param_opts popt;
++	char *path;
++
++	memset(&popt, 0, sizeof(popt));
++	index = helpparam_cmdline(argc, argv, &popt);
++	if (index != argc - 1)
++		return CMD_HELP;
++
++	path = strdup(argv[index]);
++
++	rc = jt_clean_path(&popt, path);
++	if (rc < 0) {
++		fprintf(stderr, "error: %s: cleaning '%s': %s\n",
++			jt_cmdname(argv[0]), path, strerror(-rc));
++		goto out;
++	}
++
++	rc = do_param_op(&popt, path, NULL, LIST_PARAM, NULL);
++	if (rc < 0) {
++		if (rc == -ENOENT && getuid() != 0) {
++			rc = llapi_param_display_value(path, 0,
++						       PARAM_FLAGS_SHOW_SOURCE,
++						       stdout);
++		}
++		if (rc < 0)
++			rc = execlp("man", "man", argv[index], NULL);
++		goto out;
++	}
++
++	man_path(argv[index]);
++
++	execlp("man", "man", argv[index], NULL);
++
++out:
++	free(path);
++	return rc;
++}
++
+ static int getparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ {
+ 	popt->po_show_name = 1;
+diff --git a/lustre/utils/obdctl.h b/lustre/utils/obdctl.h
+index 848ef6cd11..999f7d2979 100644
+--- a/lustre/utils/obdctl.h
++++ b/lustre/utils/obdctl.h
+@@ -129,6 +129,7 @@ int jt_lcfg_setparam(int argc, char **argv);
+ int jt_lcfg_listparam(int argc, char **argv);
+ int jt_lcfg_setparam_client(int argc, char **argv, struct param_opts *popt);
+ int jt_lctl_findparam(int argc, char **argv);
++int jt_lctl_helpparam(int argc, char **argv);
+ 
+ /* lustre_cfg.c */
+ int lcfg_set_devname(char *name);
