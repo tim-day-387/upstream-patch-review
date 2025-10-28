@@ -1,0 +1,271 @@
+From b139e085272c5aa414e73ade369a103fe086af2b Mon Sep 17 00:00:00 2001
+From: James Simmons <jsimmons@infradead.org>
+Date: Sat, 25 Oct 2025 10:05:45 -0400
+Subject: [PATCH 1/1] LU-18687 obd: don't always use vfree_atomic
+
+There is a large chance upstream will not want to export
+vfree_atomic(). Also there are issues with our approach to
+export vfree_atomic() so reintroduce our manual version of
+handling vfree_atomic(). Sadly this shows that the day will
+come that some key component in the kernel needed by Lustre
+will not be available and permentally break out of tree
+Lustre. We do limit the use of this functionality to only
+the ptlrpc layer. Instead of working around poor coding we
+should fix any potential __might_sleep issues. The only
+reason we need this functionality is to handle the poor
+import lock handling in the ptlrpc layer. What is really
+needed is to rework the locking in ptlrpc and this code can
+go away.
+
+Fixes: 87da90954 ("LU-18687 compat: use unexported vfree_atomic in kernel")
+Change-Id: I588f171e242eb0b61003ece4e664add4c90bc865
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+---
+ include/lustre_compat/linux/vmalloc.h   |  3 ++
+ include/lustre_compat/linux/workqueue.h |  4 ++
+ libcfs/libcfs/linux/linux-prim.c        |  4 ++
+ lustre/include/lustre_compat.h          |  4 --
+ lustre/include/obd_support.h            | 14 +++++-
+ lustre/ptlrpc/sec_null.c                |  2 +-
+ lustre/ptlrpc/sec_plain.c               |  2 +-
+ lustre_compat/mm/Makefile               |  2 +-
+ lustre_compat/mm/vmalloc.c              | 65 +++++++++++++++++++++++++
+ lustre_compat/symbols.c                 | 12 -----
+ 10 files changed, 92 insertions(+), 20 deletions(-)
+ create mode 100644 lustre_compat/mm/vmalloc.c
+
+diff --git a/include/lustre_compat/linux/vmalloc.h b/include/lustre_compat/linux/vmalloc.h
+index fc5d952c1a..b8b485024c 100644
+--- a/include/lustre_compat/linux/vmalloc.h
++++ b/include/lustre_compat/linux/vmalloc.h
+@@ -13,4 +13,7 @@
+ 
+ extern void compat_vfree_atomic(const void *addr);
+ 
++void init_compat_vfree_atomic(void);
++void exit_compat_vfree_atomic(void);
++
+ #endif /* __LICBFS_LINUX_VMALLOC_H */
+diff --git a/include/lustre_compat/linux/workqueue.h b/include/lustre_compat/linux/workqueue.h
+index 260e360fbe..d16eb38330 100644
+--- a/include/lustre_compat/linux/workqueue.h
++++ b/include/lustre_compat/linux/workqueue.h
+@@ -24,4 +24,8 @@ struct workqueue_attrs *compat_alloc_workqueue_attrs(void);
+ int compat_apply_workqueue_attrs(struct workqueue_struct *wq,
+ 				  const struct workqueue_attrs *attrs);
+ 
++#ifndef HAVE_FLUSH___WORKQUEUE
++#define __flush_workqueue(wq)  flush_scheduled_work()
++#endif
++
+ #endif /* __LIBCFS_WORKQUEUE_H__ */
+diff --git a/libcfs/libcfs/linux/linux-prim.c b/libcfs/libcfs/linux/linux-prim.c
+index e59f0142ee..e836ec1342 100644
+--- a/libcfs/libcfs/linux/linux-prim.c
++++ b/libcfs/libcfs/linux/linux-prim.c
+@@ -36,6 +36,7 @@
+ #include <lustre_compat/linux/wait_bit.h>
+ #include <lustre_compat/linux/wait.h>
+ #include <lustre_compat/linux/shrinker.h>
++#include <lustre_compat/linux/vmalloc.h>
+ #include <lustre_crypto.h>
+ 
+ int __init cfs_arch_init(void)
+@@ -45,6 +46,8 @@ int __init cfs_arch_init(void)
+ #ifndef HAVE_WAIT_VAR_EVENT
+ 	wait_bit_init();
+ #endif
++	init_compat_vfree_atomic();
++
+ 	rc = lustre_symbols_init();
+ 	if (rc < 0) {
+ 		pr_info("lustre_symbols_init: error %d\n", rc);
+@@ -72,6 +75,7 @@ failed:
+ 
+ void __exit cfs_arch_exit(void)
+ {
++	exit_compat_vfree_atomic();
+ 	shrinker_debugfs_fini();
+ #ifdef CONFIG_LL_ENCRYPTION
+ 	llcrypt_exit();
+diff --git a/lustre/include/lustre_compat.h b/lustre/include/lustre_compat.h
+index 19a35713ea..ed6257d3bc 100644
+--- a/lustre/include/lustre_compat.h
++++ b/lustre/include/lustre_compat.h
+@@ -731,10 +731,6 @@ static inline pgoff_t folio_index_page(struct page *page)
+ 
+ #endif /* HAVE_FOLIO_BATCH && HAVE_FILEMAP_GET_FOLIOS */
+ 
+-#ifndef HAVE_FLUSH___WORKQUEUE
+-#define __flush_workqueue(wq)	flush_scheduled_work()
+-#endif
+-
+ #ifdef HAVE_NSPROXY_COUNT_AS_REFCOUNT
+ #define nsproxy_dec(ns)		refcount_dec(&(ns)->count)
+ #else
+diff --git a/lustre/include/obd_support.h b/lustre/include/obd_support.h
+index 94a1e11705..1162afc9db 100644
+--- a/lustre/include/obd_support.h
++++ b/lustre/include/obd_support.h
+@@ -963,12 +963,24 @@ do {									\
+ 	}								\
+ } while (0)
+ 
++#define OBD_FREE_LARGE_ATOMIC(ptr, size)				\
++do {									\
++	if (is_vmalloc_addr(ptr)) {					\
++		OBD_FREE_PRE(ptr, size, "vfreed");			\
++		POISON(ptr, 0x5a, size);				\
++		compat_vfree_atomic(ptr);				\
++		POISON_PTR(ptr);					\
++	} else {							\
++		OBD_FREE(ptr, size);					\
++	}                                                               \
++} while (0)
++
+ #define OBD_FREE_LARGE(ptr, size)					      \
+ do {									      \
+ 	if (is_vmalloc_addr(ptr)) {					      \
+ 		OBD_FREE_PRE(ptr, size, "vfreed");			      \
+ 		POISON(ptr, 0x5a, size);				      \
+-		compat_vfree_atomic(ptr);				      \
++		vfree(ptr);						\
+ 		POISON_PTR(ptr);					      \
+ 	} else {							      \
+ 		OBD_FREE(ptr, size);					      \
+diff --git a/lustre/ptlrpc/sec_null.c b/lustre/ptlrpc/sec_null.c
+index c0280a36f2..a47bc10333 100644
+--- a/lustre/ptlrpc/sec_null.c
++++ b/lustre/ptlrpc/sec_null.c
+@@ -200,7 +200,7 @@ void null_free_repbuf(struct ptlrpc_sec *sec,
+ {
+ 	LASSERT(req->rq_repbuf);
+ 
+-	OBD_FREE_LARGE(req->rq_repbuf, req->rq_repbuf_len);
++	OBD_FREE_LARGE_ATOMIC(req->rq_repbuf, req->rq_repbuf_len);
+ 	req->rq_repbuf = NULL;
+ 	req->rq_repbuf_len = 0;
+ }
+diff --git a/lustre/ptlrpc/sec_plain.c b/lustre/ptlrpc/sec_plain.c
+index cb9b58fad0..75986ce523 100644
+--- a/lustre/ptlrpc/sec_plain.c
++++ b/lustre/ptlrpc/sec_plain.c
+@@ -574,7 +574,7 @@ void plain_free_reqbuf(struct ptlrpc_sec *sec,
+ {
+ 	ENTRY;
+ 	if (!req->rq_pool) {
+-		OBD_FREE_LARGE(req->rq_reqbuf, req->rq_reqbuf_len);
++		OBD_FREE_LARGE_ATOMIC(req->rq_reqbuf, req->rq_reqbuf_len);
+ 		req->rq_reqbuf = NULL;
+ 		req->rq_reqbuf_len = 0;
+ 	}
+diff --git a/lustre_compat/mm/Makefile b/lustre_compat/mm/Makefile
+index 36451bfed9..e2bc6714e1 100644
+--- a/lustre_compat/mm/Makefile
++++ b/lustre_compat/mm/Makefile
+@@ -4,4 +4,4 @@
+ # This file is part of Lustre, http://www.lustre.org/
+ #
+ 
+-mm_objs := shrinker_debug.o
++mm_objs := shrinker_debug.o vmalloc.o
+diff --git a/lustre_compat/mm/vmalloc.c b/lustre_compat/mm/vmalloc.c
+new file mode 100644
+index 0000000000..d1090772fc
+--- /dev/null
++++ b/lustre_compat/mm/vmalloc.c
+@@ -0,0 +1,65 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++
++#include <lustre_compat/linux/vmalloc.h>
++#include <lustre_compat/linux/workqueue.h>
++
++/*
++ * This is opencoding of vfree_atomic from Linux kernel added in 4.10 with
++ * minimum changes needed to work on older kernels too.
++ *
++ * We do this because using kallaym_lookup_name() can fail with exporting
++ * vfree_atomic() which shows Lustre's days out of tree are numbered. In
++ * reality the only reason we do this is because of the poor handling of
++ * locking in the ptlrpc layer. Hoepfully a rework of ptlrpc layer will
++ * remove the need of this code.
++ */
++#ifndef llist_for_each_safe
++#define llist_for_each_safe(pos, n, node)                       \
++	for ((pos) = (node); (pos) && ((n) = (pos)->next, true); (pos) = (n))
++#endif
++
++struct vfree_deferred {
++	struct llist_head list;
++	struct work_struct wq;
++};
++static DEFINE_PER_CPU(struct vfree_deferred, vfree_deferred);
++
++static void free_work(struct work_struct *w)
++{
++	struct vfree_deferred *p = container_of(w, struct vfree_deferred, wq);
++	struct llist_node *t, *llnode;
++
++	llist_for_each_safe(llnode, t, llist_del_all(&p->list))
++		vfree((void *)llnode);
++}
++
++void init_compat_vfree_atomic(void)
++{
++	int i;
++
++	for_each_possible_cpu(i) {
++		struct vfree_deferred *p;
++
++		p = &per_cpu(vfree_deferred, i);
++		init_llist_head(&p->list);
++		INIT_WORK(&p->wq, free_work);
++	}
++}
++
++void exit_compat_vfree_atomic(void)
++{
++	/* exit_libcfs_vfree_atomic */
++	__flush_workqueue(system_wq);
++}
++
++void compat_vfree_atomic(const void *addr)
++{
++	struct vfree_deferred *p = raw_cpu_ptr(&vfree_deferred);
++
++	if (!addr)
++		 return;
++
++	if (llist_add((struct llist_node *)addr, &p->list))
++		schedule_work(&p->wq);
++}
++EXPORT_SYMBOL(compat_vfree_atomic);
+diff --git a/lustre_compat/symbols.c b/lustre_compat/symbols.c
+index a353809aa6..74acda294a 100644
+--- a/lustre_compat/symbols.c
++++ b/lustre_compat/symbols.c
+@@ -69,14 +69,6 @@ int compat_apply_workqueue_attrs(struct workqueue_struct *wq,
+ }
+ EXPORT_SYMBOL_GPL(compat_apply_workqueue_attrs);
+ 
+-static void (*__vfree_atomic)(const void *addr);
+-
+-void compat_vfree_atomic(const void *addr)
+-{
+-	__vfree_atomic(addr);
+-}
+-EXPORT_SYMBOL_GPL(compat_vfree_atomic);
+-
+ int lustre_symbols_init(void)
+ {
+ 	int rc;
+@@ -96,9 +88,5 @@ int lustre_symbols_init(void)
+ 	if (!__apply_workqueue_attrs)
+ 		return -EINVAL;
+ 
+-	__vfree_atomic = cfs_kallsyms_lookup_name("vfree_atomic");
+-	if (!__vfree_atomic)
+-		return -EINVAL;
+-
+ 	return 0;
+ }

@@ -1,0 +1,285 @@
+From 5829ad15367146a3a2fd6e9c28e5751d021f823f Mon Sep 17 00:00:00 2001
+From: Marc Vef <mvef@whamcloud.com>
+Date: Thu, 16 Oct 2025 09:26:14 +0200
+Subject: [PATCH 1/1] LU-18569 tests: sanity-sec remove duplicate wait_nm_sync
+ calls
+
+Older sanity-sec tests and utility functions use wait_nm_sync()
+unnecessarily often. When the nodemap file is synchronized with the
+other servers, it is only necessary to wait for the last change to
+propagate.
+
+This patch removes those wait_nm_sync() calls to speed up sanity-sec
+testing.
+
+Test-Parameters: trivial testlist=sanity-sec
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: If8d234cb1407c0e8fa270c996c855a4c4f8ea56b
+---
+ lustre/tests/sanity-sec.sh | 65 ++++++++++++--------------------------
+ 1 file changed, 20 insertions(+), 45 deletions(-)
+
+diff --git a/lustre/tests/sanity-sec.sh b/lustre/tests/sanity-sec.sh
+index b10e3d0c1d..f34133276d 100755
+--- a/lustre/tests/sanity-sec.sh
++++ b/lustre/tests/sanity-sec.sh
+@@ -291,6 +291,7 @@ test_4() {
+ run_test 4 "set supplementary group ==============="
+ 
+ create_nodemaps() {
++	local csum
+ 	local i
+ 	local rc
+ 
+@@ -299,7 +300,7 @@ create_nodemaps() {
+ 	squash_id default ${NOBODY_UID:-65534} 1
+ 	wait_nm_sync default squash_gid '' inactive
+ 	for (( i = 0; i < NODEMAP_COUNT; i++ )); do
+-		local csum=${HOSTNAME_CHECKSUM}_${i}
++		csum=${HOSTNAME_CHECKSUM}_${i}
+ 
+ 		do_facet mgs $LCTL $nodemap_add $csum
+ 		rc=$?
+@@ -313,19 +314,20 @@ create_nodemaps() {
+ 			grep -c $csum || true" 1 30 ||
+ 		    return 1
+ 	done
+-	for (( i = 0; i < NODEMAP_COUNT; i++ )); do
+-		local csum=${HOSTNAME_CHECKSUM}_${i}
+ 
+-		wait_nm_sync $csum id '' inactive
+-	done
++	# it is enough to check and wait for the last nodemap
++	csum=${HOSTNAME_CHECKSUM}_$((NODEMAP_COUNT - 1))
++	wait_nm_sync $csum id '' inactive
++
+ 	return 0
+ }
+ 
+ delete_nodemaps() {
++	local csum
+ 	local i
+ 
+ 	for ((i = 0; i < NODEMAP_COUNT; i++)); do
+-		local csum=${HOSTNAME_CHECKSUM}_${i}
++		csum=${HOSTNAME_CHECKSUM}_${i}
+ 
+ 		if ! do_facet mgs $LCTL $nodemap_del $csum; then
+ 			error "$nodemap_del $csum failed with $?"
+@@ -337,11 +339,11 @@ delete_nodemaps() {
+ 			grep -c $csum || true" 0 30 ||
+ 		    return 1
+ 	done
+-	for (( i = 0; i < NODEMAP_COUNT; i++ )); do
+-		local csum=${HOSTNAME_CHECKSUM}_${i}
+ 
+-		wait_nm_sync $csum id '' inactive
+-	done
++	# it is enough to check and wait for the last nodemap
++	csum=${HOSTNAME_CHECKSUM}_$((NODEMAP_COUNT - 1))
++	wait_nm_sync $csum id '' inactive
++
+ 	return 0
+ }
+ 
+@@ -1258,10 +1260,10 @@ create_fops_nodemaps() {
+ 				--idtype gid --idmap ${map} || return 1
+ 		done
+ 
+-		wait_nm_sync c$i idmap
+-
+ 		i=$((i + 1))
+ 	done
++	wait_nm_sync c$((i - 1)) idmap
++
+ 	return 0
+ }
+ 
+@@ -1297,7 +1299,6 @@ fops_test_setup() {
+ 	do_facet mgs $LCTL nodemap_modify --name c0 --property admin --value 1
+ 	do_facet mgs $LCTL nodemap_modify --name c0 --property trusted --value 1
+ 
+-	wait_nm_sync c0 admin_nodemap
+ 	wait_nm_sync c0 trusted_nodemap
+ 
+ 	do_node ${clients_arr[0]} rm -rf $DIR/$tdir
+@@ -1313,7 +1314,6 @@ fops_test_setup() {
+ 	do_node ${clients_arr[0]} $LCTL set_param \
+ 		ldlm.namespaces.$FSNAME-MDT*.lru_size=clear
+ 
+-	wait_nm_sync c0 admin_nodemap
+ 	wait_nm_sync c0 trusted_nodemap
+ }
+ 
+@@ -1379,7 +1379,6 @@ fileset_test_cleanup() {
+ 	do_facet mgs $LCTL nodemap_modify --name $nm --property trusted \
+ 		--value 1
+ 
+-	wait_nm_sync $nm admin_nodemap
+ 	wait_nm_sync $nm trusted_nodemap
+ 
+ 	# cleanup directory created for subdir mount
+@@ -1395,7 +1394,6 @@ fileset_test_cleanup() {
+ 	do_node ${clients_arr[0]} $LCTL set_param \
+ 		ldlm.namespaces.$FSNAME-MDT*.lru_size=clear
+ 
+-	wait_nm_sync $nm admin_nodemap
+ 	wait_nm_sync $nm trusted_nodemap
+ 	if [ -n "$FILESET" -a -z "$SKIP_FILESET" ]; then
+ 		cleanup_mount $MOUNT
+@@ -1669,15 +1667,13 @@ nodemap_test_setup() {
+ 	rc=$?
+ 	[[ $rc != 0 ]] && error "adding fops nodemaps failed $rc"
+ 
+-	do_facet mgs $LCTL nodemap_activate $active_nodemap
+-	wait_nm_sync active
+-
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		--property admin --value 1
+-	wait_nm_sync default admin_nodemap
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		--property trusted --value 1
+-	wait_nm_sync default trusted_nodemap
++
++	do_facet mgs $LCTL nodemap_activate $active_nodemap
++	wait_nm_sync active
+ }
+ 
+ nodemap_test_cleanup() {
+@@ -1688,10 +1684,8 @@ nodemap_test_cleanup() {
+ 
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		 --property admin --value 0
+-	wait_nm_sync default admin_nodemap
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		 --property trusted --value 0
+-	wait_nm_sync default trusted_nodemap
+ 
+ 	do_facet mgs $LCTL nodemap_activate 0
+ 	wait_nm_sync active 0
+@@ -1711,7 +1705,6 @@ nodemap_clients_admin_trusted() {
+ 			--property trusted --value $tr
+ 		i=$((i + 1))
+ 	done
+-	wait_nm_sync c$((i - 1)) admin_nodemap
+ 	wait_nm_sync c$((i - 1)) trusted_nodemap
+ }
+ 
+@@ -1862,7 +1855,6 @@ nodemap_acl_test_setup() {
+ 	do_facet mgs $LCTL nodemap_modify --name c0 --property admin --value 1
+ 	do_facet mgs $LCTL nodemap_modify --name c0 --property trusted --value 1
+ 
+-	wait_nm_sync c0 admin_nodemap
+ 	wait_nm_sync c0 trusted_nodemap
+ 
+ 	do_node ${clients_arr[0]} rm -rf $DIR/$tdir
+@@ -1999,11 +1991,8 @@ test_23b() { #LU-9929
+ 	local fs_user
+ 
+ 	do_facet mgs $LCTL nodemap_modify --name c0 --property admin --value 1
+-	wait_nm_sync c0 admin_nodemap
+ 	do_facet mgs $LCTL nodemap_modify --name c1 --property admin --value 1
+-	wait_nm_sync c1 admin_nodemap
+ 	do_facet mgs $LCTL nodemap_modify --name c1 --property trusted --value 1
+-	wait_nm_sync c1 trusted_nodemap
+ 
+ 	# Add idmap $ID0:$fs_id (500:60010)
+ 	do_facet mgs $LCTL nodemap_add_idmap --name c0 --idtype gid \
+@@ -2383,13 +2372,12 @@ nodemap_exercise_fileset() {
+ 
+ 	# setup
+ 	if [[ "$nm" == "default" ]]; then
+-		do_facet mgs $LCTL nodemap_activate 1
+-		wait_nm_sync active
+ 		do_facet mgs $LCTL nodemap_modify --name default \
+ 			--property admin --value 1
+ 		do_facet mgs $LCTL nodemap_modify --name default \
+ 			--property trusted --value 1
+-		wait_nm_sync default trusted_nodemap
++		do_facet mgs $LCTL nodemap_activate 1
++		wait_nm_sync active
+ 		check_proj=false
+ 	else
+ 		nodemap_test_setup
+@@ -2427,13 +2415,10 @@ nodemap_exercise_fileset() {
+ 	if $check_proj; then
+ 		do_facet mgs $LCTL nodemap_modify --name $nm \
+ 			 --property admin --value 1
+-		wait_nm_sync $nm admin_nodemap
+ 		do_facet mgs $LCTL nodemap_modify --name $nm \
+ 			 --property trusted --value 0
+-		wait_nm_sync $nm trusted_nodemap
+ 		do_facet mgs $LCTL nodemap_modify --name $nm \
+ 			 --property map_mode --value projid
+-		wait_nm_sync $nm map_mode
+ 		do_facet mgs $LCTL nodemap_add_idmap --name $nm \
+ 			 --idtype projid --idmap 1:1
+ 		do_facet mgs $LCTL nodemap_modify --name $nm \
+@@ -2521,7 +2506,6 @@ nodemap_exercise_fileset() {
+ 			 --property admin --value 0
+ 		do_facet mgs $LCTL nodemap_modify --name default \
+ 			 --property trusted --value 0
+-		wait_nm_sync default trusted_nodemap
+ 		do_facet mgs $LCTL nodemap_activate 0
+ 		wait_nm_sync active 0
+ 		trap 0
+@@ -4451,9 +4435,7 @@ test_35() {
+ 		do_facet mgs $LCTL nodemap_modify --name c${i} \
+ 			 --property admin --value 0
+ 	done
+-	for i in $(seq 0 $((num_clients-1))); do
+-		wait_nm_sync c${i} admin_nodemap
+-	done
++	wait_nm_sync c$((num_clients - 1)) admin_nodemap
+ 
+ 	# access with mapped root
+ 	changelog_dump && error "dump changelogs should have failed"
+@@ -4569,8 +4551,6 @@ cleanup_nodemap_after_enc_tests() {
+ 			wait_nm_sync default readonly_mount '' inactive
+ 		fi
+ 	fi
+-	wait_nm_sync default trusted_nodemap '' inactive
+-	wait_nm_sync default admin_nodemap '' inactive
+ 	wait_nm_sync active
+ 
+ 	mount_client $MOUNT ${MOUNT_OPTS} || error "re-mount failed"
+@@ -5867,7 +5847,6 @@ test_51() {
+ 			--property admin --value 1
+ 		do_facet mgs $LCTL nodemap_modify --name default \
+ 			--property trusted --value 1
+-		wait_nm_sync default trusted_nodemap
+ 
+ 		do_facet mgs $LCTL nodemap_activate 1
+ 		wait_nm_sync active 1
+@@ -6433,7 +6412,6 @@ setup_local_client_nodemap() {
+ 	fi
+ 
+ 	do_facet mgs $LCTL nodemap_del $nm_name || true
+-	wait_nm_sync $nm_name id ''
+ 
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		--property admin --value 1
+@@ -6464,7 +6442,6 @@ cleanup_local_client_nodemap() {
+ 		--property admin --value 0
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		--property trusted --value 0
+-	wait_nm_sync default trusted_nodemap
+ 
+ 	do_facet mgs $LCTL nodemap_activate 0
+ 	wait_nm_sync active 0
+@@ -7837,7 +7814,6 @@ test_64h() {
+ 	do_facet mgs $LCTL nodemap_modify --name c0 \
+ 		 --property rbac --value $rbac ||
+ 		error "setting rbac $rbac failed (2)"
+-	wait_nm_sync c0 rbac
+ 	# squash root by setting admin=0
+ 	do_facet mgs $LCTL nodemap_modify --name c0 \
+ 		 --property admin --value 0
+@@ -8627,7 +8603,6 @@ test_72d() {
+ 		--property admin --value 1
+ 	do_facet mgs $LCTL nodemap_modify --name default \
+ 		--property trusted --value 1
+-	wait_nm_sync default trusted_nodemap
+ 
+ 	do_facet mgs $LCTL nodemap_add $mgsnm ||
+ 		error "adding $mgsnm on MGS failed"
