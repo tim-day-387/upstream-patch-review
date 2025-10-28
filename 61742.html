@@ -1,0 +1,765 @@
+From b45b467cad07b8776ad9ec06009b491a4ee28fe7 Mon Sep 17 00:00:00 2001
+From: Sebastien Buisson <sbuisson@ddn.com>
+Date: Wed, 21 May 2025 13:42:56 +0200
+Subject: [PATCH 1/1] LU-19079 sec: gss token for nodemap identification
+
+Put into the security context the nodemap name retrieved during GSS
+authentication. This nodemap name is then used to apply nodemap
+membership of exports at target connect and reconnect.
+The consequence is that a nodemap with no associated NID ranges but
+with the gssonly_identification property set will take membership of
+clients solely based on the nodemap name associated with the strong
+authentication token used for GSS context negotiation.
+
+For this purpose the function nodemap_add_member() is enhanced to
+take an extra struct ptlrpc_svc_ctx * parameter, to be able to fetch
+the nodemap name from the security context. This enables making an
+export part of a nodemap while the corresponding client NID is not
+part of the nodemap range. Thus this is restricted to nodemaps with
+the gssonly_identification property set.
+
+Add sanity-sec test_79 to demonstrate the feature.
+
+Signed-off-by: Sebastien Buisson <sbuisson@ddn.com>
+Change-Id: I58b50cb783f98813234e703a440555d26abfb780
+Reviewed-by: Marc Vef <mvef@whamcloud.com>
+Reviewed-by: Andreas Dilger <adilger@whamcloud.com>
+---
+ lustre/include/lustre_nodemap.h |   3 +-
+ lustre/include/lustre_sec.h     |   1 +
+ lustre/ldlm/ldlm_lib.c          |   6 +-
+ lustre/mdt/mdt_handler.c        |  64 +++++++++++-----
+ lustre/mgs/mgs_handler.c        |   8 +-
+ lustre/obdecho/echo.c           |  25 +++++--
+ lustre/ofd/ofd_obd.c            |  49 +++++++++----
+ lustre/ptlrpc/gss/sec_gss.c     |   3 +
+ lustre/ptlrpc/nodemap_handler.c | 102 ++++++++++++++++++--------
+ lustre/ptlrpc/nodemap_member.c  |  30 ++++++--
+ lustre/tests/sanity-sec.sh      | 126 +++++++++++++++++++++++++++++++-
+ lustre/tests/test-framework.sh  |  51 +++++++++++++
+ 12 files changed, 384 insertions(+), 84 deletions(-)
+
+diff --git a/lustre/include/lustre_nodemap.h b/lustre/include/lustre_nodemap.h
+index 19b4b6c787..57edd358b1 100644
+--- a/lustre/include/lustre_nodemap.h
++++ b/lustre/include/lustre_nodemap.h
+@@ -215,7 +215,8 @@ struct nm_config_file {
+ int nodemap_activate(const bool value);
+ int nodemap_add(const char *nodemap_name, bool dynamic);
+ int nodemap_del(const char *nodemap_name, bool *out_clean_llog_fileset);
+-int nodemap_add_member(struct lnet_nid *nid, struct obd_export *exp);
++int nodemap_add_member(struct ptlrpc_svc_ctx *svc_ctx, struct lnet_nid *nid,
++		       struct obd_export *exp);
+ void nodemap_del_member(struct obd_export *exp);
+ int nodemap_parse_range(const char *range_string, struct lnet_nid range[2],
+ 			u8 *netmask);
+diff --git a/lustre/include/lustre_sec.h b/lustre/include/lustre_sec.h
+index 5ba356d23a..0a9788cb69 100644
+--- a/lustre/include/lustre_sec.h
++++ b/lustre/include/lustre_sec.h
+@@ -888,6 +888,7 @@ static inline int sec_is_rootonly(struct ptlrpc_sec *sec)
+ struct ptlrpc_svc_ctx {
+ 	atomic_t                        sc_refcount;
+ 	struct ptlrpc_sec_policy       *sc_policy;
++	char			       *sc_nodemap;
+ };
+ 
+ /*
+diff --git a/lustre/ldlm/ldlm_lib.c b/lustre/ldlm/ldlm_lib.c
+index 79d47e3f01..ec867cc5b0 100644
+--- a/lustre/ldlm/ldlm_lib.c
++++ b/lustre/ldlm/ldlm_lib.c
+@@ -1493,8 +1493,7 @@ no_export:
+ 		} else {
+ dont_check_exports:
+ 			rc = obd_connect(req->rq_svc_thread->t_env,
+-					 &export, target, &cluuid, data,
+-					 &req->rq_peer.nid);
++					 &export, target, &cluuid, data, req);
+ 			if (mds_conn && CFS_FAIL_CHECK(OBD_FAIL_TGT_RCVG_FLAG))
+ 				lustre_msg_add_op_flags(req->rq_repmsg,
+ 							MSG_CONNECT_RECOVERING);
+@@ -1513,8 +1512,7 @@ dont_check_exports:
+ 			class_export_put(export);
+ 		}
+ 		rc = obd_reconnect(req->rq_svc_thread->t_env,
+-				   export, target, &cluuid, data,
+-				   &req->rq_peer.nid);
++				   export, target, &cluuid, data, req);
+ 		if (rc == 0) {
+ 			reconnected = true;
+ 			/*
+diff --git a/lustre/mdt/mdt_handler.c b/lustre/mdt/mdt_handler.c
+index 5eef04015b..ac1d22a261 100644
+--- a/lustre/mdt/mdt_handler.c
++++ b/lustre/mdt/mdt_handler.c
+@@ -7434,11 +7434,13 @@ static int mdt_obd_connect(const struct lu_env *env,
+ 			   struct obd_connect_data *data,
+ 			   void *localdata)
+ {
+-	struct obd_export	*lexp;
+-	struct lustre_handle	conn = { 0 };
+-	struct mdt_device	*mdt;
+-	int			 rc;
+-	struct lnet_nid		*client_nid = localdata;
++	struct ptlrpc_request *req = localdata;
++	struct ptlrpc_svc_ctx *svc_ctx = NULL;
++	struct lnet_nid *client_nid = NULL;
++	struct lustre_handle conn = { 0 };
++	struct obd_export *lexp;
++	struct mdt_device *mdt;
++	int rc;
+ 
+ 	ENTRY;
+ 
+@@ -7473,9 +7475,20 @@ static int mdt_obd_connect(const struct lu_env *env,
+ 	lexp = class_conn2export(&conn);
+ 	LASSERT(lexp != NULL);
+ 
+-	rc = nodemap_add_member(client_nid, lexp);
+-	if (rc != 0 && rc != -EEXIST)
+-		GOTO(out, rc);
++	if (req) {
++		svc_ctx = req->rq_svc_ctx;
++		client_nid = &req->rq_peer.nid;
++	}
++
++	if (svc_ctx || client_nid) {
++		rc = nodemap_add_member(svc_ctx, client_nid, lexp);
++		if (rc != 0 && rc != -EEXIST)
++			GOTO(out, rc);
++	} else {
++		CDEBUG(D_HA,
++		       "%s: cannot find nodemap for client %s: svc_ctx and nid are null\n",
++		       obd->obd_name, cluuid->uuid);
++	}
+ 
+ 	rc = mdt_connect_internal(env, lexp, mdt, data, false);
+ 	if (rc == 0) {
+@@ -7484,8 +7497,8 @@ static int mdt_obd_connect(const struct lu_env *env,
+ 		LASSERT(lcd);
+ 		memcpy(lcd->lcd_uuid, cluuid, sizeof(lcd->lcd_uuid));
+ 		rc = tgt_client_new(env, lexp);
+-		if (rc == 0)
+-			mdt_export_stats_init(obd, lexp, localdata);
++		if (rc == 0 && client_nid)
++			mdt_export_stats_init(obd, lexp, client_nid);
+ 	}
+ out:
+ 	if (rc != 0) {
+@@ -7505,24 +7518,39 @@ static int mdt_obd_reconnect(const struct lu_env *env,
+ 			     struct obd_connect_data *data,
+ 			     void *localdata)
+ {
+-	struct lnet_nid *client_nid = localdata;
++	struct ptlrpc_request *req = localdata;
++	struct ptlrpc_svc_ctx *svc_ctx = NULL;
++	struct lnet_nid *client_nid = NULL;
+ 	int rc;
+ 
+ 	ENTRY;
+ 
+-	if (exp == NULL || obd == NULL || cluuid == NULL)
++	if (!exp || !obd || !cluuid)
+ 		RETURN(-EINVAL);
+ 
+-	rc = nodemap_add_member(client_nid, exp);
+-	if (rc != 0 && rc != -EEXIST)
+-		RETURN(rc);
++	if (req) {
++		svc_ctx = req->rq_svc_ctx;
++		client_nid = &req->rq_peer.nid;
++	}
++
++	if (svc_ctx || client_nid) {
++		rc = nodemap_add_member(svc_ctx, client_nid, exp);
++		if (rc != 0 && rc != -EEXIST)
++			RETURN(rc);
++	} else {
++		CDEBUG(D_HA,
++		       "%s: cannot find nodemap for client %s: svc_ctx and nid are null\n",
++		       obd->obd_name, cluuid->uuid);
++	}
+ 
+ 	rc = mdt_connect_internal(env, exp, mdt_dev(obd->obd_lu_dev), data,
+ 				  true);
+-	if (rc == 0)
+-		mdt_export_stats_init(obd, exp, localdata);
+-	else
++	if (rc == 0) {
++		if (client_nid)
++			mdt_export_stats_init(obd, exp, client_nid);
++	} else {
+ 		nodemap_del_member(exp);
++	}
+ 
+ 	RETURN(rc);
+ }
+diff --git a/lustre/mgs/mgs_handler.c b/lustre/mgs/mgs_handler.c
+index eff9952054..28f1e359b9 100644
+--- a/lustre/mgs/mgs_handler.c
++++ b/lustre/mgs/mgs_handler.c
+@@ -1730,6 +1730,9 @@ static int mgs_obd_reconnect(const struct lu_env *env, struct obd_export *exp,
+ 			     struct obd_device *obd, struct obd_uuid *cluuid,
+ 			     struct obd_connect_data *data, void *localdata)
+ {
++	struct ptlrpc_request *req = localdata;
++	struct lnet_nid *client_nid = NULL;
++
+ 	ENTRY;
+ 
+ 	if (exp == NULL || obd == NULL || cluuid == NULL)
+@@ -1747,7 +1750,10 @@ static int mgs_obd_reconnect(const struct lu_env *env, struct obd_export *exp,
+ 		data->ocd_version = LUSTRE_VERSION_CODE;
+ 	}
+ 
+-	RETURN(mgs_export_stats_init(obd, exp, localdata));
++	if (req)
++		client_nid = &req->rq_peer.nid;
++
++	RETURN(mgs_export_stats_init(obd, exp, client_nid));
+ }
+ 
+ static int mgs_obd_connect(const struct lu_env *env, struct obd_export **exp,
+diff --git a/lustre/obdecho/echo.c b/lustre/obdecho/echo.c
+index c3b8fab292..cbf3530b32 100644
+--- a/lustre/obdecho/echo.c
++++ b/lustre/obdecho/echo.c
+@@ -60,7 +60,9 @@ static int echo_connect(const struct lu_env *env,
+ 			struct obd_uuid *cluuid, struct obd_connect_data *data,
+ 			void *localdata)
+ {
+-	struct lnet_nid *client_nid = localdata;
++	struct ptlrpc_request *req = localdata;
++	struct ptlrpc_svc_ctx *svc_ctx = NULL;
++	struct lnet_nid *client_nid = NULL;
+ 	struct lustre_handle conn = { 0 };
+ 	struct obd_export *lexp;
+ 	int rc;
+@@ -78,11 +80,22 @@ static int echo_connect(const struct lu_env *env,
+ 	lexp = class_conn2export(&conn);
+ 
+ 	if (lexp) {
+-		rc = nodemap_add_member(client_nid, lexp);
+-		if (rc == -EEXIST)
+-			rc = 0;
+-		if (rc)
+-			GOTO(out, rc);
++		if (req) {
++			svc_ctx = req->rq_svc_ctx;
++			client_nid = &req->rq_peer.nid;
++		}
++
++		if (svc_ctx || client_nid) {
++			rc = nodemap_add_member(svc_ctx, client_nid, lexp);
++			if (rc == -EEXIST)
++				rc = 0;
++			if (rc)
++				GOTO(out, rc);
++		} else {
++			CDEBUG(D_HA,
++			       "%s: cannot find nodemap for client %s: svc_ctx and nid are null\n",
++			       obd->obd_name, cluuid->uuid);
++		}
+ 	}
+ 
+ out:
+diff --git a/lustre/ofd/ofd_obd.c b/lustre/ofd/ofd_obd.c
+index 28e6b04db7..4aba1f5bbc 100644
+--- a/lustre/ofd/ofd_obd.c
++++ b/lustre/ofd/ofd_obd.c
+@@ -271,8 +271,10 @@ static int ofd_obd_reconnect(const struct lu_env *env, struct obd_export *exp,
+ 			     struct obd_connect_data *data,
+ 			     void *localdata)
+ {
++	struct ptlrpc_request *req = localdata;
++	struct ptlrpc_svc_ctx *svc_ctx = NULL;
++	struct lnet_nid *client_nid = NULL;
+ 	struct ofd_device *ofd;
+-	struct lnet_nid *client_nid = localdata;
+ 	int rc;
+ 
+ 	ENTRY;
+@@ -280,17 +282,30 @@ static int ofd_obd_reconnect(const struct lu_env *env, struct obd_export *exp,
+ 	if (!exp || !obd || !cluuid)
+ 		RETURN(-EINVAL);
+ 
+-	rc = nodemap_add_member(client_nid, exp);
+-	if (rc != 0 && rc != -EEXIST)
+-		RETURN(rc);
++	if (req) {
++		svc_ctx = req->rq_svc_ctx;
++		client_nid = &req->rq_peer.nid;
++	}
++
++	if (svc_ctx || client_nid) {
++		rc = nodemap_add_member(svc_ctx, client_nid, exp);
++		if (rc != 0 && rc != -EEXIST)
++			RETURN(rc);
++	} else {
++		CDEBUG(D_HA,
++		       "%s: cannot find nodemap for client %s: svc_ctx and nid are null\n",
++		       obd->obd_name, cluuid->uuid);
++	}
+ 
+ 	ofd = ofd_dev(obd->obd_lu_dev);
+ 
+ 	rc = ofd_parse_connect_data(env, exp, data, false);
+-	if (rc == 0)
+-		ofd_export_stats_init(ofd, exp, client_nid);
+-	else
++	if (rc == 0) {
++		if (client_nid)
++			ofd_export_stats_init(ofd, exp, client_nid);
++	} else {
+ 		nodemap_del_member(exp);
++	}
+ 
+ 	RETURN(rc);
+ }
+@@ -316,10 +331,12 @@ static int ofd_obd_connect(const struct lu_env *env, struct obd_export **_exp,
+ 			   struct obd_device *obd, struct obd_uuid *cluuid,
+ 			   struct obd_connect_data *data, void *localdata)
+ {
++	struct ptlrpc_request *req = localdata;
++	struct ptlrpc_svc_ctx *svc_ctx = NULL;
++	struct lnet_nid *client_nid = NULL;
++	struct lustre_handle conn = { 0 };
+ 	struct obd_export *exp;
+ 	struct ofd_device *ofd;
+-	struct lustre_handle conn = { 0 };
+-	struct lnet_nid *client_nid = localdata;
+ 	int rc;
+ 
+ 	ENTRY;
+@@ -336,13 +353,18 @@ static int ofd_obd_connect(const struct lu_env *env, struct obd_export **_exp,
+ 	exp = class_conn2export(&conn);
+ 	LASSERT(exp != NULL);
+ 
+-	if (client_nid) {
+-		rc = nodemap_add_member(client_nid, exp);
++	if (req) {
++		svc_ctx = req->rq_svc_ctx;
++		client_nid = &req->rq_peer.nid;
++	}
++
++	if (svc_ctx || client_nid) {
++		rc = nodemap_add_member(svc_ctx, client_nid, exp);
+ 		if (rc != 0 && rc != -EEXIST)
+ 			GOTO(out, rc);
+ 	} else {
+ 		CDEBUG(D_HA,
+-		       "%s: cannot find nodemap for client %s: nid is null\n",
++		       "%s: cannot find nodemap for client %s: svc_ctx and nid are null\n",
+ 		       obd->obd_name, cluuid->uuid);
+ 	}
+ 
+@@ -358,7 +380,8 @@ static int ofd_obd_connect(const struct lu_env *env, struct obd_export **_exp,
+ 		rc = tgt_client_new(env, exp);
+ 		if (rc != 0)
+ 			GOTO(out, rc);
+-		ofd_export_stats_init(ofd, exp, client_nid);
++		if (client_nid)
++			ofd_export_stats_init(ofd, exp, client_nid);
+ 	}
+ 
+ 	CDEBUG(D_HA, "%s: get connection from MDS %d\n", obd->obd_name,
+diff --git a/lustre/ptlrpc/gss/sec_gss.c b/lustre/ptlrpc/gss/sec_gss.c
+index 5628eb1bfa..aae2464ebb 100644
+--- a/lustre/ptlrpc/gss/sec_gss.c
++++ b/lustre/ptlrpc/gss/sec_gss.c
+@@ -2371,6 +2371,7 @@ int gss_svc_accept(struct ptlrpc_sec_policy *policy, struct ptlrpc_request *req)
+ 
+ 	grctx->src_base.sc_policy = sptlrpc_policy_get(policy);
+ 	atomic_set(&grctx->src_base.sc_refcount, 1);
++	grctx->src_base.sc_nodemap = NULL;
+ 	req->rq_svc_ctx = &grctx->src_base;
+ 	gw = &grctx->src_wirectx;
+ 
+@@ -2406,6 +2407,8 @@ int gss_svc_accept(struct ptlrpc_sec_policy *policy, struct ptlrpc_request *req)
+ 	case SECSVC_OK:
+ 		LASSERT (grctx->src_ctx);
+ 
++		grctx->src_base.sc_nodemap = grctx->src_ctx->gsc_nm_name;
++
+ 		req->rq_auth_gss = 1;
+ 		req->rq_auth_usr_mdt = grctx->src_ctx->gsc_usr_mds;
+ 		req->rq_auth_usr_ost = grctx->src_ctx->gsc_usr_oss;
+diff --git a/lustre/ptlrpc/nodemap_handler.c b/lustre/ptlrpc/nodemap_handler.c
+index 050e7afa1e..d14c3f419c 100644
+--- a/lustre/ptlrpc/nodemap_handler.c
++++ b/lustre/ptlrpc/nodemap_handler.c
+@@ -657,53 +657,91 @@ EXPORT_SYMBOL(nodemap_parse_idmap);
+ 
+ /**
+  * nodemap_add_member() - add a member to a nodemap
++ * @svc_ctx: security context
+  * @nid: nid to add to the members
+  * @exp: obd_export structure for the connection that is being added
+  *
++ * Add a member export to a nodemap.
++ * First we try to find the nodemap based on the name provided in the security
++ * context. Only nodemaps with the gssony_identification property set can be
++ * selected this way, otherwise we return -EPERM.
++ * If the security context does not provide any nodemap name, we try to find the
++ * nodemap based on the provided client nid.
++ *
+  * Return:
+- * * %-EINVAL		export is NULL, or has invalid NID
++ * * %-EINVAL		export is NULL, or name is invalid, or NID is invalid
++ * * %-ENOENT		nodemap not found
++ * * %-EPERM		nodemap does not have gssonly_identification property
+  * * %-EEXIST		export is already member of a nodemap
+  */
+-int nodemap_add_member(struct lnet_nid *nid, struct obd_export *exp)
++int nodemap_add_member(struct ptlrpc_svc_ctx *svc_ctx, struct lnet_nid *nid,
++		       struct obd_export *exp)
+ {
+ 	struct lu_nodemap *nodemap;
+-	bool banned;
+-	int rc = 0;
++	bool banned = false;
++	char *name = NULL;
++	int rc;
+ 
+ 	ENTRY;
+-	mutex_lock(&active_config_lock);
+-	down_read(&active_config->nmc_range_tree_lock);
+-	down_read(&active_config->nmc_ban_range_tree_lock);
+ 
+-	nodemap = nodemap_classify_nid(nid, &banned);
+-	if (IS_ERR(nodemap)) {
+-		rc = PTR_ERR(nodemap);
+-		LCONSOLE_WARN(
+-			"%s: error adding %s to nodemap, no valid NIDs found: rc=%d\n",
+-			exp->exp_obd->obd_name, libcfs_nidstr(nid), rc);
++	if (svc_ctx)
++		name = svc_ctx->sc_nodemap;
++
++	mutex_lock(&active_config_lock);
++	if (name) {
++		nodemap = nodemap_lookup(name);
++		if (IS_ERR(nodemap)) {
++			rc = PTR_ERR(nodemap);
++			CWARN("%s: error adding to nodemap %s not found: rc = %d\n",
++			      exp->exp_obd->obd_name, name, rc);
++			mutex_unlock(&active_config_lock);
++			GOTO(out, rc);
++		}
++		if (!nodemap->nmf_gss_identify) {
++			rc = -EPERM;
++			CWARN("%s: error adding to nodemap %s, gssonly_identification not set: rc = %d\n",
++			      exp->exp_obd->obd_name, name, rc);
++			GOTO(out_unlock, rc);
++		}
++	} else if (nid) {
++		down_read(&active_config->nmc_range_tree_lock);
++		down_read(&active_config->nmc_ban_range_tree_lock);
++		nodemap = nodemap_classify_nid(nid, &banned);
++		up_read(&active_config->nmc_range_tree_lock);
++		up_read(&active_config->nmc_ban_range_tree_lock);
++		if (IS_ERR(nodemap)) {
++			rc = PTR_ERR(nodemap);
++			CWARN("%s: error adding to nodemap, no valid NIDs found: rc = %d\n",
++			      exp->exp_obd->obd_name, rc);
++			mutex_unlock(&active_config_lock);
++			GOTO(out, rc);
++		}
+ 	} else {
+-		rc = nm_member_add(nodemap, exp);
+-		exp->exp_banned = banned;
+-		if (banned)
+-			LCONSOLE_WARN("%s: adding %sNID %s to nodemap %s\n",
+-				      exp->exp_obd->obd_name,
+-				      banned ? "banned " : "",
+-				      libcfs_nidstr(nid),
+-				      nodemap->nm_name);
+-		else
+-			CDEBUG(D_SEC, "%s: adding %sNID %s to nodemap %s\n",
+-			       exp->exp_obd->obd_name, banned ? "banned " : "",
+-			       libcfs_nidstr(nid),
+-			       nodemap->nm_name);
++		rc = -EINVAL;
++		CWARN("%s: error adding to nodemap, no valid svc ctx or NID provided: rc = %d\n",
++		      exp->exp_obd->obd_name, rc);
++		mutex_unlock(&active_config_lock);
++		GOTO(out, rc);
+ 	}
+ 
+-	up_read(&active_config->nmc_range_tree_lock);
+-	up_read(&active_config->nmc_ban_range_tree_lock);
+-	mutex_unlock(&active_config_lock);
+-
+-	if (!IS_ERR(nodemap))
+-		nodemap_putref(nodemap);
++	rc = nm_member_add(nodemap, exp);
++	exp->exp_banned = banned;
++	if (banned)
++		LCONSOLE_WARN("%s: adding %sNID %s to nodemap %s\n",
++			      exp->exp_obd->obd_name,
++			      banned ? "banned " : "",
++			      libcfs_nidstr(nid),
++			      nodemap->nm_name);
++	else
++		CDEBUG(D_SEC, "%s: adding %sNID %s to nodemap %s\n",
++		       exp->exp_obd->obd_name, banned ? "banned " : "",
++		       libcfs_nidstr(nid),
++		       nodemap->nm_name);
+ 
++out_unlock:
++	mutex_unlock(&active_config_lock);
++	nodemap_putref(nodemap);
++out:
+ 	RETURN(rc);
+ }
+ EXPORT_SYMBOL(nodemap_add_member);
+diff --git a/lustre/ptlrpc/nodemap_member.c b/lustre/ptlrpc/nodemap_member.c
+index 1e98e40581..a488b25a38 100644
+--- a/lustre/ptlrpc/nodemap_member.c
++++ b/lustre/ptlrpc/nodemap_member.c
+@@ -212,7 +212,9 @@ void nm_member_reclassify_nodemap(struct lu_nodemap *nodemap)
+ 	list_for_each_entry_safe(exp, tmp, &nodemap->nm_member_list,
+ 				 exp_target_data.ted_nodemap_member) {
+ 		struct lnet_nid *nid;
+-		bool banned;
++		bool banned = false;
++
++		new_nodemap = NULL;
+ 
+ 		/* if no conn assigned to this exp, reconnect will reclassify */
+ 		spin_lock(&exp->exp_lock);
+@@ -224,12 +226,28 @@ void nm_member_reclassify_nodemap(struct lu_nodemap *nodemap)
+ 		}
+ 		spin_unlock(&exp->exp_lock);
+ 
+-		/* nodemap_classify_nid requires nmc_range_tree_lock and
+-		 * nmc_ban_range_tree_lock
++		/* If gssonly_identification is enforced for this nodemap, we
++		 * need to stick with it, and do not rely on NID ranges, unless
++		 * it has lost its gss_id flag in the new nodemap config.
+ 		 */
+-		down_read(&active_config->nmc_ban_range_tree_lock);
+-		new_nodemap = nodemap_classify_nid(nid, &banned);
+-		up_read(&active_config->nmc_ban_range_tree_lock);
++		if (nodemap->nmf_gss_identify) {
++			new_nodemap = nodemap_lookup(nodemap->nm_name);
++			if (!IS_ERR(new_nodemap) &&
++			    !new_nodemap->nmf_gss_identify) {
++				nodemap_putref(new_nodemap);
++				new_nodemap = NULL;
++			}
++		}
++
++		if (IS_ERR_OR_NULL(new_nodemap)) {
++			/* nodemap_classify_nid requires nmc_range_tree_lock and
++			 * nmc_ban_range_tree_lock
++			 */
++			down_read(&active_config->nmc_ban_range_tree_lock);
++			new_nodemap = nodemap_classify_nid(nid, &banned);
++			up_read(&active_config->nmc_ban_range_tree_lock);
++		}
++
+ 		if (IS_ERR(new_nodemap))
+ 			continue;
+ 
+diff --git a/lustre/tests/sanity-sec.sh b/lustre/tests/sanity-sec.sh
+index 4bc73fd826..34637352f2 100755
+--- a/lustre/tests/sanity-sec.sh
++++ b/lustre/tests/sanity-sec.sh
+@@ -10323,11 +10323,131 @@ test_78() {
+ }
+ run_test 78 "nodemap stats"
+ 
++cleanup_79() {
++	# unmount client
++	if is_mounted $MOUNT; then
++		umount_client $MOUNT || error "umount $MOUNT failed"
++	fi
++
++	cleanup_unload_ssk nm0
++
++	# reset and deactivate nodemaps, remount client
++	do_facet mgs $LCTL nodemap_del nm0
++	$LGSS_SK -l $SK_PATH/$FSNAME.key
++	cleanup_local_client_nodemap c0
++
++	# remount client on $MOUNT_2
++	if [ "$MOUNT_2" ]; then
++		mount_client $MOUNT2 ${MOUNT_OPTS} || error "remount failed"
++	fi
++	wait_ssk
++}
++
+ test_79() {
+-	# reserve test_79
+-	skip "not implemented yet"
++	client_ip=$(host_nids_address $HOSTNAME $NETTYPE)
++	client_nid=$(h2nettype $client_ip)
++
++	$SHARED_KEY || skip "Need shared key feature for this test"
++
++	(( MDS1_VERSION >= $(version_code 2.16.58) )) ||
++		skip "Need MDS version >= 2.16.58 for gss identification"
++
++	do_nodes $(comma_list $(all_mdts_nodes)) \
++		$LCTL set_param mdt.*.identity_upcall=NONE
++
++	stack_trap cleanup_79 EXIT
++
++	mds1_mdtcnt=$(do_facet mds1 $LCTL list_param mdt.* | wc -l)
++
++	$LFS mkdir -c1 -i0 $DIR/$tdir
++	$LFS mkdir -c1 -i0 $DIR/$tdir/c0
++	touch $DIR/$tdir/c0/this_is_c0
++	$LFS mkdir -c1 -i0 $DIR/$tdir/nm0
++	touch $DIR/$tdir/nm0/this_is_nm0
++
++	# unmount client completely
++	umount_client $MOUNT || error "umount $MOUNT failed"
++	if is_mounted $MOUNT2; then
++		umount_client $MOUNT2 || error "umount $MOUNT2 failed"
++	fi
++
++	# create nodemap c0, SSK key already created by test framework
++	setup_local_client_nodemap c0 1 1
++	do_facet mgs $LCTL nodemap_modify --name c0 \
++		--property gssonly_identification --value 1 &&
++		error "gssonly_identification on c0 with nid range should fail"
++	do_facet mgs $LCTL nodemap_del_range --name c0 --range $client_nid ||
++		error "del range on c0 failed"
++	do_facet mgs $LCTL nodemap_set_fileset --name c0 \
++		--fileset "/$tdir/c0" ||
++			error "set_fileset on c0 failed"
++	do_facet mgs $LCTL nodemap_modify --name c0 \
++		--property gssonly_identification --value 1 ||
++		error "setting gssonly_identification on c0 failed"
++	do_facet mgs $LCTL nodemap_add_range --name c0 --range $client_nid &&
++		error "add range on c0 with gssonly_identification shoud fail"
++	wait_nm_sync c0 gssonly_identification
++	do_facet mgs $LCTL get_param -R 'nodemap.*'
++
++	# remount client to take nodemap into account
++	zconf_mount_clients $HOSTNAME $MOUNT $MOUNT_OPTS ||
++		error "remount failed (1)"
++	wait_ssk
++
++	[[ -f $DIR/this_is_c0 ]] || error "failed to get c0"
++
++	# unmount client
++	umount_client $MOUNT || error "umount $MOUNT failed"
++
++	# unload c0 key on client
++	keyctl show | grep lustre:$FSNAME | cut -c1-11 | sed -e 's/ //g;' |
++		xargs -IX keyctl revoke X
++	keyctl reap
++
++	# create nodemap nm0
++	do_facet mgs $LCTL nodemap_add nm0
++	do_facet mgs $LCTL nodemap_modify --name nm0 \
++		--property admin --value 1
++	do_facet mgs $LCTL nodemap_modify --name nm0 \
++		--property trusted --value 1
++	do_facet mgs $LCTL nodemap_set_fileset --name nm0 \
++		--fileset "/$tdir/nm0" ||
++			error "set_fileset on nm0 failed"
++	do_facet mgs $LCTL nodemap_modify --name nm0 \
++		--property gssonly_identification --value 1 ||
++		error "setting gssonly_identification on nm0 failed"
++	wait_nm_sync nm0 gssonly_identification
++	do_facet mgs $LCTL get_param -R 'nodemap.*'
++
++	# create ssk for nm0, stack_trap
++	generate_load_ssk nm0
++
++	# mount client, should see nm0 fileset
++	$MOUNT_CMD -o $MOUNT_OPTS $MGSNID:/$FSNAME $MOUNT ||
++		error "remount failed (2)"
++	wait_ssk
++
++	[[ -f $DIR/this_is_nm0 ]] || error "failed to get nm0"
++
++	do_facet mds1 $LCTL get_param nodemap.*.exports
++	count=$(do_facet mds1 $LCTL get_param -n nodemap.nm0.exports |
++		grep -c $client_nid)
++	(( count == mds1_mdtcnt )) ||
++		error "$count exps for $client_nid on nm0 ($mds1_mdtcnt) (1)"
++
++	# change unrelated nodemap property, just to refresh nodemap definitions
++	do_facet mgs $LCTL nodemap_modify --name c0 \
++		--property audit_mode --value 0 ||
++		error "setting audit_mode on c0 failed"
++	wait_nm_sync c0 audit_mode
++
++	do_facet mds1 $LCTL get_param nodemap.*.exports
++	count=$(do_facet mds1 $LCTL get_param -n nodemap.nm0.exports |
++		grep -c $client_nid)
++	(( count == mds1_mdtcnt )) ||
++		error "$count exps for $client_nid on nm0 ($mds1_mdtcnt) (2)"
+ }
+-#run_test 79 "ssk for nodemap identification"
++run_test 79 "ssk for nodemap identification"
+ 
+ test_81a() {
+ 	local client_ip=$(host_nids_address $HOSTNAME $NETTYPE)
+diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
+index 91fa67f589..49365d82f3 100755
+--- a/lustre/tests/test-framework.sh
++++ b/lustre/tests/test-framework.sh
+@@ -1656,6 +1656,57 @@ init_gss() {
+ 	do_nodesv $servers "$LCTL set_param sptlrpc.gss.rsi_upcall=$L_GETAUTH"
+ }
+ 
++generate_load_ssk() {
++	local nodes_list=$(all_nodes)
++	local nm=$1
++
++	$GSS_SK || return 0
++
++	# Generate key
++	$LGSS_SK -t server -f$FSNAME -n $nm -w $SK_PATH/nodemap/$nm.key \
++	       -d /dev/urandom >/dev/null 2>&1
++
++	# Distribute key
++	if ! local_mode; then
++		for lnode in ${nodes_list//,/ }; do
++			scp $SK_PATH/nodemap/$nm.key \
++				${lnode}:${SK_PATH}/nodemap/
++		done
++	fi
++
++	# Set client key to client type to generate prime P
++	if local_mode; then
++		do_nodes $(comma_list $(all_nodes)) "$LGSS_SK -t client,server \
++			-m $SK_PATH/nodemap/$nm.key >/dev/null 2>&1"
++	else
++	        $LGSS_SK -t client -m $SK_PATH/nodemap/$nm.key >/dev/null 2>&1
++	fi
++
++	# Load key
++	do_nodes $(comma_list $(all_server_nodes)) \
++		"$LGSS_SK -t server -l $SK_PATH/nodemap/$nm.key"
++	$LGSS_SK -l $SK_PATH/nodemap/$nm.key
++	do_nodes $(comma_list $(all_nodes)) \
++		"keyctl show | grep lustre | cut -c1-11 |
++		sed -e 's/ //g;' |
++		xargs -IX keyctl setperm X 0x3f3f3f3f"
++}
++
++cleanup_unload_ssk() {
++	local nm=$1
++
++	$GSS_SK || return 0
++
++	do_nodes $(comma_list $(all_server_nodes)) \
++		"keyctl show | grep lustre:$FSNAME:$nm | cut -c1-11 |
++		sed -e 's/ //g;' |
++		xargs -IX keyctl revoke X"
++	keyctl show | grep lustre:$FSNAME | cut -c1-11 | sed -e 's/ //g;' |
++		xargs -IX keyctl revoke X
++	do_nodes $(comma_list $(all_nodes)) "keyctl reap"
++	do_nodes $(comma_list $(all_nodes)) "rm -f $SK_PATH/nodemap/$nm.key"
++}
++
+ cleanup_gss() {
+ 	if $GSS; then
+ 		stop_gss_daemons
