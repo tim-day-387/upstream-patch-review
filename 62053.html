@@ -1,0 +1,55 @@
+From a003a477a268c476ddd307dbe5ca8dcc599a1e9b Mon Sep 17 00:00:00 2001
+From: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Date: Mon, 27 Oct 2025 12:53:38 +0530
+Subject: [PATCH 1/1] LU-19522 utils: Check for NULL before using hashtype
+ input
+
+Input 'hashtype' variable was used before being
+checked for NULL. This patch adds check for NULL
+before using the hashtype variable. This will also
+avoid LFS crash in case hashtype is NULL.
+
+Test-Parameters: trivial
+Signed-off-by: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Change-Id: Ib610724bd11594c2e7ddb605f8f8ba03f6923e21
+---
+ lustre/utils/lfs.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/lustre/utils/lfs.c b/lustre/utils/lfs.c
+index e663ee52d4..f7de5d227f 100644
+--- a/lustre/utils/lfs.c
++++ b/lustre/utils/lfs.c
+@@ -678,19 +678,29 @@ command_t cmdlist[] = {
+ 	{ 0, 0, 0, NULL }
+ };
+ 
++/*
++ * Convert input string (dir hash) to its number value
++ *
++ * Return 0 on unrecognized hash (failure) or positive value on success
++ */
+ static int check_hashtype(const char *hashtype)
+ {
+-	int type_num = atoi(hashtype);
++	int type_num;
+ 	int i;
+ 
++	if (!hashtype)
++		goto out;
++
++	type_num = atoi(hashtype);
++
+ 	/* numeric hash type */
+-	if (hashtype && lmv_is_known_hash_type(type_num))
++	if (lmv_is_known_hash_type(type_num))
+ 		return type_num;
+ 	/* string hash type */
+ 	for (i = LMV_HASH_TYPE_ALL_CHARS; i < ARRAY_SIZE(mdt_hash_name); i++)
+ 		if (strcmp(hashtype, mdt_hash_name[i]) == 0)
+ 			return i;
+-
++out:
+ 	return 0;
+ }
+ 
