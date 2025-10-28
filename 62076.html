@@ -1,0 +1,272 @@
+From 4ade5d64725ad21e7734c3bef22c73206cc5d12a Mon Sep 17 00:00:00 2001
+From: Patrick Farrell <pfarrell@whamcloud.com>
+Date: Tue, 28 Oct 2025 11:31:01 -0400
+Subject: [PATCH 1/1] LU-19533 tests: add EC FLR state transition test
+
+Add test_2 to sanity-ec.sh to verify EC file FLR state
+transitions. The test creates an EC file with data and
+parity mirrors, then verifies state changes from RDONLY
+to WRITE_PENDING after writes, and back to RDONLY after
+resync. Tests writes to multiple components to ensure
+proper stale flag handling.
+
+Also adds helper functions verify_flr_state() and
+verify_comp_stale() for EC FLR state verification.
+
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I92914c86759f293f4ccc6bd36a281e88d08216cb
+---
+ lustre/tests/sanity-ec.sh | 243 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 243 insertions(+)
+ create mode 100755 lustre/tests/sanity-ec.sh
+
+diff --git a/lustre/tests/sanity-ec.sh b/lustre/tests/sanity-ec.sh
+new file mode 100755
+index 0000000000..f982aef746
+--- /dev/null
++++ b/lustre/tests/sanity-ec.sh
+@@ -0,0 +1,243 @@
++#!/bin/bash
++#
++# Run select tests by setting ONLY, or as arguments to the script.
++# Skip specific tests by setting EXCEPT.
++set -e
++set +o posix
++
++
++ONLY=${ONLY:-"$*"}
++
++LUSTRE=${LUSTRE:-$(dirname $0)/..}
++. $LUSTRE/tests/test-framework.sh
++init_test_env "$@"
++init_logging
++
++ALWAYS_EXCEPT="$SANITY_EC_EXCEPT "
++# Bug number for skipped test:
++ALWAYS_EXCEPT+="                  "
++# UPDATE THE COMMENT ABOVE WITH BUG NUMBERS WHEN CHANGING ALWAYS_EXCEPT!
++
++build_test_filter
++
++[[ "$MDS1_VERSION" -ge $(version_code 2.15.0) ]] ||
++	skip "Need MDS version at least 2.15.0 for EC support"
++
++check_and_setup_lustre
++DIR=${DIR:-$MOUNT}
++assert_DIR
++rm -rf $DIR/[Rdfs][0-9]*
++
++[ $UID -eq 0 -a $RUNAS_ID -eq 0 ] &&
++	error "\$RUNAS_ID set to 0, but \$UID is also 0!"
++
++check_runas_id $RUNAS_ID $RUNAS_GID $RUNAS
++
++#
++# Verify mirror count with an expected value for a given file.
++#
++verify_mirror_count() {
++	local tf=$1
++	local expected=$2
++	local mirror_count=$($LFS getstripe -N $tf)
++
++	[[ $mirror_count = $expected ]] || {
++		$LFS getstripe -v $tf
++		error "verify mirror count failed on $tf:" \
++		      "$mirror_count != $expected"
++	}
++}
++
++#
++# Verify component count with an expected value for a given file.
++#	$1 composite layout file
++#	$2 expected component number
++#
++verify_comp_count() {
++	local tf=$1
++	local expected=$2
++	local comp_count=$($LFS getstripe --component-count $tf)
++
++	[[ $comp_count = $expected ]] || {
++		$LFS getstripe -v $tf
++		error "verify component count failed on $tf:" \
++		      "$comp_count != $expected"
++	}
++}
++
++#
++# Verify component has the parity flag set
++#
++verify_comp_parity() {
++	local tf=$1
++	local comp_id=$2
++	local flags=$($LFS getstripe -I$comp_id $tf | awk '/lcme_flags:/ { print $2 }')
++
++	[[ $flags =~ "parity" ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify parity flag failed on $tf component $comp_id:" \
++		      "flags=$flags"
++	}
++}
++
++#
++# Verify EC stripe counts (data and coding stripes)
++#
++verify_ec_stripe_count() {
++	local tf=$1
++	local comp_id=$2
++	local expected_dstripe=$3
++	local expected_cstripe=$4
++	local dstripe=$($LFS getstripe -I$comp_id $tf | \
++			awk '/lcme_dstripe_count:/ { print $2 }')
++	local cstripe=$($LFS getstripe -I$comp_id $tf | \
++			awk '/lcme_cstripe_count:/ { print $2 }')
++
++	[[ $dstripe = $expected_dstripe ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify dstripe count failed on $tf component $comp_id:" \
++		      "$dstripe != $expected_dstripe"
++	}
++
++	[[ $cstripe = $expected_cstripe ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify cstripe count failed on $tf component $comp_id:" \
++		      "$cstripe != $expected_cstripe"
++	}
++}
++
++#
++# Verify component extent with expected start and end extent values
++# for a given file and component ID.
++#
++verify_comp_extent() {
++	local tf=$1
++	local comp_id=$2
++	local expected_start=$3
++	local expected_end=$4
++	local start=$($LFS getstripe -I$comp_id --component-start $tf)
++	local end=$($LFS getstripe -I$comp_id --component-end $tf)
++
++	[[ $start = $expected_start ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify component start failed on $tf component $comp_id:" \
++		      "$start != $expected_start"
++	}
++
++	[[ $end = $expected_end ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify component end failed on $tf component $comp_id:" \
++		      "$end != $expected_end"
++	}
++}
++
++#
++# Verify FLR state (ro, wp, sp) for a given file
++#
++verify_flr_state() {
++	local tf=$1
++	local expected_state=$2
++
++	local state=$($LFS getstripe -v $tf | awk '/lcm_flags/{ print $2 }')
++	[[ $expected_state = $state ]] ||
++		error "expected: $expected_state, actual $state"
++}
++
++#
++# Verify component has stale flag set
++#
++verify_comp_stale() {
++	local tf=$1
++	local comp_id=$2
++	local flags=$($LFS getstripe -I$comp_id $tf |
++			awk '/lcme_flags:/ { print $2 }')
++
++	[[ $flags =~ "stale" ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify stale flag failed on $tf component $comp_id:" \
++		      "flags=$flags"
++	}
++}
++
++test_1() {
++	echo "EC test stub - placeholder for future EC tests"
++}
++run_test 1 "EC test stub"
++
++test_2() {
++	local tf=$DIR/$tfile
++	local ec_create=$LUSTRE/../ec_create_simple
++
++	[[ -x $ec_create ]] || skip "ec_create_simple not found or not executable"
++
++	stack_trap "rm -f $tf"
++
++	# Create EC file with ec_create_simple
++	# Layout: Mirror 1 has 3 data components [0,128M], [128M,1G], [1G,EOF]
++	#         Mirror 2 has 3 EC components at same extents
++	$ec_create $tf || error "ec_create_simple failed"
++
++	# Verify file starts in RDONLY state
++	verify_flr_state $tf "ro"
++
++	# Get component IDs for both mirrors
++	local ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' |
++			tr '\n' ' '))
++	echo "Component IDs: ${ids[@]}"
++
++	# Write to first component (0-1M, within [0,128M] extent)
++	dd if=/dev/zero of=$tf conv=notrunc bs=1M count=1 ||
++		error "write to first component failed"
++
++	# Verify file is now in WRITE_PENDING state
++	verify_flr_state $tf "wp"
++
++	# Verify the corresponding EC component in mirror 2 is stale
++	# Mirror 1 components are ids[0], ids[1], ids[2]
++	# Mirror 2 components are ids[3], ids[4], ids[5]
++	# After writing to first component, ids[3] should be stale
++	verify_comp_stale $tf ${ids[3]}
++
++	# Resync the file
++	$LFS mirror resync $tf || error "mirror resync failed"
++
++	# Verify file is back to RDONLY state
++	verify_flr_state $tf "ro"
++
++	# Verify component is no longer stale
++	local flags=$($LFS getstripe -I${ids[3]} $tf |
++			awk '/lcme_flags:/ { print $2 }')
++	[[ ! $flags =~ "stale" ]] ||
++		error "component ${ids[3]} still stale after resync: $flags"
++
++	echo "** Write to second component **"
++
++	# Write to second component (at offset 256M, within [128M,1G] extent)
++	dd if=/dev/zero of=$tf conv=notrunc bs=1M count=1 seek=256 ||
++		error "write to second component failed"
++
++	# Verify file is in WRITE_PENDING state
++	verify_flr_state $tf "wp"
++
++	# Verify the corresponding EC component in mirror 2 is stale
++	# ids[4] is the second EC component
++	verify_comp_stale $tf ${ids[4]}
++
++	# Resync the file
++	$LFS mirror resync $tf || error "mirror resync failed"
++
++	# Verify file is back to RDONLY state
++	verify_flr_state $tf "ro"
++
++	# Verify component is no longer stale
++	flags=$($LFS getstripe -I${ids[4]} $tf |
++			awk '/lcme_flags:/ { print $2 }')
++	[[ ! $flags =~ "stale" ]] ||
++		error "component ${ids[4]} still stale after resync: $flags"
++}
++run_test 2 "EC FLR state transitions with writes to different components"
++
++complete_test $SECONDS
++check_and_cleanup_lustre
++exit_status
++

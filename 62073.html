@@ -1,0 +1,60 @@
+From 8b1f678767df32c92a6da183849d665dfb8f89f6 Mon Sep 17 00:00:00 2001
+From: Artem Blagodarenko <ablagodarenko@ddn.com>
+Date: Wed, 22 Oct 2025 19:20:13 -0400
+Subject: [PATCH 1/1] EX-12989 llite: prevent deadlock in nested fsync during
+ write
+
+When vvp_io_write_start() calls generic_write_sync(), it may trigger
+ll_fsync() while still holding an active IO context from the parent
+write operation. This creates a deadlock scenario where fsync
+operations attempt to acquire layout locks unnecessarily.
+
+Here is how this happens:
+1. ll_file_io_generic() (write) increments lo_active_ios
+2. vvp_io_write_start() calls generic_write_sync() -> ll_fsync()
+3. ll_fsync() -> vvp_io_init() -> ll_layout_refresh()
+4. ll_layout_refresh() waits for lo_active_ios == 0
+5. Deadlock: fsync waits for the write operation that called it
+
+fsync operations should not acquire layout locks because:
+1. fsync only flushes already-mapped pages to disk
+2. The mapping from file offsets to OST objects already occurred
+   during the original write operations that populated the page cache
+3. Layout changes should only affect NEW writes, not existing cached
+   data
+4. When layout changes occur, OSTs take full extent locks to flush
+   client cache before the layout change completes
+
+This fix aligns with the principle that layout changes affect future
+operations, not past operations already in the page cache. By
+preventing unnecessary layout lock acquisition during fsync, we
+eliminate the deadlock while maintaining proper filesystem semantics.
+
+Signed-off-by: Artem Blagodarenko <ablagodarenko@ddn.com>
+Change-Id: I9b449edac388f3c1a2ad6925925ecbf89605c889
+---
+ lustre/llite/vvp_io.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/lustre/llite/vvp_io.c b/lustre/llite/vvp_io.c
+index e7d15544e9..976feadf25 100644
+--- a/lustre/llite/vvp_io.c
++++ b/lustre/llite/vvp_io.c
+@@ -1879,8 +1879,16 @@ int vvp_io_init(const struct lu_env *env, struct cl_object *obj,
+ 	/* Enqueue layout lock and get layout version. We need to do this
+ 	 * even for operations requiring to open file, such as read and write,
+ 	 * because it might not grant layout lock in IT_OPEN.
++	 *
++	 * However, fsync operations should NOT acquire layout locks because:
++	 * 1. fsync only flushes already-mapped pages to disk
++	 * 2. The mapping from file offsets to OST objects already occurred
++	 *    during the original write operations that populated the page cache
++	 * 3. Layout changes should only affect NEW writes, not existing cache
++	 * 4. Acquiring layout locks during fsync can cause deadlocks when
++	 *    fsync is called from within write operations (EX-12989)
+ 	 */
+-	if (result == 0 && !io->ci_ignore_layout) {
++	if (result == 0 && !io->ci_ignore_layout && io->ci_type != CIT_FSYNC) {
+ 		result = ll_layout_refresh(inode, &vio->vui_layout_gen);
+ 		if (result == -ENOENT)
+ 			/* If the inode on MDS has been removed, but the objects

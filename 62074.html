@@ -1,0 +1,30 @@
+From bfa02c26d196d4022db5f5a15c4572b47e23d4e5 Mon Sep 17 00:00:00 2001
+From: Qian Yingjin <qian@ddn.com>
+Date: Tue, 28 Oct 2025 16:56:13 +0800
+Subject: [PATCH 1/1] LU-17262 tests: dont skip FSYNC triggered by memory
+ reclaim
+
+It should not skip fsync triggered by memory reclaim when
+@oo_nr_ios/@oo_nr_writes and @cl_unstable_count are all 0.
+
+Test-Parameters: fortestonly
+Test-Parameters: testlist=replay-single fstype=zfs env=ONLY=135,ONLY_REPEAT=100
+Test-Parameters: testlist=replay-single env=ONLY=135,ONLY_REPEAT=100
+Signed-off-by: Yingjin Qian <qian@ddn.com>
+Change-Id: Ic0c95b353f014780f841182029a885b1ff5a2f13
+---
+ lustre/osc/osc_io.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/lustre/osc/osc_io.c b/lustre/osc/osc_io.c
+index 68fb12dbc5..92a509c99b 100644
+--- a/lustre/osc/osc_io.c
++++ b/lustre/osc/osc_io.c
+@@ -1088,7 +1088,6 @@ static int osc_io_fsync_start(const struct lu_env *env,
+ 			CDEBUG(D_CACHE,
+ 			       "%s: unstable/dirty counts are both zero\n",
+ 			       cli_name(cli));
+-			RETURN(0);
+ 		}
+ 	}
+ 
