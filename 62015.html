@@ -1,0 +1,313 @@
+From 1adbea54e676fd2cc5d22eb4532d4da2d6399908 Mon Sep 17 00:00:00 2001
+From: Patrick Farrell <pfarrell@whamcloud.com>
+Date: Thu, 23 Oct 2025 16:04:52 -0400
+Subject: [PATCH 1/1] LU-0000 utils: trivial creation tool
+
+Trivial EC creation tool.
+
+Test-Parameters: ignore
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I16325a0ded19cc78abf95e85e495de92a2aac916
+---
+ Makefile.ec_simple |  17 +++++
+ ec_create_simple   | Bin 23000 -> 23056 bytes
+ ec_create_simple.c | 170 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 187 insertions(+)
+ create mode 100644 Makefile.ec_simple
+ create mode 100644 ec_create_simple.c
+
+diff --git a/Makefile.ec_simple b/Makefile.ec_simple
+new file mode 100644
+index 0000000000..9df8d32bfd
+--- /dev/null
++++ b/Makefile.ec_simple
+@@ -0,0 +1,17 @@
++CC = gcc
++CFLAGS = -Wall -Wextra -O2
++LDFLAGS = -llustreapi
++
++TARGET = ec_create_simple
++SOURCE = ec_create_simple.c
++
++all: $(TARGET)
++
++$(TARGET): $(SOURCE)
++	$(CC) $(CFLAGS) -o $(TARGET) $(SOURCE) $(LDFLAGS)
++
++clean:
++	rm -f $(TARGET)
++
++.PHONY: all clean
++
+diff --git a/ec_create_simple b/ec_create_simple
+index 153f1fd468b93e58e7a8e1cee22792be52b980ed..5a540e8d71d0cae673cab880e147e58dc5d5b3fa 100755
+GIT binary patch
+delta 4573
+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
+
+delta 3844
+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
+U8HI=8&H9z*!VOWBigT0sUxJj00{{R3
+
+diff --git a/ec_create_simple.c b/ec_create_simple.c
+new file mode 100644
+index 0000000000..8b4f665389
+--- /dev/null
++++ b/ec_create_simple.c
+@@ -0,0 +1,170 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <fcntl.h>
++#include <errno.h>
++#include <lustre/lustreapi.h>
++
++int main(int argc, char *argv[])
++{
++	struct llapi_layout *layout;
++	const char *path;
++	int fd;
++	int rc;
++
++	if (argc < 2) {
++		fprintf(stderr, "Usage: %s <filepath>\n", argv[0]);
++		fprintf(stderr, "Creates an EC file with data mirror + parity mirror\n");
++		fprintf(stderr, "Each mirror has 3 components:\n");
++		fprintf(stderr, "  [0, 128MiB], [128MiB, 1GiB], [1GiB, EOF]\n");
++		return 1;
++	}
++
++	path = argv[1];
++
++	/* Allocate a new layout */
++	layout = llapi_layout_alloc();
++	if (!layout) {
++		fprintf(stderr, "Failed to allocate layout\n");
++		return 1;
++	}
++
++	/* Mirror 1: Regular data components with 3 components */
++	/* M1 COMP1: [0, 128MiB] with 2 stripes */
++	rc = llapi_layout_stripe_count_set(layout, 2);
++	if (rc) {
++		fprintf(stderr, "Failed to set stripe count: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	rc = llapi_layout_comp_extent_set(layout, 0, 128*1024*1024ULL);
++	if (rc) {
++		fprintf(stderr, "Failed to set extent: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* M1 COMP2: [128MiB, 1GiB] with 4 stripes */
++	rc = llapi_layout_comp_add(layout);
++	if (rc) {
++		fprintf(stderr, "Failed to add component: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	rc = llapi_layout_stripe_count_set(layout, 4);
++	if (rc) {
++		fprintf(stderr, "Failed to set stripe count: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	rc = llapi_layout_comp_extent_set(layout, 128*1024*1024ULL,
++					   1024*1024*1024ULL);
++	if (rc) {
++		fprintf(stderr, "Failed to set extent: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* M1 COMP3: [1GiB, EOF] with 6 stripes */
++	rc = llapi_layout_comp_add(layout);
++	if (rc) {
++		fprintf(stderr, "Failed to add component: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	rc = llapi_layout_stripe_count_set(layout, 6);
++	if (rc) {
++		fprintf(stderr, "Failed to set stripe count: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	rc = llapi_layout_comp_extent_set(layout, 1024*1024*1024ULL, LUSTRE_EOF);
++	if (rc) {
++		fprintf(stderr, "Failed to set extent: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* Mirror 2: EC components matching Mirror 1 extents */
++	/* M2 EC1: [0, 128MiB] with EC(2,1) - 2 data + 1 parity */
++	rc = llapi_layout_comp_add_ec(layout, 0, 128*1024*1024ULL, 2, 1);
++	if (rc) {
++		fprintf(stderr, "Failed to add EC component: %d, errno=%d (%s)\n",
++			rc, errno, strerror(errno));
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* M2 EC2: [128MiB, 1GiB] with EC(4,2) - 4 data + 2 parity */
++	rc = llapi_layout_comp_add_ec(layout, 128*1024*1024ULL,
++				      1024*1024*1024ULL, 4, 2);
++	if (rc) {
++		fprintf(stderr, "Failed to add EC component: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* M2 EC3: [1GiB, EOF] with EC(6,2) - 6 data + 2 parity */
++	rc = llapi_layout_comp_add_ec(layout, 1024*1024*1024ULL, LUSTRE_EOF,
++				      6, 2);
++	if (rc) {
++		fprintf(stderr, "Failed to add EC component: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* Set mirror count for the layout (2 mirrors total) */
++	rc = llapi_layout_mirror_count_set(layout, 2);
++	if (rc) {
++		fprintf(stderr, "Failed to set mirror count: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* Validate the layout */
++	rc = llapi_layout_sanity(layout, false, false);
++	if (rc) {
++		fprintf(stderr, "Layout sanity check failed: %d\n", rc);
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	/* Create the file with the EC layout */
++	fd = llapi_layout_file_create(path, 0, 0644, layout);
++	if (fd < 0) {
++		fprintf(stderr, "Failed to create file: %s\n", strerror(errno));
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	printf("✓ EC file created: %s\n", path);
++	printf("  Mirror 1: Data components\n");
++	printf("    COMP1: [0, 128MiB] with 2 stripes\n");
++	printf("    COMP2: [128MiB, 1GiB] with 4 stripes\n");
++	printf("    COMP3: [1GiB, EOF] with 6 stripes\n");
++	printf("  Mirror 2: EC parity components\n");
++	printf("    EC1: [0, 128MiB] with EC(2,1)\n");
++	printf("    EC2: [128MiB, 1GiB] with EC(4,2)\n");
++	printf("    EC3: [1GiB, EOF] with EC(6,2)\n");
++
++	rc = close(fd);
++	if (rc < 0) {
++		fprintf(stderr, "Failed to close file: %s\n", strerror(errno));
++		llapi_layout_free(layout);
++		return 1;
++	}
++
++	llapi_layout_free(layout);
++
++	printf("✓ File created successfully\n");
++	printf("  Use: lfs getstripe -v %s\n", path);
++
++	return 0;
++}
++
