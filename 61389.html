@@ -1,0 +1,615 @@
+<html lang="en">
+<body>
+<pre>
+From 3d650ebdf8ae948a468ac028ee6450493a3c553a Mon Sep 17 00:00:00 2001
+From: Frederick Dilger <fdilger@whamcloud.com>
+Date: Sun, 5 Oct 2025 14:12:34 -0600
+Subject: [PATCH 1/1] LU-14144 utils: allow /sys/module/OBD/parameters/*
+
+Allows 'lctl {get|list}_param' to get parameters from
+/sys/module/OBD_DEV/parameters/*. This means that many of the
+paramets duplicated in /sys/fs/lustre/OBD_DEV/* can be removed.
+
+Move mounting of /sys/kernel/debug into its own helper function.
+Remove RHEL6 compatibility cruft from cfs_get_param_paths().
+
+Remove /proc/sys/lnet and /proc/net/lnet from search paths, since they
+have not been used since Lustre 2.10.
+
+Some tests were using at_min as a test_parameter but at_min
+is also a module paramter so it would appear twice.
+
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+Signed-off-by: Frederick Dilger <fdilger@whamcloud.com>
+Change-Id: I137d2beb79a93d70cd88bb9eb032538eca500c1e
+---
+ libcfs/libcfs/util/param.c        | 91 ++++++++++++++-----------------
+ lustre/doc/lctl-find_param.8      |  5 ++
+ lustre/doc/lctl-get_param.8       |  5 ++
+ lustre/doc/lctl-list_param.8      |  5 ++
+ lustre/doc/lctl-set_param.8       |  7 +++
+ lustre/include/lustre/lustreapi.h |  4 +-
+ lustre/tests/sanity.sh            | 36 +++++++-----
+ lustre/utils/lctl.c               | 17 +++---
+ lustre/utils/lctl_thread.h        |  1 +
+ lustre/utils/liblustreapi_param.c | 15 +++--
+ lustre/utils/lustre_cfg.c         |  2 +-
+ lustre/utils/lustre_param.c       | 41 +++++++++-----
+ lustre/utils/obd.c                |  2 +-
+ 13 files changed, 138 insertions(+), 93 deletions(-)
+
+diff --git a/libcfs/libcfs/util/param.c b/libcfs/libcfs/util/param.c
+index d768db754c..b00584ca66 100644
+--- a/libcfs/libcfs/util/param.c
++++ b/libcfs/libcfs/util/param.c
+@@ -25,6 +25,24 @@
+ #include <sys/vfs.h>
+ #include <linux/magic.h>
+ 
++static void cfs_try_mount_sys_kernel_debug(void)
++{
++	struct statfs statfsbuf;
++	int rc;
++
++	rc = statfs("/sys/kernel/debug/", &statfsbuf);
++	if (rc == 0 && statfsbuf.f_type == DEBUGFS_MAGIC)
++		return;
++
++	if (mount("none", "/sys/kernel/debug", "debugfs", 0, "") == 0)
++		return;
++
++	/* Already mounted or don't have permission to mount is okay */
++	if (errno != EPERM && errno != EBUSY)
++		fprintf(stderr, "%d: warning: failed to mount /sys/kernel/debug",
++			errno);
++}
++
+ /**
+  * Get parameter path matching the pattern
+  *
+@@ -42,80 +60,51 @@
+  * have been moved to /sys/fs/lustre and /sys/kernel/debug/{lnet,lustre}
+  * so the user tools need to check both locations.
+  *
++ * To access module parameters, the pattern should start with "module"
++ *
+  * \retval	 0 for success, with results stored in \param paths.
+  * \retval	-1 for failure with errno set to report the reason.
+  */
+ int
+ cfs_get_param_paths(glob_t *paths, const char *pattern, ...)
+ {
+-	char topdir[PATH_MAX] = "{/sys/{fs,kernel/debug}/{lnet,lustre},"
+-				"/proc/{fs,sys}/{lnet,lustre}}";
++	char topdir[PATH_MAX] = "{{/proc,/sys}/fs/lustre,"
++				"/sys/kernel/debug/{lnet,lustre}}";
+ 	static bool test_mounted = false;
+ 	char path[PATH_MAX];
+ 	char buf[PATH_MAX];
+-	struct statfs statfsbuf;
+ 	va_list args;
+ 	int rc;
+ 
+-
+-	if (test_mounted)
+-		goto skip_mounting;
+-	test_mounted = true;
+-
+-	rc = statfs("/sys/kernel/debug/", &statfsbuf);
+-	if (rc == 0 && statfsbuf.f_type == DEBUGFS_MAGIC)
+-		goto skip_mounting;
+-
+-	if (mount("none", "/sys/kernel/debug", "debugfs", 0, "") == -1) {
+-		/* Already mounted or don't have permission to mount is okay */
+-		if (errno != EPERM && errno != EBUSY)
+-			fprintf(stderr, "Warning: failed to mount debug: %s\n",
+-				strerror(errno));
+-	} else {
+-		struct stat mtab;
+-
+-		/* This is all for RHEL6 which is old school. Can be removed
+-		 * later when RHEL6 client support is dropped. */
+-		rc = lstat(_PATH_MOUNTED, &mtab);
+-		if (!rc && !S_ISLNK(mtab.st_mode)) {
+-			FILE *fp = setmntent(_PATH_MOUNTED, "r+");
+-
+-			if (fp != NULL) {
+-				const struct mntent fs = {
+-					.mnt_fsname	= "debugfs",
+-					.mnt_dir	= "/sys/kernel/debug",
+-					.mnt_type	= "debugfs",
+-					.mnt_opts	= "rw,relatime",
+-				};
+-
+-				rc = addmntent(fp, &fs);
+-				if (rc) {
+-					fprintf(stderr,
+-						"failed to add debugfs to %s: %s\n",
+-						_PATH_MOUNTED, strerror(errno));
+-				}
+-				endmntent(fp);
+-			} else {
+-				fprintf(stderr, "could not open %s: %s\n",
+-					_PATH_MOUNTED, strerror(errno));
+-			}
+-		}
++	if (!test_mounted) {
++		cfs_try_mount_sys_kernel_debug();
++		test_mounted = true;
+ 	}
+-skip_mounting:
++
+ 	va_start(args, pattern);
+ 	rc = vsnprintf(buf, sizeof(buf), pattern, args);
+ 	va_end(args);
+ 	if (rc < 0) {
+ 		return rc;
+-	} else if (rc >= sizeof(buf)) {
++	}
++	if (rc >= sizeof(buf)) {
+ 		errno = EINVAL;
+-		return -1;
++		return -EINVAL;
++	}
++
++	if (strstr(buf, "module") != NULL) {
++		const char *parm = strstr(buf, "module") + strlen("module");
++		if (*parm == '/') parm++;
++
++		memmove(buf,  parm, strlen(parm) + 1);
++		*strrchr(topdir, '}') = '\0';
++		strcat(topdir, ",/sys/module/{lnet,osc,mdd,obdclass,ofd,ptlrpc,mgc,ksocklnd,mdt,osd_ldiskfs,lquota}/parameters}");
+ 	}
+ 
+ 	if (snprintf(path, sizeof(path), "%s/%s", topdir, buf) >=
+ 	    sizeof(path)) {
+ 		errno = E2BIG;
+-		return -1;
++		return -E2BIG;
+ 	}
+ 
+ 	rc = glob(path, GLOB_BRACE, NULL, paths);
+@@ -132,7 +121,7 @@ skip_mounting:
+ 			errno = ENOENT;
+ 			break;
+ 		}
+-		rc = -1;
++		rc = -errno;
+ 	}
+ 
+ 	return rc;
+diff --git a/lustre/doc/lctl-find_param.8 b/lustre/doc/lctl-find_param.8
+index eced6d7fc2..b0ba6b9f20 100644
+--- a/lustre/doc/lctl-find_param.8
++++ b/lustre/doc/lctl-find_param.8
+@@ -8,6 +8,7 @@ lctl-find_param \- search for parameters matching patterns
+ .RB [ --no-links | -L ]
+ .RB [ --merge | -m ]
+ .RB [ --no-merge | -M ]
++.RB [ --module | -o ]
+ .RB [ --path | -p ]
+ .IR PATTERN1 " [" PATTERN2 " ...]"
+ .YS
+@@ -52,6 +53,10 @@ This option is equivalent to
+ which is useful to avoid printing copies of the same parameter when their values
+ are different like many of the '.stats' parameters.
+ .TP
++.BR -o ", " --module
++Include modules params in the parameter search path, meaning that matching
++module parameters will be shown along side with Lustre parameters.
++.TP
+ .B -p ", " --path
+ Print the parameter path instead of the parameter name.
+ .SH EXAMPLES
+diff --git a/lustre/doc/lctl-get_param.8 b/lustre/doc/lctl-get_param.8
+index 5a35e5ce98..6683eef810 100644
+--- a/lustre/doc/lctl-get_param.8
++++ b/lustre/doc/lctl-get_param.8
+@@ -13,6 +13,7 @@ lctl-get_param \- retrieve configuration parameters
+ .RB [ --only-name | -N ]
+ .RB [ --merge | -m ]
+ .RB [ --no-merge | -M ]
++.BR [ --module | -o ]
+ .RB [ --path | -p ]
+ .RB [ --readable | -r ]
+ .RB [ --recursive | -R ]
+@@ -99,6 +100,10 @@ yellow, if the values are different the difference will be highlighted in red.
+ Print only matched parameter names and not the values. This is especially
+ useful when using patterns. This option is equivalent to
+ .TP
++.BR -o ", " --module
++Include modules params in the parameter search path, meaning that matching
++module parameters will be shown along side with Lustre parameters.
++.TP
+ .B -p ", " --path
+ Print the parameter path instead of the parameter name.
+ .TP
+diff --git a/lustre/doc/lctl-list_param.8 b/lustre/doc/lctl-list_param.8
+index f45426371d..6d8a72892d 100644
+--- a/lustre/doc/lctl-list_param.8
++++ b/lustre/doc/lctl-list_param.8
+@@ -11,6 +11,7 @@ lctl-list_param \- list configuration parameter names
+ .RB [ --no-links | -L ]
+ .RB [ --merge | -m ]
+ .RB [ --no-merge | -M ]
++.RB [ --module | -o ]
+ .RB [ --path | -p ]
+ .RB [ --readable | -r ]
+ .RB [ --recursive | -R ]
+@@ -60,6 +61,10 @@ Enabled by default.
+ Do not merge parameters. All parameters will be shown, regardless if they are
+ have the same name or not. Duplicate parameters will be printed in yellow.
+ .TP
++.BR -o ", " --module
++Include modules params in the parameter search path, meaning that matching
++module parameters will be shown along side with Lustre parameters.
++.TP
+ .BR -p ", " --path
+ Print the parameter path instead of the parameter name.
+ .TP
+diff --git a/lustre/doc/lctl-set_param.8 b/lustre/doc/lctl-set_param.8
+index 36d4f14455..bfc069ba99 100644
+--- a/lustre/doc/lctl-set_param.8
++++ b/lustre/doc/lctl-set_param.8
+@@ -8,6 +8,7 @@ lctl-set_param \- Lustre filesystem set parameter utility
+ .RB [ --delete | -d ]
+ .RB [ --file | -F ]
+ .RB [ --no-name | -n ]
++.RB [ --module | -o ]
+ .RB [ --permanent | -P ]
+ .RB [ --thread | -t\c
+ .RI [ THREAD_COUNT ]]
+@@ -75,6 +76,12 @@ or from any other valid llog configuration log as listed by
+ .BR -n ", " --no-name
+ Disable printing of the parameter name after setting it.
+ .TP
++.BR -o ", " --module
++Allow module parameters to be visible to the
++.B lctl set_param
++command.
++The module parameters will be set on the local node at module load time.
++.TP
+ .BR -P ", " --permanent
+ Set
+ .I PARAMETER
+diff --git a/lustre/include/lustre/lustreapi.h b/lustre/include/lustre/lustreapi.h
+index 1d61855e9c..6781634177 100644
+--- a/lustre/include/lustre/lustreapi.h
++++ b/lustre/include/lustre/lustreapi.h
+@@ -1463,7 +1463,9 @@ int llapi_layout_v2_sanity(struct llapi_layout *layout, bool incomplete,
+ void llapi_layout_sanity_perror(int error);
+ int llapi_layout_dom_size(struct llapi_layout *layout, uint64_t *size);
+ 
+-int llapi_param_get_paths(const char *pattern, glob_t *paths);
++#define LLAPI_PARAM_MODULES	0x0001
++
++int llapi_param_get_paths(const char *pattern, glob_t *paths, int flags);
+ int llapi_param_get_value(const char *path, char **buf, size_t *buflen);
+ void llapi_param_paths_free(glob_t *paths);
+ 
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index e30c975bea..fedb155adc 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -30871,24 +30871,24 @@ cleanup_401db() {
+ }
+ 
+ test_401db() { #LU-9544
+-	local new_val=6
+-
+-	local saved_val=$($LCTL get_param -n at_min)
++	local param="at_min"
++	local saved_val=$($LCTL get_param -n $param)
++	local new_val=$((saved_val + 6))
+ 
+ 	stack_trap "cleanup_401db $saved_val"
+ 
+-	do_facet mgs $LCTL set_param -P at_min=$new_val ||
+-		error "failed to set at_min=$new_val"
++	do_facet mgs $LCTL set_param -P $param=$new_val ||
++		error "failed to set $param=$new_val"
+ 
+-	wait_update $HOSTNAME "$LCTL get_param -n at_min" $new_val
+-	local expected=$($LCTL get_param -n at_min)
++	wait_update $HOSTNAME "$LCTL get_param -n $param" $new_val
++	local expected=$($LCTL get_param -n $param)
+ 
+-	do_facet mgs $LCTL set_param -P -d at_min=$new_val ||
+-		error "failed to delete at_min"
++	do_facet mgs $LCTL set_param -P -d $param=$new_val ||
++		error "failed to delete $param"
+ 
+ 	echo "Wait for erroneous changes"
+-	wait_update_cond $HOSTNAME "$LCTL get_param -n at_min" != $new_val
+-	local result=$($LCTL get_param -n at_min)
++	wait_update_cond $HOSTNAME "$LCTL get_param -n $param" != $new_val
++	local result=$($LCTL get_param -n $param)
+ 
+ 	! [[ "$result" =~ "=" ]] || {
+ 		echo "result:$result"
+@@ -30911,13 +30911,23 @@ test_401e() { # LU-14779
+ }
+ run_test 401e "verify 'lctl get_param' works with NID in parameter"
+ 
+-test_401f() {
++test_401fa() {
+ 	$LCTL list_param -RpL "*" | while read path; do
+ 		[[ ! -L $path ]] ||
+ 			error "list_param -RpL returned the symlink: '$path'"
+ 	done
+ }
+-run_test 401f "check 'lctl list_param' doesn't follow symlinks with --no-links"
++run_test 401fa "check 'lctl list_param' doesn't follow symlinks with --no-links"
++
++test_401fb() {
++	local modules=$(ls /sys/module/{lnet,osc,mdd,obdclass,ofd,ptlrpc,mgc,ksocklnd,mdt,osd_ldiskfs,lquota}/parameters/* | wc -l)
++	local params=$($LCTL list_param -M "*" | wc -l)
++	local module_params=$($LCTL list_param -M --module "*" | wc -l)
++
++	(( modules + params == module_params )) ||
++		error "expected $((modules+params)) params, got $module_params"
++}
++run_test 401fb "check 'lctl {get,list,set}_param' only sees modules params with --module"
+ 
+ test_401ga() {
+ 	local paramdir=/etc/lustre
+diff --git a/lustre/utils/lctl.c b/lustre/utils/lctl.c
+index 534b2ecb67..2eb4b2f756 100644
+--- a/lustre/utils/lctl.c
++++ b/lustre/utils/lctl.c
+@@ -450,15 +450,16 @@ command_t cmdlist[] = {
+ 	 "usage: get_param [--dshbak|-b] [--color|-c auto|always|never]\n"
+ 	 "		   [--classify|-F] [--header|-H] [--links|-l]\n"
+ 	 "		   [--no-links|-L] [--no-name|-n] [--only-name|-N]\n"
+-	 "		   [--merge|-m] [--no-merge|-M] [--path|-p]\n"
+-	 "		   [--readable|-r] [--recursive|-R] [--only-tunable|-t]\n"
+-	 "		   [--writable|-w] [--yaml|-y]\n"
++	 "		   [--merge|-m] [--no-merge|-M] [--module|-o]\n"
++	 "		   [--path|-p] [--readable|-r] [--recursive|-R]\n"
++	 "		   [--only-tunable|-t] [--writable|-w] [--yaml|-y]\n"
+ 	 "		   PARAM1 [PARAM2 ...]\n"
+ 	 "Get the value of Lustre or LNET parameter from the specified path.\n"
+ 	 "The path can contain shell-style filename patterns.\n"},
+ 	{"set_param", jt_lcfg_setparam, 0, "set the Lustre or LNET parameter\n"
+-	 "usage: set_param [--client|-C[FSNAME]] [--delete|-d] [--no-name|-n]\n"
+-	 "		   [--file|-F YAML_PARAM FILE] [--permanent|-P]"
++	 "usage: set_param [--client|-C[FSNAME]] [--delete|-d]\n"
++	 "		   [--file|-F YAML_PARAM FILE] [--module|-o]\n"
++	 "		   [--no-name|-n] [--permanent|-P]"
+ #ifdef HAVE_LIBPTHREAD
+ 	 " [--thread|-t[THREAD_COUNT]]"
+ #endif
+@@ -472,15 +473,15 @@ command_t cmdlist[] = {
+ 	 "usage: list_param [--dshbak|-b] [--color|-c auto|always|never]\n"
+ 	 "		    [--only-dir|-D] [--classify|-F] [--links|-l]\n"
+ 	 "		    [--no-links|-L] [--merge|-m] [--no-merge|-M]\n"
+-	 "		    [--path|-p] [--readable|-r] [--recursive|-R]\n"
+-	 "		    [--only-tunable|-t] [--writable|-w]\n"
++	 "		    [--module|-o] [--path|-p] [--readable|-r]\n"
++	 "		    [--recursive|-R] [--only-tunable|-t] [--writable|-w]\n"
+ 	 "		    PARAM1 [PARAM2 ...]\n"
+ 	 "List the name of Lustre or LNet parameter from the specified path.\n"},
+ 	 {"find_param", jt_lctl_findparam, 0,
+ 	 "find the Lustre or LNet parameter names matching a pattern\n"
+ 	 "usage: find_param [--color|-c auto|always|never] [--links|-l]\n"
+ 	 "		    [--no-links|-L] [--no-name|-n] [--only-name|-N]\n"
+-	 "		    [--merge|-m] [--no-merge|-M] [--path|-p]\n"
++	 "		    [--merge|-m] [--no-merge|-M] [--module|-o] [--path|-p]\n"
+ 	 "		    PATTERN1 [PATTERN2 ...]\n"
+ 	 "Search recursively for parameters matching the given pattern(s).\n"},
+ 	{"del_ost", jt_del_ost, 0, "permanently delete OST records\n"
+diff --git a/lustre/utils/lctl_thread.h b/lustre/utils/lctl_thread.h
+index f88fc4ee00..b69fecc4bd 100644
+--- a/lustre/utils/lctl_thread.h
++++ b/lustre/utils/lctl_thread.h
+@@ -57,6 +57,7 @@ struct param_opts {
+ 	unsigned int po_dshbak:1;
+ 	unsigned int po_color:1;
+ 	unsigned int po_client:1;
++	unsigned int po_module:1;
+ 	unsigned int po_parallel_threads;
+ 	unsigned int po_permissions;
+ 	char *po_fsname;
+diff --git a/lustre/utils/liblustreapi_param.c b/lustre/utils/liblustreapi_param.c
+index 92870d9f45..d6de082e6c 100644
+--- a/lustre/utils/liblustreapi_param.c
++++ b/lustre/utils/liblustreapi_param.c
+@@ -97,8 +97,13 @@ get_lustre_param_path(const char *obd_type, const char *filter,
+ 	}
+ 
+ 	if (type == FILTER_BY_NONE) {
+-		if (cfs_get_param_paths(param, "%s", param_name) != 0)
+-			rc = -errno;
++		if (filter && strstr(filter, "module")) {
++			if (cfs_get_param_paths(param, "%s%s", "module", param_name) != 0)
++				rc = -errno;
++		} else {
++			if (cfs_get_param_paths(param, "%s", param_name) != 0)
++				rc = -errno;
++		}
+ 	} else if (param_name != NULL) {
+ 		if (cfs_get_param_paths(param, "%s/%s/%s",
+ 				       obd_type, pattern, param_name) != 0)
+@@ -175,10 +180,10 @@ err:
+ 	return rc;
+ }
+ 
+-int llapi_param_get_paths(const char *pattern, glob_t *paths)
++int llapi_param_get_paths(const char *pattern, glob_t *paths, int flags)
+ {
+-	return get_lustre_param_path(NULL, NULL, FILTER_BY_NONE,
+-				     pattern, paths);
++	return get_lustre_param_path(NULL, flags & LLAPI_PARAM_MODULES ? "module" : NULL,
++				     FILTER_BY_NONE, pattern, paths);
+ }
+ 
+ /**
+diff --git a/lustre/utils/lustre_cfg.c b/lustre/utils/lustre_cfg.c
+index 4f06614a2f..a6e82b0c67 100644
+--- a/lustre/utils/lustre_cfg.c
++++ b/lustre/utils/lustre_cfg.c
+@@ -878,7 +878,7 @@ int jt_device_list(int argc, char **argv)
+ 	if (rc == 0)
+ 		return 0;
+ 
+-	rc = llapi_param_get_paths("devices", &path);
++	rc = llapi_param_get_paths("devices", &path, 0);
+ 	if (rc < 0)
+ 		return rc;
+ 
+diff --git a/lustre/utils/lustre_param.c b/lustre/utils/lustre_param.c
+index 31c02ff5ba..84ff9fdd44 100644
+--- a/lustre/utils/lustre_param.c
++++ b/lustre/utils/lustre_param.c
+@@ -140,14 +140,14 @@ static char *format_param(const char *filename, struct stat *st,
+ 	}
+ 
+ 	/* Take the original filename string and chop off the glob addition */
+-	tmp = strstr(filename, "/lustre/");
+-	if (!tmp) {
+-		tmp = strstr(filename, "/lnet/");
+-		if (tmp)
+-			tmp += strlen("/lnet/");
+-	} else {
++	if ((tmp = strstr(filename, "/parameters/")))
++		tmp += strlen("/parameters/");
++	else if ((tmp = strstr(filename, "/lustre/")))
+ 		tmp += strlen("/lustre/");
+-	}
++	else if ((tmp = strstr(filename, "/lnet/")))
++		tmp += strlen("/lnet/");
++	else
++		tmp = (char *)filename;
+ 
+ 	/* Allocate return string */
+ 	param_name = strdup(tmp);
+@@ -693,12 +693,16 @@ static int do_param_op(struct param_opts *popt, char *pattern, char *value,
+ 	struct lctl_param_dir *pdir;
+ 	glob_t paths;
+ 	char *tmp, *opname = parameter_opname[oper];
++	int flags = 0;
+ 	int rc, i;
+ 
+ 	if (!wq && popt_is_parallel(*popt))
+ 		return -EINVAL;
+ 
+-	rc = llapi_param_get_paths(pattern, &paths);
++	if (popt->po_module)
++		flags |= LLAPI_PARAM_MODULES;
++
++	rc = llapi_param_get_paths(pattern, &paths, flags);
+ 	if (rc) {
+ 		rc = -errno;
+ 		if (!popt->po_recursive && !(rc == -ENOENT && getuid() != 0)) {
+@@ -811,6 +815,8 @@ paths_loop:
+ 			continue;
+ 		if (popt->po_tunable && stats_param(paths.gl_pathv[i]))
+ 			continue;
++		if (!popt->po_module && strstr(paths.gl_pathv[i], "/module/"))
++			continue;
+ 
+ 		param_name = format_param(paths.gl_pathv[i], &st, popt);
+ 		if (!param_name) {
+@@ -990,6 +996,7 @@ static int param_out_cmdline(int argc, char **argv, struct param_opts *popt,
+ 	{ .val = 'n',	.name = "no-name",	.has_arg = no_argument},
+ 	{ .val = 'N',	.name = "only-name",	.has_arg = no_argument},
+ 	{ .val = 'N',	.name = "name-only",	.has_arg = no_argument},
++	{ .val = 'o',	.name = "module",	.has_arg = no_argument},
+ 	{ .val = 'p',	.name = "path",		.has_arg = no_argument},
+ 	{ .val = 'r',	.name = "readable",	.has_arg = no_argument},
+ 	{ .val = 'R',	.name = "recursive",	.has_arg = no_argument},
+@@ -1055,6 +1062,9 @@ static int param_out_cmdline(int argc, char **argv, struct param_opts *popt,
+ 		case 'N':
+ 			popt->po_only_name = 1;
+ 			break;
++		case 'o':
++			popt->po_module = 1;
++			break;
+ 		case 'p':
+ 			popt->po_only_pathname = 1;
+ 			break;
+@@ -1103,7 +1113,7 @@ static int listparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ 	 */
+ 	popt->po_merge = 1;
+ 
+-	return param_out_cmdline(argc, argv, popt, "bc::DFlLmMprRtw");
++	return param_out_cmdline(argc, argv, popt, "bc::DFlLmMoprRtw");
+ }
+ 
+ int jt_lcfg_listparam(int argc, char **argv)
+@@ -1160,7 +1170,7 @@ static int findparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ 	popt->po_merge = 1;
+ 	popt->po_recursive = 1;
+ 
+-	return param_out_cmdline(argc, argv, popt, "bc:lLnNmMp");
++	return param_out_cmdline(argc, argv, popt, "bc:lLmMnNop");
+ }
+ 
+ int jt_lctl_findparam(int argc, char **argv)
+@@ -1220,7 +1230,7 @@ static int getparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ 	popt->po_show_name = 1;
+ 	popt->po_follow_symlinks = 1;
+ 
+-	return param_out_cmdline(argc, argv, popt, "bc:FHlLnNmMprRtwy");
++	return param_out_cmdline(argc, argv, popt, "bc:FHlLmMnNoprRtwy");
+ }
+ 
+ int jt_lcfg_getparam(int argc, char **argv)
+@@ -1329,6 +1339,7 @@ static int setparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ 	{ .val = 'd',	.name = "delete",	.has_arg = no_argument},
+ 	{ .val = 'F',	.name = "file",		.has_arg = no_argument},
+ 	{ .val = 'n',	.name = "noname",	.has_arg = no_argument},
++	{ .val = 'o',	.name = "module",	.has_arg = no_argument},
+ 	{ .val = 'P',	.name = "perm",		.has_arg = no_argument},
+ 	{ .val = 'P',	.name = "permanent",	.has_arg = no_argument},
+ 	{ .val = 't',	.name = "thread",	.has_arg = optional_argument},
+@@ -1347,11 +1358,12 @@ static int setparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ 	popt->po_parallel_threads = 0;
+ 	popt->po_follow_symlinks = 1;
+ 	popt->po_client = 0;
++	popt->po_module = 0;
+ 	opterr = 0;
+ 
+ 	/* reset optind for each getopt_long() in case of multiple calls */
+ 	optind = 0;
+-	while ((ch = getopt_long(argc, argv, "C::dFnPt::",
++	while ((ch = getopt_long(argc, argv, "C::dFnoPt::",
+ 				 long_opts, NULL)) != -1) {
+ 		switch (ch) {
+ 		case 'C':
+@@ -1376,6 +1388,9 @@ static int setparam_cmdline(int argc, char **argv, struct param_opts *popt)
+ 		case 'n':
+ 			popt->po_show_name = 0;
+ 			break;
++		case 'o':
++			popt->po_module = 1;
++			break;
+ 		case 'P':
+ 			if (popt->po_client) {
+ 				fprintf(stderr,
+@@ -1584,7 +1599,7 @@ static int lcfg_setparam_client(char *func, char *buf, struct param_opts *popt)
+ 				jt_cmdname(func), param_name, strerror(-rc));
+ 			goto out;
+ 		}
+-		rc = llapi_param_get_paths(tmp_path, &paths);
++		rc = llapi_param_get_paths(tmp_path, &paths, 0);
+ 		if (rc) {
+ 			rc = -errno;
+ 			fprintf(stderr,
+diff --git a/lustre/utils/obd.c b/lustre/utils/obd.c
+index cd80b31b19..1ef42f281b 100644
+--- a/lustre/utils/obd.c
++++ b/lustre/utils/obd.c
+@@ -981,7 +981,7 @@ static int lcfg_get_nm_offset_limit(char *nodemap)
+ 	int rc;
+ 
+ 	snprintf(param, sizeof(param), "nodemap/%s/offset", nodemap);
+-	rc = llapi_param_get_paths(param, &paths);
++	rc = llapi_param_get_paths(param, &paths, 0);
+ 	if (rc)
+ 		return -errno;
+ 
+
+</pre>
+</body>
+</html>

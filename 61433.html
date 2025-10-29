@@ -1,0 +1,1445 @@
+<html lang="en">
+<body>
+<pre>
+From a28a6519747485ce31e0926e89defb6ea814aa5c Mon Sep 17 00:00:00 2001
+From: Li Dongyang <dongyangli@ddn.com>
+Date: Fri, 24 Oct 2025 19:05:11 +1100
+Subject: [PATCH 1/1] LU-15928 osd: pass keylen to dt_lookup and dt_lookup_dir
+
+This is the first of the series to pass length of the key to
+DT index API, changing only dt_lookup() and dt_lookup_dir().
+
+With fscrypt passing binary names to the underlying ldiskfs storage,
+this make sure keys with embedded NUL bytes gets processed properly.
+
+Signed-off-by: Li Dongyang <dongyangli@ddn.com>
+Change-Id: Ic3610e84f9690e43f212ddf06bd83f78ef4c9b4b
+---
+ lustre/include/dt_object.h        | 11 ++--
+ lustre/include/lu_object.h        | 10 ++++
+ lustre/lfsck/lfsck_engine.c       |  2 +-
+ lustre/lfsck/lfsck_internal.h     |  6 +-
+ lustre/lfsck/lfsck_layout.c       | 12 ++--
+ lustre/lfsck/lfsck_lib.c          | 29 ++++++----
+ lustre/lfsck/lfsck_namespace.c    | 92 ++++++++++++++++++-------------
+ lustre/lfsck/lfsck_striped_dir.c  | 55 +++++++++++-------
+ lustre/lod/lod_object.c           | 16 +++---
+ lustre/mdd/mdd_dir.c              |  3 +-
+ lustre/mdt/mdt_reint.c            |  2 +-
+ lustre/mgs/mgs_nids.c             |  2 +-
+ lustre/obdclass/dt_object.c       |  4 +-
+ lustre/obdclass/llog_osd.c        |  3 +-
+ lustre/obdclass/local_storage.c   | 27 ++++-----
+ lustre/osd-ldiskfs/osd_handler.c  | 14 +++--
+ lustre/osd-ldiskfs/osd_quota.c    |  7 ++-
+ lustre/osd-wbcfs/osd_dirent.c     |  7 ++-
+ lustre/osd-wbcfs/osd_index_hash.c |  3 +-
+ lustre/osd-zfs/osd_index.c        | 22 ++++----
+ lustre/osd-zfs/osd_quota.c        |  3 +-
+ lustre/osp/osp_md_object.c        |  3 +-
+ lustre/ptlrpc/nodemap_storage.c   |  3 +-
+ lustre/quota/lquota_disk.c        | 39 +++++++------
+ lustre/quota/lquota_lib.c         |  6 +-
+ lustre/target/out_handler.c       |  6 +-
+ 26 files changed, 233 insertions(+), 154 deletions(-)
+
+diff --git a/lustre/include/dt_object.h b/lustre/include/dt_object.h
+index 14ae53a228..acd62cb44a 100644
+--- a/lustre/include/dt_object.h
++++ b/lustre/include/dt_object.h
+@@ -1522,6 +1522,7 @@ struct dt_index_operations {
+ 	 * @dt: object
+ 	 * @rec: buffer where value will be stored
+ 	 * @key: key
++	 * @keylen: size of key in bytes
+ 	 *
+ 	 * The method returns a value for the given key. Key/value format
+ 	 * and size should have been negotiated with ->do_index_try() before.
+@@ -1539,7 +1540,8 @@ struct dt_index_operations {
+ 	int (*dio_lookup)(const struct lu_env *env,
+ 			  struct dt_object *dt,
+ 			  struct dt_rec *rec,
+-			  const struct dt_key *key);
++			  const struct dt_key *key,
++			  size_t keylen);
+ 
+ 	/**
+ 	 * dio_declare_insert() - Declare intention to insert a key/value into
+@@ -2209,7 +2211,7 @@ static inline int dt_object_unlock(const struct lu_env *env,
+ }
+ 
+ int dt_lookup_dir(const struct lu_env *env, struct dt_object *dir,
+-		  const char *name, struct lu_fid *fid);
++		  const char *name, size_t namelen, struct lu_fid *fid);
+ 
+ static inline int dt_object_sync(const struct lu_env *env, struct dt_object *o,
+ 				 __u64 start, __u64 end)
+@@ -3068,7 +3070,8 @@ static inline int dt_last_seq_get(const struct lu_env *env,
+ static inline int dt_lookup(const struct lu_env *env,
+ 			    struct dt_object *dt,
+ 			    struct dt_rec *rec,
+-			    const struct dt_key *key)
++			    const struct dt_key *key,
++			    size_t keylen)
+ {
+ 	int ret;
+ 
+@@ -3081,7 +3084,7 @@ static inline int dt_lookup(const struct lu_env *env,
+ 	if (!dt->do_index_ops->dio_lookup)
+ 		return -EOPNOTSUPP;
+ 
+-	ret = dt->do_index_ops->dio_lookup(env, dt, rec, key);
++	ret = dt->do_index_ops->dio_lookup(env, dt, rec, key, keylen);
+ 	if (ret > 0)
+ 		ret = 0;
+ 	else if (ret == 0)
+diff --git a/lustre/include/lu_object.h b/lustre/include/lu_object.h
+index 511176fdd9..ba92da50c5 100644
+--- a/lustre/include/lu_object.h
++++ b/lustre/include/lu_object.h
+@@ -1261,6 +1261,16 @@ struct lu_name {
+ 	int            ln_namelen;
+ };
+ 
++static inline bool name_is_dot(const char *name, int namelen)
++{
++	return namelen == 1 && name[0] == '.';
++}
++
++static inline bool name_is_dotdot(const char *name, int namelen)
++{
++	return namelen == 2 && name[0] == '.' && name[1] == '.';
++}
++
+ static inline bool name_is_dot_or_dotdot(const char *name, int namelen)
+ {
+ 	return name[0] == '.' &&
+diff --git a/lustre/lfsck/lfsck_engine.c b/lustre/lfsck/lfsck_engine.c
+index 9eb84e473f..374adcd2dd 100644
+--- a/lustre/lfsck/lfsck_engine.c
++++ b/lustre/lfsck/lfsck_engine.c
+@@ -194,7 +194,7 @@ static int lfsck_needs_scan_dir(const struct lu_env *env,
+ 		if (rc < 0 && rc != -ENODATA)
+ 			GOTO(out, rc);
+ 
+-		rc = dt_lookup_dir(env, obj, dotdot, fid);
++		rc = dt_lookup_dir(env, obj, dotdot, 2, fid);
+ 		if (depth > 0)
+ 			lfsck_object_put(env, obj);
+ 
+diff --git a/lustre/lfsck/lfsck_internal.h b/lustre/lfsck/lfsck_internal.h
+index 1f74fb9eca..2610655c53 100644
+--- a/lustre/lfsck/lfsck_internal.h
++++ b/lustre/lfsck/lfsck_internal.h
+@@ -1015,7 +1015,8 @@ int lfsck_namespace_trace_update(const struct lu_env *env,
+ 				 const __u8 flags, bool add);
+ int lfsck_namespace_check_exist(const struct lu_env *env,
+ 				struct dt_object *dir,
+-				struct dt_object *obj, const char *name);
++				struct dt_object *obj,
++				struct lfsck_namespace_req *lnr);
+ int __lfsck_links_read(const struct lu_env *env, struct dt_object *obj,
+ 		       struct linkea_data *ldata, bool with_rec);
+ int lfsck_namespace_rebuild_linkea(const struct lu_env *env,
+@@ -1031,7 +1032,8 @@ int lfsck_namespace_repair_dirent(const struct lu_env *env,
+ 				  struct lfsck_component *com,
+ 				  struct dt_object *parent,
+ 				  struct dt_object *child,
+-				  const char *name, const char *name2,
++				  const char *name, int namelen,
++				  const char *name2, int namelen2,
+ 				  __u16 type, bool update, bool dec);
+ int lfsck_verify_linkea(const struct lu_env *env, struct lfsck_instance *lfsck,
+ 			struct dt_object *obj, const struct lu_name *cname,
+diff --git a/lustre/lfsck/lfsck_layout.c b/lustre/lfsck/lfsck_layout.c
+index d5390ae3e8..b3ded9fab2 100644
+--- a/lustre/lfsck/lfsck_layout.c
++++ b/lustre/lfsck/lfsck_layout.c
+@@ -2392,6 +2392,7 @@ static int lfsck_layout_recreate_parent(const struct lu_env *env,
+ 	struct linkea_data ldata = { NULL };
+ 	struct lu_buf linkea_buf;
+ 	const struct lu_name *pname;
++	int namelen;
+ 	int size = 0;
+ 	int idx = 0;
+ 	int rc = 0;
+@@ -2452,9 +2453,10 @@ static int lfsck_layout_recreate_parent(const struct lu_env *env,
+ 
+ again:
+ 	do {
+-		snprintf(name, NAME_MAX, DFID"%s-%s-%d", PFID(pfid), infix,
+-			 type, idx++);
+-		rc = dt_lookup_dir(env, lfsck->li_lpf_obj, name, tfid);
++		namelen = snprintf(name, NAME_MAX, DFID"%s-%s-%d", PFID(pfid),
++				   infix, type, idx++);
++		rc = dt_lookup_dir(env, lfsck->li_lpf_obj,
++				   name, namelen, tfid);
+ 		if (rc != 0 && rc != -ENOENT)
+ 			GOTO(log, rc);
+ 	} while (rc == 0);
+@@ -2465,7 +2467,7 @@ again:
+ 		GOTO(log, rc);
+ 
+ 	/* Recheck whether the name conflict with othrs after taken ldlm lock */
+-	rc = dt_lookup_dir(env, lfsck->li_lpf_obj, name, tfid);
++	rc = dt_lookup_dir(env, lfsck->li_lpf_obj, name, namelen, tfid);
+ 	if (unlikely(rc == 0)) {
+ 		lfsck_unlock(llh);
+ 		goto again;
+@@ -2474,7 +2476,7 @@ again:
+ 	if (rc != -ENOENT)
+ 		GOTO(unlock, rc);
+ 
+-	pname = lfsck_name_get_const(env, name, strlen(name));
++	pname = lfsck_name_get_const(env, name, namelen);
+ 	rc = linkea_links_new(&ldata, &lfsck_env_info(env)->lti_linkea_buf,
+ 			      pname, lfsck_dto2fid(lfsck->li_lpf_obj));
+ 	if (rc != 0)
+diff --git a/lustre/lfsck/lfsck_lib.c b/lustre/lfsck/lfsck_lib.c
+index adf4b89d81..fd9cbb5d3a 100644
+--- a/lustre/lfsck/lfsck_lib.c
++++ b/lustre/lfsck/lfsck_lib.c
+@@ -1036,6 +1036,7 @@ static int lfsck_create_lpf(const struct lu_env *env,
+ 	struct dt_object *child = NULL;
+ 	struct lfsck_lock_handle *llh = &info->lti_llh;
+ 	char name[8];
++	int namelen;
+ 	int node = lfsck_dev_idx(lfsck);
+ 	int rc = 0;
+ 
+@@ -1044,7 +1045,7 @@ static int lfsck_create_lpf(const struct lu_env *env,
+ 	LASSERT(parent != NULL);
+ 	LASSERT(lfsck->li_lpf_obj == NULL);
+ 
+-	snprintf(name, 8, "MDT%04x", node);
++	namelen = snprintf(name, sizeof(name), "MDT%04x", node);
+ 	rc = lfsck_lock(env, lfsck, parent, name, llh,
+ 			MDS_INODELOCK_UPDATE, LCK_PW);
+ 	if (rc != 0)
+@@ -1056,7 +1057,7 @@ static int lfsck_create_lpf(const struct lu_env *env,
+ 		 * the lfsck_bookmark::lb_lpf_fid successfully. So need lookup
+ 		 * it from MDT0 firstly.
+ 		 */
+-		rc = dt_lookup_dir(env, parent, name, cfid);
++		rc = dt_lookup_dir(env, parent, name, namelen, cfid);
+ 		if (rc != 0 && rc != -ENOENT)
+ 			GOTO(unlock, rc);
+ 
+@@ -1256,15 +1257,16 @@ static int lfsck_verify_lpf_pairs(const struct lu_env *env,
+ {
+ 	struct dt_object *parent = lfsck->li_lpf_root_obj;
+ 	struct lfsck_thread_info *info = lfsck_env_info(env);
+-	char *name2 = info->lti_key;
+ 	struct lu_fid *fid2 = &info->lti_fid3;
+ 	struct dt_object *parent2 = NULL;
+ 	struct lustre_handle lh = { 0 };
++	char *name2 = info->lti_key;
++	int name2len;
+ 	int rc;
+ 
+ 	ENTRY;
+ 	fid_zero(fid);
+-	rc = dt_lookup_dir(env, child, dotdot, fid);
++	rc = dt_lookup_dir(env, child, dotdot, 2, fid);
+ 	if (rc != 0)
+ 		GOTO(linkea, rc);
+ 
+@@ -1306,8 +1308,8 @@ linkea:
+ 		GOTO(out_put, rc);
+ 
+ 	dt_read_lock(env, child, 0);
+-	rc = lfsck_links_get_first(env, child, name2, fid2);
+-	if (rc != 0) {
++	name2len = lfsck_links_get_first(env, child, name2, fid2);
++	if (name2len < 0) {
+ 		dt_read_unlock(env, child);
+ 		lfsck_ibits_unlock(&lh, LCK_PR);
+ 
+@@ -1344,7 +1346,7 @@ linkea:
+ 		GOTO(out_done, rc = 1);
+ 	}
+ 
+-	rc = dt_lookup_dir(env, parent2, name2, fid);
++	rc = dt_lookup_dir(env, parent2, name2, name2len, fid);
+ 	dt_read_unlock(env, child);
+ 	lfsck_ibits_unlock(&lh, LCK_PR);
+ 	if (rc != 0 && rc != -ENOENT)
+@@ -1412,6 +1414,7 @@ int lfsck_verify_lpf(const struct lu_env *env, struct lfsck_instance *lfsck)
+ 	struct dt_object *child2 = NULL;
+ 	const struct lu_name *cname;
+ 	char name[8];
++	int namelen;
+ 	int node = lfsck_dev_idx(lfsck);
+ 	int rc = 0;
+ 
+@@ -1460,8 +1463,8 @@ int lfsck_verify_lpf(const struct lu_env *env, struct lfsck_instance *lfsck)
+ 	}
+ 
+ 	/* child2 */
+-	snprintf(name, 8, "MDT%04x", node);
+-	rc = dt_lookup_dir(env, parent, name, cfid);
++	namelen = snprintf(name, sizeof(name), "MDT%04x", node);
++	rc = dt_lookup_dir(env, parent, name, namelen, cfid);
+ 	if (rc == -ENOENT) {
+ 		rc = 0;
+ 		goto find_child1;
+@@ -3658,7 +3661,7 @@ int lfsck_register(const struct lu_env *env, struct dt_device *key,
+ 			struct lu_fid *pfid = &lfsck_env_info(env)->lti_fid2;
+ 			const struct lu_name *cname;
+ 
+-			rc = dt_lookup_dir(env, root, "ROOT",
++			rc = dt_lookup_dir(env, root, "ROOT", 4,
+ 					   &lfsck->li_global_root_fid);
+ 			if (rc != 0)
+ 				GOTO(out, rc);
+@@ -3667,7 +3670,8 @@ int lfsck_register(const struct lu_env *env, struct dt_device *key,
+ 			if (IS_ERR(obj))
+ 				GOTO(out, rc = PTR_ERR(obj));
+ 
+-			rc = dt_lookup_dir(env, obj, dotlustre, fid);
++			rc = dt_lookup_dir(env, obj, dotlustre,
++					   sizeof(dotlustre) - 1, fid);
+ 			if (rc != 0)
+ 				GOTO(out, rc);
+ 
+@@ -3684,7 +3688,8 @@ int lfsck_register(const struct lu_env *env, struct dt_device *key,
+ 				GOTO(out, rc);
+ 
+ 			*pfid = *fid;
+-			rc = dt_lookup_dir(env, obj, lostfound, fid);
++			rc = dt_lookup_dir(env, obj, lostfound,
++					   sizeof(lostfound) - 1, fid);
+ 			if (rc != 0)
+ 				GOTO(out, rc);
+ 
+diff --git a/lustre/lfsck/lfsck_namespace.c b/lustre/lfsck/lfsck_namespace.c
+index df5dd81ba2..cfc0256a78 100644
+--- a/lustre/lfsck/lfsck_namespace.c
++++ b/lustre/lfsck/lfsck_namespace.c
+@@ -468,6 +468,7 @@ int lfsck_namespace_trace_update(const struct lu_env *env,
+ 	struct lfsck_instance *lfsck = com->lc_lfsck;
+ 	struct dt_object *obj;
+ 	struct lu_fid *key = &lfsck_env_info(env)->lti_fid3;
++	size_t keylen = sizeof(*key);
+ 	struct dt_device *dev;
+ 	struct thandle *th = NULL;
+ 	int idx;
+@@ -493,7 +494,7 @@ int lfsck_namespace_trace_update(const struct lu_env *env,
+ 	dev = lfsck_obj2dev(obj);
+ 	fid_cpu_to_be(key, fid);
+ 	rc = dt_lookup(env, obj, (struct dt_rec *)&old,
+-		       (const struct dt_key *)key);
++		       (const struct dt_key *)key, keylen);
+ 	if (rc == -ENOENT) {
+ 		if (!add)
+ 			GOTO(unlock, rc = 0);
+@@ -575,7 +576,8 @@ unlock:
+ 
+ int lfsck_namespace_check_exist(const struct lu_env *env,
+ 				struct dt_object *dir,
+-				struct dt_object *obj, const char *name)
++				struct dt_object *obj,
++				struct lfsck_namespace_req *lnr)
+ {
+ 	struct lu_fid *fid = &lfsck_env_info(env)->lti_fid;
+ 	int rc;
+@@ -584,7 +586,7 @@ int lfsck_namespace_check_exist(const struct lu_env *env,
+ 	if (unlikely(lfsck_is_dead_obj(obj)))
+ 		RETURN(LFSCK_NAMEENTRY_DEAD);
+ 
+-	rc = dt_lookup_dir(env, dir, name, fid);
++	rc = dt_lookup_dir(env, dir, lnr->lnr_name, lnr->lnr_namelen, fid);
+ 	if (rc == -ENOENT)
+ 		RETURN(LFSCK_NAMEENTRY_REMOVED);
+ 
+@@ -933,7 +935,7 @@ again:
+ 	do {
+ 		namelen = snprintf(info->lti_key, NAME_MAX, DFID"%s-%s-%d",
+ 				   PFID(cfid), infix, type, idx++);
+-		rc = dt_lookup_dir(env, parent, info->lti_key, &tfid);
++		rc = dt_lookup_dir(env, parent, info->lti_key, namelen, &tfid);
+ 		if (rc != 0 && rc != -ENOENT)
+ 			GOTO(log, rc);
+ 
+@@ -947,7 +949,7 @@ again:
+ 		GOTO(log, rc);
+ 
+ 	/* Re-check whether name conflict with othrs after taken ldlm lock. */
+-	rc = dt_lookup_dir(env, parent, info->lti_key, &tfid);
++	rc = dt_lookup_dir(env, parent, info->lti_key, namelen, &tfid);
+ 	if (rc == 0) {
+ 		if (!lu_fid_eq(cfid, &tfid)) {
+ 			exist = false;
+@@ -1462,8 +1464,9 @@ static int lfsck_namespace_create_orphan_dir(const struct lu_env *env,
+ 		if (idx < 0)
+ 			GOTO(log, rc = idx);
+ 
+-		snprintf(name, 8, "MDT%04x", idx);
+-		rc = dt_lookup_dir(env, lfsck->li_lpf_root_obj, name, &tfid);
++		namelen = snprintf(name, 8, "MDT%04x", idx);
++		rc = dt_lookup_dir(env, lfsck->li_lpf_root_obj, name, namelen,
++				   &tfid);
+ 		if (rc != 0)
+ 			GOTO(log, rc = (rc == -ENOENT ? -ENXIO : rc));
+ 
+@@ -1490,7 +1493,7 @@ again:
+ 	do {
+ 		namelen = snprintf(name, 31, DFID"-P-%d",
+ 				   PFID(cfid), idx++);
+-		rc = dt_lookup_dir(env, parent, name, &tfid);
++		rc = dt_lookup_dir(env, parent, name, namelen, &tfid);
+ 		if (rc != 0 && rc != -ENOENT)
+ 			GOTO(log, rc);
+ 	} while (rc == 0);
+@@ -1503,7 +1506,7 @@ again:
+ 	/* Re-check whether the name conflict with others after taken
+ 	 * the ldlm lock.
+ 	 */
+-	rc = dt_lookup_dir(env, parent, name, &tfid);
++	rc = dt_lookup_dir(env, parent, name, namelen, &tfid);
+ 	if (unlikely(rc == 0)) {
+ 		lfsck_unlock(llh);
+ 		goto again;
+@@ -1861,7 +1864,8 @@ static int lfsck_namespace_shrink_linkea_cond(const struct lu_env *env,
+ 	}
+ 
+ 	rc = dt_lookup(env, parent, (struct dt_rec *)cfid,
+-		       (const struct dt_key *)cname->ln_name);
++		       (const struct dt_key *)cname->ln_name,
++		       cname->ln_namelen);
+ 	dt_read_unlock(env, parent);
+ 
+ 	/* It is safe to release the ldlm lock, because when the logic come
+@@ -1934,7 +1938,6 @@ static int lfsck_namespace_replace_cond(const struct lu_env *env,
+ 	struct lfsck_instance *lfsck = com->lc_lfsck;
+ 	/* The child and its name may be on different MDTs. */
+ 	struct dt_device *dev = lfsck->li_next;
+-	const char *name = cname->ln_name;
+ 	const struct lu_fid *pfid = lfsck_dto2fid(parent);
+ 	struct dt_object *cobj = NULL;
+ 	struct lfsck_lock_handle *pllh = &info->lti_llh;
+@@ -1956,7 +1959,7 @@ static int lfsck_namespace_replace_cond(const struct lu_env *env,
+ 	if (unlikely(!dt_try_as_dir(env, parent, true)))
+ 		GOTO(log, rc = -ENOTDIR);
+ 
+-	rc = lfsck_lock(env, lfsck, parent, name, pllh,
++	rc = lfsck_lock(env, lfsck, parent, cname->ln_name, pllh,
+ 			MDS_INODELOCK_UPDATE, LCK_PW);
+ 	if (rc != 0)
+ 		GOTO(log, rc);
+@@ -1982,7 +1985,8 @@ static int lfsck_namespace_replace_cond(const struct lu_env *env,
+ 		goto replace;
+ 	}
+ 
+-	rc = dt_lookup_dir(env, parent, name, &tfid);
++	rc = dt_lookup_dir(env, parent, cname->ln_name, cname->ln_namelen,
++			   &tfid);
+ 	if (rc == -ENOENT) {
+ 		exist = false;
+ 		goto replace;
+@@ -2055,14 +2059,15 @@ replace:
+ 			GOTO(stop, rc);
+ 	}
+ 
+-	rc = dt_declare_delete(env, parent, (const struct dt_key *)name, th);
++	rc = dt_declare_delete(env, parent,
++			       (const struct dt_key *)cname->ln_name, th);
+ 	if (rc != 0)
+ 		GOTO(stop, rc);
+ 
+ 	rec->rec_type = S_IFDIR;
+ 	rec->rec_fid = lfsck_dto2fid(child);
+ 	rc = dt_declare_insert(env, parent, (const struct dt_rec *)rec,
+-			       (const struct dt_key *)name, th);
++			       (const struct dt_key *)cname->ln_name, th);
+ 	if (rc != 0)
+ 		GOTO(stop, rc);
+ 
+@@ -2077,12 +2082,12 @@ replace:
+ 	}
+ 
+ 	/* The old name entry maybe not exist. */
+-	rc = dt_delete(env, parent, (const struct dt_key *)name, th);
++	rc = dt_delete(env, parent, (const struct dt_key *)cname->ln_name, th);
+ 	if (rc != 0 && rc != -ENOENT)
+ 		GOTO(stop, rc);
+ 
+ 	rc = dt_insert(env, parent, (const struct dt_rec *)rec,
+-		       (const struct dt_key *)name, th);
++		       (const struct dt_key *)cname->ln_name, th);
+ 
+ 	GOTO(stop, rc = (rc == 0 ? 1 : rc));
+ 
+@@ -2099,7 +2104,7 @@ log:
+ 	CDEBUG(D_LFSCK,
+ 	       "%s: namespace LFSCK conditionally destroy the object "DFID" because of conflict with the object "DFID" under the parent "DFID" with name %s: rc = %d\n",
+ 	       lfsck_lfsck2name(lfsck), PFID(cfid),
+-	       PFID(lfsck_dto2fid(child)), PFID(pfid), name, rc);
++	       PFID(lfsck_dto2fid(child)), PFID(pfid), cname->ln_name, rc);
+ 
+ 	return rc;
+ }
+@@ -2189,7 +2194,9 @@ log:
+  * \param[in] parent	pointer to the parent directory
+  * \param[in] child	pointer to the object referenced by the name entry
+  * \param[in] name	the old name of the child under the parent directory
++ * \param[in] namelen	length of the old name in bytes
+  * \param[in] name2	the new name of the child under the parent directory
++ * \param[in] namelen2	length of the new name in bytes
+  * \param[in] type	the type claimed by the name entry
+  * \param[in] update	update the name entry if true; otherwise, remove it
+  * \param[in] dec	decrease the parent nlink count if true
+@@ -2202,7 +2209,8 @@ int lfsck_namespace_repair_dirent(const struct lu_env *env,
+ 				  struct lfsck_component *com,
+ 				  struct dt_object *parent,
+ 				  struct dt_object *child,
+-				  const char *name, const char *name2,
++				  const char *name, int namelen,
++				  const char *name2, int namelen2,
+ 				  __u16 type, bool update, bool dec)
+ {
+ 	struct lfsck_thread_info *info = lfsck_env_info(env);
+@@ -2227,7 +2235,8 @@ int lfsck_namespace_repair_dirent(const struct lu_env *env,
+ 	if (unlikely(!dt_try_as_dir(env, parent, true)))
+ 		GOTO(log, rc = -ENOTDIR);
+ 
+-	if (!update || strcmp(name, name2) == 0)
++	if (!update ||
++	    (namelen == namelen2 && memcmp(name, name2, namelen) == 0))
+ 		rc = lfsck_lock(env, lfsck, parent, name, llh,
+ 				MDS_INODELOCK_UPDATE, LCK_PW);
+ 	else
+@@ -2270,7 +2279,7 @@ int lfsck_namespace_repair_dirent(const struct lu_env *env,
+ 
+ 
+ 	dt_write_lock(env, parent, 0);
+-	rc = dt_lookup_dir(env, dt_object_child(parent), name, &tfid);
++	rc = dt_lookup_dir(env, dt_object_child(parent), name, namelen, &tfid);
+ 	/* Someone has removed the bad name entry by race. */
+ 	if (rc == -ENOENT)
+ 		GOTO(unlock2, rc = 0);
+@@ -2325,10 +2334,10 @@ unlock1:
+ 
+ log:
+ 	CDEBUG(D_LFSCK,
+-	       "%s: namespace LFSCK assistant found bad name entry for: parent "DFID", child "DFID", name %s, type in name entry %o, type claimed by child %o. repair it by %s with new name2 %s: rc = %d\n",
++	       "%s: namespace LFSCK assistant found bad name entry for: parent "DFID", child "DFID", name %.*s, type in name entry %o, type claimed by child %o. repair it by %s with new name2 %.*s: rc = %d\n",
+ 	       lfsck_lfsck2name(lfsck), PFID(pfid), PFID(&cfid),
+-	       name, type, update ? lfsck_object_type(child) : 0,
+-	       update ? "updating" : "removing", name2, rc);
++	       namelen, name, type, update ? lfsck_object_type(child) : 0,
++	       update ? "updating" : "removing", namelen2, name2, rc);
+ 
+ 	if (rc != 0) {
+ 		struct lfsck_namespace *ns = com->lc_file_ram;
+@@ -2669,7 +2678,8 @@ lost_parent:
+ 		GOTO(out, rc);
+ 	}
+ 
+-	rc = dt_lookup_dir(env, parent, cname->ln_name, &tfid);
++	rc = dt_lookup_dir(env, parent, cname->ln_name, cname->ln_namelen,
++			   &tfid);
+ 	if (rc == -ENOENT) {
+ 		/* If the LFSCK is marked as LF_INCOMPLETE, then means some MDT
+ 		 * has ever tried to verify some remote MDT-object that resides
+@@ -2928,7 +2938,8 @@ again:
+ 			continue;
+ 		}
+ 
+-		rc = dt_lookup_dir(env, parent, cname->ln_name, &tfid);
++		rc = dt_lookup_dir(env, parent, cname->ln_name,
++				   cname->ln_namelen, &tfid);
+ 		*pfid2 = *lfsck_dto2fid(parent);
+ 		if (rc == -ENOENT) {
+ 			lfsck_object_put(env, parent);
+@@ -3001,8 +3012,10 @@ rebuild:
+ 				}
+ 
+ 				rc = lfsck_namespace_repair_dirent(env, com,
+-					parent, child, cname->ln_name,
+-					cname->ln_name, S_IFDIR, false, true);
++					parent, child,
++					cname->ln_name, cname->ln_namelen,
++					cname->ln_name, cname->ln_namelen,
++					S_IFDIR, false, true);
+ 				lfsck_object_put(env, parent);
+ 				if (rc < 0) {
+ 					if (bk->lb_param & LPF_FAILOUT)
+@@ -3298,7 +3311,7 @@ lock:
+ 		GOTO(out, rc = 0);
+ 	}
+ 
+-	rc = dt_lookup_dir(env, child, dotdot, pfid);
++	rc = dt_lookup_dir(env, child, dotdot, 2, pfid);
+ 	if (rc != 0) {
+ 		if (rc != -ENOENT && rc != -ENODATA && rc != -EINVAL) {
+ 			dt_read_unlock(env, child);
+@@ -3903,7 +3916,8 @@ lost_parent:
+ 			continue;
+ 		}
+ 
+-		rc = dt_lookup_dir(env, parent, cname->ln_name, cfid);
++		rc = dt_lookup_dir(env, parent, cname->ln_name,
++				   cname->ln_namelen, cfid);
+ 		if (rc != 0 && rc != -ENOENT) {
+ 			lfsck_object_put(env, parent);
+ 
+@@ -5343,7 +5357,7 @@ int lfsck_namespace_repair_dangling(const struct lu_env *env,
+ 	if (rc != 0)
+ 		GOTO(log, rc);
+ 
+-	rc = lfsck_namespace_check_exist(env, parent, child, lnr->lnr_name);
++	rc = lfsck_namespace_check_exist(env, parent, child, lnr);
+ 	if (rc != 0)
+ 		GOTO(log, rc);
+ 
+@@ -5707,7 +5721,7 @@ dangling:
+ 			}
+ 		}
+ 
+-		rc = lfsck_namespace_check_exist(env, dir, obj, lnr->lnr_name);
++		rc = lfsck_namespace_check_exist(env, dir, obj, lnr);
+ 		if (rc == 0) {
+ 			if (!lfsck_is_valid_slave_name_entry(env, lnr->lnr_lmv,
+ 					lnr->lnr_name, lnr->lnr_namelen)) {
+@@ -5879,7 +5893,7 @@ nodata:
+ 			}
+ 		}
+ 
+-		rc = lfsck_namespace_check_exist(env, dir, obj, lnr->lnr_name);
++		rc = lfsck_namespace_check_exist(env, dir, obj, lnr);
+ 		if (rc != 0)
+ 			GOTO(stop, rc);
+ 
+@@ -5967,7 +5981,8 @@ out:
+ 		case LNIT_BAD_TYPE:
+ 			log = false;
+ 			rc = lfsck_namespace_repair_dirent(env, com, dir,
+-					obj, lnr->lnr_name, lnr->lnr_name,
++					obj, lnr->lnr_name, lnr->lnr_namelen,
++					lnr->lnr_name, lnr->lnr_namelen,
+ 					lnr->lnr_type, true, false);
+ 			if (rc > 0)
+ 				repaired = true;
+@@ -5980,7 +5995,8 @@ out:
+ 			 *	nlink count unchanged here.
+ 			 */
+ 			rc = lfsck_namespace_repair_dirent(env, com, dir,
+-					obj, lnr->lnr_name, lnr->lnr_name,
++					obj, lnr->lnr_name, lnr->lnr_namelen,
++					lnr->lnr_name, lnr->lnr_namelen,
+ 					lnr->lnr_type, false, false);
+ 			if (rc > 0)
+ 				repaired = true;
+@@ -6159,7 +6175,7 @@ static int lfsck_namespace_scan_local_lpf_one(const struct lu_env *env,
+ 	obj = com->lc_sub_trace_objs[idx].lsto_obj;
+ 	fid_cpu_to_be(key, &ent->lde_fid);
+ 	rc = dt_lookup(env, obj, (struct dt_rec *)&flags,
+-		       (const struct dt_key *)key);
++		       (const struct dt_key *)key, sizeof(*key));
+ 	if (rc == 0) {
+ 		exist = true;
+ 		flags |= LNTF_CHECK_ORPHAN;
+@@ -6961,7 +6977,7 @@ stop:
+  * \param[out] pfid	pointer to the buffer to hold the parent
+  *			directory's FID in the first linkEA entry
+  *
+- * \retval		0 for success
++ * \retval		positive name length on success
+  * \retval		negative error number on failure
+  */
+ int lfsck_links_get_first(const struct lu_env *env, struct dt_object *obj,
+@@ -6984,7 +7000,7 @@ int lfsck_links_get_first(const struct lu_env *env, struct dt_object *obj,
+ 	memcpy(name, cname->ln_name, cname->ln_namelen);
+ 	name[cname->ln_namelen] = 0;
+ 
+-	return 0;
++	return cname->ln_namelen;
+ }
+ 
+ /**
+diff --git a/lustre/lfsck/lfsck_striped_dir.c b/lustre/lfsck/lfsck_striped_dir.c
+index d379d1adc7..665d7239d3 100644
+--- a/lustre/lfsck/lfsck_striped_dir.c
++++ b/lustre/lfsck/lfsck_striped_dir.c
+@@ -318,17 +318,19 @@ static int lfsck_remove_dirent(const struct lu_env *env,
+ {
+ 	struct lfsck_thread_info *info = lfsck_env_info(env);
+ 	struct dt_object *obj;
++	int namelen;
+ 	int rc;
+ 
+-	snprintf(info->lti_tmpbuf2, sizeof(info->lti_tmpbuf2), DFID":%u",
+-		 PFID(fid), index);
++	namelen = snprintf(info->lti_tmpbuf2, sizeof(info->lti_tmpbuf2),
++			   DFID":%u", PFID(fid), index);
+ 	obj = lfsck_object_find_bottom(env, com->lc_lfsck, fid);
+ 	if (IS_ERR(obj))
+ 		return PTR_ERR(obj);
+ 
+ 	rc = lfsck_namespace_repair_dirent(env, com, dir, obj,
+-					info->lti_tmpbuf2, info->lti_tmpbuf2,
+-					S_IFDIR, false, false);
++					   info->lti_tmpbuf2, namelen,
++					   info->lti_tmpbuf2, namelen,
++					   S_IFDIR, false, false);
+ 	lfsck_object_put(env, obj);
+ 	if (rc > 0) {
+ 		struct lfsck_namespace *ns = com->lc_file_ram;
+@@ -1158,6 +1160,7 @@ static int lfsck_allow_regenerate_master_lmv(const struct lu_env *env,
+ 	struct dt_it *di;
+ 	__u64 cookie;
+ 	__u32 args;
++	int namelen;
+ 	int rc;
+ 	__u16 type;
+ 
+@@ -1166,10 +1169,10 @@ static int lfsck_allow_regenerate_master_lmv(const struct lu_env *env,
+ 		RETURN(-ENOTDIR);
+ 
+ 	/* Check whether the shard and the master MDT-object matches or not. */
+-	snprintf(info->lti_tmpbuf, sizeof(info->lti_tmpbuf), DFID":%u",
+-		 PFID(cfid), cidx);
++	namelen = snprintf(info->lti_tmpbuf, sizeof(info->lti_tmpbuf),
++			   DFID":%u", PFID(cfid), cidx);
+ 	rc = dt_lookup(env, obj, (struct dt_rec *)tfid,
+-		       (const struct dt_key *)info->lti_tmpbuf);
++		       (const struct dt_key *)info->lti_tmpbuf, namelen);
+ 	if (rc != 0)
+ 		RETURN(rc);
+ 
+@@ -1543,7 +1546,7 @@ int lfsck_namespace_repair_bad_name_hash(const struct lu_env *env,
+ 	int rc = 0;
+ 
+ 	ENTRY;
+-	rc = dt_lookup_dir(env, shard, dotdot, pfid);
++	rc = dt_lookup_dir(env, shard, dotdot, 2, pfid);
+ 	if (rc != 0 || !fid_is_sane(pfid))
+ 		GOTO(log, rc);
+ 
+@@ -1734,6 +1737,7 @@ int lfsck_namespace_verify_stripe_slave(const struct lu_env *env,
+ 	struct lmv_mds_md_v1 *clmv = &llmv->ll_lmv;
+ 	struct lmv_mds_md_v1 *plmv = &info->lti_lmv;
+ 	struct dt_object *parent = NULL;
++	int namelen, namelen2;
+ 	int rc = 0;
+ 
+ 	ENTRY;
+@@ -1744,7 +1748,7 @@ int lfsck_namespace_verify_stripe_slave(const struct lu_env *env,
+ 		GOTO(out, rc);
+ 	}
+ 
+-	rc = dt_lookup_dir(env, obj, dotdot, pfid);
++	rc = dt_lookup_dir(env, obj, dotdot, 2, pfid);
+ 	if (rc != 0 || !fid_is_sane(pfid)) {
+ 		rc = lfsck_namespace_trace_update(env, com, cfid,
+ 					LNTF_UNCERTAIN_LMV, true);
+@@ -1815,18 +1819,19 @@ int lfsck_namespace_verify_stripe_slave(const struct lu_env *env,
+ 		GOTO(out, rc);
+ 	}
+ 
+-	snprintf(info->lti_tmpbuf2, sizeof(info->lti_tmpbuf2), DFID":%u",
+-		 PFID(cfid), clmv->lmv_master_mdt_index);
++	namelen2 = snprintf(info->lti_tmpbuf2, sizeof(info->lti_tmpbuf2),
++			    DFID":%u", PFID(cfid), clmv->lmv_master_mdt_index);
+ 	name2 = info->lti_tmpbuf2;
+ 
+-	rc = lfsck_links_get_first(env, obj, name, &tfid);
+-	if (rc == 0 && strcmp(name, name2) == 0 && lu_fid_eq(pfid, &tfid)) {
++	namelen = lfsck_links_get_first(env, obj, name, &tfid);
++	if (namelen > 0 && namelen == namelen2 &&
++	    memcmp(name, name2, namelen) == 0 && lu_fid_eq(pfid, &tfid)) {
+ 		llmv->ll_lmv_verified = 1;
+ 
+ 		GOTO(out, rc);
+ 	}
+ 
+-	rc = dt_lookup_dir(env, parent, name2, &tfid);
++	rc = dt_lookup_dir(env, parent, name2, namelen2, &tfid);
+ 	if (rc != 0 || !lu_fid_eq(cfid, &tfid))
+ 		rc = lfsck_namespace_trace_update(env, com, cfid,
+ 						  LNTF_UNCERTAIN_LMV, true);
+@@ -1982,6 +1987,7 @@ int lfsck_namespace_striped_dir_rescan(const struct lu_env *env,
+ 		const struct lu_fid *cfid = &lslr->lslr_fid;
+ 		const struct lu_name *cname;
+ 		struct linkea_data ldata = { NULL };
++		int namelen;
+ 		int rc1 = 0;
+ 		bool repair_linkea = false;
+ 		bool repair_lmvea = false;
+@@ -2033,8 +2039,10 @@ int lfsck_namespace_striped_dir_rescan(const struct lu_env *env,
+ 			 * the name entry should be updated.
+ 			 */
+ 			rename = true;
+-			snprintf(info->lti_tmpbuf2, sizeof(info->lti_tmpbuf2),
+-				 DFID":%u", PFID(cfid), lslr->lslr_index);
++			namelen = snprintf(info->lti_tmpbuf2,
++					   sizeof(info->lti_tmpbuf2),
++					   DFID":%u", PFID(cfid),
++					   lslr->lslr_index);
+ 			if (llmv->ll_inline ||
+ 			    lslr->lslr_stripe_count != stripe_count ||
+ 			    (lslr->lslr_hash_type != hash_type))
+@@ -2174,7 +2182,8 @@ repair:
+ 			}
+ 
+ 			rc1 = lfsck_namespace_repair_dirent(env, com, dir, obj,
+-					info->lti_tmpbuf2, lnr->lnr_name,
++					info->lti_tmpbuf2, namelen,
++					lnr->lnr_name, lnr->lnr_namelen,
+ 					lnr->lnr_type, true, false);
+ 			if (rc1 >= 0) {
+ 				rename_repaired = true;
+@@ -2402,7 +2411,7 @@ int lfsck_namespace_handle_striped_master(const struct lu_env *env,
+ 		}
+ 
+ dangling:
+-		rc = lfsck_namespace_check_exist(env, dir, obj, lnr->lnr_name);
++		rc = lfsck_namespace_check_exist(env, dir, obj, lnr);
+ 		if (rc == 0) {
+ 			memset(lmv, 0, sizeof(*lmv));
+ 			lmv->lmv_magic = LMV_MAGIC;
+@@ -2450,14 +2459,20 @@ out:
+ 	switch (type) {
+ 	case LNIT_BAD_TYPE:
+ 		rc = lfsck_namespace_repair_dirent(env, com, dir, obj,
+-						   lnr->lnr_name, lnr->lnr_name,
++						   lnr->lnr_name,
++						   lnr->lnr_namelen,
++						   lnr->lnr_name,
++						   lnr->lnr_namelen,
+ 						   lnr->lnr_type, true, false);
+ 		if (rc > 0)
+ 			repaired = true;
+ 		break;
+ 	case LNIT_BAD_DIRENT:
+ 		rc = lfsck_namespace_repair_dirent(env, com, dir, obj,
+-						   lnr->lnr_name, lnr->lnr_name,
++						   lnr->lnr_name,
++						   lnr->lnr_namelen,
++						   lnr->lnr_name,
++						   lnr->lnr_namelen,
+ 						   lnr->lnr_type, false, false);
+ 		if (rc > 0)
+ 			repaired = true;
+diff --git a/lustre/lod/lod_object.c b/lustre/lod/lod_object.c
+index a46ef8c52c..3215b7ec59 100644
+--- a/lustre/lod/lod_object.c
++++ b/lustre/lod/lod_object.c
+@@ -48,10 +48,11 @@ static const char dotdot[] = "..";
+  * see dt_index_operations::dio_lookup() in the API description for details.
+  */
+ static int lod_lookup(const struct lu_env *env, struct dt_object *dt,
+-		      struct dt_rec *rec, const struct dt_key *key)
++		      struct dt_rec *rec, const struct dt_key *key,
++		      size_t keylen)
+ {
+ 	struct dt_object *next = dt_object_child(dt);
+-	return next->do_index_ops->dio_lookup(env, next, rec, key);
++	return next->do_index_ops->dio_lookup(env, next, rec, key, keylen);
+ }
+ 
+ /*
+@@ -336,7 +337,8 @@ static const struct dt_index_operations lod_index_ops = {
+  * see dt_index_operations::dio_lookup() in the API description for details.
+  */
+ static int lod_striped_lookup(const struct lu_env *env, struct dt_object *dt,
+-		      struct dt_rec *rec, const struct dt_key *key)
++		      struct dt_rec *rec, const struct dt_key *key,
++		      size_t namelen)
+ {
+ 	struct lod_object *lo = lod_dt_obj(dt);
+ 	struct dt_object *next;
+@@ -344,14 +346,14 @@ static int lod_striped_lookup(const struct lu_env *env, struct dt_object *dt,
+ 
+ 	LASSERT(lo->ldo_dir_stripe_count > 0);
+ 
+-	if (strcmp(name, dot) == 0) {
++	if (name_is_dot(name, namelen)) {
+ 		struct lu_fid *fid = (struct lu_fid *)rec;
+ 
+ 		*fid = *lod_object_fid(lo);
+ 		return 1;
+ 	}
+ 
+-	if (strcmp(name, dotdot) == 0) {
++	if (name_is_dotdot(name, namelen)) {
+ 		next = dt_object_child(dt);
+ 	} else {
+ 		int index;
+@@ -360,7 +362,7 @@ static int lod_striped_lookup(const struct lu_env *env, struct dt_object *dt,
+ 						   lo->ldo_dir_stripe_count,
+ 						   lo->ldo_dir_migrate_hash,
+ 						   lo->ldo_dir_migrate_offset,
+-						   name, strlen(name), true);
++						   name, namelen, true);
+ 		if (index < 0)
+ 			return index;
+ 
+@@ -369,7 +371,7 @@ static int lod_striped_lookup(const struct lu_env *env, struct dt_object *dt,
+ 			return -ENODEV;
+ 	}
+ 
+-	return next->do_index_ops->dio_lookup(env, next, rec, key);
++	return next->do_index_ops->dio_lookup(env, next, rec, key, namelen);
+ }
+ 
+ /*
+diff --git a/lustre/mdd/mdd_dir.c b/lustre/mdd/mdd_dir.c
+index 5b5c49560b..f8596f5bb3 100644
+--- a/lustre/mdd/mdd_dir.c
++++ b/lustre/mdd/mdd_dir.c
+@@ -84,7 +84,8 @@ __mdd_lookup(const struct lu_env *env, struct md_object *pobj,
+ 		RETURN(rc);
+ 
+ 	if (likely(dt_try_as_dir(env, dir, true)))
+-		rc = dt_lookup(env, dir, (struct dt_rec *)fid, key);
++		rc = dt_lookup(env, dir, (struct dt_rec *)fid,
++			       key, lname->ln_namelen);
+ 	else
+ 		rc = -ENOTDIR;
+ 
+diff --git a/lustre/mdt/mdt_reint.c b/lustre/mdt/mdt_reint.c
+index 35883f9dff..f07829218e 100644
+--- a/lustre/mdt/mdt_reint.c
++++ b/lustre/mdt/mdt_reint.c
+@@ -1070,7 +1070,7 @@ static int mdt_reint_setattr(struct mdt_thread_info *info,
+ 
+ 				fid_zero(pfid);
+ 				pname->ln_name = dotdot;
+-				pname->ln_namelen = sizeof(dotdot);
++				pname->ln_namelen = sizeof(dotdot) - 1;
+ 				rc = mdo_lookup(info->mti_env,
+ 						mdt_object_child(mo), pname,
+ 						pfid, NULL);
+diff --git a/lustre/mgs/mgs_nids.c b/lustre/mgs/mgs_nids.c
+index cfacc192c8..77e119e993 100644
+--- a/lustre/mgs/mgs_nids.c
++++ b/lustre/mgs/mgs_nids.c
+@@ -390,7 +390,7 @@ static int nidtbl_read_version(const struct lu_env *env,
+ 
+ 	LASSERT(mgs->mgs_nidtbl_dir);
+ 	rc = dt_lookup_dir(env, mgs->mgs_nidtbl_dir, tbl->mn_fsdb->fsdb_name,
+-			   &fid);
++			   strlen(tbl->mn_fsdb->fsdb_name), &fid);
+ 	if (rc == -ENOENT) {
+ 		*version = MGS_NIDTBL_VERSION_INIT;
+ 		RETURN(0);
+diff --git a/lustre/obdclass/dt_object.c b/lustre/obdclass/dt_object.c
+index b7ce3ea3f9..0e1e03f555 100644
+--- a/lustre/obdclass/dt_object.c
++++ b/lustre/obdclass/dt_object.c
+@@ -219,11 +219,11 @@ EXPORT_SYMBOL(dt_mode_to_dft);
+  */
+ 
+ int dt_lookup_dir(const struct lu_env *env, struct dt_object *dir,
+-                  const char *name, struct lu_fid *fid)
++		  const char *name, size_t namelen, struct lu_fid *fid)
+ {
+ 	if (dt_try_as_dir(env, dir, true))
+ 		return dt_lookup(env, dir, (struct dt_rec *)fid,
+-				 (const struct dt_key *)name);
++				 (const struct dt_key *)name, namelen);
+ 	return -ENOTDIR;
+ }
+ EXPORT_SYMBOL(dt_lookup_dir);
+diff --git a/lustre/obdclass/llog_osd.c b/lustre/obdclass/llog_osd.c
+index cfceb74609..a91853b66f 100644
+--- a/lustre/obdclass/llog_osd.c
++++ b/lustre/obdclass/llog_osd.c
+@@ -1453,7 +1453,8 @@ static int llog_osd_open(const struct lu_env *env, struct llog_handle *handle,
+ 		if (IS_ERR(llog_dir))
+ 			GOTO(out, rc = PTR_ERR(llog_dir));
+ 		dt_read_lock(env, llog_dir, 0);
+-		rc = dt_lookup_dir(env, llog_dir, name, &lgi->lgi_fid);
++		rc = dt_lookup_dir(env, llog_dir, name, strlen(name),
++				   &lgi->lgi_fid);
+ 		dt_read_unlock(env, llog_dir);
+ 		dt_object_put(env, llog_dir);
+ 		if (rc == -ENOENT && open_param == LLOG_OPEN_NEW) {
+diff --git a/lustre/obdclass/local_storage.c b/lustre/obdclass/local_storage.c
+index 60a5e21263..a8097e96ad 100644
+--- a/lustre/obdclass/local_storage.c
++++ b/lustre/obdclass/local_storage.c
+@@ -418,7 +418,7 @@ struct dt_object *local_file_find(const struct lu_env *env,
+ 
+ 	LASSERT(parent);
+ 
+-	rc = dt_lookup_dir(env, parent, name, &dti->dti_fid);
++	rc = dt_lookup_dir(env, parent, name, strlen(name), &dti->dti_fid);
+ 	if (!rc)
+ 		dto = ls_locate(env, dt2ls_dev(los->los_dev),
+ 				&dti->dti_fid, NULL);
+@@ -474,7 +474,7 @@ struct dt_object *local_file_find_or_create_with_fid(const struct lu_env *env,
+ 
+ 	LASSERT(parent);
+ 
+-	rc = dt_lookup_dir(env, parent, name, &dti->dti_fid);
++	rc = dt_lookup_dir(env, parent, name, strlen(name), &dti->dti_fid);
+ 	if (rc == 0) {
+ 		dto = dt_locate(env, dt, &dti->dti_fid);
+ 	} else if (rc != -ENOENT) {
+@@ -523,7 +523,7 @@ struct dt_object *local_index_find_or_create(const struct lu_env *env,
+ 
+ 	LASSERT(parent);
+ 
+-	rc = dt_lookup_dir(env, parent, name, &dti->dti_fid);
++	rc = dt_lookup_dir(env, parent, name, strlen(name), &dti->dti_fid);
+ 	if (rc == 0) {
+ 		/* name is found, get the object */
+ 		dto = ls_locate(env, dt2ls_dev(los->los_dev),
+@@ -565,7 +565,7 @@ local_index_find_or_create_with_fid(const struct lu_env *env,
+ 
+ 	LASSERT(parent);
+ 
+-	rc = dt_lookup_dir(env, parent, name, &dti->dti_fid);
++	rc = dt_lookup_dir(env, parent, name, strlen(name), &dti->dti_fid);
+ 	if (rc == 0) {
+ 		/* name is found, get the object */
+ 		if (!lu_fid_eq(fid, &dti->dti_fid))
+@@ -638,7 +638,7 @@ int local_object_unlink(const struct lu_env *env, struct dt_device *dt,
+ 
+ 	ENTRY;
+ 
+-	rc = dt_lookup_dir(env, parent, name, &dti->dti_fid);
++	rc = dt_lookup_dir(env, parent, name, strlen(name), &dti->dti_fid);
+ 	if (rc == -ENOENT)
+ 		RETURN(0);
+ 	else if (rc < 0)
+@@ -724,11 +724,12 @@ static int lastid_compat_check(const struct lu_env *env, struct dt_device *dev,
+ 			       __u64 lastid_seq, __u32 *first_oid,
+ 			       struct ls_device *ls)
+ {
+-	struct dt_thread_info	*dti = dt_info(env);
+-	struct dt_object	*root = NULL;
+-	struct los_ondisk	 losd;
+-	struct dt_object	*o = NULL;
+-	int			 rc = 0;
++	struct dt_thread_info *dti = dt_info(env);
++	struct dt_object *root = NULL;
++	struct los_ondisk losd;
++	struct dt_object *o = NULL;
++	int namelen;
++	int rc = 0;
+ 
+ 	rc = dt_root_get(env, dev, &dti->dti_fid);
+ 	if (rc)
+@@ -739,9 +740,9 @@ static int lastid_compat_check(const struct lu_env *env, struct dt_device *dev,
+ 		return PTR_ERR(root);
+ 
+ 	/* find old last_id file */
+-	snprintf(dti->dti_buf, sizeof(dti->dti_buf), "seq-%#llx-lastid",
+-		 lastid_seq);
+-	rc = dt_lookup_dir(env, root, dti->dti_buf, &dti->dti_fid);
++	namelen = snprintf(dti->dti_buf, sizeof(dti->dti_buf),
++			   "seq-%#llx-lastid", lastid_seq);
++	rc = dt_lookup_dir(env, root, dti->dti_buf, namelen, &dti->dti_fid);
+ 	dt_object_put_nocache(env, root);
+ 	if (rc == -ENOENT) {
+ 		/* old llog lastid accessed by FID only */
+diff --git a/lustre/osd-ldiskfs/osd_handler.c b/lustre/osd-ldiskfs/osd_handler.c
+index 0ba219c3c6..6a9e949ea6 100644
+--- a/lustre/osd-ldiskfs/osd_handler.c
++++ b/lustre/osd-ldiskfs/osd_handler.c
+@@ -5950,6 +5950,7 @@ out:
+  *
+  *      \param  dt      osd index object
+  *      \param  key     key for index
++ *      \param  keylen  size of key in bytes
+  *      \param  rec     record reference
+  *
+  *      \retval  +ve  success : exact mach
+@@ -5957,7 +5958,8 @@ out:
+  *      \retval -ve   failure
+  */
+ static int osd_index_iam_lookup(const struct lu_env *env, struct dt_object *dt,
+-				struct dt_rec *rec, const struct dt_key *key)
++				struct dt_rec *rec, const struct dt_key *key,
++				size_t keylen)
+ {
+ 	struct osd_object *obj = osd_dt_obj(dt);
+ 	struct iam_path_descr *ipd;
+@@ -6608,8 +6610,8 @@ static int osd_ea_lookup_rec(const struct lu_env *env, struct osd_object *obj,
+ 				 * is no FID-in-dirent, then we have to get
+ 				 * the parent FID from the linkEA.
+ 				 */
+-				if (likely(ln->ln_namelen == 2 &&
+-					   ln->ln_name[0] == '.' && ln->ln_name[1] == '.'))
++				if (likely(name_is_dotdot(ln->ln_name,
++							  ln->ln_namelen)))
+ 					rc = osd_get_pfid_from_linkea(env, obj,
+ 								      fid);
+ 			} else {
+@@ -8195,12 +8197,14 @@ static void osd_olc_save(const struct lu_env *env, struct osd_object *obj,
+  * Index lookup function for interoperability mode (b11826).
+  *
+  * \param key,  key i.e. file name to be searched
++ * \param keylen size of key in bytes
+  *
+  * \retval +ve, on success
+  * \retval -ve, on error
+  */
+ static int osd_index_ea_lookup(const struct lu_env *env, struct dt_object *dt,
+-			       struct dt_rec *rec, const struct dt_key *key)
++			       struct dt_rec *rec, const struct dt_key *key,
++			       size_t keylen)
+ {
+ 	struct osd_object *obj = osd_dt_obj(dt);
+ 	struct lu_name ln;
+@@ -8212,7 +8216,7 @@ static int osd_index_ea_lookup(const struct lu_env *env, struct dt_object *dt,
+ 	LASSERT(S_ISDIR(obj->oo_inode->i_mode));
+ 	LINVRNT(osd_invariant(obj));
+ 
+-	rc = obj_name2lu_name(obj, (char *)key, strlen((char *)key), &ln);
++	rc = obj_name2lu_name(obj, (char *)key, keylen, &ln);
+ 	if (rc)
+ 		RETURN(rc);
+ 
+diff --git a/lustre/osd-ldiskfs/osd_quota.c b/lustre/osd-ldiskfs/osd_quota.c
+index 56e157399e..0199186c4a 100644
+--- a/lustre/osd-ldiskfs/osd_quota.c
++++ b/lustre/osd-ldiskfs/osd_quota.c
+@@ -114,7 +114,8 @@ int osd_acct_obj_lookup(struct osd_thread_info *info, struct osd_device *osd,
+ static int osd_acct_index_lookup(const struct lu_env *env,
+ 				 struct dt_object *dtobj,
+ 				 struct dt_rec *dtrec,
+-				 const struct dt_key *dtkey)
++				 const struct dt_key *dtkey,
++				 size_t keylen)
+ {
+ 	struct osd_thread_info *info = osd_oti_get(env);
+ #if defined(HAVE_DQUOT_QC_DQBLK)
+@@ -395,11 +396,13 @@ static int osd_it_acct_rec(const struct lu_env *env,
+ {
+ 	struct osd_it_quota *it = (struct osd_it_quota *)di;
+ 	const struct dt_key *key = osd_it_acct_key(env, di);
++	int keylen = osd_it_acct_key_size(env, di);
+ 	int rc;
+ 
+ 	ENTRY;
+ 
+-	rc = osd_acct_index_lookup(env, &it->oiq_obj->oo_dt, dtrec, key);
++	rc = osd_acct_index_lookup(env, &it->oiq_obj->oo_dt, dtrec,
++				   key, keylen);
+ 	RETURN(rc > 0 ? 0 : rc);
+ }
+ 
+diff --git a/lustre/osd-wbcfs/osd_dirent.c b/lustre/osd-wbcfs/osd_dirent.c
+index 4d17d65523..2260d16352 100644
+--- a/lustre/osd-wbcfs/osd_dirent.c
++++ b/lustre/osd-wbcfs/osd_dirent.c
+@@ -17,7 +17,8 @@
+ 
+ /* Lookup the directory entry (dentry) specified by @key. */
+ static int osd_index_dir_lookup(const struct lu_env *env, struct dt_object *dt,
+-				struct dt_rec *rec, const struct dt_key *key)
++				struct dt_rec *rec, const struct dt_key *key,
++				size_t keylen)
+ {
+ 	struct osd_object *pobj = osd_dt_obj(dt);
+ 	struct inode *dir = pobj->oo_inode;
+@@ -36,13 +37,13 @@ static int osd_index_dir_lookup(const struct lu_env *env, struct dt_object *dt,
+ 		RETURN(PTR_ERR(parent));
+ 
+ 	/* FIXME: more checking for ".." lookup. */
+-	if (strcmp(name, "..") == 0) {
++	if (name_is_dotdot(name, keylen)) {
+ 		*fid = MEMFS_I(d_inode(parent->d_parent))->mei_fid;
+ 		GOTO(out, rc = 1);
+ 	}
+ 
+ 	qstr.name = name;
+-	qstr.len = strlen(name);
++	qstr.len = keylen;
+ 	qstr.hash = ll_full_name_hash(parent, qstr.name, qstr.len);
+ 	dchild = d_lookup(parent, &qstr);
+ 	if (dchild) {
+diff --git a/lustre/osd-wbcfs/osd_index_hash.c b/lustre/osd-wbcfs/osd_index_hash.c
+index 61e93afba9..dcefb8b4e4 100644
+--- a/lustre/osd-wbcfs/osd_index_hash.c
++++ b/lustre/osd-wbcfs/osd_index_hash.c
+@@ -24,7 +24,8 @@
+ #include "wbcfs.h"
+ 
+ static int osd_hash_index_lookup(const struct lu_env *env, struct dt_object *dt,
+-				 struct dt_rec *rec, const struct dt_key *key)
++				 struct dt_rec *rec, const struct dt_key *key,
++				 size_t keylen)
+ {
+ 	struct osd_object *obj = osd_dt_obj(dt);
+ 	struct hash_index *hind = &MEMFS_I(obj->oo_inode)->mei_hash_index;
+diff --git a/lustre/osd-zfs/osd_index.c b/lustre/osd-zfs/osd_index.c
+index cdf08c7468..6aea02c19f 100644
+--- a/lustre/osd-zfs/osd_index.c
++++ b/lustre/osd-zfs/osd_index.c
+@@ -613,7 +613,8 @@ out:
+ }
+ 
+ static int osd_dir_lookup(const struct lu_env *env, struct dt_object *dt,
+-			  struct dt_rec *rec, const struct dt_key *key)
++			  struct dt_rec *rec, const struct dt_key *key,
++			  size_t keylen)
+ {
+ 	struct osd_thread_info *oti = osd_oti_get(env);
+ 	struct osd_object *obj = osd_dt_obj(dt);
+@@ -624,16 +625,14 @@ static int osd_dir_lookup(const struct lu_env *env, struct dt_object *dt,
+ 	int rc;
+ 
+ 	ENTRY;
+-	if (name[0] == '.') {
+-		if (name[1] == 0) {
+-			const struct lu_fid *f = lu_object_fid(&dt->do_lu);
++	if (name_is_dot(name, keylen)) {
++		const struct lu_fid *f = lu_object_fid(&dt->do_lu);
+ 
+-			memcpy(rec, f, sizeof(*f));
+-			RETURN(1);
+-		} else if (name[1] == '.' && name[2] == 0) {
+-			rc = osd_find_parent_fid(env, dt, fid, &oid);
+-			GOTO(out, rc);
+-		}
++		memcpy(rec, f, sizeof(*f));
++		RETURN(1);
++	} else if (name_is_dotdot(name, keylen)) {
++		rc = osd_find_parent_fid(env, dt, fid, &oid);
++		GOTO(out, rc);
+ 	}
+ 
+ 	memset(&oti->oti_zde.lzd_fid, 0, sizeof(struct lu_fid));
+@@ -1746,7 +1745,8 @@ static int osd_prepare_key_uint64(struct osd_object *o, __u64 *dst,
+ }
+ 
+ static int osd_index_lookup(const struct lu_env *env, struct dt_object *dt,
+-			struct dt_rec *rec, const struct dt_key *key)
++			struct dt_rec *rec, const struct dt_key *key,
++			size_t keylen)
+ {
+ 	struct osd_object *obj = osd_dt_obj(dt);
+ 	struct osd_device *osd = osd_obj2dev(obj);
+diff --git a/lustre/osd-zfs/osd_quota.c b/lustre/osd-zfs/osd_quota.c
+index 4b7b0d869c..3777fddda5 100644
+--- a/lustre/osd-zfs/osd_quota.c
++++ b/lustre/osd-zfs/osd_quota.c
+@@ -62,7 +62,8 @@ static uint64_t osd_objset_user_iused(struct osd_device *osd, uint64_t uidbytes)
+ static int osd_acct_index_lookup(const struct lu_env *env,
+ 				struct dt_object *dtobj,
+ 				struct dt_rec *dtrec,
+-				const struct dt_key *dtkey)
++				const struct dt_key *dtkey,
++				size_t keylen)
+ {
+ 	struct osd_thread_info *info = osd_oti_get(env);
+ 	char *buf = info->oti_buf;
+diff --git a/lustre/osp/osp_md_object.c b/lustre/osp/osp_md_object.c
+index 975249d498..fc1c653dba 100644
+--- a/lustre/osp/osp_md_object.c
++++ b/lustre/osp/osp_md_object.c
+@@ -459,7 +459,8 @@ static int osp_md_write_locked(const struct lu_env *env, struct dt_object *dt)
+  * * %negative errno if the lookup fails.
+  */
+ static int osp_md_index_lookup(const struct lu_env *env, struct dt_object *dt,
+-			       struct dt_rec *rec, const struct dt_key *key)
++			       struct dt_rec *rec, const struct dt_key *key,
++			       size_t keylen)
+ {
+ 	struct lu_buf		*lbuf	= &osp_env_info(env)->osi_lb2;
+ 	struct osp_device	*osp	= lu2osp_dev(dt->do_lu.lo_dev);
+diff --git a/lustre/ptlrpc/nodemap_storage.c b/lustre/ptlrpc/nodemap_storage.c
+index 11fc2969bc..9ddc8b746d 100644
+--- a/lustre/ptlrpc/nodemap_storage.c
++++ b/lustre/ptlrpc/nodemap_storage.c
+@@ -286,7 +286,8 @@ static struct dt_object *nodemap_cache_find_create(const struct lu_env *env,
+ 	if (unlikely(IS_ERR(root_obj)))
+ 		GOTO(out, nm_obj = root_obj);
+ 
+-	rc = dt_lookup_dir(env, root_obj, LUSTRE_NODEMAP_NAME, &tfid);
++	rc = dt_lookup_dir(env, root_obj, LUSTRE_NODEMAP_NAME,
++			   strlen(LUSTRE_NODEMAP_NAME), &tfid);
+ 	if (rc == -ENOENT) {
+ 		if (dev->dd_rdonly)
+ 			GOTO(out_root, nm_obj = ERR_PTR(-EROFS));
+diff --git a/lustre/quota/lquota_disk.c b/lustre/quota/lquota_disk.c
+index 9beb621867..a1b9348b6f 100644
+--- a/lustre/quota/lquota_disk.c
++++ b/lustre/quota/lquota_disk.c
+@@ -81,7 +81,8 @@ static inline int lquota_disk_slv_filename(const struct lu_fid *glb_fid,
+ 					   struct obd_uuid *uuid,
+ 					   char *filename)
+ {
+-	char	*name, *uuid_str;
++	char *name, *uuid_str;
++	int namelen;
+ 
+ 	/* In most case, the uuid is NULL terminated */
+ 	if (uuid->uuid[sizeof(*uuid) - 1] != '\0') {
+@@ -111,12 +112,12 @@ static inline int lquota_disk_slv_filename(const struct lu_fid *glb_fid,
+ 	/* the filename is composed of the most signicant bits of the global
+ 	 * FID, that's to say the oid which encodes the pool type and
+ 	 * quota type, followed by the export UUID */
+-	sprintf(filename, "0x%x-%s", glb_fid->f_oid, name);
++	namelen = sprintf(filename, "0x%x-%s", glb_fid->f_oid, name);
+ 
+ 	if (uuid_str != uuid->uuid)
+ 		OBD_FREE(uuid_str, sizeof(*uuid));
+ 
+-	return 0;
++	return namelen;
+ }
+ 
+ /*
+@@ -290,9 +291,10 @@ struct dt_object *lquota_disk_slv_find(const struct lu_env *env,
+ 				       const struct lu_fid *glb_fid,
+ 				       struct obd_uuid *uuid)
+ {
+-	struct lquota_thread_info	*qti = lquota_info(env);
+-	struct dt_object		*slv_idx;
+-	int				 rc;
++	struct lquota_thread_info *qti = lquota_info(env);
++	struct dt_object *slv_idx;
++	int namelen;
++	int rc;
+ 	ENTRY;
+ 
+ 	LASSERT(uuid != NULL);
+@@ -301,12 +303,12 @@ struct dt_object *lquota_disk_slv_find(const struct lu_env *env,
+ 	       obd_uuid2str(uuid));
+ 
+ 	/* generate filename associated with the slave */
+-	rc = lquota_disk_slv_filename(glb_fid, uuid, qti->qti_buf);
+-	if (rc)
+-		RETURN(ERR_PTR(rc));
++	namelen = lquota_disk_slv_filename(glb_fid, uuid, qti->qti_buf);
++	if (namelen < 0)
++		RETURN(ERR_PTR(namelen));
+ 
+ 	/* lookup slave index file */
+-	rc = dt_lookup_dir(env, parent, qti->qti_buf, &qti->qti_fid);
++	rc = dt_lookup_dir(env, parent, qti->qti_buf, namelen, &qti->qti_fid);
+ 	if (rc)
+                 RETURN(ERR_PTR(rc));
+ 
+@@ -371,7 +373,7 @@ struct dt_object *lquota_disk_slv_find_create(const struct lu_env *env,
+ 
+ 	/* generate filename associated with the slave */
+ 	rc = lquota_disk_slv_filename(glb_fid, uuid, qti->qti_buf);
+-	if (rc)
++	if (rc < 0)
+ 		RETURN(ERR_PTR(rc));
+ 
+ 	if (lu_device_is_md(dev->dd_lu_dev.ld_site->ls_top_dev))
+@@ -515,7 +517,8 @@ int lquota_disk_for_each_slv(const struct lu_env *env, struct dt_object *parent,
+ 		qti->qti_buf[len] = '\0';
+ 
+ 		/* lookup fid associated with this slave index file */
+-		rc = dt_lookup_dir(env, parent, qti->qti_buf, &qti->qti_fid);
++		rc = dt_lookup_dir(env, parent, qti->qti_buf, len,
++				   &qti->qti_fid);
+ 		if (rc)
+ 			break;
+ 
+@@ -560,7 +563,8 @@ int lquota_disk_read(const struct lu_env *env, struct dt_object *obj,
+ 
+ 	/* lookup on-disk record from index file */
+ 	dt_read_lock(env, obj, 0);
+-	rc = dt_lookup(env, obj, rec, (struct dt_key *)&id->qid_uid);
++	rc = dt_lookup(env, obj, rec, (struct dt_key *)&id->qid_uid,
++		       sizeof(id->qid_uid));
+ 	dt_read_unlock(env, obj);
+ 
+ 	RETURN(rc);
+@@ -636,7 +640,8 @@ int lquota_disk_write(const struct lu_env *env, struct thandle *th,
+ 	dt_write_lock(env, obj, 0);
+ 
+ 	/* check whether there is already an existing record for this ID */
+-	rc = dt_lookup(env, obj, (struct dt_rec *)&qti->qti_rec, key);
++	rc = dt_lookup(env, obj, (struct dt_rec *)&qti->qti_rec,
++		       key, sizeof(id->qid_uid));
+ 	if (rc == 0) {
+ 		/* delete existing record in order to replace it */
+ 		rc = dt_delete(env, obj, key, th);
+@@ -698,7 +703,8 @@ int lquota_disk_delete(const struct lu_env *env, struct thandle *th,
+ 	dt_write_lock(env, obj, 0);
+ 
+ 	/* check whether there is already an existing record for this ID */
+-	rc = dt_lookup(env, obj, (struct dt_rec *)&qti->qti_rec, key);
++	rc = dt_lookup(env, obj, (struct dt_rec *)&qti->qti_rec,
++		       key, sizeof(qid));
+ 	if (rc == 0) {
+ 		rc = dt_delete(env, obj, key, th);
+ 		if (rc == 0 && ver != NULL) {
+@@ -792,7 +798,8 @@ int lquota_disk_write_glb(const struct lu_env *env, struct dt_object *obj,
+ 		if (tmp == NULL)
+ 			GOTO(out_lock, rc = -ENOMEM);
+ 
+-		rc = dt_lookup(env, obj, (struct dt_rec *)tmp, key);
++		rc = dt_lookup(env, obj, (struct dt_rec *)tmp,
++			       key, sizeof(id));
+ 
+ 		OBD_FREE_PTR(tmp);
+ 		if (rc == 0) {
+diff --git a/lustre/quota/lquota_lib.c b/lustre/quota/lquota_lib.c
+index 85e427c095..bc347dcf2a 100644
+--- a/lustre/quota/lquota_lib.c
++++ b/lustre/quota/lquota_lib.c
+@@ -406,7 +406,7 @@ int lquotactl_slv(const struct lu_env *env, struct dt_device *dev,
+ 
+ 	/* lookup record storing space accounting information for this ID */
+ 	rc = dt_lookup(env, obj, (struct dt_rec *)&qti->qti_acct_rec,
+-		       (struct dt_key *)&key);
++		       (struct dt_key *)&key, sizeof(key));
+ 	if (rc < 0)
+ 		GOTO(out, rc);
+ 
+@@ -432,7 +432,7 @@ int lquotactl_slv(const struct lu_env *env, struct dt_device *dev,
+ 	memset(&qti->qti_slv_rec, 0, sizeof(qti->qti_slv_rec));
+ 	/* lookup record storing enforcement information for this ID */
+ 	rc = dt_lookup(env, obj, (struct dt_rec *)&qti->qti_slv_rec,
+-		       (struct dt_key *)&key);
++		       (struct dt_key *)&key, sizeof(key));
+ 	if (rc < 0 && rc != -ENOENT)
+ 		GOTO(out, rc = 0);
+ 
+@@ -452,7 +452,7 @@ int lquotactl_slv(const struct lu_env *env, struct dt_device *dev,
+ 
+ 		memset(&qti->qti_slv_rec, 0, sizeof(qti->qti_slv_rec));
+ 		rc = dt_lookup(env, obj_aux, (struct dt_rec *)&qti->qti_slv_rec,
+-			       (struct dt_key *)&key);
++			       (struct dt_key *)&key, sizeof(key));
+ 		if (rc < 0 && rc != -ENOENT)
+ 			GOTO(out, rc = 0);
+ 
+diff --git a/lustre/target/out_handler.c b/lustre/target/out_handler.c
+index f8576cf24a..b08ac256c3 100644
+--- a/lustre/target/out_handler.c
++++ b/lustre/target/out_handler.c
+@@ -312,6 +312,7 @@ static int out_index_lookup(struct tgt_session_info *tsi)
+ 	struct object_update *update = tti->tti_u.update.tti_update;
+ 	struct dt_object *obj = tti->tti_u.update.tti_dt_object;
+ 	char *name;
++	size_t namelen;
+ 	int rc;
+ 
+ 	ENTRY;
+@@ -322,7 +323,8 @@ static int out_index_lookup(struct tgt_session_info *tsi)
+ 	if (!lu_object_exists(&obj->do_lu))
+ 		RETURN(-ENOENT);
+ 
+-	name = object_update_param_get(update, 0, NULL, NULL, NULL);
++	/* strlen(name) + 1 was used as param_size */
++	name = object_update_param_get(update, 0, &namelen, NULL, NULL);
+ 	if (IS_ERR(name)) {
+ 		CERROR("%s: empty name for lookup: rc = %ld\n",
+ 		       tgt_name(tsi->tsi_tgt), PTR_ERR(name));
+@@ -334,7 +336,7 @@ static int out_index_lookup(struct tgt_session_info *tsi)
+ 		GOTO(out_unlock, rc = -ENOTDIR);
+ 
+ 	rc = dt_lookup(env, obj, (struct dt_rec *)&tti->tti_fid1,
+-		       (struct dt_key *)name);
++		       (struct dt_key *)name, namelen - 1);
+ 
+ 	if (rc < 0)
+ 		GOTO(out_unlock, rc);
+
+</pre>
+</body>
+</html>

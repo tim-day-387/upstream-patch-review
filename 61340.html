@@ -1,0 +1,1267 @@
+<html lang="en">
+<body>
+<pre>
+From eda7e8f72f155d273160565b5e6675e41a71dca7 Mon Sep 17 00:00:00 2001
+From: Emoly Liu <emoly@whamcloud.com>
+Date: Wed, 29 Oct 2025 12:11:17 +0800
+Subject: [PATCH 1/1] LU-19276 llapi: add llapi_changelog_(de)register
+
+Add llapi_changelog_register() and llapi_changelog_deregister()
+to allow them to be used by external applications.
+
+Man pages llapi_changelog_register/deregister.3 are added and
+lctl-changelog_register/deregister.8 are updated to reflect the
+new changes. sanity.sh/test_160q is modified to verify this patch.
+
+Test-Parameters: trivial
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+Signed-off-by: Emoly Liu <emoly@whamcloud.com>
+Change-Id: I732366b9972ba7c2d8ed5b49a405647e2d300c1e
+---
+ Documentation/man3/Makefile.am                |   2 +
+ .../man3/llapi_changelog_deregister.3         |  46 ++++
+ Documentation/man3/llapi_changelog_register.3 |  67 ++++++
+ .../man8/lctl-changelog_deregister.8          |  21 +-
+ Documentation/man8/lctl-changelog_register.8  |  23 +-
+ lustre/include/lustre/lustreapi.h             |   6 +
+ lustre/tests/sanity.sh                        |   4 +-
+ lustre/utils/lctl.c                           |  11 +-
+ lustre/utils/liblustreapi_chlg.c              | 187 ++++++++++++++-
+ lustre/utils/liblustreapi_ioctl.c             |  46 +++-
+ lustre/utils/lustre_cfg.c                     | 205 +---------------
+ lustre/utils/obd.c                            | 225 +++++++++---------
+ lustre/utils/obdctl.h                         |   4 +-
+ 13 files changed, 513 insertions(+), 334 deletions(-)
+ create mode 100644 Documentation/man3/llapi_changelog_deregister.3
+ create mode 100644 Documentation/man3/llapi_changelog_register.3
+
+diff --git a/Documentation/man3/Makefile.am b/Documentation/man3/Makefile.am
+index 5eae2381c6..9c54a9d839 100644
+--- a/Documentation/man3/Makefile.am
++++ b/Documentation/man3/Makefile.am
+@@ -6,11 +6,13 @@
+ 
+ LIBMAN = 					\
+ 	llapi_changelog_clear.3			\
++	llapi_changelog_deregister.3		\
+ 	llapi_changelog_fini.3			\
+ 	llapi_changelog_free.3			\
+ 	llapi_changelog_get_fd.3		\
+ 	llapi_changelog_in_buf.3		\
+ 	llapi_changelog_recv.3			\
++	llapi_changelog_register.3		\
+ 	llapi_changelog_set_xflags.3		\
+ 	llapi_changelog_start.3			\
+ 	llapi_create_volatile_param.3		\
+diff --git a/Documentation/man3/llapi_changelog_deregister.3 b/Documentation/man3/llapi_changelog_deregister.3
+new file mode 100644
+index 0000000000..7b4b539f4e
+--- /dev/null
++++ b/Documentation/man3/llapi_changelog_deregister.3
+@@ -0,0 +1,46 @@
++.TH LLAPI_CHANGELOG_DEREGISTER 3 2025-10-29 "Lustre User API" "Lustre Library Functions"
++.SH NAME
++llapi_changelog_register \- Deregister changelog user on specific MDT device.
++.SH SYNOPSIS
++.nf
++.B #include <lustre/lustreapi.h>
++.PP
++.BI "int llapi_changelog_deregister(const char *mdtname, const char *username);
++.fi
++.SH DESCRIPTION
++The function
++.B llapi_changelog_deregister()
++deregisters changelog
++.I username
++on specific MDT device
++.I mdtname
++(e.g: "lustrefs-MDT0000").
++.PP
++.SH RETURN VALUES
++Return 0 on success or a negative errno value on failure.
++.SH ERRORS
++.TP 15
++.SM -EINVAL
++MDT deviceis invalid or not found.
++.TP
++.SM -ENOENT
++Username is not found.
++.SH EXAMPLE
++An example can be found in lctl.c source file.
++.B jt_changelog_deregister()
++implements the following command:
++.EX
++.BI "lctl changelog_deregister --device " MDTNAME " --user " USERNAME
++or
++.BI "lctl changelog_deregister --mdt " MDTNAME " USER_ID
++.EE
++.SH AVAILABILITY
++.B llapi_changelog_register()
++is part of the
++.BR lustre (7)
++user application interface library since before release 2.17.0
++.\" Added in commit 2.16.58
++.SH SEE ALSO
++.BR lustreapi (7),
++.BR llapi_changelog_register (3),
++.BR lctl-changelog_register (8)
+diff --git a/Documentation/man3/llapi_changelog_register.3 b/Documentation/man3/llapi_changelog_register.3
+new file mode 100644
+index 0000000000..df53429dbb
+--- /dev/null
++++ b/Documentation/man3/llapi_changelog_register.3
+@@ -0,0 +1,67 @@
++.TH LLAPI_CHANGELOG_REGISTER 3 2025-10-29 "Lustre User API" "Lustre Library Functions"
++.SH NAME
++llapi_changelog_register \- Register changelog user on specific MDT device.
++.SH SYNOPSIS
++.nf
++.B #include <lustre/lustreapi.h>
++.PP
++.BI "int llapi_changelog_register(const char *mdtname, const char *username,
++.BI "                    const char *usermask, char *regname, size_t reglen);
++.fi
++.SH DESCRIPTION
++The function
++.B llapi_changelog_register()
++registers changelog
++.I username
++on specific MDT device
++.I mdtname
++(e.g: "lustrefs-MDT0000") with user-specific
++.I usermask
++, and gets the registered full consumer
++.I regname
++with
++.I reglen
++length.
++.PP
++.SH RETURN VALUES
++Return changelog user ID on success or a negative errno value on failure.
++.SH ERRORS
++.TP 15
++.SM -EINVAL
++MDT device is invalid or not found.
++.TP
++.SM -ENAMETOOLONG
++Username is too long.
++.TP
++.SM -EILSEQ
++Mask is in a wrong format.
++.TP
++.SM -EEXIST
++Username has already exists.
++.TP
++.SM -EPROTO
++Assigned username is invalid.
++.TP
++.SM -EOVERFLOW
++Registered name is too long.
++.SH EXAMPLE
++An example can be found in lctl.c source file.
++.B jt_changelog_register()
++implements the following command:
++.EX
++.BI "lctl changelog_register --device " MDTNAME " --user " USERNAME " --mask " MASK
++or
++.BI "lctl changelog_register --mdt " MDTNAME " -n
++or
++.BI "lctl changelog_register --mdt " MDTNAME "
++.EE
++.SH AVAILABILITY
++.B llapi_changelog_register()
++is part of the
++.BR lustre (7)
++user application interface library since before release 2.17.0
++.\" Added in commit 2.16.58
++.SH SEE ALSO
++.BR lustreapi (7),
++.BR llapi_changelog_deregister (3),
++.BR lctl-changelog_register (8)
+diff --git a/Documentation/man8/lctl-changelog_deregister.8 b/Documentation/man8/lctl-changelog_deregister.8
+index 541d6e0d60..cca198e5ca 100644
+--- a/Documentation/man8/lctl-changelog_deregister.8
++++ b/Documentation/man8/lctl-changelog_deregister.8
+@@ -1,4 +1,4 @@
+-.TH LCTL-CHANGELOG_DEREGISTER 8 2024-08-13 Lustre "Lustre Configuration Utilities"
++.TH LCTL-CHANGELOG_DEREGISTER 8 2025-10-29 Lustre "Lustre Configuration Utilities"
+ .SH NAME
+ lctl-changelog_deregister \- deregister existing changelog user
+ .SH SYNOPSIS
+@@ -12,6 +12,16 @@ lctl-changelog_deregister \- deregister existing changelog user
+ .RB [ --help | -h ]
+ .RB [ --user | -u
+ .IR USERNAME ]
++.SY lctl
++.B changelog_deregister
++.RI [ ID |\c
++.B cl\c
++.IR ID ]
++.RB [ --device | --mdt | -d
++.IR MDT_NAME ]
++.RB [ --help | -h ]
++.RB [ --user | -u
++.IR USERNAME ]
+ .YS
+ .SH DESCRIPTION
+ This command is used to deregister an existing changelog user on selected
+@@ -22,10 +32,13 @@ or specific
+ used on registration.
+ .SH OPTIONS
+ .TP
++.BR -d ", " --device | --mdt " MDT_NAME"
++Specify MDT device.
++.TP
+ .BR -h ", " --help
+ Output brief command usage help.
+ .TP
+-.BR -u ", " --user \fI USERNAME
++.BR -u ", " --user " USERNAME"
+ Deregistration by username. If changelog user specified unique name during
+ registration then it can be deregistered by
+ .I USERNAME
+@@ -40,6 +53,10 @@ by
+ .RS
+ .EX
+ .B # lctl --device testfs-MDT0000 changelog_deregister cl1
++or
++.B # lctl changelog_deregister cl1 --device testfs-MDT0000
++or
++.B # lctl changelog_deregister cl1 --mdt testfs-MDT0000
+ testfs-MDT0000: Deregistered changelog user #1
+ .EE
+ .RE
+diff --git a/Documentation/man8/lctl-changelog_register.8 b/Documentation/man8/lctl-changelog_register.8
+index 04760c526d..b15dd37d5f 100644
+--- a/Documentation/man8/lctl-changelog_register.8
++++ b/Documentation/man8/lctl-changelog_register.8
+@@ -1,4 +1,4 @@
+-.TH LCTL-CHANGELOG_REGISTER 8 2024-08-13 Lustre "Lustre Configuration Utilities"
++.TH LCTL-CHANGELOG_REGISTER 8 2025-10-29 Lustre "Lustre Configuration Utilities"
+ .SH NAME
+ lctl-changelog_register \- register changelog user for device
+ .SH SYNOPSIS
+@@ -12,6 +12,16 @@ lctl-changelog_register \- register changelog user for device
+ .RB [ --nameonly | -n ]
+ .RB [ --user | -u
+ .IR USERNAME ]
++.SY lctl
++.B changelog_register
++.RB [ --device | --mdt | -d ]
++.IR MDT_NAME
++.RB [ --help | -h ]
++.RB [ --mask | -m
++.IR MASK ]
++.RB [ --nameonly | -n ]
++.RB [ --user | -u
++.IR USERNAME ]
+ .YS
+ .SH DESCRIPTION
+ This command is used to register a new changelog user on selected device. New
+@@ -25,10 +35,13 @@ See also
+ changelog_clear.
+ .SH OPTIONS
+ .TP
++.BR -d ", " --device | --mdt " MDT_NAME"
++Specify MDT device.
++.TP
+ .BR -h ", " --help
+ Output brief command usage help.
+ .TP
+-.BR -m ", " --mask \fI MASK
++.BR -m ", " --mask " MASK"
+ Sets per-user changelog
+ .IR MASK .
+ Mask is specified as set of keywords in form
+@@ -56,7 +69,7 @@ Where
+ stands for assigned changelog user
+ .BR ID .
+ .TP
+-.BR -u ", " --user \fI USERNAME
++.BR -u ", " --user " USERNAME"
+ Specific username assigment. Unique name can be assigned to a new changelog
+ user. Name must start with a letter and consist of letters, digits, '-' and
+ \'_' symbols with total length limited by 15 symbols.
+@@ -66,6 +79,10 @@ Simple changelog user register on device
+ .RS
+ .EX
+ .B # lctl --device testfs-MDT0000 changelog_register
++or
++.B # lctl changelog_register --device testfs-MDT0000
++or
++.B # lctl changelog_register --mdt testfs-MDT0000
+ testfs-MDT0000: Registered changelog userid 'cl1'
+ .EE
+ .RE
+diff --git a/lustre/include/lustre/lustreapi.h b/lustre/include/lustre/lustreapi.h
+index 84329259af..964b098ad1 100644
+--- a/lustre/include/lustre/lustreapi.h
++++ b/lustre/include/lustre/lustreapi.h
+@@ -681,6 +681,10 @@ enum changelog_send_extra_flag {
+ 	CHANGELOG_EXTRA_FLAG_XATTR	= CLFE_XATTR,
+ };
+ 
++
++int llapi_changelog_register(const char *mdtname, const char *username,
++			    const char *usermask, char *regname, size_t reglen);
++int llapi_changelog_deregister(const char *mdtname, const char *username);
+ int llapi_changelog_start(void **priv, enum changelog_send_flag flags,
+ 			  const char *mdtname, long long startrec);
+ int llapi_changelog_fini(void **priv);
+@@ -1473,7 +1477,9 @@ bool llapi_mirror_is_sparse(int fd, unsigned int id);
+ int llapi_heat_get(int fd, struct lu_heat *heat);
+ int llapi_heat_set(int fd, __u64 flags);
+ 
++int llapi_obdname2devno(const char *name);
+ int llapi_ioctl(int fd, unsigned int cmd, void *buf);
++int llapi_ioctl_dev(int dev_id, unsigned int cmd, void *buf);
+ 
+ int llapi_layout_sanity(struct llapi_layout *layout, bool incomplete, bool flr);
+ int llapi_layout_v2_sanity(struct llapi_layout *layout, bool incomplete,
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index de900cef85..4fc7204875 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -20865,12 +20865,12 @@ test_160q() {
+ 
+ 	# set server mask to minimal value like server init does
+ 	changelog_chmask "MARK"
+-	clu=$(do_facet $SINGLEMDS $LCTL --device $mdt changelog_register -n) ||
++	clu=$(do_facet $SINGLEMDS $LCTL changelog register --mdt $mdt -n) ||
+ 		error "changelog_register failed"
+ 	# check effective mask again, should be treated as DEFMASK now
+ 	mask=$(do_facet $SINGLEMDS $LCTL get_param \
+ 				mdd.$mdt.changelog_current_mask -n)
+-	do_facet $SINGLEMDS $LCTL --device $mdt changelog_deregister $clu ||
++	do_facet $SINGLEMDS $LCTL changelog_deregister --device $mdt $clu ||
+ 		error "changelog_deregister failed"
+ 	[[ $mask == *"HLINK"* ]] || error "mask is not DEFMASK as expected"
+ }
+diff --git a/lustre/utils/lctl.c b/lustre/utils/lctl.c
+index 534b2ecb67..8dfe343edb 100644
+--- a/lustre/utils/lctl.c
++++ b/lustre/utils/lctl.c
+@@ -665,15 +665,12 @@ command_t cmdlist[] = {
+ 	{"===  Changelogs ==", NULL, 0, "changelog user management"},
+ 	{"changelog_register", jt_changelog_register, 0,
+ 	 "register a new persistent changelog user, returns id\n"
+-	 "usage: {--device MDTNAME} changelog_register [--help|-h]\n"
+-	 "					       [--mask|-m MASK]\n"
+-	 "					       [--nameonly|-n]\n"
+-	 "					       [--user|-u USERNAME]"},
++	 "usage: changelog_register --device MDTNAME\n"
++	 "\t[--help|-h] [--mask|-m MASK] [--nameonly|-n] [--user|-u USERNAME]"},
+ 	{"changelog_deregister", jt_changelog_deregister, 0,
+ 	 "deregister an existing changelog user\n"
+-	 "usage: {--device MDTNAME} changelog_deregister [ID|clID]\n"
+-	 "						 [--help|-h]\n"
+-	 "						 [--user|-u USERNAME]"},
++	 "usage: changelog_deregister --device MDTNAME {ID|--user|-u USERNAME}\n"
++	 "\t[--help|-h]"},
+ 	{"changelog", jt_changelog, changelog_cmdlist, ""},
+ 
+ 	/* Persistent Client Cache (PCC) commands */
+diff --git a/lustre/utils/liblustreapi_chlg.c b/lustre/utils/liblustreapi_chlg.c
+index c6572dbe81..cdd10d0aea 100644
+--- a/lustre/utils/liblustreapi_chlg.c
++++ b/lustre/utils/liblustreapi_chlg.c
+@@ -11,20 +11,203 @@
+  * Author: Henri Doreau <henri.doreau@cea.fr>
+  */
+ 
++#include <ctype.h>
++#include <errno.h>
+ #include <fcntl.h>
++#include <poll.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
+ #include <unistd.h>
+-#include <errno.h>
+-#include <poll.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <sys/ioctl.h>
+ 
+ #include <lustre/lustreapi.h>
+ #include <linux/lustre/lustre_ioctl.h>
++#include "lustreapi_internal.h"
++#include "obdctl.h"
++
++/** Check if a string contains only alphanumeric plus extra characters
++ *
++ * @param str String to check
++ * @param extra_chars Extra characters to allow
++ * @return true if string has only alphanumeric and extra chars, false otherwise
++ */
++static bool str_isalnum_plus(const char *str, const char *extra_chars)
++{
++	if (!str)
++		return false;
++
++	if (!extra_chars)
++		extra_chars = "";
++
++	while (*str) {
++		if (!isalnum(*str) && strchr(extra_chars, *str) == NULL)
++			return false;
++		str++;
++	}
++
++	return true;
++}
++
++/**
++ * Parse user string to extract numeric ID if possible
++ *
++ * @param[in] username	User name or ID (e.g. "cl1", "cl1-xxx", "1", or "xxx")
++ * @param[out] user_id	User ID number (0 will let MDT parse the username)
++ * @return 0 on success, <0 on error.
++ */
++static int changelog_parse_username(const char *username, __u32 *user_id)
++{
++	__u32 id;
++
++	/* Try to parse as pure numeric ID first */
++	if (isdigit(username[0])) {
++		id = atoi(username);
++		if (id > 0) {
++			*user_id = id;
++			return 0;
++		}
++	}
++
++	/* Try to parse as "cl<ID>" format */
++	if (sscanf(username, "cl%u", &id) == 1) {
++		*user_id = id;
++		return 0;
++	}
++
++	/* Let MDT parse the user string */
++	*user_id = 0;
++	return 0;
++}
++
++/** Register a changelog consumer
++ *
++ * @param mdtname MDT device name
++ * @param username Changelog consumer name
++ * @param usermask Changelog consumer mask
++ * @param regname Returns Changelog consumer registered username
++ * @param reglen regname buffer size
++ *
++ * @return registered user number on success with regname set,
++ *	negative errno on failure
++ * @retval -EINVAL MDT device name invalid or not found
++ * @retval -ENAMETOOLONG username is too long or contains invalid characters
++ * @retval -EEXIST User already exists
++ * @retval -EILSEQ Invalid mask
++ * @retval -EPROTO Invalid user number assignment from kernel
++ */
++int llapi_changelog_register(const char *mdtname, const char *username,
++			     const char *usermask, char *regname, size_t reglen)
++{
++	struct obd_ioctl_data data = { 0 };
++	char rawbuf[MAX_IOC_BUFLEN] = "";
++	char *buf = rawbuf;
++	int rc;
+ 
++	if (!mdtname || mdtname[0] == '\0')
++		return -EINVAL;
++
++	data.ioc_dev = llapi_obdname2devno(mdtname);
++	if (data.ioc_dev < 0)
++		return data.ioc_dev;
++
++	if (username && username[0]) {
++		if (strlen(username) >= CHANGELOG_USER_NAMELEN ||
++		    !isalpha(username[0]) ||
++		    !str_isalnum_plus(username + 1, "-_"))
++			return -ENAMETOOLONG;
++		data.ioc_inlbuf1 = (char *)username;
++		data.ioc_inllen1 = strlen(username) + 1;
++	}
++
++	if (usermask && usermask[0]) {
++		if (strlen(usermask) >= 4096 ||
++		    !str_isalnum_plus(usermask + 1, ",+-"))
++			return -EILSEQ;
++		data.ioc_inlbuf2 = (char *)usermask;
++		data.ioc_inllen2 = strlen(usermask) + 1;
++	}
++
++	if (reglen < CHANGELOG_USER_NAMELEN_FULL)
++		return -EOVERFLOW;
++
++	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
++	if (rc < 0)
++		return rc;
++
++	rc = llapi_ioctl_dev(OBD_DEV_ID, OBD_IOC_CHANGELOG_REG, buf);
++	if (rc < 0)
++		return rc;
++
++	llapi_ioctl_unpack(&data, buf, sizeof(rawbuf));
++
++	if (data.ioc_u32_1 == 0)
++		return -EPROTO;
++
++	if (regname) {
++		memset(regname, '\0', reglen);
++		if (username && username[0])
++			rc = snprintf(regname, reglen, "%s%u-%s",
++				      CHANGELOG_USER_PREFIX, data.ioc_u32_1,
++				      username);
++		else
++			rc = snprintf(regname, reglen, "%s%u",
++				      CHANGELOG_USER_PREFIX, data.ioc_u32_1);
++		if (rc >= reglen) /* this should never happen */
++			return -EOVERFLOW;
++	}
++
++	return data.ioc_u32_1;
++}
++
++/** Deregister a changelog consumer
++ *
++ * @param mdtname MDT device name
++ * @param username Changelog user name, e.g. "cl1", "cl1-xxx", "1", or "xxx"
++ *
++ * @return 0 on success, negative errno on failure
++ * @retval -EINVAL MDT device name invalid or not found
++ * @retval -ENOENT User not found
++ */
++int llapi_changelog_deregister(const char *mdtname, const char *username)
++{
++	struct obd_ioctl_data data = { 0 };
++	char rawbuf[MAX_IOC_BUFLEN] = "";
++	char *buf = rawbuf;
++	__u32 user_id;
++	int rc;
++
++	if (!mdtname || mdtname[0] == '\0')
++		return -EINVAL;
++
++	data.ioc_dev = llapi_obdname2devno(mdtname);
++	if (data.ioc_dev < 0)
++		return data.ioc_dev;
++
++	rc = changelog_parse_username(username, &user_id);
++	if (rc)
++		return rc;
++
++	data.ioc_u32_1 = user_id;
++	if (user_id == 0) {
++		data.ioc_inlbuf1 = (char *)username;
++		data.ioc_inllen1 = strlen(username) + 1;
++	}
++
++	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
++	if (rc < 0)
++		return rc;
++
++	rc = llapi_ioctl_dev(OBD_DEV_ID, OBD_IOC_CHANGELOG_DEREG, buf);
++	if (rc < 0)
++		return rc;
++
++	llapi_ioctl_unpack(&data, buf, sizeof(rawbuf));
++
++	return 0;
++}
+ 
+ static int chlg_dev_path(char *path, size_t path_len, const char *device)
+ {
+diff --git a/lustre/utils/liblustreapi_ioctl.c b/lustre/utils/liblustreapi_ioctl.c
+index c42d1549df..76e73e920a 100644
+--- a/lustre/utils/liblustreapi_ioctl.c
++++ b/lustre/utils/liblustreapi_ioctl.c
+@@ -76,12 +76,52 @@ int llapi_ioctl_pack(struct obd_ioctl_data *data, char **pbuf, int max_len)
+ }
+ 
+ /**
++ * Lookup OBD device name to find locally configured OBD device number
++ * used for obd_ioctl_data.dev_id in device ioctls.
++ *
++ * @name	OBD device name
++ * @return	positive device number on success, or negative errno on error
++ * @retval	-EINVAL	invalid OBD device name
++ * @retval	-EPROTO	invalid OBD device number returned
++ */
++int llapi_obdname2devno(const char *name)
++{
++	struct obd_ioctl_data data = { 0 };
++	char rawbuf[MAX_IOC_BUFLEN] = { '\0' }, *buf = rawbuf;
++	ssize_t len = strlen(name);
++	int rc;
++
++	if (name == NULL || len > MAX_OBD_NAME)
++		return -EINVAL;
++
++	data.ioc_inllen1 = len + 1;
++	data.ioc_inlbuf1 = (char *)name;
++
++	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
++	if (rc < 0)
++		return rc;
++
++	rc = llapi_ioctl_dev(OBD_DEV_ID, OBD_IOC_NAME2DEV, buf);
++	if (rc < 0)
++		return rc;
++
++	rc = llapi_ioctl_unpack(&data, buf, sizeof(rawbuf));
++	if (rc < 0)
++		return rc;
++
++	return data.ioc_dev == 0 ? -EPROTO : data.ioc_dev;
++}
++
++/**
++ * Call ioctl() on Lustre OBD control device, usually OBD_DEV_ID.
++ *
+  * Remap OBD device ioctl cmd to old one in case running with older modules.
+  * Replaces callers that use "l_ioctl(OBD_DEV_ID, ...)".
+  *
+- * \param dev_id	Lustre device number (from 'lctl dl')
+- * \param cmd		ioctl command
+- * \param buf		ioctl data argument, usually obd_ioctl_data
++ * @dev_id	Lustre device number
++ * @cmd		ioctl command
++ * @buf		ioctl data argument, usually obd_ioctl_data
++ * @return	0 on success, or negative errno on error
+  */
+ int llapi_ioctl_dev(int dev_id, unsigned int cmd, void *buf)
+ {
+diff --git a/lustre/utils/lustre_cfg.c b/lustre/utils/lustre_cfg.c
+index c36864e1b8..a8a9ef8d7c 100644
+--- a/lustre/utils/lustre_cfg.c
++++ b/lustre/utils/lustre_cfg.c
+@@ -59,9 +59,9 @@ static int lcfg_apply_param_yaml(const char *func, const char *filename);
+ 
+ static char *lcfg_devname;
+ 
+-int lcfg_set_devname(char *name)
++int lcfg_set_devname(const char *name)
+ {
+-	char *ptr;
++	const char *ptr;
+ 	int digit = 1;
+ 
+ 	if (name) {
+@@ -97,11 +97,6 @@ char *lcfg_get_devname(void)
+ 	return lcfg_devname;
+ }
+ 
+-int jt_lcfg_device(int argc, char **argv)
+-{
+-	return jt_obd_device(argc, argv);
+-}
+-
+ static int jt_lcfg_ioctl(struct lustre_cfg_bufs *bufs, char *arg, int cmd)
+ {
+ 	struct lustre_cfg *lcfg;
+@@ -621,160 +616,6 @@ fail_print:
+ 	printf("%s%s%s\n", s, buf[0] ? " " : "", buf);
+ }
+ 
+-static int yaml_get_device_index(char *source)
+-{
+-	yaml_emitter_t request;
+-	yaml_parser_t reply;
+-	yaml_event_t event;
+-	struct nl_sock *sk;
+-	bool done = false;
+-	int rc;
+-
+-	sk = nl_socket_alloc();
+-	if (!sk)
+-		return -EOPNOTSUPP;
+-
+-	/* Setup parser to recieve Netlink packets */
+-	rc = yaml_parser_initialize(&reply);
+-	if (rc == 0)
+-		return -EOPNOTSUPP;
+-
+-	rc = yaml_parser_set_input_netlink(&reply, sk, false);
+-	if (rc == 0)
+-		return -EOPNOTSUPP;
+-
+-	/* Create Netlink emitter to send request to kernel */
+-	yaml_emitter_initialize(&request);
+-	rc = yaml_emitter_set_output_netlink(&request, sk, "lustre",
+-					     LUSTRE_GENL_VERSION,
+-					     LUSTRE_CMD_DEVICES, NLM_F_DUMP);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_emitter_open(&request);
+-
+-	yaml_document_start_event_initialize(&event, NULL, NULL, NULL, 0);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_mapping_start_event_initialize(&event, NULL,
+-					    (yaml_char_t *)YAML_MAP_TAG,
+-					    1, YAML_ANY_MAPPING_STYLE);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_scalar_event_initialize(&event, NULL,
+-				     (yaml_char_t *)YAML_STR_TAG,
+-				     (yaml_char_t *)"devices",
+-				     strlen("devices"), 1, 0,
+-				     YAML_PLAIN_SCALAR_STYLE);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_sequence_start_event_initialize(&event, NULL,
+-					     (yaml_char_t *)YAML_SEQ_TAG,
+-					     1, YAML_ANY_SEQUENCE_STYLE);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_mapping_start_event_initialize(&event, NULL,
+-					    (yaml_char_t *)YAML_MAP_TAG,
+-					    1, YAML_ANY_MAPPING_STYLE);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_scalar_event_initialize(&event, NULL,
+-				     (yaml_char_t *)YAML_STR_TAG,
+-				     (yaml_char_t *)"name",
+-				     strlen("name"),
+-				     1, 0, YAML_PLAIN_SCALAR_STYLE);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	rc = yaml_scalar_event_initialize(&event, NULL,
+-				     (yaml_char_t *)YAML_STR_TAG,
+-				     (yaml_char_t *)source,
+-				     strlen(source), 1, 0,
+-				     YAML_PLAIN_SCALAR_STYLE);
+-	if (rc == 0)
+-		goto error;
+-
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_mapping_end_event_initialize(&event);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_sequence_end_event_initialize(&event);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_mapping_end_event_initialize(&event);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_document_end_event_initialize(&event, 0);
+-	rc = yaml_emitter_emit(&request, &event);
+-	if (rc == 0)
+-		goto error;
+-
+-	yaml_emitter_close(&request);
+-error:
+-	if (rc == 0) {
+-		yaml_emitter_log_error(&request, stderr);
+-		yaml_emitter_cleanup(&request);
+-		rc = -EINVAL;
+-		goto free_reply;
+-	}
+-	yaml_emitter_cleanup(&request);
+-
+-	while (!done) {
+-		rc = yaml_parser_parse(&reply, &event);
+-		if (rc == 0) {
+-			yaml_parser_log_error(&reply, stdout, "lctl: ");
+-			rc = -EINVAL;
+-			break;
+-		}
+-
+-		if (event.type == YAML_SCALAR_EVENT) {
+-			char *value = (char *)event.data.scalar.value;
+-
+-			if (strcmp(value, "index") == 0) {
+-				yaml_event_delete(&event);
+-				rc = yaml_parser_parse(&reply, &event);
+-				if (rc == 1) {
+-					value = (char *)event.data.scalar.value;
+-					errno = 0;
+-					rc = strtoul(value, NULL, 10);
+-					if (errno) {
+-						yaml_event_delete(&event);
+-						rc = -errno;
+-					}
+-					goto free_reply;
+-				}
+-			}
+-		}
+-		done = (event.type == YAML_STREAM_END_EVENT);
+-		yaml_event_delete(&event);
+-	}
+-free_reply:
+-	yaml_parser_cleanup(&reply);
+-	nl_socket_free(sk);
+-
+-	return rc;
+-}
+-
+ int yaml_get_limit_uid(const char *config)
+ {
+ 	yaml_parser_t parser;
+@@ -899,45 +740,11 @@ int jt_device_list(int argc, char **argv)
+ 	return 0;
+ }
+ 
+-static int do_name2dev(char *func, char *name, int dev_id)
+-{
+-	struct obd_ioctl_data data;
+-	char rawbuf[MAX_IOC_BUFLEN], *buf = rawbuf;
+-	int rc;
+-
+-	/* Use YAML to find device index */
+-	rc = yaml_get_device_index(name);
+-	if (rc >= 0 || rc != -EOPNOTSUPP)
+-		return rc;
+-
+-	memset(&data, 0, sizeof(data));
+-	data.ioc_dev = dev_id;
+-	data.ioc_inllen1 = strlen(name) + 1;
+-	data.ioc_inlbuf1 = name;
+-
+-	memset(buf, 0, sizeof(rawbuf));
+-	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
+-	if (rc < 0) {
+-		fprintf(stderr, "error: %s: invalid ioctl\n", jt_cmdname(func));
+-		return rc;
+-	}
+-	rc = l_ioctl(OBD_DEV_ID, OBD_IOC_NAME2DEV, buf);
+-	if (rc < 0)
+-		return -errno;
+-	rc = llapi_ioctl_unpack(&data, buf, sizeof(rawbuf));
+-	if (rc < 0) {
+-		fprintf(stderr, "error: %s: invalid reply\n", jt_cmdname(func));
+-		return rc;
+-	}
+-
+-	return data.ioc_dev;
+-}
+-
+ /*
+  * resolve a device name to a device number.
+  * supports a number, $name or %uuid.
+  */
+-int parse_devname(char *func, char *name, int dev_id)
++int parse_devname(const char *func, const char *name)
+ {
+ 	int rc = 0;
+ 
+@@ -949,7 +756,7 @@ int parse_devname(char *func, char *name, int dev_id)
+ 		if (name[0] == '$' || name[0] == '%')
+ 			name++;
+ 
+-		rc = do_name2dev(func, name, dev_id);
++		rc = llapi_obdname2devno(name);
+ 	} else {
+ 		errno = 0;
+ 		rc = strtoul(name, NULL, 10);
+@@ -958,8 +765,8 @@ int parse_devname(char *func, char *name, int dev_id)
+ 	}
+ 
+ 	if (rc < 0)
+-		fprintf(stderr, "No device found for name %s: %s\n",
+-			name, strerror(-rc));
++		fprintf(stderr, "%s: no device found for name %s: %s\n",
++			func, name, strerror(-rc));
+ 	return rc;
+ }
+ 
+diff --git a/lustre/utils/obd.c b/lustre/utils/obd.c
+index c4b8f5369d..81ef3acb92 100644
+--- a/lustre/utils/obd.c
++++ b/lustre/utils/obd.c
+@@ -60,6 +60,7 @@
+ 
+ #include <lustre/lustreapi.h>
+ #include <linux/lustre/lustre_disk.h>
++#include "obdctl.h"
+ 
+ #define MAX_STRING_SIZE 128
+ 
+@@ -540,9 +541,9 @@ static int do_device(char *func, char *devname)
+ {
+ 	int dev;
+ 
+-	dev = parse_devname(func, devname, cur_device);
++	dev = parse_devname(func, devname);
+ 	if (dev < 0)
+-		return -1;
++		return dev;
+ 
+ 	lcfg_set_devname(devname);
+ 	cur_device = dev;
+@@ -556,8 +557,6 @@ int jt_obd_get_device(void)
+ 
+ int jt_obd_device(int argc, char **argv)
+ {
+-	int rc;
+-
+ 	if (argc > 2)
+ 		return CMD_HELP;
+ 
+@@ -566,8 +565,7 @@ int jt_obd_device(int argc, char **argv)
+ 		       cur_device, lcfg_get_devname() ? : "not set");
+ 		return 0;
+ 	}
+-	rc = do_device("device", argv[1]);
+-	return rc;
++	return do_device(argv[0], argv[1]);
+ }
+ 
+ int jt_opt_device(int argc, char **argv)
+@@ -578,7 +576,7 @@ int jt_opt_device(int argc, char **argv)
+ 	if (argc < 3)
+ 		return CMD_HELP;
+ 
+-	rc = do_device("device", argv[1]);
++	rc = do_device(argv[0], argv[1]);
+ 
+ 	if (!rc)
+ 		rc = cfs_parser(argc - 1, argv + 1, cmdlist);
+@@ -6738,25 +6736,28 @@ int jt_get_obj_version(int argc, char **argv)
+ int jt_changelog_register(int argc, char **argv)
+ {
+ 	struct option long_opts[] = {
++	{ .val = 'd', .name = "device", .has_arg = required_argument },
++	{ .val = 'd', .name = "mdt", .has_arg = required_argument },
+ 	{ .val = 'h', .name = "help", .has_arg = no_argument },
+ 	{ .val = 'm', .name = "mask", .has_arg = required_argument },
+ 	{ .val = 'n', .name = "nameonly", .has_arg = no_argument },
+ 	{ .val = 'u', .name = "user", .has_arg = required_argument },
+ 	{ .name = NULL } };
+-	struct obd_ioctl_data data = { 0 };
+-	char rawbuf[MAX_IOC_BUFLEN] = "";
+-	char *buf = rawbuf;
+-	char *device = lcfg_get_devname();
++	char regname[CHANGELOG_USER_NAMELEN_FULL] = "";
+ 	char *username = NULL, *usermask = NULL;
++	char *default_mdt = lcfg_get_devname(); /* lctl --device xxx */
++	char *opt_mdt = NULL; /* --mdt xxx */
++	char *mdtname = NULL;
+ 	bool print_name_only = false;
+ 	int c;
+ 	int rc;
+ 
+-	if (cur_device < 0 || !device)
+-		return CMD_HELP;
+-
+-	while ((c = getopt_long(argc, argv, "hm:nu:", long_opts, NULL)) != -1) {
++	while ((c = getopt_long(argc, argv, "d:hm:nu:", long_opts, NULL)) !=
++	       -1) {
+ 		switch (c) {
++		case 'd':
++			opt_mdt = strdup(optarg);
++			break;
+ 		case 'm':
+ 			usermask = strdup(optarg);
+ 			if (!usermask) {
+@@ -6771,93 +6772,109 @@ int jt_changelog_register(int argc, char **argv)
+ 			print_name_only = true;
+ 			break;
+ 		case 'u':
+-			username = strdup(optarg);
+-			if (!username) {
++			if (strlen(optarg) > CHANGELOG_USER_NAMELEN) {
+ 				fprintf(stderr,
+-					"error: %s: %s: cannot copy '%s'\n",
+-					jt_cmdname(argv[0]), strerror(errno),
+-					optarg);
+-				return -errno;
++					"error: %s: username '%s' too long\n",
++					jt_cmdname(argv[0]), optarg);
++				return -ENAMETOOLONG;
+ 			}
++			username = strdup(optarg);
+ 			break;
+ 		case 'h':
+ 		default:
+-			free(username);
+-			free(usermask);
+-			return CMD_HELP;
++			rc = CMD_HELP;
++			goto out;
+ 		}
+ 	}
+ 
+-	data.ioc_dev = cur_device;
+-	if (username) {
+-		data.ioc_inlbuf1 = username;
+-		data.ioc_inllen1 = strlen(username) + 1;
+-	}
+-
+-	if (usermask) {
+-		data.ioc_inlbuf2 = usermask;
+-		data.ioc_inllen2 = strlen(usermask) + 1;
+-	}
+-
+-	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
+-	if (rc < 0) {
+-		fprintf(stderr, "error: %s: cannot pack ioctl: %s\n",
+-			jt_cmdname(argv[0]), strerror(-rc));
+-		goto out;
+-	}
+-	rc = l_ioctl(OBD_DEV_ID, OBD_IOC_CHANGELOG_REG, buf);
+-	if (rc < 0) {
+-		rc = -errno;
+-		fprintf(stderr, "error: %s: %s\n", jt_cmdname(argv[0]),
+-			rc == -EEXIST ? "User exists" : strerror(-rc));
++	if (!default_mdt && !opt_mdt) {
++		rc = CMD_HELP;
+ 		goto out;
+ 	}
++	mdtname = opt_mdt ? opt_mdt : default_mdt;
+ 
+-	llapi_ioctl_unpack(&data, buf, sizeof(rawbuf));
+ 
+-	if (data.ioc_u32_1 == 0) {
+-		fprintf(stderr, "received invalid userid!\n");
+-		rc = -EPROTO;
++	rc = llapi_changelog_register(mdtname, username, usermask,
++				      regname, sizeof(regname));
++	if (rc < 0) {
++		switch (rc) {
++		case -EINVAL:
++			fprintf(stderr, "error: %s: mdtname '%s' invalid\n",
++				mdtname, jt_cmdname(argv[0]));
++			break;
++		case -ENAMETOOLONG:
++			fprintf(stderr, "error: %s: username '%s' invalid\n",
++				jt_cmdname(argv[0]), username);
++			break;
++		case -EILSEQ:
++			fprintf(stderr, "error: %s: user mask '%s' invalid\n",
++				jt_cmdname(argv[0]), usermask);
++			break;
++		case -EEXIST:
++			fprintf(stderr, "error: %s: user '%s' exists\n",
++				jt_cmdname(argv[0]), username);
++			break;
++		case -EPROTO:
++			fprintf(stderr, "error: %s: invalid user assigned\n",
++				jt_cmdname(argv[0]));
++			break;
++		case -EOVERFLOW:
++			fprintf(stderr, "error: %s: registered name too long\n",
++				jt_cmdname(argv[0]));
++			break;
++		default:
++			fprintf(stderr, "error: %s: %s\n", jt_cmdname(argv[0]),
++				strerror(-rc));
++			break;
++		}
+ 		goto out;
++	} else {
++		rc = 0;
+ 	}
+ 
+ 	if (print_name_only)
+-		printf("%s%u%s%s\n", CHANGELOG_USER_PREFIX, data.ioc_u32_1,
+-		       username ? "-" : "", username ? : "");
++		printf("%s\n", regname);
+ 	else
+-		printf("%s: Registered changelog userid '%s%u%s%s'\n",
+-		       device, CHANGELOG_USER_PREFIX, data.ioc_u32_1,
+-		       username ? "-" : "", username ? : "");
++		printf("%s: Registered changelog userid '%s'\n",
++		       mdtname, regname);
+ out:
+-	free(usermask);
++	free(mdtname);
+ 	free(username);
++	free(usermask);
+ 	return rc;
+ }
+ 
+ int jt_changelog_deregister(int argc, char **argv)
+ {
+ 	struct option long_opts[] = {
++	{ .val = 'd', .name = "device", .has_arg = required_argument },
++	{ .val = 'd', .name = "mdt", .has_arg = required_argument },
+ 	{ .val = 'h', .name = "help", .has_arg = no_argument },
+ 	{ .val = 'u', .name = "user", .has_arg = required_argument },
+ 	{ .name = NULL } };
+-	struct obd_ioctl_data data = { 0 };
+-	char rawbuf[MAX_IOC_BUFLEN] = "";
+-	char *buf = rawbuf;
+-	char *device = lcfg_get_devname();
+ 	char *username = NULL;
+-	int id = 0;
++	char *default_mdt = lcfg_get_devname(); /* lctl --device xxx */
++	char *opt_mdt = NULL; /* --mdt xxx */
++	char *mdtname = NULL;
+ 	int c, rc;
+ 
+-	if (cur_device < 0 || !device)
+-		return CMD_HELP;
+-
+-	while ((c = getopt_long(argc, argv, "hu:", long_opts, NULL)) != -1) {
++	while ((c = getopt_long(argc, argv, "d:hu:", long_opts, NULL)) != -1) {
+ 		switch (c) {
++		case 'd':
++			opt_mdt = strdup(optarg);
++			if (!opt_mdt) {
++				fprintf(stderr,
++					"error: %s: %s: cannot copy mdtname '%s'\n",
++					jt_cmdname(argv[0]), strerror(errno),
++					optarg);
++				return -errno;
++			}
++			break;
+ 		case 'u':
+ 			username = strdup(optarg);
+ 			if (!username) {
+ 				fprintf(stderr,
+-					"error: %s: %s: cannot copy '%s'\n",
++					"error: %s: %s: cannot copy username '%s'\n",
+ 					jt_cmdname(argv[0]), strerror(errno),
+ 					optarg);
+ 				return -errno;
+@@ -6865,73 +6882,53 @@ int jt_changelog_deregister(int argc, char **argv)
+ 			break;
+ 		case 'h':
+ 		default:
+-			free(username);
+-			return CMD_HELP;
+-		}
+-	}
+-
+-	if (1 == optind && argc > 1) {
+-		/* first check if pure ID was passed */
+-		id = atoi(argv[optind]);
+-		/* nameless cl<ID> format or cl<ID>-... format, only ID matters */
+-		if (id == 0)
+-			sscanf(argv[optind], CHANGELOG_USER_PREFIX"%d", &id);
+-
+-		/* no valid ID was parsed */
+-		if (id <= 0) {
+-			rc = -EINVAL;
+-			fprintf(stderr,
+-				"error: %s: expect <ID> or cl<ID>[-name] got '%s'\n",
+-				strerror(-rc), argv[optind]);
+-			return CMD_HELP;
++			rc = CMD_HELP;
++			goto out;
+ 		}
+-		optind++;
+-	}
+-
+-	if (optind < argc || argc == 1) {
+-		free(username);
+-		return CMD_HELP;
+-	}
+-
+-	data.ioc_dev = cur_device;
+-	data.ioc_u32_1 = id;
+-	if (username) {
+-		data.ioc_inlbuf1 = username;
+-		data.ioc_inllen1 = strlen(username) + 1;
+ 	}
+ 
+-	rc = llapi_ioctl_pack(&data, &buf, sizeof(rawbuf));
+-	if (rc < 0) {
+-		fprintf(stderr, "error: %s: invalid ioctl\n",
+-			jt_cmdname(argv[0]));
+-		return rc;
++	if (!default_mdt && !opt_mdt) {
++		rc = CMD_HELP;
++		goto out;
+ 	}
++	mdtname = opt_mdt ? opt_mdt : default_mdt;
+ 
+-	rc = l_ioctl(OBD_DEV_ID, OBD_IOC_CHANGELOG_DEREG, buf);
+-	if (rc < 0) {
+-		rc = -errno;
+-		fprintf(stderr, "error: %s: %s\n", jt_cmdname(argv[0]),
+-			rc == -ENOENT ? "User not found" : strerror(-rc));
+-		return rc;
++	if (!username) {
++		if (argc == 1) {
++			rc = CMD_HELP;
++			goto out;
++		}
++		/* user_id will be the first or the last arg */
++		if (argc > 1 && argv[1][0] == '-' && (argc - optind == 1))
++			username = strdup(argv[argc - 1]);
++		else if (argc > 1)
++			username = strdup(argv[1]);
+ 	}
+ 
+-	llapi_ioctl_unpack(&data, buf, sizeof(rawbuf));
+-	printf("%s: Deregistered changelog user #%u\n", device, data.ioc_u32_1);
++	rc = llapi_changelog_deregister(mdtname, username);
++	printf("%s: Deregistered changelog user '%s': %s\n",
++	       mdtname, username, rc ? strerror(-rc) : "success");
+ 
+-	return 0;
++out:
++	free(mdtname);
++	free(username);
++	return rc;
+ }
+ #else /* !HAVE_SERVER_SUPPORT */
+ int jt_changelog_register(int argc, char **argv)
+ {
+-	fprintf(stderr, "error: %s: invalid ioctl\n",
++	fprintf(stderr, "error: %s: changelog_register unsupported on client\n",
+ 		jt_cmdname(argv[0]));
++
+ 	return -EOPNOTSUPP;
+ }
+ 
+ int jt_changelog_deregister(int argc, char **argv)
+ {
+-	fprintf(stderr, "error: %s: invalid ioctl\n",
++	fprintf(stderr,
++		"error: %s: changelog_deregister unsupported on client\n",
+ 		jt_cmdname(argv[0]));
++
+ 	return -EOPNOTSUPP;
+ }
+ #endif /* HAVE_SERVER_SUPPORT */
+diff --git a/lustre/utils/obdctl.h b/lustre/utils/obdctl.h
+index 848ef6cd11..4bdef86d24 100644
+--- a/lustre/utils/obdctl.h
++++ b/lustre/utils/obdctl.h
+@@ -116,7 +116,7 @@ int jt_llog_check(int argc, char **argv);
+ struct lustre_cfg;
+ int lcfg_ioctl(char * func, int dev_id, struct lustre_cfg *lcfg);
+ int lcfg_mgs_ioctl(const char *func, int dev_id, struct lustre_cfg *lcfg);
+-int parse_devname(char *func, char *name, int dev_id);
++int parse_devname(const char *func, const char *name);
+ const char *jt_cmdname(const char *func);
+ 
+ /* lustre_param.c */
+@@ -131,7 +131,7 @@ int jt_lcfg_setparam_client(int argc, char **argv, struct param_opts *popt);
+ int jt_lctl_findparam(int argc, char **argv);
+ 
+ /* lustre_cfg.c */
+-int lcfg_set_devname(char *name);
++int lcfg_set_devname(const char *name);
+ char *lcfg_get_devname(void);
+ int jt_lcfg_device(int argc, char **argv);
+ int jt_lcfg_attach(int argc, char **argv);
+
+</pre>
+</body>
+</html>
