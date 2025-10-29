@@ -1,0 +1,1238 @@
+From 9d9bd22cf8327a2c8cd762901671bdb0cd0a963a Mon Sep 17 00:00:00 2001
+From: Qian Yingjin <qian@ddn.com>
+Date: Wed, 19 Apr 2023 03:31:51 -0400
+Subject: [PATCH 1/1] LU-12916 osd: use writeback for small writes in ldiskfs
+
+This patch implements the writeback caching for small writes on
+Lustre OSD (ldiskfs).
+The writes are not synchronous any more on OST. It marks the page
+as dirty and create buffer heads mapping pages to the physical
+blocks. The kernel writeback mechanism will handle the actual I/O.
+
+This patch should improve the performance for I/O cases such as
+small writes from many files (i.e. mdtest-hard-write) or
+unaligned I/O on a shared file (i.e. ior-hard-write).
+
+Add a ldiskfs patch "ext4-writeback.path" to not zero out
+non-full page during writeback for a encrypted file. Without this
+ldiskfs patch, it will fail sanity-sec/test_37.
+
+According to the benchmark results, this patch can improve the
+IO500 mdtest-hard performance and the performance of the real
+application Nek5000 turbulent pipe with more than 10%.
+
+Signed-off-by: Alex Zhuravlev <bzzz@whamcloud.com>
+Signed-off-by: Qian Yingjin <qian@ddn.com>
+Change-Id: I9b5aa568a49d5b39d04656fdacb94c3a6ec5a7ff
+---
+ config/lustre-build-ldiskfs.m4                |  42 ++-
+ .../patches/rhel7.9/ext4-writeback.patch      |  31 ++
+ .../patches/rhel8/ext4-writeback.patch        |  31 ++
+ .../patches/rhel9/ext4-writeback.patch        |  31 ++
+ .../series/ldiskfs-3.10-rhel7.9.series        |   1 +
+ .../series/ldiskfs-4.18-rhel8.10.series       |   1 +
+ .../series/ldiskfs-4.18-rhel8.4.series        |   1 +
+ .../series/ldiskfs-4.18-rhel8.5.series        |   1 +
+ .../series/ldiskfs-4.18-rhel8.6.series        |   1 +
+ .../series/ldiskfs-4.18-rhel8.7.series        |   1 +
+ .../series/ldiskfs-4.18-rhel8.8.series        |   1 +
+ .../series/ldiskfs-4.18-rhel8.9.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.1.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.2.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.3.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.4.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.5.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.6.series        |   1 +
+ .../series/ldiskfs-5.14-rhel9.series          |   1 +
+ lustre/include/uapi/linux/lustre/lustre_idl.h |   6 +
+ lustre/osc/osc_request.c                      |  14 +-
+ lustre/osd-ldiskfs/osd_handler.c              |  61 +++-
+ lustre/osd-ldiskfs/osd_internal.h             |  24 +-
+ lustre/osd-ldiskfs/osd_io.c                   | 326 +++++++++++++++++-
+ lustre/osd-ldiskfs/osd_lproc.c                |  83 +++++
+ lustre/tests/sanity.sh                        |   7 +-
+ lustre/tests/sanityn.sh                       |  19 +-
+ 27 files changed, 676 insertions(+), 14 deletions(-)
+ create mode 100644 ldiskfs/kernel_patches/patches/rhel7.9/ext4-writeback.patch
+ create mode 100644 ldiskfs/kernel_patches/patches/rhel8/ext4-writeback.patch
+ create mode 100644 ldiskfs/kernel_patches/patches/rhel9/ext4-writeback.patch
+
+diff --git a/config/lustre-build-ldiskfs.m4 b/config/lustre-build-ldiskfs.m4
+index 1f070a2d39..80cd73e1fc 100644
+--- a/config/lustre-build-ldiskfs.m4
++++ b/config/lustre-build-ldiskfs.m4
+@@ -277,6 +277,24 @@ AC_DEFUN([LB_EXT4_BREAD_4ARGS], [
+ 	])
+ ]) # LB_EXT4_BREAD_4ARGS
+ 
++#
++# LB_EXT4_INODE_ADD_WRITE
++#
++# 3.18 ext4_jbd2_inode_add_write()
++#
++AC_DEFUN([LB_EXT4_INODE_ADD_WRITE], [
++LB_CHECK_COMPILE([if ext4 has ext4_jbd2_inode_add_write],
++ext4_jbd2_inode_add_write, [
++	#include <linux/fs.h>
++	#include "$EXT4_SRC_DIR/ext4.h"
++	#include "$EXT4_SRC_DIR/ext4_jbd2.h"
++],[
++	ext4_jbd2_inode_add_write(NULL, NULL);
++],[
++	AC_DEFINE(HAVE_EXT4_INODE_ADD_WRITE, 1, [ext4_jbd2_inode_add_write])
++])
++]) # LB_EXT4_INODE_ADD_WRITE
++
+ #
+ # LB_EXT4_HAVE_INFO_DQUOT
+ #
+@@ -543,6 +561,26 @@ AC_DEFUN([LB_EXT4_INC_DEC_COUNT_2ARGS], [
+ 	])
+ ]) # LB_EXT4_INC_DEC_COUNT_2ARGS
+ 
++#
++# LB_EXT4_INODE_ADD_WRITE_RANGE
++#
++# kernel 5.10 commit: 73131fbb003b3691cfcf9656f234b00da497fcd6
++# ext4: use jdb2_inode dirty range scoping
++#
++AC_DEFUN([LB_EXT4_INODE_ADD_RANGED_WRITE], [
++LB_CHECK_COMPILE([if ext4 has ext4_jbd2_inode_add_write with range],
++ext4_jbd2_inode_add_ranged_write, [
++	#include <linux/fs.h>
++	#include "$EXT4_SRC_DIR/ext4.h"
++	#include "$EXT4_SRC_DIR/ext4_jbd2.h"
++],[
++	ext4_jbd2_inode_add_write(NULL, NULL, 0, 0);
++],[
++	AC_DEFINE(HAVE_EXT4_INODE_ADD_RANGED_WRITE, 1,
++		[ext4_jbd2_inode_add_write has range])
++])
++]) # LB_EXT4_INODE_ADD_RANGED_WRITE
++
+ #
+ # LB_JBD2_JOURNAL_GET_MAX_TXN_BUFS
+ # Linux commit v5.10-rc2-9-gede7dc7fa0af
+@@ -737,15 +775,17 @@ AC_DEFUN([LB_KABI_LDISKFS], [AS_IF([test x$enable_ldiskfs != xno],[
+ 	])
+ 	AC_DEFUN([LB_EXT4_LDISKFS_CHECKS], [
+ 		LB_EXT4_BREAD_4ARGS
++		LB_EXT4_INODE_ADD_WRITE
+ 		LB_EXT4_HAVE_INFO_DQUOT
+ 		LB_EXT4_HAVE_I_CRYPT_INFO
+ 		LB_LDISKFS_JOURNAL_ENSURE_CREDITS
+ 		LB_LDISKFS_IGET_HAS_FLAGS_ARG
+-		LB_LDISKFS_IGET_EA_INODE
+ 		LB_LDISKFS_FIND_ENTRY_LOCKED_EXISTS
+ 		LB_LDISKFSFS_DIRHASH_WANTS_DIR
+ 		LB_JBD2_H_TOTAL_CREDITS
+ 		LB_JBD2_JOURNAL_GET_MAX_TXN_BUFS
++		LB_EXT4_INODE_ADD_RANGED_WRITE
++		LB_LDISKFS_IGET_EA_INODE
+ 		LB2_TEST_CHECK_CONFIG_IM([FS_ENCRYPTION], [
+ 			EXT4_CRYPTO=],[
+ 			EXT4_CRYPTO='%/crypto.c'])
+diff --git a/ldiskfs/kernel_patches/patches/rhel7.9/ext4-writeback.patch b/ldiskfs/kernel_patches/patches/rhel7.9/ext4-writeback.patch
+new file mode 100644
+index 0000000000..0a21591330
+--- /dev/null
++++ b/ldiskfs/kernel_patches/patches/rhel7.9/ext4-writeback.patch
+@@ -0,0 +1,31 @@
++diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
++index 2767a5f..5db792c 100644
++--- a/fs/ext4/ext4.h
+++++ b/fs/ext4/ext4.h
++@@ -79,6 +79,12 @@
++ #define EXT4_ERROR_FILE(file, block, fmt, a...)				\
++ 	ext4_error_file((file), __func__, __LINE__, (block), (fmt), ## a)
++ 
+++/*
+++ * For an encrypted file, it does not zero out on each and every writepage
+++ * especially for a page straddled @i_size.
+++ */
+++#define EXT4_HAS_BIO_WRITE_PAGE_NO_ENCRYPT
+++
++ /* data type for block offset of block group */
++ typedef int ext4_grpblk_t;
++ 
++diff --git a/fs/ext4/page-io.c b/fs/ext4/page-io.c
++index 9671769..7490de7 100644
++--- a/fs/ext4/page-io.c
+++++ b/fs/ext4/page-io.c
++@@ -415,7 +415,8 @@ int ext4_bio_write_page(struct ext4_io_submit *io,
++ 	 * the page size, the remaining memory is zeroed when mapped, and
++ 	 * writes to that region are not written out to the file."
++ 	 */
++-	if (len < PAGE_CACHE_SIZE)
+++	if ((len < PAGE_CACHE_SIZE) &&
+++	    !(EXT4_I(inode)->i_flags & EXT4_ENCRYPT_FL))
++ 		zero_user_segment(page, len, PAGE_CACHE_SIZE);
++ 	/*
++ 	 * In the first loop we prepare and mark buffers to submit. We have to
+diff --git a/ldiskfs/kernel_patches/patches/rhel8/ext4-writeback.patch b/ldiskfs/kernel_patches/patches/rhel8/ext4-writeback.patch
+new file mode 100644
+index 0000000000..eee35a22f9
+--- /dev/null
++++ b/ldiskfs/kernel_patches/patches/rhel8/ext4-writeback.patch
+@@ -0,0 +1,31 @@
++diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
++index 07b8407..436d579 100644
++--- a/fs/ext4/ext4.h
+++++ b/fs/ext4/ext4.h
++@@ -88,6 +88,12 @@
++ #define ext_debug(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
++ #endif
++ 
+++/*
+++ * For an encrypted file, it does not zero out on each and every writepage
+++ * especially for a page straddled @i_size.
+++ */
+++#define EXT4_HAS_BIO_WRITE_PAGE_NO_ENCRYPT
+++
++ /* data type for block offset of block group */
++ typedef int ext4_grpblk_t;
++ 
++diff --git a/fs/ext4/page-io.c b/fs/ext4/page-io.c
++index 2d052af..b592516 100644
++--- a/fs/ext4/page-io.c
+++++ b/fs/ext4/page-io.c
++@@ -441,7 +441,8 @@ int ext4_bio_write_page(struct ext4_io_submit *io,
++ 	 * the page size, the remaining memory is zeroed when mapped, and
++ 	 * writes to that region are not written out to the file."
++ 	 */
++-	if (len < PAGE_SIZE)
+++	if (len < PAGE_SIZE &&
+++	    !(EXT4_I(inode)->i_flags & EXT4_ENCRYPT_FL))
++ 		zero_user_segment(page, len, PAGE_SIZE);
++ 	/*
++ 	 * In the first loop we prepare and mark buffers to submit. We have to
+diff --git a/ldiskfs/kernel_patches/patches/rhel9/ext4-writeback.patch b/ldiskfs/kernel_patches/patches/rhel9/ext4-writeback.patch
+new file mode 100644
+index 0000000000..499a121b4e
+--- /dev/null
++++ b/ldiskfs/kernel_patches/patches/rhel9/ext4-writeback.patch
+@@ -0,0 +1,31 @@
++diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
++index ef1ff5b..f9c6465 100644
++--- a/fs/ext4/ext4.h
+++++ b/fs/ext4/ext4.h
++@@ -109,6 +109,12 @@
++ 	}								\
++ } while (0)
++ 
+++/*
+++ * For an encrypted file, it does not zero out on each and every writepage
+++ * especially for a page straddled @i_size.
+++ */
+++#define EXT4_HAS_BIO_WRITE_PAGE_NO_ENCRYPT
+++
++ /* data type for block offset of block group */
++ typedef int ext4_grpblk_t;
++ 
++diff --git a/fs/ext4/page-io.c b/fs/ext4/page-io.c
++index d0302b6..4fd8e51 100644
++--- a/fs/ext4/page-io.c
+++++ b/fs/ext4/page-io.c
++@@ -462,7 +462,8 @@ int ext4_bio_write_page(struct ext4_io_submit *io,
++ 	 * the page size, the remaining memory is zeroed when mapped, and
++ 	 * writes to that region are not written out to the file."
++ 	 */
++-	if (len < PAGE_SIZE)
+++	if ((len < PAGE_SIZE) &&
+++	    !(EXT4_I(inode)->i_flags & EXT4_ENCRYPT_FL))
++ 		zero_user_segment(page, len, PAGE_SIZE);
++ 	/*
++ 	 * In the first loop we prepare and mark buffers to submit. We have to
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-3.10-rhel7.9.series b/ldiskfs/kernel_patches/series/ldiskfs-3.10-rhel7.9.series
+index 06466122a5..a6d394cf63 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-3.10-rhel7.9.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-3.10-rhel7.9.series
+@@ -3,6 +3,7 @@ rhel7.6/ext4-lookup-dotdot.patch
+ rhel7.6/ext4-print-inum-in-htree-warning.patch
+ rhel7.6/ext4-prealloc.patch
+ rhel7.6/ext4-mballoc-extra-checks.patch
++rhel7.9/ext4-writeback.patch
+ rhel7.7/ext4-misc.patch
+ rhel7.6/ext4-osd-iop-common.patch
+ rhel7.6/ext4-hash-indexed-dir-dotdot-update.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.10.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.10.series
+index 003f94d370..a817b7351d 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.10.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.10.series
+@@ -44,6 +44,7 @@ rhel8/ext4-encdata.patch
+ rhel8/ext4-race-in-ext4-destroy-inode.patch
+ rhel8/ext4-mballoc-dense.patch
+ rhel8/ext4-limit-per-inode-preallocation-list.patch
++rhel8/ext4-writeback.patch
+ rhel8.8/ext4-add-prefetching-for-block-allocation-bitmaps.patch
+ rhel8.8/ext4-add-prefetch-block-bitmap-mount-option.patch
+ rhel8.8/ext4-optimize-the-ext4_mb_good_group.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.4.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.4.series
+index 8ce3d2a5aa..6662bc82e8 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.4.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.4.series
+@@ -42,3 +42,4 @@ rhel8.4/ext4-optimize-find_delayed_extent.patch
+ rhel8/ext4-encdata.patch
+ rhel8.5/ext4-mballoc-dense.patch
+ rhel8.5/ext4-limit-per-inode-preallocation-list.patch
++rhel8/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.5.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.5.series
+index 961742a658..e867670083 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.5.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.5.series
+@@ -42,3 +42,4 @@ rhel8.4/ext4-optimize-find_delayed_extent.patch
+ rhel8/ext4-encdata.patch
+ rhel8.5/ext4-mballoc-dense.patch
+ rhel8.5/ext4-limit-per-inode-preallocation-list.patch
++rhel8/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.6.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.6.series
+index ba5bffc322..89eeeeb2b5 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.6.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.6.series
+@@ -43,3 +43,4 @@ rhel8/ext4-encdata.patch
+ rhel8/ext4-race-in-ext4-destroy-inode.patch
+ rhel8.5/ext4-mballoc-dense.patch
+ rhel8.5/ext4-limit-per-inode-preallocation-list.patch
++rhel8/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.7.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.7.series
+index ed47658892..7dd58994ae 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.7.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.7.series
+@@ -44,3 +44,4 @@ rhel8/ext4-encdata.patch
+ rhel8/ext4-race-in-ext4-destroy-inode.patch
+ rhel8/ext4-mballoc-dense.patch
+ rhel8/ext4-limit-per-inode-preallocation-list.patch
++rhel8/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.8.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.8.series
+index 10f2973ffc..d9c8d04ec6 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.8.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.8.series
+@@ -41,6 +41,7 @@ rhel8.7/ext4-filename-encode.patch
+ rhel8/ext4-old_ea_inodes_handling_fix.patch
+ rhel8.4/ext4-optimize-find_delayed_extent.patch
+ rhel8/ext4-encdata.patch
++rhel8/ext4-writeback.patch
+ rhel8/ext4-race-in-ext4-destroy-inode.patch
+ rhel8/ext4-mballoc-dense.patch
+ rhel8/ext4-limit-per-inode-preallocation-list.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.9.series b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.9.series
+index ed47658892..7dd58994ae 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.9.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-4.18-rhel8.9.series
+@@ -44,3 +44,4 @@ rhel8/ext4-encdata.patch
+ rhel8/ext4-race-in-ext4-destroy-inode.patch
+ rhel8/ext4-mballoc-dense.patch
+ rhel8/ext4-limit-per-inode-preallocation-list.patch
++rhel8/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.1.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.1.series
+index 36c04bfc81..688cdefc14 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.1.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.1.series
+@@ -37,3 +37,4 @@ rhel8/ext4-old_ea_inodes_handling_fix.patch
+ rhel9.1/ext4-enc-flag.patch
+ rhel9/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.2.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.2.series
+index 79ec1c3db1..bb071dbb9c 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.2.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.2.series
+@@ -39,3 +39,4 @@ rhel9.1/ext4-enc-flag.patch
+ rhel9.2/ext4-encdata.patch
+ rhel9/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.3.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.3.series
+index 0c14228e74..176aaf267d 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.3.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.3.series
+@@ -39,3 +39,4 @@ rhel9.1/ext4-enc-flag.patch
+ rhel9.2/ext4-encdata.patch
+ rhel9/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.4.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.4.series
+index f88c99734f..2d66377c7e 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.4.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.4.series
+@@ -39,6 +39,7 @@ rhel9.1/ext4-enc-flag.patch
+ rhel9.2/ext4-encdata.patch
+ rhel9/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+ rhel9.4/ext4-add-IGET_NO_CHECKS-flag.patch
+ rhel9.4/ext4-allow-ext4_get_group_info-to-fail.patch
+ rhel9.4/ext4-not-skip-prefetching-BLOCK_UNINIT-groups.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.5.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.5.series
+index a02d357083..3763aa0b75 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.5.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.5.series
+@@ -39,6 +39,7 @@ rhel9.1/ext4-enc-flag.patch
+ rhel9.2/ext4-encdata.patch
+ rhel9.5/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+ rhel9.4/ext4-add-IGET_NO_CHECKS-flag.patch
+ rhel9.4/ext4-not-skip-prefetching-BLOCK_UNINIT-groups.patch
+ rhel8.8/ext4-ensure-ext4_mb_prefetch_fini-called-for-all-prefetched-bg.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.6.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.6.series
+index a67e3c3df6..98e8b843c2 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.6.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.6.series
+@@ -39,6 +39,7 @@ rhel9.1/ext4-enc-flag.patch
+ rhel9.6/ext4-encdata.patch
+ rhel9.5/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+ rhel9.4/ext4-add-IGET_NO_CHECKS-flag.patch
+ rhel9.4/ext4-not-skip-prefetching-BLOCK_UNINIT-groups.patch
+ rhel8.8/ext4-ensure-ext4_mb_prefetch_fini-called-for-all-prefetched-bg.patch
+diff --git a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.series b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.series
+index d1c3fda8a6..f69926d861 100644
+--- a/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.series
++++ b/ldiskfs/kernel_patches/series/ldiskfs-5.14-rhel9.series
+@@ -35,3 +35,4 @@ rhel8/ext4-old_ea_inodes_handling_fix.patch
+ linux-5.14/ext4-enc-flag.patch
+ rhel9/ext4-add-periodic-superblock-update.patch
+ rhel9/ext4-add-DISCARD-stats.patch
++rhel9/ext4-writeback.patch
+diff --git a/lustre/include/uapi/linux/lustre/lustre_idl.h b/lustre/include/uapi/linux/lustre/lustre_idl.h
+index 340ebe9820..58eaf0d8cc 100644
+--- a/lustre/include/uapi/linux/lustre/lustre_idl.h
++++ b/lustre/include/uapi/linux/lustre/lustre_idl.h
+@@ -1523,6 +1523,12 @@ struct obd_ioobj {
+ 
+ #define ioobj_page_interop_offset(ioo) ((ioo)->ioo_max_brw & IOOBJ_OFFSET_MASK)
+ #define ioobj_max_brw_get(ioo)	(((ioo)->ioo_max_brw >> IOOBJ_MAX_BRW_BITS) + 1)
++/* The high bits of ioo_max_brw tells server _maximum_ number of bulks
++ * that might be send for this request.  The actual number is decided
++ * when the RPC is finally sent in ptlrpc_register_bulk(). It sends
++ * "max - 1" for old client compatibility sending "0", and also so the
++ * actual maximum is a power-of-two number, not one less. LU-1431
++ */
+ #define ioobj_max_brw_set(ioo, num, offset)				\
+ do {									\
+ 	(ioo)->ioo_max_brw = ((num) - 1) << IOOBJ_MAX_BRW_BITS;		\
+diff --git a/lustre/osc/osc_request.c b/lustre/osc/osc_request.c
+index be19354b77..d8fb0369cf 100644
+--- a/lustre/osc/osc_request.c
++++ b/lustre/osc/osc_request.c
+@@ -1810,8 +1810,20 @@ no_bulk:
+ 	body->oa.o_uid = oa->o_uid;
+ 	body->oa.o_gid = oa->o_gid;
+ 
++	obdo_to_ioobj(oa, ioobj);
++	ioobj->ioo_bufcnt = niocount;
++	if (desc)
++		ioobj_max_brw_set(ioobj, desc->bd_md_max_brw, desc->bd_md_offset);
++	else /* short io */
++		ioobj_max_brw_set(ioobj, 0, 0);
++
++	/*
++	 * Also set ENCRYPT flag for write operation, make it pass
++	 * lfs mirror resync and later verify (sanity-sec/test_59a)
++	 * especially after OSD ldiskfs writeback introduced.
++	 */
+ 	if (inode && IS_ENCRYPTED(inode) &&
+-	    llcrypt_has_encryption_key(inode) &&
++	    (llcrypt_has_encryption_key(inode) || opc == OST_WRITE) &&
+ 	    !CFS_FAIL_CHECK(OBD_FAIL_LFSCK_NO_ENCFLAG)) {
+ 		if ((body->oa.o_valid & OBD_MD_FLFLAGS) == 0) {
+ 			body->oa.o_valid |= OBD_MD_FLFLAGS;
+diff --git a/lustre/osd-ldiskfs/osd_handler.c b/lustre/osd-ldiskfs/osd_handler.c
+index 0ba219c3c6..53a9deec99 100644
+--- a/lustre/osd-ldiskfs/osd_handler.c
++++ b/lustre/osd-ldiskfs/osd_handler.c
+@@ -2307,7 +2307,9 @@ static int osd_trans_stop(const struct lu_env *env, struct dt_device *dt,
+ 
+ 	if (oh->ot_handle != NULL) {
+ 		int rc2;
+-		handle_t *handle = oh->ot_handle;
++		int i;
++
++		handle_t *hdl = oh->ot_handle;
+ 
+ 		/*
+ 		 * add commit callback
+@@ -2324,11 +2326,50 @@ static int osd_trans_stop(const struct lu_env *env, struct dt_device *dt,
+ 			       osd_name(osd), rc);
+ 
+ 		osd_trans_stop_cb(oh, rc);
+-		/* hook functions might modify th_sync */
+-		handle->h_sync = th->th_sync;
++		/*
++		 * FIXME: hook functions might modify th_sync, i.e.
++		 * In @tgt_last_commit_cb_add, when adding commit callback
++		 * function failed, it will inform caller to use synchronous
++		 * transaction if necessary ...
++		 * Solution: Force to write-out dirtied locked pages?
++		 */
++		if (iobuf->dr_dirtied_pages_locked && th->th_sync) {
++			/*
++			 * In OFD layer, when commit bulk I/O buffers for write
++			 * to the storage, the first write to each object must
++			 * set some attributes (via @ofd_write_attr_set).
++			 * The transaction to change object attributes and
++			 * write parent FID into extended attributes (when
++			 * needed) may be set with sync when the export
++			 * required sync operations.
++			 * Then the journal commit will wait for dirtied pages
++			 * of this inode to synchronize to the stable disk.
++			 * During this procedure, it needs to lock the dirtied
++			 * page and write-out it.
++			 * This may lead deadlock for the page locking.
++			 *
++			 * Thus for the synchronous journal handle these dirtied
++			 * pages are unlocked to avoid the possible deadlock.
++			 */
++			struct niobuf_local *lnb = oti->oti_lnb;
++
++			LASSERT(lnb && oti->oti_npages > 0);
++			for (i = 0; i < oti->oti_npages; i++) {
++				if (lnb[i].lnb_locked &&
++				    PageDirty(lnb[i].lnb_page)) {
++					lnb[i].lnb_locked = 0;
++					unlock_page(lnb[i].lnb_page);
++					iobuf->dr_dirtied_pages_locked--;
++				}
++			}
++
++			LASSERT(iobuf->dr_dirtied_pages_locked == 0);
++		}
++
++		hdl->h_sync = th->th_sync;
+ 
+ 		oh->ot_handle = NULL;
+-		OSD_CHECK_SLOW_TH(oh, osd, rc2 = ldiskfs_journal_stop(handle));
++		OSD_CHECK_SLOW_TH(oh, osd, rc2 = ldiskfs_journal_stop(hdl));
+ 		if (rc2 != 0)
+ 			CERROR("%s: failed to stop transaction: rc = %d\n",
+ 			       osd_name(osd), rc2);
+@@ -2824,13 +2865,16 @@ static struct vfsmount *osd_mnt_get(const struct dt_device *d)
+  */
+ static int osd_sync(const struct lu_env *env, struct dt_device *d)
+ {
++	struct osd_device *osd = osd_dt_dev(d);
++	struct super_block *s = osd_sb(osd);
+ 	int rc;
+-	struct super_block *s = osd_sb(osd_dt_dev(d));
++
+ 	ENTRY;
+ 
+ 	down_read(&s->s_umount);
+ 	rc = s->s_op->sync_fs(s, 1);
+ 	up_read(&s->s_umount);
++	lprocfs_counter_add(osd->od_stats, LPROC_OSD_SYNC, 1);
+ 
+ 	CDEBUG(D_CACHE, "%s: synced OSD: rc = %d\n", osd_dt_dev(d)->od_svname,
+ 	       rc);
+@@ -5448,6 +5492,8 @@ static int osd_object_sync(const struct lu_env *env, struct dt_object *dt,
+ 	ihold(inode);
+ 	fput(file);
+ 
++	lprocfs_counter_add(dev->od_stats, LPROC_OSD_OBJECT_SYNC, 1);
++
+ 	RETURN(rc);
+ }
+ 
+@@ -8690,6 +8736,11 @@ static int osd_device_init0(const struct lu_env *env,
+ 	o->od_readcache_max_filesize = OSD_MAX_CACHE_SIZE;
+ 	o->od_readcache_max_iosize = OSD_READCACHE_MAX_IO_MB << 20;
+ 	o->od_writethrough_max_iosize = OSD_WRITECACHE_MAX_IO_MB << 20;
++#ifdef LDISKFS_HAS_BIO_WRITE_PAGE_NO_ENCRYPT
++	o->od_writeback_max_iosize = OSD_WRITEBACK_MAX_IO_KB << 10;
++#else
++	o->od_writeback_max_iosize = 0;
++#endif
+ 	o->od_scrub.os_scrub.os_auto_scrub_interval = AS_DEFAULT;
+ 	/* default fallocate to unwritten extents: LU-14326/LU-14333 */
+ 	o->od_fallocate_zero_blocks = 0;
+diff --git a/lustre/osd-ldiskfs/osd_internal.h b/lustre/osd-ldiskfs/osd_internal.h
+index 316870b72b..229dbdc9c6 100644
+--- a/lustre/osd-ldiskfs/osd_internal.h
++++ b/lustre/osd-ldiskfs/osd_internal.h
+@@ -314,6 +314,14 @@ struct osd_device {
+ 	 * served bypassing pagecache unless already cached */
+ 	unsigned long		od_writethrough_max_iosize;
+ 
++	/*
++	 * Writes <= od_writeback_max_iosize to be put into cache
++	 * and submitted by the kernel not later than the next journal
++	 * commit (like regular ldiskfs/ext4 with data=ordered journal
++	 * mode.
++	 */
++	unsigned long		od_writeback_max_iosize;
++
+ 	struct brw_stats	od_brw_stats;
+ 	atomic_t		od_r_in_flight;
+ 	atomic_t		od_w_in_flight;
+@@ -503,6 +511,11 @@ enum {
+         LPROC_OSD_CACHE_ACCESS  = 4,
+         LPROC_OSD_CACHE_HIT     = 5,
+         LPROC_OSD_CACHE_MISS    = 6,
++	LPROC_OSD_DELAY_WRITES	= 7,
++	LPROC_OSD_ASYNC_WRITES	= 8,
++	LPROC_OSD_PAGE_WRITES	= 9,
++	LPROC_OSD_OBJECT_SYNC	= 10,
++	LPROC_OSD_SYNC		= 11,
+ 
+ #if OSD_THANDLE_STATS
+         LPROC_OSD_THANDLE_STARTING,
+@@ -605,7 +618,11 @@ struct osd_iobuf {
+ 	int                dr_frags;
+ 	unsigned int       dr_init_at:16, /* the line iobuf was initialized */
+ 			   dr_elapsed_valid:1, /* we really did count time */
+-			   dr_rw:1;
++			   dr_rw:1,
++			   dr_integrity:1,
++			   dr_writeback:1,
++			   dr_write_started:1;	/* write trans has started */
++	int		   dr_dirtied_pages_locked;
+ 	struct niobuf_local	**dr_lnbs;
+ 	struct lu_buf	   dr_bl_buf;
+ 	struct lu_buf	   dr_lnb_buf;
+@@ -754,6 +771,10 @@ struct osd_thread_info {
+ 	};
+ 	/** 0-copy IO */
+ 	struct osd_iobuf		oti_iobuf;
++	/* the copy of lnbs  */
++	struct niobuf_local		*oti_lnb;
++	int				oti_npages;
++
+ 	/* used to access objects in /O */
+ 	struct inode			*oti_inode;
+ #define OSD_FID_REC_SZ 32
+@@ -1084,6 +1105,7 @@ static inline int osd_invariant(const struct osd_object *obj)
+ #define OSD_MAX_CACHE_SIZE OBD_OBJECT_EOF
+ #define OSD_READCACHE_MAX_IO_MB		8
+ #define OSD_WRITECACHE_MAX_IO_MB	8
++#define OSD_WRITEBACK_MAX_IO_KB		64
+ 
+ extern const struct dt_index_operations osd_otable_ops;
+ 
+diff --git a/lustre/osd-ldiskfs/osd_io.c b/lustre/osd-ldiskfs/osd_io.c
+index f89ec302a6..44f3b73840 100644
+--- a/lustre/osd-ldiskfs/osd_io.c
++++ b/lustre/osd-ldiskfs/osd_io.c
+@@ -199,6 +199,49 @@ void osd_bio_fini(struct bio *bio)
+ {
+ 	struct osd_bio_private *bio_private = bio->bi_private;
+ 	struct osd_iobuf *iobuf = bio_private->obp_iobuf;
++	struct bio_vec *bvl;
++
++
++	/* CAVEAT EMPTOR: possibly in IRQ context
++	 * DO NOT record procfs stats here!!!
++	 */
++	if (unlikely(iobuf == NULL)) {
++		CERROR("***** bio->bi_private is NULL! Dump the bio contents to the console. Please report this to <https://jira.whamcloud.com/>, and probably have to reboot this node.\n");
++		CERROR("bi_next: %p, bi_flags: %lx, " __stringify(bi_opf)
++		       ": %x, bi_vcnt: %d, bi_idx: %d, bi->size: %d, bi_end_io: %p, bi_cnt: %d, bi_private: %p\n",
++		       bio->bi_next, (unsigned long)bio->bi_flags,
++		       (unsigned int)bio->bi_opf, bio->bi_vcnt, bio_idx(bio),
++		       bio_sectors(bio) << 9, bio->bi_end_io,
++		       atomic_read(&bio->__bi_cnt),
++		       bio->bi_private);
++		return;
++	}
++
++	/* the check is outside of the cycle for performance reason -bzzz */
++	if (!bio_data_dir(bio)) {
++		DECLARE_BVEC_ITER_ALL(iter_all);
++
++		bio_for_each_segment_all(bvl, bio, iter_all) {
++			if (likely(error == 0))
++				SetPageUptodate(bvl_to_page(bvl));
++			LASSERT(PageLocked(bvl_to_page(bvl)));
++		}
++		atomic_dec(&iobuf->dr_dev->od_r_in_flight);
++	} else {
++		DECLARE_BVEC_ITER_ALL(iter_all);
++
++		bio_for_each_segment_all(bvl, bio, iter_all) {
++			struct page *page = bvl_to_page(bvl);
++
++			if (PageWriteback(page))
++				end_page_writeback(page);
++		}
++		atomic_dec(&iobuf->dr_dev->od_w_in_flight);
++	}
++
++	/* any real error is good enough -bzzz */
++	if (error != 0 && iobuf->dr_error == 0)
++		iobuf->dr_error = error;
+ 
+ 	/*
+ 	 * set dr_elapsed before dr_numreqs turns to 0, otherwise
+@@ -503,6 +546,51 @@ static int osd_do_bio(struct osd_device *osd, struct inode *inode,
+ 					  blocksize * nblocks, page_offset);
+ 			LASSERT(rc != 0);
+ 		}
++
++		/*
++		 * This is a previous dirty write on this page in writeback
++		 * mode. We will write back this page in the current I/O
++		 * service thread in a synchronous way.
++		 * Thus we need set the page as writeback and unlock the
++		 * page, otherwise it may cause deadlock when commit a
++		 * synchronous transaction (direct I/O) which will lock the
++		 * dirty page and try to write out it to the stable storage.
++		 */
++		if (iobuf->dr_rw && !PagePrivate2(page)) {
++			struct niobuf_local *lnb;
++
++			if (page->mapping) {
++				LASSERT(page->mapping == inode->i_mapping);
++
++				if (PageDirty(page))
++					iobuf->dr_dirtied_pages_locked--;
++				else if (!page_has_buffers(page))
++					__set_page_dirty_nobuffers(page);
++
++				clear_page_dirty_for_io(page);
++
++				if (page_has_buffers(page)) {
++					struct buffer_head *head, *bh;
++
++					bh = head = page_buffers(page);
++					do {
++						/*
++						 * FIXME: clear buffer dirty
++						 * according to write range in
++						 * the page.
++						 */
++						clear_buffer_dirty(bh);
++					} while ((bh = bh->b_this_page) !=
++						  head);
++				}
++			}
++
++			LASSERT(!PageWriteback(page));
++			set_page_writeback(page);
++			lnb = iobuf->dr_lnbs[page_idx];
++			lnb->lnb_locked = 0;
++			unlock_page(page);
++		}
+ 	}
+ 	rc = osd_submit_bio(osd, iobuf, bio);
+ 	if (rc)
+@@ -592,7 +680,6 @@ static struct page *osd_get_page(const struct lu_env *env, struct dt_object *dt,
+ 	if (cache) {
+ 		page = find_or_create_page(inode->i_mapping,
+ 					   offset >> PAGE_SHIFT, gfp_mask);
+-
+ 		if (likely(page)) {
+ 			LASSERT(!PagePrivate2(page));
+ 			wait_on_page_writeback(page);
+@@ -690,8 +777,17 @@ static int osd_bufs_put(const struct lu_env *env, struct dt_object *dt,
+ 			oti->oti_dio_pages_used--;
+ 			lnb[i].lnb_dio = 0;
+ 		} else {
+-			if (lnb[i].lnb_locked)
++			if (lnb[i].lnb_locked) {
++				if (PageDirty(page) && iobuf->dr_rw) {
++					CWARN("%s: FID "DFID" page@%pK:%ld dirtied while locked: rc = 0\n",
++						osd->od_svname,
++						PFID(lu_object_fid(&dt->do_lu)),
++						page, page->index);
++					iobuf->dr_dirtied_pages_locked--;
++				}
++
+ 				unlock_page(page);
++			}
+ 			if (folio_batch_add_page(&fbatch, page) == 0)
+ 				folio_batch_release(&fbatch);
+ 		}
+@@ -700,10 +796,18 @@ static int osd_bufs_put(const struct lu_env *env, struct dt_object *dt,
+ 	}
+ 
+ 	LASSERTF(oti->oti_dio_pages_used == 0, "%d\n", oti->oti_dio_pages_used);
++	LASSERTF(iobuf->dr_dirtied_pages_locked == 0, "%d\n",
++		 iobuf->dr_dirtied_pages_locked);
+ 
+ 	/* Release any partial folio_batch */
+ 	folio_batch_release(&fbatch);
+ 
++	iobuf->dr_writeback = 0;
++	iobuf->dr_write_started = 0;
++	iobuf->dr_rw = 0;
++	oti->oti_lnb = NULL;
++	oti->oti_npages = 0;
++
+ 	RETURN(0);
+ }
+ 
+@@ -737,7 +841,8 @@ static int osd_bufs_get(const struct lu_env *env, struct dt_object *dt,
+ {
+ 	struct osd_thread_info *oti = osd_oti_get(env);
+ 	struct osd_object *obj = osd_dt_obj(dt);
+-	struct osd_device *osd   = osd_obj2dev(obj);
++	struct osd_device *osd = osd_obj2dev(obj);
++	struct osd_iobuf *iobuf = &oti->oti_iobuf;
+ 	int npages, i, iosize, rc = 0;
+ 	bool cache, write;
+ 	loff_t fsize;
+@@ -759,6 +864,14 @@ static int osd_bufs_get(const struct lu_env *env, struct dt_object *dt,
+ 	fsize = max(fsize, i_size_read(obj->oo_inode));
+ 
+ 	cache = rw & DT_BUFS_TYPE_READAHEAD;
++	if (write && iosize < osd->od_writeback_max_iosize &&
++	    oti->oti_dio_pages_used == 0) {
++		iobuf->dr_writeback = 1;
++		cache = true;
++	} else {
++		iobuf->dr_writeback = 0;
++	}
++
+ 	if (cache)
+ 		goto bypass_checks;
+ 
+@@ -807,6 +920,9 @@ bypass_checks:
+ 		if (lnb->lnb_page == NULL)
+ 			GOTO(cleanup, rc = -ENOMEM);
+ 
++		if (write && PageDirty(lnb->lnb_page))
++			iobuf->dr_dirtied_pages_locked++;
++
+ 		lnb->lnb_locked = 1;
+ 		lnb->lnb_dio = !!cache;
+ 		if (cache)
+@@ -857,6 +973,158 @@ static int osd_extend_trans(handle_t *handle, int needed,
+ }
+ #endif /* HAVE_LDISKFS_JOURNAL_ENSURE_CREDITS */
+ 
++/*
++ * Add current I/O range into the dirty range of this inode.
++ * In data=ordered journal mode, it must wait for the outstanding
++ * writes for this inode before commit.
++ */
++static inline int
++osd_journal_inode_add_write(struct inode *inode, struct osd_iobuf *iobuf)
++{
++	handle_t *handle;
++	int rc;
++
++#ifdef HAVE_EXT4_INODE_ADD_RANGED_WRITE
++	struct niobuf_local *lnb = iobuf->dr_lnbs[0];
++	struct niobuf_local *last_lnb = iobuf->dr_lnbs[iobuf->dr_npages - 1];
++
++	handle = ldiskfs_journal_current_handle();
++	LASSERT(handle != NULL);
++	rc = ldiskfs_jbd2_inode_add_write(handle, inode, lnb->lnb_file_offset,
++					  last_lnb->lnb_file_offset +
++					  last_lnb->lnb_len -
++					  lnb->lnb_file_offset);
++#else
++	handle = ldiskfs_journal_current_handle();
++	LASSERT(handle != NULL);
++#ifdef HAVE_EXT4_INODE_ADD_WRITE
++	rc = ldiskfs_jbd2_inode_add_write(handle, inode);
++#else
++	rc = ldiskfs_jbd2_file_inode(handle, inode);
++#endif /* HAVE_EXT4_INODE_ADD_WRITE */
++#endif /* HAVE_EXT4_INODE_ADD_RANGED_WRITE */
++
++	return rc;
++}
++
++/* copied from fs/buffer.c */
++struct buffer_head *create_page_buffers(struct page *page, struct inode *inode,
++					unsigned int b_state)
++{
++	WARN_ON(!PageLocked(page));
++
++	if (!page_has_buffers(page))
++		create_empty_buffers(page, 1 << READ_ONCE(inode->i_blkbits),
++				     b_state);
++	return page_buffers(page);
++}
++
++/*
++ * For a small write I/O, mark the pages dirty and create buffer heads
++ * mapping pages to the blocks. The kernel will handle actual I/O in
++ * writeback mode.
++ */
++static int osd_do_writeback(struct osd_device *osd, struct inode *inode,
++			    struct osd_iobuf *iobuf, sector_t start_blocks,
++			    sector_t count)
++{
++	int blocks_per_page = PAGE_SIZE >> inode->i_blkbits;
++	struct niobuf_local **lnbs = iobuf->dr_lnbs;
++	struct super_block *sb = inode->i_sb;
++	unsigned int blocksize = sb->s_blocksize;
++	sector_t *blocks = iobuf->dr_blocks;
++	int npages = iobuf->dr_npages;
++	int block_idx, block_idx_end;
++	int page_idx, page_idx_start;
++	int blocks_left_page;
++	struct page *page;
++	int rc;
++
++	ENTRY;
++
++	rc = osd_journal_inode_add_write(inode, iobuf);
++	if (rc)
++		RETURN(rc);
++
++	osd_brw_stats_update(osd, iobuf);
++	iobuf->dr_start_time = ktime_get();
++
++	if (!count)
++		count = npages * blocks_per_page;
++	block_idx_end = start_blocks + count;
++
++	page_idx_start = start_blocks / blocks_per_page;
++	for (page_idx = page_idx_start, block_idx = start_blocks;
++	     block_idx < block_idx_end; page_idx++,
++	     block_idx += blocks_left_page) {
++		struct niobuf_local *lnb;
++		struct buffer_head *head;
++		struct buffer_head *bh;
++		int block_offset_page;
++		int block_idx_page;
++		int i = 0;
++
++		/* For cases where the filesystems blocksize is not the
++		 * same as PAGE_SIZE (e.g. ARM with PAGE_SIZE=64KB and
++		 * blocksize=4KB), there will be multiple blocks to
++		 * read/write per page. Also, the start and end block may
++		 * not be aligned to the start and end of the page, so the
++		 * first page may skip some blocks at the start ("i != 0",
++		 * "blocks_left_page" is reduced), and the last page may
++		 * skip some blocks at the end (limited by "count").
++		 */
++		page = lnbs[page_idx]->lnb_page;
++		LASSERT(page_idx < iobuf->dr_npages);
++
++		LASSERTF(page->mapping == inode->i_mapping,
++			 "page %pK index %ld mapping %pK\n",
++			 page, page->index, page->mapping);
++		head = create_page_buffers(page, inode, 0);
++		block_offset_page = block_idx % blocks_per_page;
++		blocks_left_page = blocks_per_page - block_offset_page;
++		if (block_idx + blocks_left_page > block_idx_end)
++			blocks_left_page = block_idx_end - block_idx;
++
++		if (PageDirty(page))
++			iobuf->dr_dirtied_pages_locked--;
++		for (bh = head, block_idx_page = 0;
++		     bh != head || !block_idx_page;
++		     block_idx_page++, bh = bh->b_this_page) {
++			if (block_idx_page < block_offset_page ||
++			    i >= blocks_left_page) {
++				LASSERT(PageUptodate(page));
++				if (!buffer_uptodate(bh))
++					set_buffer_uptodate(bh);
++				continue;
++			}
++
++			LASSERT(blocks[block_idx + i] != 0);
++			if (!buffer_mapped(bh)) {
++				LASSERT(bh->b_size == blocksize);
++				map_bh(bh, inode->i_sb, blocks[block_idx + i]);
++			} else {
++				LASSERT(blocks[block_idx + i] == bh->b_blocknr);
++			}
++			if (!buffer_uptodate(bh))
++				set_buffer_uptodate(bh);
++			mark_buffer_dirty(bh);
++			clear_buffer_new(bh);
++			i++;
++		}
++
++		lnb = iobuf->dr_lnbs[page_idx];
++		lnb->lnb_locked = 0;
++		unlock_page(page);
++	}
++
++	balance_dirty_pages_ratelimited(inode->i_mapping);
++	osd_mark_page_io_done(iobuf, inode, start_blocks, count);
++	lprocfs_counter_add(osd->od_stats, LPROC_OSD_DELAY_WRITES,
++			    page_idx - page_idx_start);
++
++	RETURN(0);
++}
++
+ static int osd_ldiskfs_map_write(struct inode *inode, struct osd_iobuf *iobuf,
+ 				 struct osd_device *osd, sector_t start_blocks,
+ 				 sector_t count, loff_t *disk_size,
+@@ -876,6 +1144,8 @@ static int osd_ldiskfs_map_write(struct inode *inode, struct osd_iobuf *iobuf,
+ 		spin_unlock(&inode->i_lock);
+ 	}
+ 
++	if (iobuf->dr_writeback)
++		return osd_do_writeback(osd, inode, iobuf, start_blocks, count);
+ 	/*
+ 	 * We don't do stats here as in read path because
+ 	 * write is async: we'll do this in osd_put_bufs()
+@@ -1169,6 +1439,15 @@ static int osd_write_prep(const struct lu_env *env, struct dt_object *dt,
+ 
+ 	start = ktime_get();
+ 	for (i = 0; i < npages; i++) {
++		/*
++		 * This is a Uptodate mapping cache page of this inode,
++		 * skip to read it for Read-Modify-Write (RMW).
++		 */
++		if (lnb[i].lnb_page->mapping == inode->i_mapping &&
++		    PageUptodate(lnb[i].lnb_page)) {
++			ClearPageUptodate(lnb[i].lnb_page);
++			continue;
++		}
+ 
+ 		/*
+ 		 * till commit the content of the page is undefined
+@@ -1209,6 +1488,12 @@ static int osd_write_prep(const struct lu_env *env, struct dt_object *dt,
+ 			osd_fini_iobuf(osd, iobuf);
+ 		}
+ 	}
++
++	if (rc == 0 && iobuf->dr_dirtied_pages_locked) {
++		oti->oti_lnb = lnb;
++		oti->oti_npages = npages;
++	}
++
+ 	RETURN(rc);
+ }
+ 
+@@ -1461,10 +1746,12 @@ static int osd_write_commit(const struct lu_env *env, struct dt_object *dt,
+ 
+ 	LASSERT(inode);
+ 
++	lprocfs_counter_add(osd->od_stats, LPROC_OSD_PAGE_WRITES, npages);
+ 	rc = osd_init_iobuf(osd, iobuf, inode, 1, npages);
+ 	if (unlikely(rc != 0))
+ 		RETURN(rc);
+ 
++	iobuf->dr_write_started = 1;
+ 	dquot_initialize(inode);
+ 
+ 	for (i = 0; i < npages; i++) {
+@@ -1480,6 +1767,7 @@ static int osd_write_commit(const struct lu_env *env, struct dt_object *dt,
+ 			CDEBUG(D_INODE, "Skipping [%d] == %d\n", i,
+ 			       lnb[i].lnb_rc);
+ 			LASSERT(lnb[i].lnb_page);
++			iobuf->dr_writeback = 0;
+ 			generic_error_remove_folio(inode->i_mapping,
+ 						   page_folio(lnb[i].lnb_page));
+ 			continue;
+@@ -1488,6 +1776,26 @@ static int osd_write_commit(const struct lu_env *env, struct dt_object *dt,
+ 		if (lnb[i].lnb_flags & OBD_BRW_DONE)
+ 			continue;
+ 
++		/*
++		 * This is a previous dirtied locked page, and was unlocked
++		 * to avoid the dead lock.
++		 */
++		if (!lnb[i].lnb_locked) {
++			lock_page(lnb[i].lnb_page);
++			wait_on_page_writeback(lnb[i].lnb_page);
++			if (PageDirty(lnb[i].lnb_page)) {
++				iobuf->dr_dirtied_pages_locked++;
++				lnb[i].lnb_locked = 1;
++			} else {
++				/*
++				 * The dirtied page has already been
++				 * written-out. Unlock it early.
++				 */
++				unlock_page(lnb[i].lnb_page);
++				continue;
++			}
++		}
++
+ 		if (!(lnb[i].lnb_flags & OBD_BRW_MAPPED))
+ 			check_credits = 1;
+ 
+@@ -1498,8 +1806,12 @@ static int osd_write_commit(const struct lu_env *env, struct dt_object *dt,
+ 		 * Since write and truncate are serialized by dd_sem, even
+ 		 * partial-page truncate should not leave dirty pages in the
+ 		 * page cache.
++		 * After writeback is introduced, the page may leave in cache
++		 * as dirty and does not start to writeback yet.
++		 *
++		 * FIXME: mixed I/O case - writeback (buffered I/O) and
++		 * writethrough (direct I/O mode).
+ 		 */
+-		LASSERT(!PageDirty(lnb[i].lnb_page));
+ 
+ 		SetPageUptodate(lnb[i].lnb_page);
+ 
+@@ -1534,6 +1846,12 @@ static int osd_write_commit(const struct lu_env *env, struct dt_object *dt,
+ 				LASSERT(PageLocked(lnb[i].lnb_page));
+ 				generic_error_remove_folio(inode->i_mapping,
+ 						page_folio(lnb[i].lnb_page));
++				/*
++				 * As the prepared page has been removed from
++				 * cache, the write will not be performed in
++				 * writeback mode.
++				 */
++				iobuf->dr_writeback = 0;
+ 			}
+ 		}
+ 	}
+diff --git a/lustre/osd-ldiskfs/osd_lproc.c b/lustre/osd-ldiskfs/osd_lproc.c
+index 3f9172aff2..ac30c7f2b1 100644
+--- a/lustre/osd-ldiskfs/osd_lproc.c
++++ b/lustre/osd-ldiskfs/osd_lproc.c
+@@ -108,6 +108,27 @@ static int osd_stats_init(struct osd_device *osd)
+ 		lprocfs_counter_init(osd->od_stats, LPROC_OSD_CACHE_MISS,
+ 				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_PAGES,
+ 				     "cache_miss");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_CACHE_MISS,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_PAGES,
++				     "cache_miss");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_DELAY_WRITES,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_PAGES,
++				     "delay_writes");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_ASYNC_WRITES,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_PAGES,
++				     "async_writes");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_PAGE_WRITES,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_PAGES,
++				     "page_writes");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_ASYNC_WRITES,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_PAGES,
++				     "async_writes");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_OBJECT_SYNC,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_REQS,
++				     "object_sync");
++		lprocfs_counter_init(osd->od_stats, LPROC_OSD_SYNC,
++				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_REQS,
++				     "dev_sync");
+ #if OSD_THANDLE_STATS
+ 		lprocfs_counter_init(osd->od_stats, LPROC_OSD_THANDLE_STARTING,
+ 				     LPROCFS_CNTR_AVGMINMAX|LPROCFS_TYPE_USECS,
+@@ -668,6 +689,66 @@ static ssize_t writethrough_max_io_mb_store(struct kobject *kobj,
+ }
+ LUSTRE_RW_ATTR(writethrough_max_io_mb);
+ 
++static int
++ldiskfs_osd_writeback_max_io_seq_show(struct seq_file *m, void *data)
++{
++	struct osd_device *osd = osd_dt_dev((struct dt_device *)m->private);
++
++	LASSERT(osd != NULL);
++	if (unlikely(osd->od_mnt == NULL))
++		return -EINPROGRESS;
++
++	seq_printf(m, "%lu\n", osd->od_writeback_max_iosize >> 10);
++	return 0;
++}
++
++static ssize_t
++ldiskfs_osd_writeback_max_io_seq_write(struct file *file,
++				       const char __user *buffer,
++				       size_t count, loff_t *off)
++{
++	struct seq_file *m = file->private_data;
++	struct dt_device *dt = m->private;
++	struct osd_device *osd = osd_dt_dev(dt);
++#ifdef LDISKFS_HAS_BIO_WRITE_PAGE_NO_ENCRYPT
++	char kernbuf[22] = "";
++	u64 val;
++	int rc;
++
++	LASSERT(osd != NULL);
++	if (unlikely(osd->od_mnt == NULL))
++		return -EINPROGRESS;
++
++	if (count >= sizeof(kernbuf))
++		return -EINVAL;
++
++	if (copy_from_user(kernbuf, buffer, count))
++		return -EFAULT;
++	kernbuf[count] = 0;
++
++	rc = sysfs_memparse(kernbuf, count, &val, "K");
++	if (rc < 0)
++		return rc;
++
++	if (val > PTLRPC_MAX_BRW_SIZE)
++		return -ERANGE;
++
++	if (val > osd->od_writethrough_max_iosize) {
++		CWARN("%s: setting max writeback iosize (%llu) larger than max writethrough iosize (%lu)\n",
++		      osd_name(osd), val, osd->od_writethrough_max_iosize);
++		val = osd->od_writethrough_max_iosize;
++	} else {
++		val = roundup_pow_of_two(val);
++	}
++
++	osd->od_writeback_max_iosize = val;
++#else
++	CWARN("%s: ldiskfs OSD writeback is not supported.\n", osd_name(osd));
++#endif /* LDISKFS_HAS_BIO_WRITE_PAGE_NO_ENCRYPT */
++	return count;
++}
++LDEBUGFS_SEQ_FOPS(ldiskfs_osd_writeback_max_io);
++
+ #if LUSTRE_VERSION_CODE < OBD_OCD_VERSION(3, 0, 52, 0)
+ static ssize_t index_in_idif_show(struct kobject *kobj, struct attribute *attr,
+ 				  char *buf)
+@@ -810,6 +891,8 @@ LUSTRE_RW_ATTR(extents_dense);
+ static struct ldebugfs_vars ldebugfs_osd_obd_vars[] = {
+ 	{ .name =	"oi_scrub",
+ 	  .fops =	&ldiskfs_osd_oi_scrub_fops      },
++	{ .name =	"writeback_max_io_kb",
++	  .fops =	&ldiskfs_osd_writeback_max_io_fops   },
+ 	{ NULL }
+ };
+ 
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index a6e1b0ff52..b29627e6e4 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -18885,7 +18885,12 @@ test_151() {
+ 		skip "oss write cache is NOT enabled"
+ 	fi
+ 
+-	roc_hit_init $osts
++	local wb_iosz=$(get_osd_param $osts '' writeback_max_io_kb | head -1)
++
++	stack_trap "set_osd_param $osts '' writeback_max_io_kb $wb_iosz"
++	set_osd_param $osts '' writeback_max_io_kb 0
++
++	roc_hit_init
+ 
+ 	#define OBD_FAIL_OBD_NO_LRU  0x609
+ 	do_nodes $osts $LCTL set_param fail_loc=0x609
+diff --git a/lustre/tests/sanityn.sh b/lustre/tests/sanityn.sh
+index 70ebba9a6a..1e580709ba 100755
+--- a/lustre/tests/sanityn.sh
++++ b/lustre/tests/sanityn.sh
+@@ -886,10 +886,28 @@ test_18() {
+                 excepts="$excepts -e $(($(printf %d \'$idx)-96))"
+         done
+ 
++	echo "dirtry writeback conf:"
++	cat /proc/sys/vm/dirty_*
++
+ 	excepts="$excepts -e 7 -e 8 -e 9"
+ 	$LUSTRE/tests/mmap_sanity -d $MOUNT1 -m $MOUNT2 $excepts ||
+ 		error "mmap_sanity test failed"
+ 	sync; sleep 1; sync
++
++	local pid
++	(
++	while [ ! -e $DIR/${tfile}.lck ]; do
++		$LUSTRE/tests/mmap_sanity -d $MOUNT1 -m $MOUNT2 $excepts ||
++			error "mmap_sanity test failed"
++		sync; sleep 1; sync
++	done
++	)&
++	pid=$!
++
++	sleep 120
++	touch $DIR/${tfile}.lck
++	wait $pid || error "$?: mmap_sanity test failed"
++	rm -f $DIR/$tfile.lck
+ }
+ run_test 18 "mmap sanity check ================================="
+ 
+@@ -6707,7 +6725,6 @@ test_109() {
+ 	mount_client $MOUNT
+ 	mount_client $MOUNT2
+ }
+-
+ run_test 109 "Race with several mount instances on 1 node"
+ 
+ test_110() {
