@@ -1,0 +1,969 @@
+<html lang="en">
+<body>
+<pre>
+From 0b0d18ae9fb2e28e5c7a0cf0e522036720b73bce Mon Sep 17 00:00:00 2001
+From: Sebastien Buisson <sbuisson@ddn.com>
+Date: Thu, 11 Sep 2025 17:16:14 +0200
+Subject: [PATCH 1/1] LU-19079 ssk: mount-point specific key
+
+By default, SSK key on client side is loaded in the kernel keyring
+with a key description in the form "lustre:<fsname>", as the client is
+not aware of the nodemap it belongs to. But this means only one SSK
+key can be loaded at a time: if a new key is loaded, it will use the
+same key desc, and replace the previous one in the kernel keyring.
+However, there is a need to support multiple SSK keys at the same time
+on the client, for instance in the context of GSS based identification
+to allow different mount points on the same client to be considered
+part of different nodemaps.
+To address this need, this patch changes the format of the key
+descriptor used on client side for single keys loaded at mount time
+(via the -o skpath option), to be in the form:
+"lustre:<fsname>:<client uuid>"
+SSK keys loaded manually via the 'lgss_sk -l' command continue to use
+the legacy key descriptor format, unless the new '-u <mount_path>'
+option is also specified. In this case, the command fetches the client
+uuid corresponding to the provided mount point, and updates the
+key with descriptor "lustre:<fsname>:<client uuid>" in the keyring.
+Having the client UUID in the key desc allows request_key() to find
+this client-specific key by putting the UUID into the callout info for
+context negotiation that happens in userspace.
+Note that we have to make use of a temporary kernel keyring key, as
+the UUID is computed at mount in kernel space, whereas the SSK keys
+are loaded in userspace by the mount command before filling the
+superblock.
+
+sanity-sec test_79 is extended to exercise this feature.
+
+Signed-off-by: Sebastien Buisson <sbuisson@ddn.com>
+Change-Id: Ie2212e28b8c541039198aa388fe91c121985ab7b
+Was-Change-Id: Ie1d3f77a98bbc7779dbeecbbf7fd03112bbfc822
+Was-Change-Id: I590b3879ded885d54ba6fd8ff03cb03c4e51d90d
+Reviewed-by: Marc Vef <mvef@whamcloud.com>
+Reviewed-by: Andreas Dilger <adilger@whamcloud.com>
+---
+ lustre/llite/llite_internal.h    |   6 +
+ lustre/llite/llite_lib.c         | 181 +++++++++++++++++++++++++++++++
+ lustre/ptlrpc/gss/gss_keyring.c  |  27 +++--
+ lustre/tests/sanity-sec.sh       |  34 +++++-
+ lustre/tests/test-framework.sh   |   4 +-
+ lustre/utils/gss/lgss_keyring.c  |  80 +++++++++-----
+ lustre/utils/gss/lgss_sk.c       |  15 ++-
+ lustre/utils/gss/lgss_sk_utils.c |   3 +-
+ lustre/utils/gss/lgss_utils.h    |   1 +
+ lustre/utils/gss/sk_utils.c      |  77 +++++++++++--
+ lustre/utils/gss/sk_utils.h      |   4 +-
+ lustre/utils/gss/svcgssd_proc.c  |   2 +-
+ lustre/utils/mount_lustre.c      |  22 +++-
+ lustre/utils/mount_utils.c       |  18 ++-
+ lustre/utils/mount_utils.h       |   7 +-
+ 15 files changed, 423 insertions(+), 58 deletions(-)
+
+diff --git a/lustre/llite/llite_internal.h b/lustre/llite/llite_internal.h
+index c1d1e83bca..80028be970 100644
+--- a/lustre/llite/llite_internal.h
++++ b/lustre/llite/llite_internal.h
+@@ -1029,6 +1029,8 @@ struct ll_sb_info {
+ 	struct list_head	 ll_all_quota_list;
+ 
+ 	struct rhashtable	 ll_proj_sfs_htable;
++	/* SSK key id */
++	int			 ll_skid;
+ };
+ 
+ #define SBI_DEFAULT_HEAT_DECAY_WEIGHT	((80 * 256 + 50) / 100)
+@@ -1508,6 +1510,10 @@ int ll_revalidate_it_finish(struct ptlrpc_request *request,
+ 			    struct lookup_intent *it, struct dentry *de);
+ 
+ /* llite/llite_lib.c */
++
++/* SSK key desc is in the form "lustre:<fsname>:<client uuid>" */
++#define LL_SK_KEY_DESC_SZ (9 + MTI_NAME_MAXLEN + UUID_SIZE)
++
+ extern const struct super_operations lustre_super_operations;
+ 
+ void ll_lli_init(struct ll_inode_info *lli);
+diff --git a/lustre/llite/llite_lib.c b/lustre/llite/llite_lib.c
+index c083175cb8..6bec73bf19 100644
+--- a/lustre/llite/llite_lib.c
++++ b/lustre/llite/llite_lib.c
+@@ -33,6 +33,16 @@
+ #ifdef HAVE_FILEATTR_GET
+ #include <linux/fileattr.h>
+ #endif
++#include <linux/key.h>
++#include <keys/user-type.h>
++#include <linux/keyctl.h>
++#include <linux/key-type.h>
++
++/* For compatibility with el7.9, taken from include/linux/key.h */
++#ifndef KEY_NEED_WRITE
++#define KEY_NEED_WRITE  0x04
++#define KEY_NEED_SEARCH 0x08
++#endif
+ #ifndef HAVE_CPUS_READ_LOCK
+ #include <lustre_compat/linux/cpu.h>
+ #endif
+@@ -972,6 +982,165 @@ int ll_set_default_mdsize(struct ll_sb_info *sbi, int lmmsize)
+ 	RETURN(rc);
+ }
+ 
++/* Rename SSK key that was inserted in the kernel keyring at mount specifically
++ * for this client, so that it uses a key description in the form
++ * "lustre:<fsname>:<client uuid>". Having the client UUID in the key desc
++ * allows request_key() to find this client-specific key by putting the UUID
++ * into the callout info for context negotiation that happens in userspace.
++ */
++static int rename_sk_key(struct ll_sb_info *sbi)
++{
++	key_ref_t orig_key_ref, user_keyring_ref, new_key_ref;
++	const struct user_key_payload *ukp;
++	key_serial_t id = sbi->ll_skid;
++	struct key *orig_key, *user_kr;
++	char desc[LL_SK_KEY_DESC_SZ];
++	ssize_t plen;
++	void *buf;
++	int rc = 0;
++
++	ENTRY;
++
++	/* no key id, nothing to do */
++	if (likely(!id))
++		RETURN(0);
++
++	/* find original key, knowing its serial */
++	orig_key_ref = lookup_user_key(id, 0, KEY_NEED_SEARCH);
++	if (IS_ERR(orig_key_ref)) {
++		rc = PTR_ERR(orig_key_ref);
++		CDEBUG(D_SEC, "lookup_user_key(%d) failed: rc = %d\n", id, rc);
++		/* ignore error in case original key is not found */
++		RETURN(0);
++	}
++	orig_key = key_ref_to_ptr(orig_key_ref);
++
++	/* read payload safely under RCU */
++	rcu_read_lock();
++	ukp = user_key_payload_rcu(orig_key);
++	if (!ukp) {
++		rcu_read_unlock();
++		CDEBUG(D_SEC, "no payload on key %d\n", id);
++		GOTO(out_put1, rc = -ENODATA);
++	}
++	plen = ukp->datalen;
++
++	/* copy payload of original key into temporary buffer */
++	OBD_ALLOC(buf, plen);
++	if (!buf) {
++		rcu_read_unlock();
++		GOTO(out_put1, rc = -ENOMEM);
++	}
++	memcpy(buf, ukp->data, plen);
++	rcu_read_unlock();
++
++	/* get ref to user keyring */
++	user_keyring_ref = lookup_user_key(KEY_SPEC_USER_KEYRING, 0,
++					   KEY_NEED_WRITE);
++	if (IS_ERR(user_keyring_ref)) {
++		rc = PTR_ERR(user_keyring_ref);
++		CDEBUG(D_SEC, "lookup_user_keyring failed: rc = %d\n", rc);
++		GOTO(out_free, rc);
++	}
++	user_kr = key_ref_to_ptr(user_keyring_ref);
++
++	/* create key with original payload and new desc
++	 * in the form "lustre:<fsname>:<client uuid>"
++	 */
++	snprintf(desc, sizeof(desc), "lustre:%s:%s",
++		 sbi->ll_fsname, sbi->ll_sb_uuid.uuid);
++	new_key_ref = key_create_or_update(user_keyring_ref, "user", desc,
++					   buf, (size_t)plen,
++					   KEY_POS_ALL | KEY_USR_ALL |
++					   KEY_GRP_ALL | KEY_OTH_ALL,
++					   0);
++
++	if (IS_ERR(new_key_ref)) {
++		rc = PTR_ERR(new_key_ref);
++		CDEBUG(D_SEC, "key_create_or_update(%d) failed: rc= %d\n",
++		       id, rc);
++		GOTO(out_put2, rc);
++	}
++	CDEBUG(D_SEC, "installed key %d with desc %s\n",
++	       key_ref_to_ptr(new_key_ref)->serial, desc);
++	key_ref_put(new_key_ref);
++
++	/* now original key can be removed */
++	rc = key_unlink(user_kr, orig_key);
++	CDEBUG(D_SEC, "key_unlink(%d) %s: rc = %d\n",
++	       id, rc ? "failed" : "success", rc);
++	/* ignore error in case original key is not removed */
++	rc = 0;
++
++out_put2:
++	key_put(user_kr);
++out_free:
++	OBD_FREE(buf, plen);
++out_put1:
++	key_put(orig_key);
++	RETURN(rc);
++}
++
++/* Cleanup SSK key that was inserted in the kernel keyring specifically
++ * for this client, in the form "lustre:<fsname>:<client uuid>".
++ */
++static void cleanup_sk_key(struct ll_sb_info *sbi)
++{
++	key_ref_t orig_key_ref, user_keyring_ref, key_ref;
++	struct key *orig_key, *target_key, *user_kr;
++	key_serial_t id = sbi->ll_skid;
++	char desc[LL_SK_KEY_DESC_SZ];
++	int rc;
++
++	ENTRY;
++
++	/* no key id, nothing to do */
++	if (likely(!id))
++		RETURN_EXIT;
++
++	snprintf(desc, sizeof(desc), "lustre:%s:%s",
++		 sbi->ll_fsname, sbi->ll_sb_uuid.uuid);
++
++	/* get ref to user keyring */
++	user_keyring_ref = lookup_user_key(KEY_SPEC_USER_KEYRING, 0,
++					   KEY_NEED_WRITE);
++	if (IS_ERR(user_keyring_ref)) {
++		CDEBUG(D_SEC, "lookup_user_keyring failed: rc = %ld\n",
++		       PTR_ERR(user_keyring_ref));
++		RETURN_EXIT;
++	}
++	user_kr = key_ref_to_ptr(user_keyring_ref);
++
++	/* find key to remove */
++#ifdef HAVE_KEYRING_SEARCH_4ARGS
++	key_ref = keyring_search(user_keyring_ref, &key_type_user, desc, false);
++#else
++	key_ref = keyring_search(user_keyring_ref, &key_type_user, desc);
++#endif
++
++	if (!IS_ERR(key_ref)) {
++		/* unlink the key */
++		target_key = key_ref_to_ptr(key_ref);
++		rc = key_unlink(user_kr, target_key);
++		CDEBUG(D_SEC, "key_unlink(%d) %s: rc = %d\n",
++		       target_key->serial, rc ? "failed" : "success", rc);
++		key_put(target_key);
++	}
++
++	/* find and remove original key, in case it was left behind */
++	orig_key_ref = lookup_user_key(id, 0, KEY_NEED_SEARCH);
++	if (!IS_ERR(orig_key_ref)) {
++		orig_key = key_ref_to_ptr(orig_key_ref);
++		rc = key_unlink(user_kr, orig_key);
++		CDEBUG(D_SEC, "key_unlink(%d) %s: rc = %d\n",
++		       id, rc ? "failed" : "success", rc);
++		key_put(orig_key);
++	}
++
++	key_put(user_kr);
++	RETURN_EXIT;
++}
++
+ static void client_common_put_super(struct super_block *sb)
+ {
+ 	struct ll_sb_info *sbi = ll_s2sbi(sb);
+@@ -1138,6 +1307,10 @@ static int ll_options(char *options, struct super_block *sb)
+ 			    match_wildcard("defcontext", s1) ||
+ 			    match_wildcard("rootcontext", s1))
+ 				continue;
++			if (match_wildcard("skid=*", s1)) {
++				sbi->ll_skid = simple_strtoul(s1 + 5, NULL, 10);
++				continue;
++			}
+ 
+ 			LCONSOLE_ERROR("Unknown option '%s', won't mount.\n",
+ 				       s1);
+@@ -1445,6 +1618,13 @@ int ll_fill_super(struct super_block *sb)
+ 	strncpy(sbi->ll_fsname, profilenm, len);
+ 	sbi->ll_fsname[len] = '\0';
+ 
++	err = rename_sk_key(sbi);
++	if (err) {
++		CDEBUG(D_SEC, "Renaming SSK key %d failed: rc = %d\n",
++		       sbi->ll_skid, err);
++		GOTO(out_free_cfg, err);
++	}
++
+ 	/* Mount info */
+ 	snprintf(name, sizeof(name), "%.*s-%016lx", len,
+ 		 profilenm, cfg_instance);
+@@ -1597,6 +1777,7 @@ void ll_put_super(struct super_block *sb)
+ 		/* Only if client_common_fill_super succeeded */
+ 		client_common_put_super(sb);
+ 	}
++	cleanup_sk_key(sbi);
+ 
+ 	/* imitate failed cleanup */
+ 	if (CFS_FAIL_CHECK(OBD_FAIL_OBD_CLEANUP))
+diff --git a/lustre/ptlrpc/gss/gss_keyring.c b/lustre/ptlrpc/gss/gss_keyring.c
+index 7ae6b74094..184018d589 100644
+--- a/lustre/ptlrpc/gss/gss_keyring.c
++++ b/lustre/ptlrpc/gss/gss_keyring.c
+@@ -849,6 +849,8 @@ struct ptlrpc_cli_ctx * gss_sec_lookup_ctx_kr(struct ptlrpc_sec *sec,
+                                               struct vfs_cred *vcred,
+                                               int create, int remove_dead)
+ {
++	const size_t sizeof_u32 = sizeof(u32) * 2 + 3; /* string + : */
++	const size_t sizeof_u64 = sizeof(u64) * 2 + 3; /* string + : */
+ 	struct obd_import *imp = sec->ps_import;
+ 	struct gss_sec_keyring *gsec_kr = sec2gsec_keyring(sec);
+ 	struct ptlrpc_cli_ctx *ctx = NULL;
+@@ -956,11 +958,21 @@ struct ptlrpc_cli_ctx * gss_sec_lookup_ctx_kr(struct ptlrpc_sec *sec,
+ 
+ 	construct_key_desc(desc, sizeof(desc), sec, vcred->vc_uid);
+ 
+-	/* callout info format:
+-	 * secid:mech:uid:gid:sec_flags:svc_flag:svc_type:peer_nid:target_uuid:
+-	 * self_nid:pid
+-	 */
+-	coinfo_size = sizeof(struct obd_uuid) + MAX_OBD_NAME + 64;
++	/* callout info format */
++	coinfo_size = sizeof_u32        /* secid */ +
++		      8                 /* mech */ +
++		      sizeof_u32        /* uid */ +
++		      sizeof_u32        /* gid */ +
++		      4                 /* sec_flags */ +
++		      2                 /* svc_flag */ +
++		      sizeof_u32        /* svc_type */ +
++		      sizeof_u64        /* peer_nid */ +
++		      MAX_OBD_NAME + 1  /* target_uuid */ +
++		      sizeof_u64        /* self_nid */ +
++		      sizeof_u32        /* pid */ +
++		      UUID_MAX + 1      /* client_uuid */ +
++		      1;
++
+ 	OBD_ALLOC(coinfo, coinfo_size);
+ 	if (coinfo == NULL)
+ 		goto out;
+@@ -985,14 +997,15 @@ struct ptlrpc_cli_ctx * gss_sec_lookup_ctx_kr(struct ptlrpc_sec *sec,
+ 	LNetLocalPrimaryNID(&primary);
+ 
+ 	/* FIXME !! Needs to support larger NIDs */
+-	snprintf(coinfo, coinfo_size, "%d:%s:%u:%u:%s:%c:%d:%#llx:%s:%#llx:%d",
++	snprintf(coinfo, coinfo_size,
++		 "%d:%s:%u:%u:%s:%c:%d:%#llx:%s:%#llx:%d:%s",
+ 		 sec->ps_id, sec2gsec(sec)->gs_mech->gm_name,
+ 		 vcred->vc_uid, vcred->vc_gid,
+ 		 sec_part_flags, svc_flag, import_to_gss_svc(imp),
+ 		 lnet_nid_to_nid4(&imp->imp_connection->c_peer.nid),
+ 		 imp->imp_obd->obd_name,
+ 		 lnet_nid_to_nid4(&primary),
+-		 caller_pid);
++		 caller_pid, obd_uuid2str(&imp->imp_obd->obd_uuid));
+ 
+ 	CDEBUG(D_SEC, "requesting key for %s\n", desc);
+ 
+diff --git a/lustre/tests/sanity-sec.sh b/lustre/tests/sanity-sec.sh
+index 117cad680f..172bd26a55 100755
+--- a/lustre/tests/sanity-sec.sh
++++ b/lustre/tests/sanity-sec.sh
+@@ -10328,11 +10328,14 @@ cleanup_79() {
+ 	if is_mounted $MOUNT; then
+ 		umount_client $MOUNT || error "umount $MOUNT failed"
+ 	fi
++	if is_mounted $MOUNT2; then
++		umount_client $MOUNT2 || error "umount $MOUNT failed"
++	fi
+ 
+ 	cleanup_unload_ssk nm0
+ 
+ 	# reset and deactivate nodemaps, remount client
+-	do_facet mgs $LCTL nodemap_del nm0
++	do_facet mgs $LCTL nodemap_del nm0 || true
+ 	$LGSS_SK -l $SK_PATH/$FSNAME.key
+ 	cleanup_local_client_nodemap c0
+ 
+@@ -10468,6 +10471,35 @@ test_79() {
+ 		grep -c $client_nid)
+ 	(( count == mds1_mdtcnt )) ||
+ 		error "$count exps for $client_nid on nm0 ($mds1_mdtcnt) (2)"
++
++	# mount client on DIR2 with c0 key, should see c0 fileset
++	$MOUNT_CMD -o $MOUNT_OPTS,skpath=$SK_PATH/nodemap/c0.key \
++		$MGSNID:/$FSNAME $MOUNT2 ||
++			error "remount failed (3)"
++	wait_ssk
++
++	[[ -f $DIR2/this_is_c0 ]] || error "failed to get c0 in $DIR2"
++
++	do_facet mds1 $LCTL get_param nodemap.*.exports
++	count=$(do_facet mds1 $LCTL get_param -n nodemap.c0.exports |
++		grep -c $client_nid)
++	(( count == mds1_mdtcnt )) ||
++		error "$count exps for $client_nid on nm0 ($mds1_mdtcnt) (3)"
++
++	# remount client on DIR, should still be part of nm0
++	umount_client $MOUNT || error "umount $MOUNT failed"
++	$MOUNT_CMD -o $MOUNT_OPTS,skpath=$SK_PATH/nodemap/nm0.key \
++		$MGSNID:/$FSNAME $MOUNT ||
++			error "remount failed (4)"
++	wait_ssk
++
++	[[ -f $DIR/this_is_nm0 ]] || error "failed to get nm0 in $DIR"
++
++	do_facet mds1 $LCTL get_param nodemap.*.exports
++	count=$(do_facet mds1 $LCTL get_param -n nodemap.nm0.exports |
++		grep -c $client_nid)
++	(( count == mds1_mdtcnt )) ||
++		error "$count exps for $client_nid on nm0 ($mds1_mdtcnt) (4)"
+ }
+ run_test 79 "ssk for nodemap identification"
+ 
+diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
+index 49365d82f3..687d796ada 100755
+--- a/lustre/tests/test-framework.sh
++++ b/lustre/tests/test-framework.sh
+@@ -9545,8 +9545,8 @@ calc_connection_cnt() {
+ 	local cnt_cli2ost=$((num_clients * OSTCOUNT))
+ 	local cnt_cli2mdt=$((num_clients * MDSCOUNT))
+ 	if is_mounted $MOUNT2; then
+-		cnt_cli2mdt=$((cnt_cli2mdt * 2))
+-		cnt_cli2ost=$((cnt_cli2ost * 2))
++		cnt_cli2mdt=$((cnt_cli2mdt + MDSCOUNT))
++		cnt_cli2ost=$((cnt_cli2ost + OSTCOUNT))
+ 	fi
+ 	if local_mode; then
+ 		cnt_mdt2mdt=0
+diff --git a/lustre/utils/gss/lgss_keyring.c b/lustre/utils/gss/lgss_keyring.c
+index 899d7ab9fe..8268dc3503 100644
+--- a/lustre/utils/gss/lgss_keyring.c
++++ b/lustre/utils/gss/lgss_keyring.c
+@@ -34,6 +34,7 @@
+ #include <libcfs/util/param.h>
+ #include <libcfs/util/string.h>
+ #include <uapi/linux/lustre/lgss.h>
++#include <linux/lustre/lustre_user.h>
+ #include "lsupport.h"
+ #include "lgss_utils.h"
+ #include "lgss_krb5_utils.h"
+@@ -97,6 +98,7 @@ struct keyring_upcall_param {
+ 			kup_is_mdt:1,
+ 			kup_is_ost:1;
+ 	uint32_t        kup_pid;
++	char		kup_cluuid[UUID_MAX];
+ };
+ 
+ /****************************************
+@@ -825,40 +827,49 @@ static int lgssc_kr_negotiate(key_serial_t keyid, struct lgss_cred *cred,
+  *  [8]: target_uuid    (string)
+  *  [9]: self_nid        (uint64)
+  *  [10]: pid            (uint)
++ *  [11]: client uuid    (string)
+  */
+ static int parse_callout_info(const char *coinfo,
+                               struct keyring_upcall_param *uparam)
+ {
+-	const int       nargs = 11;
+-	char            buf[1024];
+-	char           *string = buf;
+-	int             length, i;
+-	char           *data[nargs];
+-	char           *pos;
+-
+-        length = strlen(coinfo) + 1;
+-        if (length > 1024) {
+-                logmsg(LL_ERR, "coinfo too long\n");
+-                return -1;
+-        }
+-        memcpy(buf, coinfo, length);
+-
+-        for (i = 0; i < nargs - 1; i++) {
+-                pos = strchr(string, ':');
+-                if (pos == NULL) {
+-                        logmsg(LL_ERR, "short of components\n");
+-                        return -1;
+-                }
+-
+-                *pos = '\0';
+-                data[i] = string;
+-                string = pos + 1;
+-        }
+-        data[i] = string;
++	const int nargs = 12;
++	const int nargs_min = 11; /* for compatibility with older kernel code */
++	char buf[1024];
++	char *string = buf;
++	int length, i;
++	char *data[nargs];
++	char *pos;
++
++	length = strlen(coinfo) + 1;
++	if (length > 1024) {
++		logmsg(LL_ERR, "coinfo too long\n");
++		return -1;
++	}
++	memcpy(buf, coinfo, length);
++
++	for (i = 0; i < nargs; i++) {
++		data[i] = string;
++		pos = strchr(string, ':');
+ 
+-	logmsg(LL_TRACE, "components: %s,%s,%s,%s,%s,%c,%s,%s,%s,%s,%s\n",
++		if (!pos) {
++			if (i >= nargs_min - 1) {
++				i++;
++				break;
++			}
++			logmsg(LL_ERR, "short of components, expecting at least %d, got %d\n",
++			       nargs_min, i + 1);
++			return -1;
++		}
++		*pos = '\0';
++		string = pos + 1;
++	}
++	for (; i < nargs; i++)
++		data[i] = NULL;
++
++	logmsg(LL_TRACE, "components: %s,%s,%s,%s,%s,%c,%s,%s,%s,%s,%s,%s\n",
+ 	       data[0], data[1], data[2], data[3], data[4], data[5][0],
+-	       data[6], data[7], data[8], data[9], data[10]);
++	       data[6], data[7], data[8], data[9], data[10],
++	       data[11] ?: "<unset>");
+ 
+ 	uparam->kup_secid = strtol(data[0], NULL, 0);
+ 	snprintf(uparam->kup_mech, sizeof(uparam->kup_mech), "%s", data[1]);
+@@ -876,15 +887,22 @@ static int parse_callout_info(const char *coinfo,
+ 	snprintf(uparam->kup_tgt, sizeof(uparam->kup_tgt), "%s", data[8]);
+ 	uparam->kup_selfnid = strtoll(data[9], NULL, 0);
+ 	uparam->kup_pid = strtol(data[10], NULL, 0);
++	if (data[11])
++		snprintf(uparam->kup_cluuid, sizeof(uparam->kup_cluuid), "%s",
++			 data[11]);
++	else
++		uparam->kup_cluuid[0] = '\0';
+ 
+ 	logmsg(LL_DEBUG, "parse call out info: secid %d, mech %s, ugid %u:%u, "
+ 	       "is_root %d, is_mdt %d, is_ost %d, svc type %c, svc %d, "
+-	       "nid 0x%"PRIx64", tgt %s, self nid 0x%"PRIx64", pid %d\n",
++	       "nid 0x%"PRIx64", tgt %s, self nid 0x%"PRIx64", pid %d, "
++	       "uuid %s\n",
+ 	       uparam->kup_secid, uparam->kup_mech,
+ 	       uparam->kup_uid, uparam->kup_gid,
+ 	       uparam->kup_is_root, uparam->kup_is_mdt, uparam->kup_is_ost,
+ 	       uparam->kup_svc_type, uparam->kup_svc, uparam->kup_nid,
+-	       uparam->kup_tgt, uparam->kup_selfnid, uparam->kup_pid);
++	       uparam->kup_tgt, uparam->kup_selfnid, uparam->kup_pid,
++	       uparam->kup_cluuid[0] != '\0' ? uparam->kup_cluuid : "<unset>");
+ 	return 0;
+ }
+ 
+@@ -1127,6 +1145,8 @@ int main(int argc, char *argv[])
+ 	cred->lc_tgt_uuid = uparam.kup_tgt;
+ 	cred->lc_svc_type = uparam.kup_svc_type;
+ 	cred->lc_self_nid = uparam.kup_selfnid;
++	cred->lc_cluuid =
++		uparam.kup_cluuid[0] != '\0' ? uparam.kup_cluuid : NULL;
+ 
+ 	/* Is caller in different namespace? */
+ 	/* If passed caller's pid is 0, it means we have to stick
+diff --git a/lustre/utils/gss/lgss_sk.c b/lustre/utils/gss/lgss_sk.c
+index 17b7aa1491..c4f2eb35f4 100644
+--- a/lustre/utils/gss/lgss_sk.c
++++ b/lustre/utils/gss/lgss_sk.c
+@@ -78,6 +78,7 @@ static void usage(FILE *fp, char *program)
+ 	fprintf(fp, "                        Not a seed value. "
+ 		"This is the actual key value.\n\n");
+ 	fprintf(fp, "Other Options:\n");
++	fprintf(fp, "-u|--update     <dir>	Only when loading a key, mount path to update the key for\n");
+ 	fprintf(fp, "-v|--verbose           Increase verbosity for errors\n");
+ 	exit(EXIT_FAILURE);
+ }
+@@ -265,6 +266,7 @@ int main(int argc, char **argv)
+ 	char *mgsnids = NULL;
+ 	char *nodemap = NULL;
+ 	char *fsname = NULL;
++	char *update_path = NULL;
+ 	char *tmp;
+ 	char *tmp2;
+ 	int crypt = SK_CRYPT_EMPTY;
+@@ -297,12 +299,13 @@ int main(int argc, char **argv)
+ 	{ .name = "prime-bits",	.has_arg = required_argument, .val = 'p'},
+ 	{ .name = "read",	.has_arg = required_argument, .val = 'r'},
+ 	{ .name = "type",	.has_arg = required_argument, .val = 't'},
++	{ .name = "update",	.has_arg = required_argument, .val = 'u'},
+ 	{ .name = "verbose",	.has_arg = no_argument,	      .val = 'v'},
+ 	{ .name = "write",	.has_arg = required_argument, .val = 'w'},
+ 	{ .name = NULL, } };
+ 
+ 	while ((opt = getopt_long(argc, argv,
+-				  "ac:d:e:f:g:hi:l:m:n:p:r:s:k:t:w:v",
++				  "ac:d:e:f:g:hi:k:l:m:n:p:r:s:t:u:vw:",
+ 				  long_opts, NULL)) != EOF) {
+ 		switch (opt) {
+ 		case 'a':
+@@ -396,6 +399,9 @@ int main(int argc, char **argv)
+ 			}
+ 			free(tmp2);
+ 			break;
++		case 'u':
++			update_path = optarg;
++			break;
+ 		case 'v':
+ 			verbose++;
+ 			break;
+@@ -419,6 +425,10 @@ int main(int argc, char **argv)
+ 		usage(stderr, argv[0]);
+ 		return EXIT_FAILURE;
+ 	}
++	if (update_path && !load) {
++		usage(stderr, argv[0]);
++		return EXIT_FAILURE;
++	}
+ 
+ 	/* init gss logger for foreground (no syslog) which prints to stderr */
+ 	initerr(NULL, verbose, 1);
+@@ -429,7 +439,8 @@ int main(int argc, char **argv)
+ 		return print_config(input);
+ 
+ 	if (load) {
+-		int rc = sk_load_keyfile(load, type & SK_TYPE_CLIENT);
++		int rc = sk_load_keyfile(load, type & SK_TYPE_CLIENT, false,
++					 update_path);
+ 
+ 		if (rc < 0) {
+ 			fprintf(stderr,
+diff --git a/lustre/utils/gss/lgss_sk_utils.c b/lustre/utils/gss/lgss_sk_utils.c
+index 46648ac0cc..0f8b496c60 100644
+--- a/lustre/utils/gss/lgss_sk_utils.c
++++ b/lustre/utils/gss/lgss_sk_utils.c
+@@ -37,7 +37,8 @@ static int lgss_sk_prepare_cred(struct lgss_cred *cred)
+ 		break;
+ 	}
+ 
+-	cred->lc_mech_cred = sk_create_cred(cred->lc_tgt_uuid, NULL, flags);
++	cred->lc_mech_cred = sk_create_cred(cred->lc_tgt_uuid, NULL,
++					    cred->lc_cluuid, flags);
+ 	if (cred->lc_mech_cred == NULL) {
+ 		printerr(0, "sk: cannot create credential: %s\n",
+ 			 cred->lc_tgt_uuid);
+diff --git a/lustre/utils/gss/lgss_utils.h b/lustre/utils/gss/lgss_utils.h
+index 0ba158934c..63009c8483 100644
+--- a/lustre/utils/gss/lgss_utils.h
++++ b/lustre/utils/gss/lgss_utils.h
+@@ -159,6 +159,7 @@ struct lgss_cred {
+ 	uint32_t		lc_tgt_svc;
+ 	char			lc_svc_type;
+ 	char			*lc_tgt_uuid;
++	char			*lc_cluuid;
+ 
+ 	struct lgss_mech_type	*lc_mech;
+ 	void			*lc_mech_cred;
+diff --git a/lustre/utils/gss/sk_utils.c b/lustre/utils/gss/sk_utils.c
+index d59704db1e..b1286b23a3 100644
+--- a/lustre/utils/gss/sk_utils.c
++++ b/lustre/utils/gss/sk_utils.c
+@@ -27,6 +27,7 @@
+ #include <signal.h>
+ #include <linux/lustre/lgss.h>
+ 
++#include <lustre/lustreapi.h>
+ #include "sk_utils.h"
+ #include "write_bytes.h"
+ 
+@@ -423,14 +424,16 @@ static key_serial_t sk_load_key(const struct sk_keyfile_config *skc,
+  * using a description determined by the the \a type.  Existing keys with the
+  * same description are replaced.
+  *
+- * \param[in]	path	Path to key file
+- * \param[in]	client	Client is mounting with a server key
++ * \param[in]	path		Path to key file
++ * \param[in]	client		Client is mounting with a server key
++ * \param[in]	randomize	true to randomize key desc, only apply to client
++ * \param[in]	mntdir		Client mount dir
+  *
+  * \return	> 0	client file system key id if successfully loaded
+  * \return	  0	other key type successfully loaded
+  * \return	< 0	-errno on failure
+  */
+-int sk_load_keyfile(char *path, bool client)
++int sk_load_keyfile(char *path, bool client, bool randomize, char *mntdir)
+ {
+ 	struct sk_keyfile_config *config;
+ 	char description[SK_DESCRIPTION_SIZE + 1];
+@@ -517,8 +520,52 @@ read_sk:
+ 	if (config->skc_type & SK_TYPE_CLIENT) {
+ 		/* Load client file system key */
+ 		if (config->skc_fsname[0] != '\0') {
++			char uuid[UUID_MAX + 2] = { 0 }; /* additional '\n' */
++			char rand[5];
++
++			if (mntdir) {
++				char fsname[LUSTRE_MAXFSNAME + 1];
++
++				/* If mount path is provided, check it refers to
++				 * the same fs as the key.
++				 */
++				rc = llapi_get_fsname(mntdir, fsname,
++						      sizeof(fsname));
++				if (rc < 0) {
++					printerr(0,
++						 "Cannot get Lustre fsname for %s: rc=%d\n",
++						 mntdir, rc);
++					goto out;
++				}
++				if (strcmp(fsname, config->skc_fsname) != 0) {
++					rc = -EINVAL;
++					printerr(0,
++						 "Key to load is for file system %s, but %s is mounted at %s: rc=%d\n",
++						 config->skc_fsname, fsname,
++						 mntdir, rc);
++					goto out;
++				}
++
++				/* Fetch uuid from mount point */
++				rc = llapi_get_agent_uuid(mntdir, uuid,
++							  sizeof(uuid));
++				if (rc < 0) {
++					printerr(0,
++						 "Cannot get client uuid for %s: rc=%d\n",
++						 mntdir, rc);
++					goto out;
++				}
++				if (uuid[strlen(uuid) - 1] == '\n')
++					uuid[strlen(uuid) - 1] = '\0';
++			}
++
++			/* add random chars at end of key if requested... */
++			if (randomize)
++				snprintf(rand, sizeof(rand), "%.4lX", random());
+ 			rc = snprintf(description, SK_DESCRIPTION_SIZE,
+-				      "lustre:%s", config->skc_fsname);
++				      "lustre:%s%s%s", config->skc_fsname,
++				      randomize || mntdir ? ":" : "",
++				      randomize ? rand : (mntdir ? uuid : ""));
+ 			if (rc >= SK_DESCRIPTION_SIZE) {
+ 				rc = -ENAMETOOLONG;
+ 				goto out;
+@@ -528,6 +575,14 @@ read_sk:
+ 				rc = -ENOKEY;
+ 				goto out;
+ 			}
++
++			/* ... and also load legacy key desc for interop */
++			if (randomize) {
++				rc = snprintf(description, SK_DESCRIPTION_SIZE,
++					      "lustre:%s", config->skc_fsname);
++				if (rc < SK_DESCRIPTION_SIZE)
++					(void)sk_load_key(config, description);
++			}
+ 		}
+ 
+ 		/* Load client MGC keys */
+@@ -916,7 +971,7 @@ static inline int sk_config_has_mgsnid(struct sk_keyfile_config *config,
+ 
+ /**
+  * Create an sk_cred structure populated with initial configuration info and the
+- * key.  \a tgt and \a nodemap are used in determining the expected key
++ * key. \a tgt \a uuid and \a nodemap are used in determining the expected key
+  * description so the key can be found by searching the keyring.
+  * This is done because there is no easy way to pass keys from the mount command
+  * all the way to the request_key call.  In addition any keys can be dynamically
+@@ -927,13 +982,14 @@ static inline int sk_config_has_mgsnid(struct sk_keyfile_config *config,
+  * \param[in]	nodemap		Cluster name for the key.  This correlates to
+  *				the nodemap name and is used by the server side.
+  *				For the client this will be NULL.
++ * \param[in]	uuid		Client uuid
+  * \param[in]	flags		Flags for the credentials
+  *
+  * \return	sk_cred Allocated struct sk_cred on success
+  * \return	NULL	failure
+  */
+ struct sk_cred *sk_create_cred(const char *tgt, const char *nodemap,
+-			       const uint32_t flags)
++			       const char *uuid, const uint32_t flags)
+ {
+ 	struct sk_keyfile_config *config;
+ 	struct sk_kernel_ctx *kctx;
+@@ -974,6 +1030,7 @@ struct sk_cred *sk_create_cred(const char *tgt, const char *nodemap,
+ 	}
+ 	memcpy(fsname, tgt, len);
+ 
++build_desc:
+ 	if (nodemap) {
+ 		if (mgsnid)
+ 			rc = snprintf(description, SK_DESCRIPTION_SIZE,
+@@ -982,8 +1039,8 @@ struct sk_cred *sk_create_cred(const char *tgt, const char *nodemap,
+ 			rc = snprintf(description, SK_DESCRIPTION_SIZE,
+ 				      "lustre:%s:%s", fsname, nodemap);
+ 	} else {
+-		rc = snprintf(description, SK_DESCRIPTION_SIZE, "lustre:%s",
+-			      fsname);
++		rc = snprintf(description, SK_DESCRIPTION_SIZE, "lustre:%s%s%s",
++			      fsname, uuid ? ":" : "", uuid ?: "");
+ 	}
+ 
+ 	if (rc >= SK_DESCRIPTION_SIZE) {
+@@ -1002,6 +1059,10 @@ struct sk_cred *sk_create_cred(const char *tgt, const char *nodemap,
+ 	sk_key = keyctl_search(KEY_SPEC_USER_KEYRING, "user",
+ 			       description, 0);
+ 	if (sk_key == -1) {
++		if (!nodemap && uuid) {
++			uuid = NULL;
++			goto build_desc;
++		}
+ 		printerr(1, "No key found for %s\n", description);
+ 		return NULL;
+ 	}
+diff --git a/lustre/utils/gss/sk_utils.h b/lustre/utils/gss/sk_utils.h
+index d6bbc3c813..d795891a49 100644
+--- a/lustre/utils/gss/sk_utils.h
++++ b/lustre/utils/gss/sk_utils.h
+@@ -432,7 +432,7 @@ int gen_ssk_prime(struct sk_keyfile_config *config);
+ int write_config_file(char *output_file, struct sk_keyfile_config *config,
+ 		      bool overwrite, bool ascii_format);
+ struct sk_keyfile_config *sk_read_file(char *filename);
+-int sk_load_keyfile(char *path, bool client);
++int sk_load_keyfile(char *path, bool client, bool randomize, char *mntdir);
+ void sk_config_disk_to_cpu(struct sk_keyfile_config *config);
+ void sk_config_cpu_to_disk(struct sk_keyfile_config *config);
+ int sk_validate_config(const struct sk_keyfile_config *config);
+@@ -443,7 +443,7 @@ int sk_encode_ascii_key(const struct sk_keyfile_config *config,
+ uint32_t sk_verify_hash(const char *string, const EVP_MD *hash_alg,
+ 			const gss_buffer_desc *current_hash);
+ struct sk_cred *sk_create_cred(const char *fsname, const char *cluster,
+-			       const uint32_t flags);
++			       const char *uuid, const uint32_t flags);
+ #ifndef HAVE_OPENSSL_EVP_PKEY
+ int sk_speedtest_dh_valid(unsigned int usec_check_max, pid_t *child);
+ #endif
+diff --git a/lustre/utils/gss/svcgssd_proc.c b/lustre/utils/gss/svcgssd_proc.c
+index 1819a94b6c..3fefd70cd0 100644
+--- a/lustre/utils/gss/svcgssd_proc.c
++++ b/lustre/utils/gss/svcgssd_proc.c
+@@ -689,7 +689,7 @@ static int handle_sk(struct svc_nego_data *snd)
+ 	printerr(LL_DEBUG, "Using nodemap name %s for authentication\n",
+ 		 snd->nm_name);
+ 
+-	skc = sk_create_cred(target, snd->nm_name, be32toh(flags));
++	skc = sk_create_cred(target, snd->nm_name, NULL, be32toh(flags));
+ 	if (!skc) {
+ 		printerr(LL_ERR, "Failed to create sk credentials\n");
+ 		goto cleanup_buffers;
+diff --git a/lustre/utils/mount_lustre.c b/lustre/utils/mount_lustre.c
+index e8c2fad651..6da20a1fc5 100644
+--- a/lustre/utils/mount_lustre.c
++++ b/lustre/utils/mount_lustre.c
+@@ -928,6 +928,9 @@ int set_client_params(char *fsname)
+ int main(int argc, char *const argv[])
+ {
+ 	struct mount_opts mop;
++#ifdef HAVE_GSS
++	unsigned int key = -1;
++#endif
+ 	char *options;
+ 	int i, flags;
+ 	int rc;
+@@ -1069,6 +1072,18 @@ int main(int argc, char *const argv[])
+ 				progname, strerror(rc));
+ 			goto out_osd;
+ 		}
++		/* rc > 0 means a valid key serial was returned, so forward it
++		 * to the kernel
++		 */
++		if (rc) {
++			char keyid[32];
++
++			key = rc;
++			snprintf(keyid, sizeof(keyid), "%d", key);
++			rc = append_option(options, maxopt_len, "skid=", keyid);
++			if (rc != 0)
++				goto out_unload;
++		}
+ 	}
+ #endif /* HAVE_GSS */
+ 
+@@ -1101,7 +1116,7 @@ int main(int argc, char *const argv[])
+ 	 */
+ 	rc = append_option(options, maxopt_len, "device=", mop.mo_source);
+ 	if (rc != 0)
+-		goto out_osd;
++		goto out_unload;
+ 
+ 	if (verbose)
+ 		printf("mounting device %s at %s, flags=%#x options=%s\n",
+@@ -1257,6 +1272,11 @@ int main(int argc, char *const argv[])
+ 		}
+ 	}
+ 
++out_unload:
++#ifdef HAVE_GSS
++	/* unload temporary key, most useful if kernel does not handle it */
++	unload_shared_key(key);
++#endif
+ out_osd:
+ #ifdef HAVE_SERVER_SUPPORT
+ 	if (!client)
+diff --git a/lustre/utils/mount_utils.c b/lustre/utils/mount_utils.c
+index ada29fd677..35f155b35d 100644
+--- a/lustre/utils/mount_utils.c
++++ b/lustre/utils/mount_utils.c
+@@ -1333,7 +1333,7 @@ int load_shared_keys(struct mount_opts *mop, bool client)
+ 
+ 	/* Load individual keys or a directory of them */
+ 	if (S_ISREG(sbuf.st_mode)) {
+-		return sk_load_keyfile(path, client);
++		return sk_load_keyfile(path, client, true, NULL);
+ 	} else if (!S_ISDIR(sbuf.st_mode)) {
+ 		fprintf(stderr, "Invalid shared key path: %s\n", path);
+ 		return -ENOKEY;
+@@ -1378,13 +1378,27 @@ int load_shared_keys(struct mount_opts *mop, bool client)
+ 		if (!S_ISREG(sbuf.st_mode))
+ 			continue;
+ 
+-		rc = sk_load_keyfile(fullpath, client);
++		rc = sk_load_keyfile(fullpath, client, false, NULL);
+ 		if (rc < 0)
+ 			fprintf(stderr, "Failed to load key %s\n", fullpath);
++		else
++			rc = 0;
+ 	}
+ 	closedir(dir);
+ 
+ 	return rc;
+ }
++
++/**
++ * Unloads leftover key \a key
++ *
++ * \param[in]	key	id of key to remove
++ *
++ */
++void unload_shared_key(unsigned int key)
++{
++	if (key > 0)
++		(void)keyctl_unlink(key, KEY_SPEC_USER_KEYRING);
++}
+ #endif /* HAVE_OPENSSL_SSK */
+ #endif /* HAVE_GSS */
+diff --git a/lustre/utils/mount_utils.h b/lustre/utils/mount_utils.h
+index 1b514acd58..3f1fb7ffc5 100644
+--- a/lustre/utils/mount_utils.h
++++ b/lustre/utils/mount_utils.h
+@@ -237,10 +237,15 @@ bool backfs_mount_type_loaded(enum ldd_mount_type mt);
+ 
+ #ifdef HAVE_OPENSSL_SSK
+ int load_shared_keys(struct mount_opts *mop, bool client);
++void unload_shared_key(unsigned int key);
+ #else
+ static inline int load_shared_keys(struct mount_opts *mop, bool client)
+ {
+-	return EOPNOTSUPP;
++	return -EOPNOTSUPP;
++}
++static inline void unload_shared_key(unsigned int key)
++{
++	return;
+ }
+ #endif
+ #endif
+
+</pre>
+</body>
+</html>

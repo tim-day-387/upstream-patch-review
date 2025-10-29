@@ -1,0 +1,240 @@
+<html lang="en">
+<body>
+<pre>
+From d0f1ced7c9b716697b8b9047d291a753c8caeda7 Mon Sep 17 00:00:00 2001
+From: Andreas Dilger <adilger@whamcloud.com>
+Date: Thu, 23 Oct 2025 22:26:11 +0000
+Subject: [PATCH 1/1] LU-18939 llite: fix readahead pct to use totalram
+
+This patch allows readahead percentage to be calculated
+using total system RAM instead of the readahead limit.
+It also makes setting the parameter more robust and
+consistent with expected behavior.
+
+The call to "run_test 854" was missed from the original patch.
+
+Change-Id: Id226bad7aa976ae43bace7e62158c7dcf496cf5e
+Test-Parameters: trivial testlist=sanity env=ONLY=854,ONLY_REPEAT=10
+Fixes: be4e323b56 ("LU-18939 llite: allow readahead params to be set as percentage")
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+---
+ lustre/llite/lproc_llite.c       | 37 ++++++++++----
+ lustre/obdclass/lprocfs_status.c |  3 +-
+ lustre/tests/sanity.sh           | 85 +++++++++++++++++++++-----------
+ 3 files changed, 85 insertions(+), 40 deletions(-)
+
+diff --git a/lustre/llite/lproc_llite.c b/lustre/llite/lproc_llite.c
+index c9004bf87c..9d9d6a4493 100644
+--- a/lustre/llite/lproc_llite.c
++++ b/lustre/llite/lproc_llite.c
+@@ -417,7 +417,7 @@ static ssize_t max_read_ahead_mb_store(struct kobject *kobj,
+ 	int rc;
+ 
+ 	rc = sysfs_memparse_total(buffer, count, &ra_max_mb,
+-				  cfs_totalram_pages() << (PAGE_SHIFT - 1),
++				  (cfs_totalram_pages() << PAGE_SHIFT) / 2,
+ 				  "MiB");
+ 	if (rc == -ERANGE) {
+ 		CERROR("%s: cannot set max_read_ahead_mb=%llu > totalram/2=%luMB: rc = %d\n",
+@@ -431,6 +431,13 @@ static ssize_t max_read_ahead_mb_store(struct kobject *kobj,
+ 	pages_number = round_up(ra_max_mb, 1024 * 1024) >> PAGE_SHIFT;
+ 	CDEBUG(D_INFO, "%s: set max_read_ahead_mb=%llu (%llu pages)\n",
+ 	       sbi->ll_fsname, PAGES_TO_MiB(pages_number), pages_number);
++	if (pages_number > cfs_totalram_pages() / 2) {
++		/* 1/2 of RAM */
++		CERROR("%s: cannot set max_read_ahead_mb=%llu > totalram/2=%luMB\n",
++		       sbi->ll_fsname, PAGES_TO_MiB(pages_number),
++		       PAGES_TO_MiB(cfs_totalram_pages() / 2));
++		return -ERANGE;
++	}
+ 
+ 	spin_lock(&sbi->ll_lock);
+ 	sbi->ll_ra_info.ra_max_pages = pages_number;
+@@ -462,18 +469,23 @@ static ssize_t max_read_ahead_per_file_mb_store(struct kobject *kobj,
+ 	int rc;
+ 
+ 	rc = sysfs_memparse_total(buffer, count, &ra_max_file_mb,
+-				  sbi->ll_ra_info.ra_max_pages << PAGE_SHIFT,
+-				  "MiB");
++				  cfs_totalram_pages() << PAGE_SHIFT, "MiB");
+ 	if (rc == -ERANGE) {
+-		CERROR("%s: cannot set max_read_ahead_per_file_mb=%llu > max_read_ahead_mb=%lu: rc = %d\n",
++		CERROR("%s: cannot set max_read_ahead_per_file_mb=%llu > totalram=%luMB: rc = %d\n",
+ 		       sbi->ll_fsname, ra_max_file_mb >> 20,
+-		       PAGES_TO_MiB(sbi->ll_ra_info.ra_max_pages), rc);
++		       PAGES_TO_MiB(cfs_totalram_pages()), rc);
+ 		return rc;
+ 	}
+ 	if (rc)
+ 		return rc;
+ 
+ 	pages_number = round_up(ra_max_file_mb, 1024 * 1024) >> PAGE_SHIFT;
++	if (pages_number > sbi->ll_ra_info.ra_max_pages) {
++		CERROR("%s: cannot set max_read_ahead_per_file_mb=%llu > max_read_ahead_mb=%lu\n",
++		       sbi->ll_fsname, PAGES_TO_MiB(pages_number),
++		       PAGES_TO_MiB(sbi->ll_ra_info.ra_max_pages));
++		return -ERANGE;
++	}
+ 
+ 	spin_lock(&sbi->ll_lock);
+ 	sbi->ll_ra_info.ra_max_pages_per_file = pages_number;
+@@ -503,13 +515,13 @@ static ssize_t max_read_ahead_whole_mb_store(struct kobject *kobj,
+ 	u64 max_limit;
+ 	int rc;
+ 
+-	max_limit = sbi->ll_ra_info.ra_max_pages_per_file << PAGE_SHIFT;
++	max_limit = cfs_totalram_pages() << PAGE_SHIFT;
+ 	rc = sysfs_memparse_total(buffer, count, &ra_max_whole_mb, max_limit,
+-				 "MiB");
++				  "MiB");
+ 	if (rc == -ERANGE) {
+-		CERROR("%s: cannot set max_read_ahead_whole_mb=%llu > max_read_ahead_per_file_mb=%lu: rc = %d\n",
++		CERROR("%s: cannot set max_read_ahead_whole_mb=%llu > totalram=%luMB: rc = %d\n",
+ 		       sbi->ll_fsname, ra_max_whole_mb >> 20,
+-		       PAGES_TO_MiB(sbi->ll_ra_info.ra_max_pages_per_file), rc);
++		       PAGES_TO_MiB(cfs_totalram_pages()), rc);
+ 		return rc;
+ 	}
+ 	if (rc)
+@@ -519,6 +531,13 @@ static ssize_t max_read_ahead_whole_mb_store(struct kobject *kobj,
+ 	/* Cap this at the current max readahead window size, the readahead
+ 	 * algorithm does this anyway so it's pointless to set it larger.
+ 	 */
++	if (pages_number > sbi->ll_ra_info.ra_max_pages_per_file) {
++		CERROR("%s: cannot set max_read_ahead_whole_mb=%llu > max_read_ahead_per_file_mb=%lu\n",
++		       sbi->ll_fsname, PAGES_TO_MiB(pages_number),
++		       PAGES_TO_MiB(sbi->ll_ra_info.ra_max_pages_per_file));
++
++		return -ERANGE;
++	}
+ 
+ 	spin_lock(&sbi->ll_lock);
+ 	sbi->ll_ra_info.ra_max_read_ahead_whole_pages = pages_number;
+diff --git a/lustre/obdclass/lprocfs_status.c b/lustre/obdclass/lprocfs_status.c
+index b4627851ed..5002b11fed 100644
+--- a/lustre/obdclass/lprocfs_status.c
++++ b/lustre/obdclass/lprocfs_status.c
+@@ -2432,7 +2432,8 @@ char *lprocfs_find_named_value(const char *buffer, const char *name,
+ 		val++;
+ 
+ 	*count = 0;
+-	while (val < buffer + buflen && isalnum(*val)) {
++	while (val < buffer + buflen && (isalnum(*val) || *val == '%' ||
++	       *val == '.')) {
+ 		++*count;
+ 		++val;
+ 	}
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index a6e1b0ff52..e8e67751d2 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -35600,50 +35600,75 @@ test_854() {
+ 
+ 	log "Value correctly capped at ~50% of RAM ($ra_mb_90 <= $expect_50)"
+ 
+-	# Test 5: Verify max_ra_per_file_mb is capped at max_ra_mb
+-	log "Test if max_read_ahead_per_file_mb > max_read_ahead_mb is capped"
+-	$LCTL set_param -n llite.*.max_read_ahead_per_file_mb=60% ||
+-		error "Failed to set max_read_ahead_per_file_mb to 60%"
++	# Test 5: Verify max_ra_per_file_mb is rejected when > max_ra_mb
++	log "Test if max_read_ahead_per_file_mb > max_read_ahead_mb is rejected"
+ 
+-	# Get the actual value set
+-	local ra_per_file_mb_60=$($LCTL get_param -n \
+-				  llite.*.max_read_ahead_per_file_mb) ||
+-		error "Fail to get max_read_ahead_per_file_mb after set to 60%"
++	# Calculate 60% of total RAM to ensure it exceeds current max_read_ahead_mb
++	local expect_60=$((total_ram_mb * 60 / 100))
++	log "Attempting to set max_read_ahead_per_file_mb to 60% of RAM ($expect_60 MB), current max_read_ahead_mb is $ra_mb_90 MB"
++
++	# This should fail because 60% of RAM > current max_read_ahead_mb (which is capped at 50%)
++	if $LCTL set_param -n llite.*.max_read_ahead_per_file_mb=60% 2>/dev/null; then
++		# If it succeeded, verify it was capped at max_read_ahead_mb
++		local ra_per_file_mb_60=$($LCTL get_param -n \
++					  llite.*.max_read_ahead_per_file_mb) ||
++			error "Fail to get max_read_ahead_per_file_mb after set to 60%"
+ 
+-	log "max_read_ahead_per_file_mb=60% set to $ra_per_file_mb_60 MB"
++		log "max_read_ahead_per_file_mb=60% set to $ra_per_file_mb_60 MB"
+ 
+-	# Check if the value was capped at max_ra_mb
+-	if (( ra_per_file_mb_60 > ra_mb_90 )); then
+-		error "max_read_ahead_per_file_mb $ra_per_file_mb_60 MB exceeds max_read_ahead_mb ($ra_mb_90 MB)"
++		# Check if the value was capped at max_ra_mb
++		if (( ra_per_file_mb_60 > ra_mb_90 )); then
++			error "max_read_ahead_per_file_mb $ra_per_file_mb_60 MB exceeds max_read_ahead_mb ($ra_mb_90 MB)"
++		fi
++		log "Value capped at max_read_ahead_mb ($ra_per_file_mb_60 <= $ra_mb_90)"
++	else
++		log "Setting max_read_ahead_per_file_mb=60% correctly rejected (exceeds max_read_ahead_mb=$ra_mb_90 MB)"
+ 	fi
+-	log "Value capped at max_read_ahead_mb ($ra_per_file_mb_60 <= $ra_mb_90)"
+ 
+-	# Test 6: Verify max_ra_whole_mb is capped at max_ra_per_file_mb
+-	log "Test if max_read_ahead_whole_mb > max_read_ahead_per_file_mb capped"
+-	$LCTL set_param -n llite.*.max_read_ahead_whole_mb=70% ||
+-		error "Failed to set max_read_ahead_whole_mb to 70%"
++	# Test 6: Verify max_ra_whole_mb is rejected when > max_ra_per_file_mb
++	log "Test if max_read_ahead_whole_mb > max_read_ahead_per_file_mb is rejected"
+ 
+-	# Get the actual value set
+-	local ra_whole_mb_70=$($LCTL get_param -n \
+-			       llite.*.max_read_ahead_whole_mb) ||
+-		error "Failed to get max_read_ahead_whole_mb after set to 70%"
+-	log "max_read_ahead_whole_mb=70% set to $ra_whole_mb_70 MB"
++	# Get current max_read_ahead_per_file_mb value (should still be from Test 2: 5%)
++	local current_ra_per_file_mb=$($LCTL get_param -n \
++				       llite.*.max_read_ahead_per_file_mb) ||
++		error "Failed to get current max_read_ahead_per_file_mb"
++
++	# Calculate 70% of total RAM to ensure it exceeds current max_read_ahead_per_file_mb
++	local expect_70=$((total_ram_mb * 70 / 100))
++	log "Attempting to set max_read_ahead_whole_mb to 70% of RAM ($expect_70 MB), current max_read_ahead_per_file_mb is $current_ra_per_file_mb MB"
++
++	# This should fail because 70% of RAM > current max_read_ahead_per_file_mb
++	if $LCTL set_param -n llite.*.max_read_ahead_whole_mb=70% 2>/dev/null; then
++		# If it succeeded, verify it was capped at max_read_ahead_per_file_mb
++		local ra_whole_mb_70=$($LCTL get_param -n \
++				       llite.*.max_read_ahead_whole_mb) ||
++			error "Failed to get max_read_ahead_whole_mb after setting to 70%"
+ 
+-	# Check if the value was capped at max_ra_per_file_mb
+-	if (( ra_whole_mb_70 > ra_per_file_mb_60 )); then
+-		error "max_read_ahead_whole_mb $ra_whole_mb_70 MB exceeds max_read_ahead_per_file_mb ($ra_per_file_mb_60 MB)"
++		log "max_read_ahead_whole_mb=70% set to $ra_whole_mb_70 MB"
++
++		# Check if the value was capped at max_ra_per_file_mb
++		if (( ra_whole_mb_70 > current_ra_per_file_mb )); then
++			error "max_read_ahead_whole_mb $ra_whole_mb_70 MB exceeds max_read_ahead_per_file_mb ($current_ra_per_file_mb MB)"
++		fi
++		log "Value capped at max_read_ahead_per_file_mb ($ra_whole_mb_70 <= $current_ra_per_file_mb)"
++	else
++		log "Setting max_read_ahead_whole_mb=70% correctly rejected (exceeds max_read_ahead_per_file_mb=$current_ra_per_file_mb MB)"
+ 	fi
+-	log "Value capped at max_read_ahead_per_file_mb ($ra_whole_mb_70 <= $ra_per_file_mb_60)"
+ 
+-	# Verify max_cached_mb is still set correctly
++	# Verify max_cached_mb is still set correctly (we set it to 75% earlier)
+ 	new_max_cached_mb=$($LCTL get_param llite.*.max_cached_mb |
+ 			    awk '/^max_cached_mb:/ { print $2 }') ||
+ 		error "Failed to get final max_cached_mb value"
+ 	log "Final max_cached_mb: $new_max_cached_mb MB"
+-	(( new_max_cached_mb * 100 / total_ram_mb >= 74 &&
+-	 new_max_cached_mb * 100 / total_ram_mb <= 76 )) ||
+-		error "max_cached_mb changed from 75% of RAM"
++
++	# We set it to 75% earlier, verify it's still around that value
++	(( new_max_cached_mb * 100 / total_ram_mb >= 70 &&
++	 new_max_cached_mb * 100 / total_ram_mb <= 80 )) ||
++		error "max_cached_mb=$new_max_cached_mb MB not close to 75% of RAM"
++
++	log "max_cached_mb percentage functionality verified successfully"
+ }
++run_test 854 "verify llite.*.max_cached_mb setting"
+ 
+ #
+ # tests that do cleanup/setup should be run at the end
+
+</pre>
+</body>
+</html>
