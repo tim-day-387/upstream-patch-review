@@ -1,0 +1,609 @@
+<html lang="en">
+<body>
+<pre>
+From 02fc2808aa99dc1951b14263b4c37988c5c0acab Mon Sep 17 00:00:00 2001
+From: Bobi Jam <bobijam@whamcloud.com>
+Date: Fri, 1 Nov 2024 16:45:14 +0800
+Subject: [PATCH 1/1] LU-18746 flr: allow merge stale mirror
+
+This patch makes it possible to merge a stale mirror to an existing
+file, so that we can append several mirrors w/o writing data to
+those mirrors first, and after we've finished the merge we'd do the
+mirror resync later.
+
+Signed-off-by: Bobi Jam <bobijam@whamcloud.com>
+Change-Id: I0d730566ea9b238aeac5d2e27e77c719a1c73308
+---
+ lustre/include/lu_object.h                    |  1 +
+ lustre/include/lustre_mds.h                   |  7 +-
+ lustre/include/obd.h                          | 14 ++--
+ lustre/include/uapi/linux/lustre/lustre_idl.h |  4 ++
+ .../include/uapi/linux/lustre/lustre_user.h   |  1 +
+ lustre/llite/file.c                           | 65 +++++++++++--------
+ lustre/lod/lod_object.c                       | 12 ++--
+ lustre/mdc/mdc_lib.c                          |  5 +-
+ lustre/mdd/mdd_object.c                       |  8 ++-
+ lustre/mdt/mdt_open.c                         |  5 +-
+ lustre/ptlrpc/pack_generic.c                  |  2 +
+ lustre/ptlrpc/wiretest.c                      | 24 +++++++
+ lustre/utils/lfs.c                            | 18 +++--
+ lustre/utils/wirecheck.c                      | 16 ++++-
+ lustre/utils/wiretest.c                       | 24 +++++++
+ 15 files changed, 155 insertions(+), 51 deletions(-)
+
+diff --git a/lustre/include/lu_object.h b/lustre/include/lu_object.h
+index 511176fdd9..73ee41549e 100644
+--- a/lustre/include/lu_object.h
++++ b/lustre/include/lu_object.h
+@@ -887,6 +887,7 @@ enum lu_xattr_flags {
+ 	LU_XATTR_MERGE   = BIT(2),
+ 	LU_XATTR_SPLIT   = BIT(3),
+ 	LU_XATTR_PURGE   = BIT(4),
++	LU_XATTR_MERGE_STALE   = BIT(5),
+ };
+ 
+ /* For lu_context health-checks */
+diff --git a/lustre/include/lustre_mds.h b/lustre/include/lustre_mds.h
+index 7b11dbb717..b4e171341e 100644
+--- a/lustre/include/lustre_mds.h
++++ b/lustre/include/lustre_mds.h
+@@ -30,7 +30,12 @@
+ 
+ struct md_rejig_data {
+ 	struct md_object	*mrd_obj;
+-	__u16			mrd_mirror_id;
++	union {
++		/* mirror split */
++		__u16		mrd_mirror_id;
++		/* mirror merge */
++		__u16		mrd_merge_stale:1;
++	};
+ };
+ 
+ #define MDD_OBD_NAME     "mdd_obd"
+diff --git a/lustre/include/obd.h b/lustre/include/obd.h
+index ef3e4344e2..d3c6ea3d0a 100644
+--- a/lustre/include/obd.h
++++ b/lustre/include/obd.h
+@@ -950,7 +950,6 @@ struct md_op_data {
+ 	struct lu_fid		op_fid4; /* to the operation locks. */
+ 	u32			op_mds;  /* what mds server open will go to */
+ 	__u32			op_mode;
+-	enum md_op_code		op_code;
+ 	struct lustre_handle	op_open_handle;
+ 	s64			op_mod_time;
+ 	const char		*op_name;
+@@ -967,21 +966,22 @@ struct md_op_data {
+ 
+ 	/* iattr fields and blocks. */
+ 	struct iattr            op_attr;
+-	enum op_xvalid		op_xvalid;	/* eXtra validity flags */
+ 	loff_t                  op_attr_blocks;
+ 	u64			op_valid;	/* OBD_MD_* */
+ 	unsigned int		op_attr_flags;	/* LUSTRE_{SYNC,..}_FL */
+ 
++	enum md_op_code		op_code;
++	enum op_xvalid		op_xvalid;	/* eXtra validity flags */
+ 	enum md_op_flags	op_flags;
+ 
+-	/* Various operation flags. */
+-	enum mds_op_bias        op_bias;
+-
+ 	/* used to transfer info between the stacks of MD client
+ 	 * see enum op_cli_flags
+ 	 */
+ 	enum md_cli_flags	op_cli_flags;
+ 
++	/* Various operation flags. */
++	enum mds_op_bias        op_bias;
++
+ 	/* File object data version for HSM release or migrate, on client */
+ 	__u64			op_data_version;
+ 	__u64			op_data_version2;
+@@ -1017,7 +1017,9 @@ struct md_op_data {
+ 	 * layout, we are sure file with name doesn't exist, but in reverse
+ 	 * order there may be a race with creation by others.
+ 	 */
+-	bool			op_new_layout;
++	__u16			op_new_layout:1,
++				/* merge stale mirror */
++				op_merge_stale:1;
+ 	/* used to access dir with bash hash */
+ 	__u32			op_stripe_index;
+ 	/* Archive ID for PCC attach */
+diff --git a/lustre/include/uapi/linux/lustre/lustre_idl.h b/lustre/include/uapi/linux/lustre/lustre_idl.h
+index 340ebe9820..a67b0c6a21 100644
+--- a/lustre/include/uapi/linux/lustre/lustre_idl.h
++++ b/lustre/include/uapi/linux/lustre/lustre_idl.h
+@@ -3779,6 +3779,8 @@ struct close_data_resync_done {
+ 	__u32	resync_ids_inline[INLINE_RESYNC_ARRAY_SIZE];
+ };
+ 
++#define CD_MERGE_STALE	0x0001
++
+ struct close_data {
+ 	struct lustre_handle	cd_handle;
+ 	struct lu_fid		cd_fid;
+@@ -3788,6 +3790,8 @@ struct close_data {
+ 		struct close_data_resync_done	cd_resync;
+ 		/* split close */
+ 		__u16				cd_mirror_id;
++		/* merge */
++		__u16				cd_merge_flags;
+ 		/* PCC release */
+ 		__u32				cd_archive_id;
+ 		/* migrate swap layout */
+diff --git a/lustre/include/uapi/linux/lustre/lustre_user.h b/lustre/include/uapi/linux/lustre/lustre_user.h
+index ced4b58b5e..32ef8601bd 100644
+--- a/lustre/include/uapi/linux/lustre/lustre_user.h
++++ b/lustre/include/uapi/linux/lustre/lustre_user.h
+@@ -605,6 +605,7 @@ enum ll_lease_flags {
+ 	LL_LEASE_LAYOUT_MERGE	= 0x4,
+ 	LL_LEASE_LAYOUT_SPLIT	= 0x8,
+ 	LL_LEASE_PCC_ATTACH	= 0x10,
++	LL_LEASE_ALLOW_STALE	= 0x20,
+ };
+ 
+ #define IOC_IDS_MAX	4096
+diff --git a/lustre/llite/file.c b/lustre/llite/file.c
+index 6cceaf2ab9..69a3cd657b 100644
+--- a/lustre/llite/file.c
++++ b/lustre/llite/file.c
+@@ -37,9 +37,14 @@
+ #include "llite_internal.h"
+ #include "vvp_internal.h"
+ 
+-struct split_param {
+-	struct inode	*sp_inode;
+-	__u16		sp_mirror_id;
++struct mirror_resize_param {
++	struct inode	*mrp_inode;
++	union {
++		/* mirror split */
++		__u16	mrp_mirror_id;
++		/* merge */
++		__u16	mrp_merge_stale:1;
++	};
+ };
+ 
+ struct pcc_param {
+@@ -142,6 +147,7 @@ static int ll_close_inode_openhandle(struct inode *inode,
+ 	struct obd_export *md_exp = ll_i2mdexp(inode);
+ 	const struct ll_inode_info *lli = ll_i2info(inode);
+ 	struct md_op_data *op_data;
++	struct mirror_resize_param *mrp = data;
+ 	struct ptlrpc_request *req = NULL;
+ 	int rc;
+ 
+@@ -164,22 +170,21 @@ static int ll_close_inode_openhandle(struct inode *inode,
+ 	switch (bias) {
+ 	case MDS_CLOSE_LAYOUT_MERGE:
+ 		/* merge blocks from the victim inode */
+-		op_data->op_attr_blocks += ((struct inode *)data)->i_blocks;
++		op_data->op_attr_blocks += mrp->mrp_inode->i_blocks;
+ 		op_data->op_attr.ia_valid |= ATTR_SIZE;
+ 		op_data->op_xvalid |= OP_XVALID_BLOCKS;
++
++		op_data->op_fid2 = *ll_inode2fid(mrp->mrp_inode);
++		op_data->op_merge_stale = mrp->mrp_merge_stale;
+ 		fallthrough;
+ 	case MDS_CLOSE_LAYOUT_SPLIT: {
+-		struct split_param *sp = data;
+-
+ 		LASSERT(data != NULL);
+ 		op_data->op_bias |= bias;
+ 		op_data->op_data_version = 0;
+ 		op_data->op_lease_handle = och->och_lease_handle;
+ 		if (bias == MDS_CLOSE_LAYOUT_SPLIT) {
+-			op_data->op_fid2 = *ll_inode2fid(sp->sp_inode);
+-			op_data->op_mirror_id = sp->sp_mirror_id;
+-		} else { /* MDS_CLOSE_LAYOUT_MERGE */
+-			op_data->op_fid2 = *ll_inode2fid(data);
++			op_data->op_fid2 = *ll_inode2fid(mrp->mrp_inode);
++			op_data->op_mirror_id = mrp->mrp_mirror_id;
+ 		}
+ 		break;
+ 	}
+@@ -4326,7 +4331,7 @@ static long ll_file_unlock_lease(struct file *file, struct ll_ioc_lease *ioc,
+ 	struct ll_file_data *lfd = file->private_data;
+ 	struct ll_inode_info *lli = ll_i2info(inode);
+ 	struct obd_client_handle *och = NULL;
+-	struct split_param sp;
++	struct mirror_resize_param mrp;
+ 	struct pcc_param param;
+ 	bool lease_broken = false;
+ 	enum mds_open_flags open_flags = MDS_FMODE_CLOSED;
+@@ -4354,61 +4359,64 @@ static long ll_file_unlock_lease(struct file *file, struct ll_ioc_lease *ioc,
+ 	switch (ioc->lil_flags) {
+ 	case LL_LEASE_RESYNC_DONE:
+ 		if (ioc->lil_count > IOC_IDS_MAX)
+-			GOTO(out_lease_close, rc = -EINVAL);
++			GOTO(out_lease_close, rc2 = -EINVAL);
+ 
+ 		data_size = offsetof(typeof(*ioc), lil_ids[ioc->lil_count]);
+ 		OBD_ALLOC(data, data_size);
+ 		if (!data)
+-			GOTO(out_lease_close, rc = -ENOMEM);
++			GOTO(out_lease_close, rc2 = -ENOMEM);
+ 
+ 		if (copy_from_user(data, uarg, data_size))
+-			GOTO(out_lease_close, rc = -EFAULT);
++			GOTO(out_lease_close, rc2 = -EFAULT);
+ 
+ 		bias = MDS_CLOSE_RESYNC_DONE;
+ 		break;
+ 	case LL_LEASE_LAYOUT_MERGE:
++	case LL_LEASE_LAYOUT_MERGE | LL_LEASE_ALLOW_STALE:
+ 		if (ioc->lil_count != 1)
+-			GOTO(out_lease_close, rc = -EINVAL);
++			GOTO(out_lease_close, rc2 = -EINVAL);
+ 
+ 		uarg += sizeof(*ioc);
+ 		if (copy_from_user(&fdv, uarg, sizeof(fdv)))
+-			GOTO(out_lease_close, rc = -EFAULT);
++			GOTO(out_lease_close, rc2 = -EFAULT);
+ 
+ 		layout_file = fget(fdv);
+ 		if (!layout_file)
+-			GOTO(out_lease_close, rc = -EBADF);
++			GOTO(out_lease_close, rc2 = -EBADF);
+ 
+ 		if ((file->f_flags & O_ACCMODE) == O_RDONLY ||
+ 				(layout_file->f_flags & O_ACCMODE) == O_RDONLY)
+-			GOTO(out_lease_close, rc = -EPERM);
++			GOTO(out_lease_close, rc2 = -EPERM);
+ 
+-		data = file_inode(layout_file);
++		mrp.mrp_inode = file_inode(layout_file);
++		mrp.mrp_merge_stale = !!(ioc->lil_flags & LL_LEASE_ALLOW_STALE);
++		data = &mrp;
+ 		bias = MDS_CLOSE_LAYOUT_MERGE;
+ 		break;
+ 	case LL_LEASE_LAYOUT_SPLIT: {
+ 		__u32 mirror_id;
+ 
+ 		if (ioc->lil_count != 2)
+-			GOTO(out_lease_close, rc = -EINVAL);
++			GOTO(out_lease_close, rc2 = -EINVAL);
+ 
+ 		uarg += sizeof(*ioc);
+ 		if (copy_from_user(&fdv, uarg, sizeof(fdv)))
+-			GOTO(out_lease_close, rc = -EFAULT);
++			GOTO(out_lease_close, rc2 = -EFAULT);
+ 
+ 		uarg += sizeof(fdv);
+ 		if (copy_from_user(&mirror_id, uarg, sizeof(mirror_id)))
+-			GOTO(out_lease_close, rc = -EFAULT);
++			GOTO(out_lease_close, rc2 = -EFAULT);
+ 		if (mirror_id >= MIRROR_ID_NEG)
+-			GOTO(out_lease_close, rc = -EINVAL);
++			GOTO(out_lease_close, rc2 = -EINVAL);
+ 
+ 		layout_file = fget(fdv);
+ 		if (!layout_file)
+-			GOTO(out_lease_close, rc = -EBADF);
++			GOTO(out_lease_close, rc2 = -EBADF);
+ 
+ 		/* if layout_file == file, it means to destroy the mirror */
+-		sp.sp_inode = file_inode(layout_file);
+-		sp.sp_mirror_id = (__u16)mirror_id;
+-		data = &sp;
++		mrp.mrp_inode = file_inode(layout_file);
++		mrp.mrp_mirror_id = (__u16)mirror_id;
++		data = &mrp;
+ 		bias = MDS_CLOSE_LAYOUT_SPLIT;
+ 		break;
+ 	}
+@@ -4454,6 +4462,9 @@ out_lease_close:
+ 
+ 	if (lease_broken)
+ 		open_flags = MDS_FMODE_CLOSED;
++
++	if (!rc)
++		rc = rc2;
+ 	EXIT;
+ 
+ out:
+diff --git a/lustre/lod/lod_object.c b/lustre/lod/lod_object.c
+index a46ef8c52c..5d1714201b 100644
+--- a/lustre/lod/lod_object.c
++++ b/lustre/lod/lod_object.c
+@@ -3357,7 +3357,7 @@ out:
+  */
+ static int lod_declare_layout_merge(const struct lu_env *env,
+ 				    struct dt_object *dt,
+-				    const struct lu_buf *mbuf,
++				    const struct lu_buf *mbuf, bool stale,
+ 				    struct thandle *th)
+ {
+ 	struct lod_thread_info *info = lod_env_info(env);
+@@ -3480,7 +3480,7 @@ static int lod_declare_layout_merge(const struct lu_env *env,
+ 
+ 		*lcme = *merge_lcme;
+ 		lcme->lcme_offset = cpu_to_le32(offset);
+-		if (merge_has_dom && i == 0)
++		if ((merge_has_dom && i == 0) || stale)
+ 			lcme->lcme_flags |= cpu_to_le32(LCME_FL_STALE);
+ 
+ 		id = pflr_id(mirror_id, i + 1);
+@@ -3759,7 +3759,7 @@ static int lod_declare_xattr_set(const struct lu_env *env,
+ 	mode = dt->do_lu.lo_header->loh_attr & S_IFMT;
+ 	if ((S_ISREG(mode) || mode == 0) &&
+ 	    !(fl & (LU_XATTR_REPLACE | LU_XATTR_MERGE | LU_XATTR_SPLIT |
+-		    LU_XATTR_PURGE)) &&
++		    LU_XATTR_PURGE | LU_XATTR_MERGE_STALE)) &&
+ 	    (strcmp(name, XATTR_NAME_LOV) == 0 ||
+ 	     strcmp(name, XATTR_LUSTRE_LOV) == 0)) {
+ 		struct lu_attr	 *lattr = &lod_env_info(env)->lti_attr;
+@@ -3783,10 +3783,12 @@ static int lod_declare_xattr_set(const struct lu_env *env,
+ 			lattr->la_mode = S_IFREG;
+ 		}
+ 		rc = lod_declare_striped_create(env, dt, lattr, buf, th);
+-	} else if (fl & LU_XATTR_MERGE) {
++	} else if (fl & (LU_XATTR_MERGE | LU_XATTR_MERGE_STALE)) {
+ 		LASSERT(strcmp(name, XATTR_NAME_LOV) == 0 ||
+ 			strcmp(name, XATTR_LUSTRE_LOV) == 0);
+-		rc = lod_declare_layout_merge(env, dt, buf, th);
++		rc = lod_declare_layout_merge(env, dt, buf,
++					      !!(fl & LU_XATTR_MERGE_STALE),
++					      th);
+ 	} else if (fl & LU_XATTR_SPLIT) {
+ 		LASSERT(strcmp(name, XATTR_NAME_LOV) == 0 ||
+ 			strcmp(name, XATTR_LUSTRE_LOV) == 0);
+diff --git a/lustre/mdc/mdc_lib.c b/lustre/mdc/mdc_lib.c
+index c4e99fc089..5b3666efc3 100644
+--- a/lustre/mdc/mdc_lib.c
++++ b/lustre/mdc/mdc_lib.c
+@@ -543,7 +543,10 @@ static void mdc_close_intent_pack(struct req_capsule *pill,
+ 	data->cd_data_version = op_data->op_data_version;
+ 	data->cd_fid = op_data->op_fid2;
+ 
+-	if (bias & MDS_CLOSE_LAYOUT_SPLIT) {
++	if (bias & MDS_CLOSE_LAYOUT_MERGE) {
++		if (op_data->op_merge_stale)
++			data->cd_merge_flags = CD_MERGE_STALE;
++	} else if (bias & MDS_CLOSE_LAYOUT_SPLIT) {
+ 		data->cd_mirror_id = op_data->op_mirror_id;
+ 	} else if (bias & MDS_CLOSE_RESYNC_DONE) {
+ 		struct close_data_resync_done *sync = &data->cd_resync;
+diff --git a/lustre/mdd/mdd_object.c b/lustre/mdd/mdd_object.c
+index bf32306f37..98ea7e97d6 100644
+--- a/lustre/mdd/mdd_object.c
++++ b/lustre/mdd/mdd_object.c
+@@ -1644,7 +1644,7 @@ static int mdd_xattr_del(const struct lu_env *env, struct md_object *obj,
+ 			 const char *name);
+ 
+ static int mdd_xattr_merge(const struct lu_env *env, struct md_object *md_obj,
+-			   struct md_object *md_vic)
++			   struct md_object *md_vic, bool stale)
+ {
+ 	struct mdd_device *mdd = mdo2mdd(md_obj);
+ 	struct mdd_object *obj = md2mdd_obj(md_obj);
+@@ -1713,7 +1713,8 @@ retry:
+ 		GOTO(stop, rc);
+ 
+ 	rc = mdd_declare_xattr_set(env, mdd, obj, buf_vic, XATTR_NAME_LOV,
+-				   LU_XATTR_MERGE, handle);
++				   stale ? LU_XATTR_MERGE_STALE :
++					   LU_XATTR_MERGE, handle);
+ 	if (rc)
+ 		GOTO(stop, rc);
+ 
+@@ -2135,7 +2136,8 @@ retry:
+ 			if (rc)
+ 				RETURN(rc);
+ 			/* merge layout of victim as a mirror of obj's. */
+-			rc = mdd_xattr_merge(env, obj, victim);
++			rc = mdd_xattr_merge(env, obj, victim,
++					     mrd->mrd_merge_stale);
+ 		} else {
+ 			rc = mdd_xattr_split(env, obj, mrd);
+ 		}
+diff --git a/lustre/mdt/mdt_open.c b/lustre/mdt/mdt_open.c
+index bf0804294e..0a00db37a4 100644
+--- a/lustre/mdt/mdt_open.c
++++ b/lustre/mdt/mdt_open.c
+@@ -2359,7 +2359,10 @@ static int mdt_close_handle_layouts(struct mdt_thread_info *info,
+ 			mrd.mrd_obj = NULL;
+ 		}
+ 
+-		if (ma->ma_attr_flags & MDS_CLOSE_LAYOUT_SPLIT) {
++		if (ma->ma_attr_flags & MDS_CLOSE_LAYOUT_MERGE) {
++			mrd.mrd_merge_stale = !!(data->cd_merge_flags &
++						 CD_MERGE_STALE);
++		} else if (ma->ma_attr_flags & MDS_CLOSE_LAYOUT_SPLIT) {
+ 			mrd.mrd_mirror_id = data->cd_mirror_id;
+ 			/* set a small enough blocks in the SoM */
+ 			ma->ma_attr.la_blocks >>= 1;
+diff --git a/lustre/ptlrpc/pack_generic.c b/lustre/ptlrpc/pack_generic.c
+index 07d8693f77..e7ff83c578 100644
+--- a/lustre/ptlrpc/pack_generic.c
++++ b/lustre/ptlrpc/pack_generic.c
+@@ -3095,6 +3095,8 @@ void lustre_swab_close_data_special(struct close_data *cd, enum mds_op_bias b)
+ 		lustre_swab_close_data_resync_done(&cd->cd_resync);
+ 	else if (b & MDS_CLOSE_LAYOUT_SPLIT)
+ 		__swab16s(&cd->cd_mirror_id);
++	else if (b & MDS_CLOSE_LAYOUT_MERGE)
++		__swab16s(&cd->cd_merge_flags);
+ 	else if (b & MDS_PCC_ATTACH)
+ 		swab32s(&cd->cd_archive_id);
+ 	else if (b & MDS_CLOSE_LAYOUT_SWAP)
+diff --git a/lustre/ptlrpc/wiretest.c b/lustre/ptlrpc/wiretest.c
+index 8b127dcffa..06b1a261ae 100644
+--- a/lustre/ptlrpc/wiretest.c
++++ b/lustre/ptlrpc/wiretest.c
+@@ -5406,6 +5406,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)SWAP_LAYOUTS_KEEP_ATIME);
+ 	LASSERTF(SWAP_LAYOUTS_CLOSE == 16, "found %lld\n",
+ 		 (long long)SWAP_LAYOUTS_CLOSE);
++	LASSERTF(SWAP_LAYOUTS_MDS_RELEASE == (1 << 31), "found %lld\n",
++		 (long long)SWAP_LAYOUTS_MDS_RELEASE);
+ 
+ 	/* Checks for struct hsm_state_set */
+ 	LASSERTF((int)sizeof(struct hsm_state_set) == 24, "found %lld\n",
+@@ -7090,6 +7092,28 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)offsetof(struct llog_update_record, lur_update_rec));
+ 	LASSERTF((int)sizeof(((struct llog_update_record *)0)->lur_update_rec) == 32, "found %lld\n",
+ 		 (long long)(int)sizeof(((struct llog_update_record *)0)->lur_update_rec));
++
++	/* Checks for struct close_data */
++	LASSERTF((int)sizeof(struct close_data) == 96, "found %lld\n",
++		 (long long)(int)sizeof(struct close_data));
++	LASSERTF((int)offsetof(struct close_data, cd_handle) == 0, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_handle));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_handle) == 8, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_handle));
++	LASSERTF((int)offsetof(struct close_data, cd_fid) == 8, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_fid));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_fid) == 16, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_fid));
++	LASSERTF((int)offsetof(struct close_data, cd_data_version) == 24, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_data_version));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_data_version) == 8, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_data_version));
++	LASSERTF((int)offsetof(struct close_data, cd_reserved) == 32, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_reserved));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_reserved) == 64, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_reserved));
++	LASSERTF(CD_MERGE_STALE == 0x0001, "found %lld\n",
++			(long long)CD_MERGE_STALE);
+ #endif /* HAVE_SERVER_SUPPORT */
+ 
+ 	/* Checks for struct lustre_cfg */
+diff --git a/lustre/utils/lfs.c b/lustre/utils/lfs.c
+index e663ee52d4..6e57c52af8 100644
+--- a/lustre/utils/lfs.c
++++ b/lustre/utils/lfs.c
+@@ -2071,7 +2071,7 @@ out:
+ }
+ 
+ static int mirror_extend_layout(char *name, struct llapi_layout *m_layout,
+-				bool inherit, uint32_t comp_flags,
++				bool inherit, bool sync, uint32_t comp_flags,
+ 				enum llapi_migration_flags migration_flags,
+ 				unsigned long long bandwidth_bytes_sec,
+ 				long stats_interval_sec)
+@@ -2125,11 +2125,13 @@ static int mirror_extend_layout(char *name, struct llapi_layout *m_layout,
+ 	if (stats_interval_sec)
+ 		printf("%s:\n", name);
+ 
+-	rc = migrate_nonblock(fd_src, fd_dst, bandwidth_bytes_sec,
+-			      stats_interval_sec, NULL, &err_str);
+-	if (rc < 0) {
+-		llapi_lease_release(fd_src);
+-		goto out;
++	if (sync) {
++		rc = migrate_nonblock(fd_src, fd_dst, bandwidth_bytes_sec,
++				      stats_interval_sec, NULL, &err_str);
++		if (rc < 0) {
++			llapi_lease_release(fd_src);
++			goto out;
++		}
+ 	}
+ 
+ 	rc = migrate_set_timestamps(fd_src, &st);
+@@ -2146,6 +2148,9 @@ static int mirror_extend_layout(char *name, struct llapi_layout *m_layout,
+ 	}
+ 	data->lil_mode = LL_LEASE_UNLCK;
+ 	data->lil_flags = LL_LEASE_LAYOUT_MERGE;
++	/* whether to merge a stale mirror */
++	if (!sync)
++		data->lil_flags |= LL_LEASE_ALLOW_STALE;
+ 	data->lil_count = 1;
+ 	data->lil_ids[0] = fd_dst;
+ 	rc = llapi_lease_set(fd_src, data);
+@@ -2191,6 +2196,7 @@ static int mirror_extend(char *fname, struct mirror_args *mirror_list,
+ 				rc = mirror_extend_layout(fname,
+ 							mirror_list->m_layout,
+ 							mirror_list->m_inherit,
++							true,
+ 							mirror_list->m_flags,
+ 							migration_flags,
+ 							bandwidth_bytes_sec,
+diff --git a/lustre/utils/wirecheck.c b/lustre/utils/wirecheck.c
+index 7a12d12c3d..2f0edfdfd2 100644
+--- a/lustre/utils/wirecheck.c
++++ b/lustre/utils/wirecheck.c
+@@ -2567,7 +2567,7 @@ static void check_swap_layout(void)
+ 	CHECK_VALUE(SWAP_LAYOUTS_KEEP_MTIME);
+ 	CHECK_VALUE(SWAP_LAYOUTS_KEEP_ATIME);
+ 	CHECK_VALUE(SWAP_LAYOUTS_CLOSE);
+-	CHECK_VALUE(SWAP_LAYOUTS_MDS_RELEASE);
++	CHECK_DEFINE(SWAP_LAYOUTS_MDS_RELEASE);
+ 
+ }
+ 
+@@ -3325,6 +3325,19 @@ static void check_llog_update_record(void)
+ 	CHECK_MEMBER(llog_update_record, lur_hdr);
+ 	CHECK_MEMBER(llog_update_record, lur_update_rec);
+ }
++static void
++check_close_data(void)
++{
++	BLANK_LINE();
++	CHECK_STRUCT(close_data);
++	CHECK_MEMBER(close_data, cd_handle);
++	CHECK_MEMBER(close_data, cd_fid);
++	CHECK_MEMBER(close_data, cd_data_version);
++	CHECK_MEMBER(close_data, cd_reserved);
++
++	CHECK_DEFINE(CD_MERGE_STALE);
++}
++
+ #endif /* !HAVE_NATIVE_LINUX_CLIENT */
+ 
+ static void
+@@ -3886,6 +3899,7 @@ main(int argc, char **argv)
+ 	check_update_ops();
+ 	check_update_records();
+ 	check_llog_update_record();
++	check_close_data();
+ 	CHECK_COND_FINISH(HAVE_SERVER_SUPPORT);
+ #endif /* !HAVE_NATIVE_LINUX_CLIENT */
+ 	check_lustre_cfg();
+diff --git a/lustre/utils/wiretest.c b/lustre/utils/wiretest.c
+index ca7b5c497f..7765ef71d6 100644
+--- a/lustre/utils/wiretest.c
++++ b/lustre/utils/wiretest.c
+@@ -5431,6 +5431,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)SWAP_LAYOUTS_KEEP_ATIME);
+ 	LASSERTF(SWAP_LAYOUTS_CLOSE == 16, "found %lld\n",
+ 		 (long long)SWAP_LAYOUTS_CLOSE);
++	LASSERTF(SWAP_LAYOUTS_MDS_RELEASE == (1 << 31), "found %lld\n",
++		 (long long)SWAP_LAYOUTS_MDS_RELEASE);
+ 
+ 	/* Checks for struct hsm_state_set */
+ 	LASSERTF((int)sizeof(struct hsm_state_set) == 24, "found %lld\n",
+@@ -7115,6 +7117,28 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)offsetof(struct llog_update_record, lur_update_rec));
+ 	LASSERTF((int)sizeof(((struct llog_update_record *)0)->lur_update_rec) == 32, "found %lld\n",
+ 		 (long long)(int)sizeof(((struct llog_update_record *)0)->lur_update_rec));
++
++	/* Checks for struct close_data */
++	LASSERTF((int)sizeof(struct close_data) == 96, "found %lld\n",
++		 (long long)(int)sizeof(struct close_data));
++	LASSERTF((int)offsetof(struct close_data, cd_handle) == 0, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_handle));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_handle) == 8, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_handle));
++	LASSERTF((int)offsetof(struct close_data, cd_fid) == 8, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_fid));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_fid) == 16, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_fid));
++	LASSERTF((int)offsetof(struct close_data, cd_data_version) == 24, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_data_version));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_data_version) == 8, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_data_version));
++	LASSERTF((int)offsetof(struct close_data, cd_reserved) == 32, "found %lld\n",
++		 (long long)(int)offsetof(struct close_data, cd_reserved));
++	LASSERTF((int)sizeof(((struct close_data *)0)->cd_reserved) == 64, "found %lld\n",
++		 (long long)(int)sizeof(((struct close_data *)0)->cd_reserved));
++	LASSERTF(CD_MERGE_STALE == 0x0001, "found %lld\n",
++			(long long)CD_MERGE_STALE);
+ #endif /* HAVE_SERVER_SUPPORT */
+ 
+ 	/* Checks for struct lustre_cfg */
+
+</pre>
+</body>
+</html>
