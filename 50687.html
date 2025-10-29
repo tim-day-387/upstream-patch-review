@@ -1,4 +1,4 @@
-From 9d9bd22cf8327a2c8cd762901671bdb0cd0a963a Mon Sep 17 00:00:00 2001
+From 31035680ba3d029f67e5798f810566c88a0256e5 Mon Sep 17 00:00:00 2001
 From: Qian Yingjin <qian@ddn.com>
 Date: Wed, 19 Apr 2023 03:31:51 -0400
 Subject: [PATCH 1/1] LU-12916 osd: use writeback for small writes in ldiskfs
@@ -47,12 +47,13 @@ Change-Id: I9b5aa568a49d5b39d04656fdacb94c3a6ec5a7ff
  lustre/include/uapi/linux/lustre/lustre_idl.h |   6 +
  lustre/osc/osc_request.c                      |  14 +-
  lustre/osd-ldiskfs/osd_handler.c              |  61 +++-
- lustre/osd-ldiskfs/osd_internal.h             |  24 +-
- lustre/osd-ldiskfs/osd_io.c                   | 326 +++++++++++++++++-
+ lustre/osd-ldiskfs/osd_integrity.c            |   2 +-
+ lustre/osd-ldiskfs/osd_internal.h             |  26 +-
+ lustre/osd-ldiskfs/osd_io.c                   | 330 +++++++++++++++++-
  lustre/osd-ldiskfs/osd_lproc.c                |  83 +++++
  lustre/tests/sanity.sh                        |   7 +-
  lustre/tests/sanityn.sh                       |  19 +-
- 27 files changed, 676 insertions(+), 14 deletions(-)
+ 28 files changed, 680 insertions(+), 18 deletions(-)
  create mode 100644 ldiskfs/kernel_patches/patches/rhel7.9/ext4-writeback.patch
  create mode 100644 ldiskfs/kernel_patches/patches/rhel8/ext4-writeback.patch
  create mode 100644 ldiskfs/kernel_patches/patches/rhel9/ext4-writeback.patch
@@ -547,8 +548,21 @@ index 0ba219c3c6..53a9deec99 100644
  	o->od_scrub.os_scrub.os_auto_scrub_interval = AS_DEFAULT;
  	/* default fallocate to unwritten extents: LU-14326/LU-14333 */
  	o->od_fallocate_zero_blocks = 0;
+diff --git a/lustre/osd-ldiskfs/osd_integrity.c b/lustre/osd-ldiskfs/osd_integrity.c
+index c5311a626e..e82c3d5573 100644
+--- a/lustre/osd-ldiskfs/osd_integrity.c
++++ b/lustre/osd-ldiskfs/osd_integrity.c
+@@ -468,7 +468,7 @@ void osd_bio_integrity_verify_fn(struct work_struct *work)
+ #endif
+ 
+ out:
+-	osd_bio_fini(bio);
++	osd_bio_fini(bio, blk_status_to_errno(bio->bi_status));
+ }
+ 
+ /*
 diff --git a/lustre/osd-ldiskfs/osd_internal.h b/lustre/osd-ldiskfs/osd_internal.h
-index 316870b72b..229dbdc9c6 100644
+index 316870b72b..8a68ecd4eb 100644
 --- a/lustre/osd-ldiskfs/osd_internal.h
 +++ b/lustre/osd-ldiskfs/osd_internal.h
 @@ -314,6 +314,14 @@ struct osd_device {
@@ -610,11 +624,25 @@ index 316870b72b..229dbdc9c6 100644
  
  extern const struct dt_index_operations osd_otable_ops;
  
+@@ -1547,7 +1569,7 @@ static inline struct buffer_head *__ldiskfs_bread(handle_t *handle,
+ #define osd_ldiskfs_dec_count(h, inode)		ldiskfs_dec_count((inode))
+ #endif /* HAVE_EXT4_INC_DEC_COUNT_2ARGS */
+ 
+-void osd_bio_fini(struct bio *bio);
++void osd_bio_fini(struct bio *bio, int error);
+ void osd_fini_iobuf(struct osd_device *d, struct osd_iobuf *iobuf);
+ 
+ static inline int
 diff --git a/lustre/osd-ldiskfs/osd_io.c b/lustre/osd-ldiskfs/osd_io.c
-index f89ec302a6..44f3b73840 100644
+index f89ec302a6..cf9e37e737 100644
 --- a/lustre/osd-ldiskfs/osd_io.c
 +++ b/lustre/osd-ldiskfs/osd_io.c
-@@ -199,6 +199,49 @@ void osd_bio_fini(struct bio *bio)
+@@ -195,10 +195,53 @@ void osd_fini_iobuf(struct osd_device *d, struct osd_iobuf *iobuf)
+ 	iobuf->dr_error = 0;
+ }
+ 
+-void osd_bio_fini(struct bio *bio)
++void osd_bio_fini(struct bio *bio, int error)
  {
  	struct osd_bio_private *bio_private = bio->bi_private;
  	struct osd_iobuf *iobuf = bio_private->obp_iobuf;
@@ -664,6 +692,15 @@ index f89ec302a6..44f3b73840 100644
  
  	/*
  	 * set dr_elapsed before dr_numreqs turns to 0, otherwise
+@@ -281,7 +324,7 @@ static void dio_complete_routine(struct bio *bio, int error)
+ 		return;
+ 	}
+ 
+-	osd_bio_fini(bio);
++	osd_bio_fini(bio, error);
+ }
+ 
+ static void record_start_io(struct osd_iobuf *iobuf, int size)
 @@ -503,6 +546,51 @@ static int osd_do_bio(struct osd_device *osd, struct inode *inode,
  					  blocksize * nblocks, page_offset);
  			LASSERT(rc != 0);

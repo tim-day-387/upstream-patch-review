@@ -1,4 +1,4 @@
-From 3c8ce695ea61f0dec93efb5eff59f54e186bda1e Mon Sep 17 00:00:00 2001
+From 8ac14b92a0c5c22590a07070d4e022461b09671b Mon Sep 17 00:00:00 2001
 From: Sohei Koyama <skoyama@ddn.com>
 Date: Wed, 19 Feb 2025 13:44:38 +0900
 Subject: [PATCH 1/1] LU-18725 utils: create ll_decode_lov
@@ -23,7 +23,7 @@ Change-Id: I50fcb0be067a4cda80aea19fa4b64b8ccf3a9667
  create mode 100644 lustre/utils/ll_decode_lov.c
 
 diff --git a/lustre/doc/Makefile.am b/lustre/doc/Makefile.am
-index 3be9685959..0a81e942c5 100644
+index 3de9f5f38f..8505d74f0b 100644
 --- a/lustre/doc/Makefile.am
 +++ b/lustre/doc/Makefile.am
 @@ -28,6 +28,7 @@ MANFILES =					\
@@ -100,10 +100,10 @@ index 0000000000..675e8c75a0
 +.BR lustre (7)
 \ No newline at end of file
 diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
-index 4db631d717..134eac5f18 100755
+index a6e1b0ff52..051fac7142 100755
 --- a/lustre/tests/sanity.sh
 +++ b/lustre/tests/sanity.sh
-@@ -19093,6 +19093,16 @@ test_154C() {
+@@ -19157,6 +19157,16 @@ test_154C() {
  }
  run_test 154C "lfs fid2path on OST FID"
  
@@ -121,7 +121,7 @@ index 4db631d717..134eac5f18 100755
  	[ $PARALLEL == "yes" ] && skip "skip parallel run"
  	[ -n "$FILESET" ] && skip "SKIP due to FILESET set"
 diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
-index fa70d78a04..cd87542b52 100755
+index 91fa67f589..fccf5155f8 100755
 --- a/lustre/tests/test-framework.sh
 +++ b/lustre/tests/test-framework.sh
 @@ -577,6 +577,9 @@ init_test_env() {
@@ -159,10 +159,10 @@ index 0c9a3e0ee7..da881a6a98 100644
  llsom_sync_DEPENDENCIES := liblustreapi.la
  
 diff --git a/lustre/utils/liblustreapi.c b/lustre/utils/liblustreapi.c
-index 108fa3f2ea..63f24e53df 100644
+index 0fc026a296..7676de8c9d 100644
 --- a/lustre/utils/liblustreapi.c
 +++ b/lustre/utils/liblustreapi.c
-@@ -2562,16 +2562,6 @@ int sattr_cache_get_defaults(const char *const fsname,
+@@ -2566,16 +2566,6 @@ int sattr_cache_get_defaults(const char *const fsname,
  	return 0;
  }
  
@@ -179,7 +179,7 @@ index 108fa3f2ea..63f24e53df 100644
  static void lov_dump_user_lmm_header(struct lov_user_md *lum, char *path,
  				     struct lov_user_ost_data_v1 *objects,
  				     enum llapi_layout_verbose verbose,
-@@ -7200,3 +7190,56 @@ int llapi_fsync(int fd)
+@@ -7204,3 +7194,56 @@ int llapi_fsync(int fd)
  
  	return llapi_get_data_version(fd, &dv, LL_DV_RD_FLUSH);
  }
@@ -325,7 +325,7 @@ index 0000000000..8d2076a915
 +	return rc;
 +}
 diff --git a/lustre/utils/lustreapi_internal.h b/lustre/utils/lustreapi_internal.h
-index f7d8230961..c290efbf6f 100644
+index a00ad7538c..db5a518b4e 100644
 --- a/lustre/utils/lustreapi_internal.h
 +++ b/lustre/utils/lustreapi_internal.h
 @@ -62,6 +62,19 @@ int sattr_cache_get_defaults(const char *const fsname,
