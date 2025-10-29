@@ -1,0 +1,158 @@
+<html lang="en">
+<body>
+<pre>
+From 461ec5e89cd69b1f3ce4a3ba1705e42546f3aadc Mon Sep 17 00:00:00 2001
+From: Patrick Farrell <pfarrell@whamcloud.com>
+Date: Wed, 29 Oct 2025 12:09:42 -0400
+Subject: [PATCH 1/1] LU-19536 obdclass: use wait queue for DIO copy sync
+
+Replace spinlock with wait queue in __ll_dio_user_copy
+to avoid holding spinlock during operations that can
+sleep (page faults, memory context switching, data
+copy loops).
+
+The wait queue's internal spinlock is used for brief
+state protection. Racing threads wait for the first
+thread to complete the copy operation.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Ie0adef566cc9007024dff4ada2d8e77a18b02a04
+---
+ lustre/include/cl_object.h |  3 +-
+ lustre/obdclass/cl_io.c    | 71 +++++++++++++++++++++++++++++++-------
+ 2 files changed, 60 insertions(+), 14 deletions(-)
+
+diff --git a/lustre/include/cl_object.h b/lustre/include/cl_object.h
+index 17b8ebeaca..32236aa0d4 100644
+--- a/lustre/include/cl_object.h
++++ b/lustre/include/cl_object.h
+@@ -2635,10 +2635,11 @@ struct cl_sub_dio {
+ 	struct cl_dio_pages	csd_dio_pages;
+ 	struct iov_iter		csd_iter;
+ 	struct cl_iter_dup	csd_dup;
+-	spinlock_t		csd_lock;
++	wait_queue_head_t	csd_write_waitq;
+ 	unsigned		csd_creator_free:1,
+ 				csd_write:1,
+ 				csd_unaligned:1,
++				csd_write_copying:1,
+ 				csd_write_copied:1;
+ };
+ 
+diff --git a/lustre/obdclass/cl_io.c b/lustre/obdclass/cl_io.c
+index d4a9f89f9d..b69fe992fb 100644
+--- a/lustre/obdclass/cl_io.c
++++ b/lustre/obdclass/cl_io.c
+@@ -1386,7 +1386,7 @@ struct cl_sub_dio *cl_sub_dio_alloc(struct cl_dio_aio *ll_aio,
+ 		sdio->csd_creator_free = sync;
+ 		sdio->csd_write = write;
+ 		sdio->csd_unaligned = unaligned;
+-		spin_lock_init(&sdio->csd_lock);
++		init_waitqueue_head(&sdio->csd_write_waitq);
+ 
+ 		atomic_add(1,  &ll_aio->cda_sync.csi_sync_nr);
+ 
+@@ -1570,7 +1570,7 @@ static ssize_t __ll_dio_user_copy(struct cl_sub_dio *sdio)
+ 	size_t original_count = count;
+ 	int short_copies = 0;
+ 	bool mm_used = false;
+-	bool locked = false;
++	bool do_copy = false;
+ 	unsigned int i = 0;
+ 	int status = 0;
+ 	int rw;
+@@ -1587,15 +1587,52 @@ static ssize_t __ll_dio_user_copy(struct cl_sub_dio *sdio)
+ 	/* read copying is protected by the reference count on the sdio, since
+ 	 * it's done as part of getting rid of the sdio, but write copying is
+ 	 * done at the start, where there may be multiple ptlrpcd threads
+-	 * using this sdio, so we must lock and check if the copying has
+-	 * been done
++	 * using this sdio, so we must synchronize access
+ 	 */
+ 	if (rw == WRITE) {
+-		spin_lock(&sdio->csd_lock);
+-		locked = true;
+-		if (sdio->csd_write_copied)
+-			GOTO(out, status = 0);
++		unsigned long flags;
++
++		/* Use the wait queue's internal spinlock to protect state.
++		 * We only hold it briefly to check/update flags, not during
++		 * the actual copy operations which can sleep.
++		 */
++		spin_lock_irqsave(&sdio->csd_write_waitq.lock, flags);
++
++		/* Wait if another thread is currently copying */
++		while (sdio->csd_write_copying && !sdio->csd_write_copied) {
++			DEFINE_WAIT(wait);
++
++			prepare_to_wait(&sdio->csd_write_waitq, &wait,
++					TASK_UNINTERRUPTIBLE);
++			spin_unlock_irqrestore(&sdio->csd_write_waitq.lock,
++					       flags);
++
++			schedule();
++
++			spin_lock_irqsave(&sdio->csd_write_waitq.lock, flags);
++			finish_wait(&sdio->csd_write_waitq, &wait);
++		}
++
++		/* If copy is already done, we're finished */
++		if (sdio->csd_write_copied) {
++			spin_unlock_irqrestore(&sdio->csd_write_waitq.lock,
++					       flags);
++			RETURN(0);
++		}
++
++		/* We're the first thread here, claim the copy operation */
++		sdio->csd_write_copying = true;
++		do_copy = true;
++		spin_unlock_irqrestore(&sdio->csd_write_waitq.lock, flags);
++	} else {
++		/* READ operations don't need synchronization */
++		do_copy = true;
+ 	}
++
++	/* Only proceed with copy if we're the designated thread */
++	if (!do_copy)
++		RETURN(0);
++
+ 	/* if there's no mm, io is being done from a kernel thread, so there's
+ 	 * no need to transition to its mm context anyway.
+ 	 *
+@@ -1704,9 +1741,6 @@ static ssize_t __ll_dio_user_copy(struct cl_sub_dio *sdio)
+ 		i++;
+ 	}
+ 
+-	if (rw == WRITE && status == 0)
+-		sdio->csd_write_copied = true;
+-
+ 	/* if we complete successfully, we should reach all of the pages */
+ 	LASSERTF(ergo(status == 0, i == cdp->cdp_page_count - 1),
+ 		 "status: %d, i: %d, cdp->cdp_page_count %u, count %zu\n",
+@@ -1716,8 +1750,19 @@ out:
+ 	if (mm_used)
+ 		kthread_unuse_mm(mm);
+ 
+-	if (locked)
+-		spin_unlock(&sdio->csd_lock);
++	/* For write operations, update state and wake any waiting threads */
++	if (rw == WRITE) {
++		unsigned long flags;
++
++		spin_lock_irqsave(&sdio->csd_write_waitq.lock, flags);
++		if (status == 0)
++			sdio->csd_write_copied = true;
++		sdio->csd_write_copying = false;
++		spin_unlock_irqrestore(&sdio->csd_write_waitq.lock, flags);
++
++		/* Wake up any threads waiting for the copy to complete */
++		wake_up_all(&sdio->csd_write_waitq);
++	}
+ 
+ 	/* the total bytes copied, or status */
+ 	RETURN(original_count - count ? original_count - count : status);
+
+</pre>
+</body>
+</html>
