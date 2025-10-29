@@ -1,9 +1,9 @@
 <html lang="en">
 <body>
 <pre>
-From b139e085272c5aa414e73ade369a103fe086af2b Mon Sep 17 00:00:00 2001
+From 7b21c523702122d9acbd4f9af9096557a5a9f6cf Mon Sep 17 00:00:00 2001
 From: James Simmons <jsimmons@infradead.org>
-Date: Sat, 25 Oct 2025 10:05:45 -0400
+Date: Wed, 29 Oct 2025 10:15:15 -0400
 Subject: [PATCH 1/1] LU-18687 obd: don't always use vfree_atomic
 
 There is a large chance upstream will not want to export
@@ -28,13 +28,13 @@ Signed-off-by: James Simmons <jsimmons@infradead.org>
  include/lustre_compat/linux/workqueue.h |  4 ++
  libcfs/libcfs/linux/linux-prim.c        |  4 ++
  lustre/include/lustre_compat.h          |  4 --
- lustre/include/obd_support.h            | 14 +++++-
+ lustre/include/obd_support.h            | 11 ++++-
  lustre/ptlrpc/sec_null.c                |  2 +-
  lustre/ptlrpc/sec_plain.c               |  2 +-
  lustre_compat/mm/Makefile               |  2 +-
  lustre_compat/mm/vmalloc.c              | 65 +++++++++++++++++++++++++
  lustre_compat/symbols.c                 | 12 -----
- 10 files changed, 92 insertions(+), 20 deletions(-)
+ 10 files changed, 89 insertions(+), 20 deletions(-)
  create mode 100644 lustre_compat/mm/vmalloc.c
 
 diff --git a/include/lustre_compat/linux/vmalloc.h b/include/lustre_compat/linux/vmalloc.h
@@ -107,35 +107,34 @@ index 19a35713ea..ed6257d3bc 100644
  #define nsproxy_dec(ns)		refcount_dec(&(ns)->count)
  #else
 diff --git a/lustre/include/obd_support.h b/lustre/include/obd_support.h
-index 94a1e11705..1162afc9db 100644
+index 0cd0d34507..7dbb22c851 100644
 --- a/lustre/include/obd_support.h
 +++ b/lustre/include/obd_support.h
-@@ -963,12 +963,24 @@ do {									\
+@@ -943,7 +943,7 @@ do {									\
  	}								\
  } while (0)
  
-+#define OBD_FREE_LARGE_ATOMIC(ptr, size)				\
-+do {									\
-+	if (is_vmalloc_addr(ptr)) {					\
-+		OBD_FREE_PRE(ptr, size, "vfreed");			\
-+		POISON(ptr, 0x5a, size);				\
-+		compat_vfree_atomic(ptr);				\
-+		POISON_PTR(ptr);					\
-+	} else {							\
-+		OBD_FREE(ptr, size);					\
-+	}                                                               \
-+} while (0)
-+
- #define OBD_FREE_LARGE(ptr, size)					      \
+-#define OBD_FREE_LARGE(ptr, size)					      \
++#define OBD_FREE_LARGE_ATOMIC(ptr, size)			\
  do {									      \
  	if (is_vmalloc_addr(ptr)) {					      \
  		OBD_FREE_PRE(ptr, size, "vfreed");			      \
- 		POISON(ptr, 0x5a, size);				      \
--		compat_vfree_atomic(ptr);				      \
-+		vfree(ptr);						\
- 		POISON_PTR(ptr);					      \
- 	} else {							      \
- 		OBD_FREE(ptr, size);					      \
+@@ -954,6 +954,15 @@ do {									      \
+ 	}                                                                     \
+ } while (0)
+ 
++#define OBD_FREE_LARGE(ptr, size)				\
++do {								\
++	if (likely(ptr)) {					\
++		OBD_FREE_PRE(ptr, size, "kvfree");		\
++		kvfree(ptr);					\
++		POISON_PTR(ptr);				\
++	}							\
++} while (0)
++
+ #define OBD_FREE_PTR_ARRAY_LARGE(ptr, n)			\
+ 	OBD_FREE_LARGE(ptr, (n) * sizeof(*(ptr)))
+ 
 diff --git a/lustre/ptlrpc/sec_null.c b/lustre/ptlrpc/sec_null.c
 index c0280a36f2..a47bc10333 100644
 --- a/lustre/ptlrpc/sec_null.c
