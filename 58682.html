@@ -1,0 +1,482 @@
+<html lang="en">
+<body>
+<pre>
+From 65dceff17b051d56e9436555f96371840bf42943 Mon Sep 17 00:00:00 2001
+From: Timothy Day <timday@amazon.com>
+Date: Fri, 4 Apr 2025 01:26:49 -0400
+Subject: [PATCH 1/1] LU-18687 lib: move libcfs userspace library
+
+Move the libcfs userspace library to the top-level
+lib directory. Eventually, all of the userspace
+tools and libraries will live alongside it.
+
+We move *.c files:
+from: libcfs/libcfs/util/*.c
+to: lib/libcfs/*.c
+
+We move *.h files:
+from: libcfs/include/libcfs/util/*.h
+to: include/libcfs/util/*.h
+
+Test-Parameters: trivial
+Signed-off-by: Timothy Day <timday@amazon.com>
+Change-Id: Ic53a56097cb55d7247b5f1956d0f4bc45bf34680
+---
+ autoMakefile.am                               |  2 ++
+ config/lustre-build.m4                        | 13 ++++++++++
+ config/lustre-libcfs.m4                       |  4 ----
+ config/lustre-toolchain.m4                    |  2 +-
+ .../include => include}/libcfs/util/hash.h    |  0
+ .../include => include}/libcfs/util/ioctl.h   |  0
+ .../include => include}/libcfs/util/list.h    |  0
+ .../include => include}/libcfs/util/param.h   |  0
+ .../include => include}/libcfs/util/parser.h  |  0
+ .../include => include}/libcfs/util/string.h  |  0
+ {libcfs/include/libcfs => lib}/.gitignore     |  0
+ {libcfs/include => lib}/Makefile.am           |  2 +-
+ .../libcfs/util => lib/libcfs}/.gitignore     |  0
+ lib/libcfs/Makefile.am                        | 24 +++++++++++++++++++
+ {libcfs/libcfs/util => lib/libcfs}/l_ioctl.c  |  0
+ .../libcfs/util => lib/libcfs}/nidstrings.c   |  0
+ {libcfs/libcfs/util => lib/libcfs}/param.c    |  0
+ {libcfs/libcfs/util => lib/libcfs}/parser.c   |  0
+ {libcfs/libcfs/util => lib/libcfs}/string.c   |  0
+ libcfs/autoMakefile.am                        |  2 +-
+ libcfs/include/.gitignore                     |  5 ----
+ libcfs/include/libcfs/Makefile.am             |  8 -------
+ libcfs/include/libcfs/util/Makefile.am        |  7 ------
+ libcfs/libcfs/autoMakefile.am                 | 24 ++-----------------
+ libcfs/libcfs/util/.gitignore                 |  1 -
+ libcfs/libcfs/util/Makefile.am                | 12 ----------
+ lnet/utils/lnetconfig/Makefile.am             |  4 ++--
+ lnet/utils/lnetconfig/cyaml.c                 |  2 +-
+ lustre/tests/lutf/src/Makefile.am             |  9 ++++---
+ .../generate_lnetconfig_swig_i.py             |  6 ++---
+ lustre/utils/Makefile.am                      | 12 +++++-----
+ 31 files changed, 62 insertions(+), 77 deletions(-)
+ rename {libcfs/include => include}/libcfs/util/hash.h (100%)
+ rename {libcfs/include => include}/libcfs/util/ioctl.h (100%)
+ rename {libcfs/include => include}/libcfs/util/list.h (100%)
+ rename {libcfs/include => include}/libcfs/util/param.h (100%)
+ rename {libcfs/include => include}/libcfs/util/parser.h (100%)
+ rename {libcfs/include => include}/libcfs/util/string.h (100%)
+ rename {libcfs/include/libcfs => lib}/.gitignore (100%)
+ rename {libcfs/include => lib}/Makefile.am (83%)
+ rename {libcfs/include/libcfs/util => lib/libcfs}/.gitignore (100%)
+ create mode 100644 lib/libcfs/Makefile.am
+ rename {libcfs/libcfs/util => lib/libcfs}/l_ioctl.c (100%)
+ rename {libcfs/libcfs/util => lib/libcfs}/nidstrings.c (100%)
+ rename {libcfs/libcfs/util => lib/libcfs}/param.c (100%)
+ rename {libcfs/libcfs/util => lib/libcfs}/parser.c (100%)
+ rename {libcfs/libcfs/util => lib/libcfs}/string.c (100%)
+ delete mode 100644 libcfs/include/.gitignore
+ delete mode 100644 libcfs/include/libcfs/Makefile.am
+ delete mode 100644 libcfs/include/libcfs/util/Makefile.am
+ delete mode 100644 libcfs/libcfs/util/.gitignore
+ delete mode 100644 libcfs/libcfs/util/Makefile.am
+
+diff --git a/autoMakefile.am b/autoMakefile.am
+index ea1f3763b1..deaa34619a 100644
+--- a/autoMakefile.am
++++ b/autoMakefile.am
+@@ -14,6 +14,7 @@ SUBDIRS := @LDISKFS_SUBDIR@ \
+ 	. \
+ 	@LUSTREIOKIT_SUBDIR@ \
+ 	Documentation \
++	lib \
+ 	libcfs \
+ 	lnet \
+ 	lustre
+@@ -21,6 +22,7 @@ SUBDIRS := @LDISKFS_SUBDIR@ \
+ DIST_SUBDIRS := ldiskfs \
+ 	lustre-iokit \
+ 	Documentation \
++	lib \
+ 	libcfs \
+ 	lnet \
+ 	lustre \
+diff --git a/config/lustre-build.m4 b/config/lustre-build.m4
+index 29f367500d..e005ceb551 100644
+--- a/config/lustre-build.m4
++++ b/config/lustre-build.m4
+@@ -458,6 +458,18 @@ AC_DEFUN([LB_CONFIG_FILES], [
+ 	)
+ ])
+ 
++#
++# LB_LUSTRE_LIBS_CONFIG_FILES
++#
++# lib config files
++#
++AC_DEFUN([LB_LUSTRE_LIBS_CONFIG_FILES], [
++	AC_CONFIG_FILES(
++		lib/Makefile
++		lib/libcfs/Makefile
++	)
++])
++
+ #
+ # LB_CONFIG_SERVERS
+ #
+@@ -721,6 +733,7 @@ LB_CONFIG_FILES
+ LN_CONFIG_FILES
+ LC_CONFIG_FILES
+ LPLUG_CONFIG_FILES
++LB_LUSTRE_LIBS_CONFIG_FILES
+ 
+ AC_SUBST(ac_configure_args)
+ 
+diff --git a/config/lustre-libcfs.m4 b/config/lustre-libcfs.m4
+index 6d3feb5738..dba63efd1f 100644
+--- a/config/lustre-libcfs.m4
++++ b/config/lustre-libcfs.m4
+@@ -2266,13 +2266,9 @@ AC_DEFUN([LIBCFS_CONFIG_FILES], [
+ AC_CONFIG_FILES([
+ libcfs/Makefile
+ libcfs/autoMakefile
+-libcfs/include/Makefile
+-libcfs/include/libcfs/Makefile
+-libcfs/include/libcfs/util/Makefile
+ libcfs/libcfs/Makefile
+ libcfs/libcfs/autoMakefile
+ libcfs/libcfs/linux/Makefile
+-libcfs/libcfs/util/Makefile
+ libcfs/libcfs/crypto/Makefile
+ ])
+ ]) # LIBCFS_CONFIG_FILES
+diff --git a/config/lustre-toolchain.m4 b/config/lustre-toolchain.m4
+index 1550365e90..69f9970fba 100644
+--- a/config/lustre-toolchain.m4
++++ b/config/lustre-toolchain.m4
+@@ -91,7 +91,7 @@ AS_IF([test $target_cpu = powerpc64], [
+ # libcfs/include for util headers, lustre/include for liblustreapi and friends
+ # UAPI headers from OpenSFS are included if modules support is enabled, otherwise
+ # it will use the native kernel implementation.
+-CPPFLAGS="-I$PWD/libcfs/include -I$PWD/lnet/utils/ -I$PWD/lustre/include $CPPFLAGS"
++CPPFLAGS="-I$PWD/libcfs/include -I$PWD/lnet/utils/ -I$PWD/lustre/include -I$PWD/include $CPPFLAGS"
+ 
+ CCASFLAGS="-Wall -fPIC -D_GNU_SOURCE"
+ AC_SUBST(CCASFLAGS)
+diff --git a/libcfs/include/libcfs/util/hash.h b/include/libcfs/util/hash.h
+similarity index 100%
+rename from libcfs/include/libcfs/util/hash.h
+rename to include/libcfs/util/hash.h
+diff --git a/libcfs/include/libcfs/util/ioctl.h b/include/libcfs/util/ioctl.h
+similarity index 100%
+rename from libcfs/include/libcfs/util/ioctl.h
+rename to include/libcfs/util/ioctl.h
+diff --git a/libcfs/include/libcfs/util/list.h b/include/libcfs/util/list.h
+similarity index 100%
+rename from libcfs/include/libcfs/util/list.h
+rename to include/libcfs/util/list.h
+diff --git a/libcfs/include/libcfs/util/param.h b/include/libcfs/util/param.h
+similarity index 100%
+rename from libcfs/include/libcfs/util/param.h
+rename to include/libcfs/util/param.h
+diff --git a/libcfs/include/libcfs/util/parser.h b/include/libcfs/util/parser.h
+similarity index 100%
+rename from libcfs/include/libcfs/util/parser.h
+rename to include/libcfs/util/parser.h
+diff --git a/libcfs/include/libcfs/util/string.h b/include/libcfs/util/string.h
+similarity index 100%
+rename from libcfs/include/libcfs/util/string.h
+rename to include/libcfs/util/string.h
+diff --git a/libcfs/include/libcfs/.gitignore b/lib/.gitignore
+similarity index 100%
+rename from libcfs/include/libcfs/.gitignore
+rename to lib/.gitignore
+diff --git a/libcfs/include/Makefile.am b/lib/Makefile.am
+similarity index 83%
+rename from libcfs/include/Makefile.am
+rename to lib/Makefile.am
+index 6f28d65b5e..07affcacc4 100644
+--- a/libcfs/include/Makefile.am
++++ b/lib/Makefile.am
+@@ -4,4 +4,4 @@
+ # This file is part of Lustre, http://www.lustre.org/
+ #
+ 
+-SUBDIRS = libcfs
++SUBDIRS = . libcfs
+diff --git a/libcfs/include/libcfs/util/.gitignore b/lib/libcfs/.gitignore
+similarity index 100%
+rename from libcfs/include/libcfs/util/.gitignore
+rename to lib/libcfs/.gitignore
+diff --git a/lib/libcfs/Makefile.am b/lib/libcfs/Makefile.am
+new file mode 100644
+index 0000000000..c4a2f520cd
+--- /dev/null
++++ b/lib/libcfs/Makefile.am
+@@ -0,0 +1,24 @@
++# SPDX-License-Identifier: GPL-2.0
++
++#
++# This file is part of Lustre, http://www.lustre.org/
++#
++
++noinst_LTLIBRARIES = libcfs.la
++libcfs_la_SOURCES  := string.c nidstrings.c param.c
++if UTILS
++libcfs_la_SOURCES  += parser.c l_ioctl.c
++endif
++libcfs_la_CPPFLAGS := -D_GNU_SOURCE
++libcfs_la_CPPFLAGS += -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64
++if UTILS
++libcfs_la_CPPFLAGS += -DLUSTRE_UTILS=1
++endif
++libcfs_la_CFLAGS := -fPIC
++
++EXTRA_DIST = \
++	l_ioctl.c \
++	nidstrings.c \
++	param.c \
++	parser.c \
++	string.c
+diff --git a/libcfs/libcfs/util/l_ioctl.c b/lib/libcfs/l_ioctl.c
+similarity index 100%
+rename from libcfs/libcfs/util/l_ioctl.c
+rename to lib/libcfs/l_ioctl.c
+diff --git a/libcfs/libcfs/util/nidstrings.c b/lib/libcfs/nidstrings.c
+similarity index 100%
+rename from libcfs/libcfs/util/nidstrings.c
+rename to lib/libcfs/nidstrings.c
+diff --git a/libcfs/libcfs/util/param.c b/lib/libcfs/param.c
+similarity index 100%
+rename from libcfs/libcfs/util/param.c
+rename to lib/libcfs/param.c
+diff --git a/libcfs/libcfs/util/parser.c b/lib/libcfs/parser.c
+similarity index 100%
+rename from libcfs/libcfs/util/parser.c
+rename to lib/libcfs/parser.c
+diff --git a/libcfs/libcfs/util/string.c b/lib/libcfs/string.c
+similarity index 100%
+rename from libcfs/libcfs/util/string.c
+rename to lib/libcfs/string.c
+diff --git a/libcfs/autoMakefile.am b/libcfs/autoMakefile.am
+index aac0b9a348..34c9d3afca 100644
+--- a/libcfs/autoMakefile.am
++++ b/libcfs/autoMakefile.am
+@@ -9,4 +9,4 @@
+ # This file is part of Lustre, http://www.lustre.org/
+ #
+ 
+-SUBDIRS = libcfs include
++SUBDIRS = libcfs
+diff --git a/libcfs/include/.gitignore b/libcfs/include/.gitignore
+deleted file mode 100644
+index 9577da21b9..0000000000
+--- a/libcfs/include/.gitignore
++++ /dev/null
+@@ -1,5 +0,0 @@
+-/config.h
+-/stamp-h
+-/stamp-h1
+-/stamp-h.in
+-/Makefile.in
+diff --git a/libcfs/include/libcfs/Makefile.am b/libcfs/include/libcfs/Makefile.am
+deleted file mode 100644
+index 947c3419dd..0000000000
+--- a/libcfs/include/libcfs/Makefile.am
++++ /dev/null
+@@ -1,8 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0
+-
+-#
+-# This file is part of Lustre, http://www.lustre.org/
+-#
+-
+-SUBDIRS = util
+-DIST_SUBDIRS = util
+diff --git a/libcfs/include/libcfs/util/Makefile.am b/libcfs/include/libcfs/util/Makefile.am
+deleted file mode 100644
+index 4287de966c..0000000000
+--- a/libcfs/include/libcfs/util/Makefile.am
++++ /dev/null
+@@ -1,7 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0
+-
+-#
+-# This file is part of Lustre, http://www.lustre.org/
+-#
+-
+-EXTRA_DIST = ioctl.h parser.h param.h list.h string.h hash.h
+diff --git a/libcfs/libcfs/autoMakefile.am b/libcfs/libcfs/autoMakefile.am
+index e4fa4d1933..208450f001 100644
+--- a/libcfs/libcfs/autoMakefile.am
++++ b/libcfs/libcfs/autoMakefile.am
+@@ -11,30 +11,10 @@
+ # This file is part of Lustre, http://www.lustre.org/
+ #
+ 
+-SUBDIRS = linux util
+-DIST_SUBDIRS = linux util
+-SUBDIRS += crypto
+-DIST_SUBDIRS += crypto
++SUBDIRS = linux crypto
++DIST_SUBDIRS = linux crypto
+ 
+-noinst_LTLIBRARIES = libcfs.la
+-libcfs_la_SOURCES  := util/string.c util/nidstrings.c util/param.c
+-if UTILS
+-libcfs_la_SOURCES  += util/parser.c util/l_ioctl.c
+-endif # UTILS
+-libcfs_la_CPPFLAGS := -D_GNU_SOURCE
+-libcfs_la_CPPFLAGS += -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64
+-if UTILS
+-libcfs_la_CPPFLAGS += -DLUSTRE_UTILS=1
+-endif
+-libcfs_la_CFLAGS := -fPIC
+-
+-if MODULES
+-
+-if LINUX
+ modulenet_DATA := libcfs.ko
+-endif # LINUX
+-
+-endif # MODULES
+ 
+ MOSTLYCLEANFILES := @MOSTLYCLEANFILES@ linux/*.o libcfs crypto/*.o
+ EXTRA_DIST := $(libcfs-all-objs:%.o=%.c)
+diff --git a/libcfs/libcfs/util/.gitignore b/libcfs/libcfs/util/.gitignore
+deleted file mode 100644
+index 10a7e8d6c7..0000000000
+--- a/libcfs/libcfs/util/.gitignore
++++ /dev/null
+@@ -1 +0,0 @@
+-/Makefile.in
+diff --git a/libcfs/libcfs/util/Makefile.am b/libcfs/libcfs/util/Makefile.am
+deleted file mode 100644
+index 3f2b306e21..0000000000
+--- a/libcfs/libcfs/util/Makefile.am
++++ /dev/null
+@@ -1,12 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0
+-
+-#
+-# This file is part of Lustre, http://www.lustre.org/
+-#
+-
+-EXTRA_DIST = \
+-	l_ioctl.c \
+-	nidstrings.c \
+-	param.c \
+-	parser.c \
+-	string.c
+diff --git a/lnet/utils/lnetconfig/Makefile.am b/lnet/utils/lnetconfig/Makefile.am
+index 59bac4b097..8391e988a3 100644
+--- a/lnet/utils/lnetconfig/Makefile.am
++++ b/lnet/utils/lnetconfig/Makefile.am
+@@ -17,9 +17,9 @@ liblnetconfig_la_SOURCES  = liblnetconfig.c liblnetconfig.h \
+ 			    liblnetconfig_udsp.c liblnetconfig_netlink.c
+ liblnetconfig_la_CPPFLAGS = -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64 \
+ 			    -DLUSTRE_UTILS=1 $(LIBNL3_CFLAGS) -fPIC
+-liblnetconfig_la_LDFLAGS = -L$(top_builddir)/libcfs/libcfs -lyaml -lm \
++liblnetconfig_la_LDFLAGS = -L$(top_builddir)/lib/libcfs -lyaml -lm \
+ 			   $(LIBREADLINE) -version-info 4:0:0
+-liblnetconfig_la_LIBADD = $(top_builddir)/libcfs/libcfs/libcfs.la \
++liblnetconfig_la_LIBADD = $(top_builddir)/lib/libcfs/libcfs.la \
+ 			  $(LIBNL3_LIBS)
+ 
+ EXTRA_DIST =
+diff --git a/lnet/utils/lnetconfig/cyaml.c b/lnet/utils/lnetconfig/cyaml.c
+index 3eb6f8a2e9..e1e24e085c 100644
+--- a/lnet/utils/lnetconfig/cyaml.c
++++ b/lnet/utils/lnetconfig/cyaml.c
+@@ -29,7 +29,7 @@
+ #include <float.h>
+ #include <limits.h>
+ #include <ctype.h>
+-#include "libcfs/util/list.h"
++#include <libcfs/util/list.h>
+ #include <cyaml.h>
+ 
+ #define INDENT		4
+diff --git a/lustre/tests/lutf/src/Makefile.am b/lustre/tests/lutf/src/Makefile.am
+index 8259c2e490..487eba37f8 100644
+--- a/lustre/tests/lutf/src/Makefile.am
++++ b/lustre/tests/lutf/src/Makefile.am
+@@ -13,10 +13,13 @@ SWIG_FLAGS=-D__x86_64__
+ SWIG_INCLUDES=-I/usr/include -I/usr/include/linux -I/usr/include/c++/4.4.4/tr1 -I/usr/include/c++/4.4.4/cstdbool
+ DLC_SWIG_FLAGS=-D__x86_64__  -D__arch_lib__ -D_LARGEFILE64_SOURCE=1
+ DLC_SWIG_INCLUDES=-I/usr/include -I/usr/include/asm -I/usr/include/linux -I/usr/lib64/gcc/i686-pc-mingw32/4.4.6/include/
+-DLC_SWIG_INCLUDES+=-I$(top_builddir)/lnet/utils/lnetconfig -I$(top_builddir)/lnet/utils -I$(top_builddir)/lnet/include -I$(top_builddir)/libcfs/include  -I$(top_builddir)/lnet/include/uapi/
+-DLC_INCLUDES=-I/usr/include $(LIBNL3_CFLAGS) -I$(top_builddir)/lnet/utils/lnetconfig -I$(top_builddir)/lnet/utils -I$(top_builddir)/lnet/include -I$(top_builddir)/libcfs/include -I$(top_builddir)/lnet/include/uapi/
++DLC_SWIG_INCLUDES+=-I$(top_builddir)/lnet/utils/lnetconfig -I$(top_builddir)/lnet/utils -I$(top_builddir)/lnet/include
++DLC_SWIG_INCLUDES+=-I$(top_builddir)/libcfs/include  -I$(top_builddir)/lnet/include/uapi/ -I$(top_builddir)/include
++DLC_INCLUDES=-I/usr/include $(LIBNL3_CFLAGS) -I$(top_builddir)/lnet/utils/lnetconfig -I$(top_builddir)/lnet/utils
++DLC_INCLUDES+=-I$(top_builddir)/lnet/include -I$(top_builddir)/libcfs/include -I$(top_builddir)/lnet/include/uapi/
++DLC_INCLUDES+=-I$(top_builddir)/include
+ 
+-LIBCFS= $(top_builddir)/libcfs/libcfs/.libs/libcfs.a
++LIBCFS= $(top_builddir)/lib/libcfs/.libs/libcfs.a
+ LIBLNETCONFIG=-L$(top_builddir)/lnet/utils/lnetconfig/.libs/
+ LIBLUTF=-L$(top_builddir)/lustre/tests/lutf/src/
+ 
+diff --git a/lustre/tests/lutf/swig_templates/generate_lnetconfig_swig_i.py b/lustre/tests/lutf/swig_templates/generate_lnetconfig_swig_i.py
+index c73025aff8..d72792cf0e 100644
+--- a/lustre/tests/lutf/swig_templates/generate_lnetconfig_swig_i.py
++++ b/lustre/tests/lutf/swig_templates/generate_lnetconfig_swig_i.py
+@@ -55,7 +55,7 @@ def writeSwigI(block, ommit_list, swigI, function_ommit=[]):
+ netconfig_path = sys.argv[1] + '/lnet/utils/lnetconfig/liblnetconfig.h'
+ cyaml_path = sys.argv[1] + '/lnet/utils/lnetconfig/cyaml.h'
+ lib_dlc_path = sys.argv[1] + '/lnet/include/uapi/linux/lnet/lnet-dlc.h'
+-string_path = sys.argv[1] + '/libcfs/include/libcfs/util/string.h'
++string_path = sys.argv[1] + '/include/libcfs/util/string.h'
+ nidstr_path = sys.argv[1] + '/lnet/include/uapi/linux/lnet/nidstr.h'
+ limits_path = '/usr/include/limits.h'
+ typemap_path = sys.argv[1] + '/lustre/tests/lutf/swig_templates/typemap.template'
+@@ -97,8 +97,8 @@ generic_ommit_list = ['/*', ' *', '__printf(3, 4)']
+ o_swig_intf.write('%module lnetconfig\n')
+ o_swig_intf.write('%{\n')
+ 
+-o_swig_intf.write("#include \"libcfs/util/ioctl.h\"\n")
+-o_swig_intf.write("#include \"libcfs/util/string.h\"\n")
++o_swig_intf.write("#include <libcfs/util/ioctl.h>\n")
++o_swig_intf.write("#include <libcfs/util/string.h>\n")
+ 
+ writeSwigI(l_lutf_missing_def, [], o_swig_intf)
+ writeSwigI(l_cyaml, cyaml_ommit_list, o_swig_intf)
+diff --git a/lustre/utils/Makefile.am b/lustre/utils/Makefile.am
+index 0c9a3e0ee7..6b4c6d9d7a 100644
+--- a/lustre/utils/Makefile.am
++++ b/lustre/utils/Makefile.am
+@@ -125,7 +125,7 @@ liblustreapi_la_CFLAGS = -fPIC -D_GNU_SOURCE $(LIBNL3_CFLAGS) \
+ 			 -DLUSTRE_UTILS=1
+ liblustreapi_la_LDFLAGS = $(LIBREADLINE) -version-info 1:0:0 \
+ 			  -Wl,--version-script=liblustreapi.map
+-liblustreapi_la_LIBADD = $(top_builddir)/libcfs/libcfs/libcfs.la \
++liblustreapi_la_LIBADD = $(top_builddir)/lib/libcfs/libcfs.la \
+ 			 $(top_builddir)/lnet/utils/lnetconfig/liblnetconfig.la \
+ 			 $(LIBNL3_LIBS) -lpthread
+ 
+@@ -253,7 +253,7 @@ mount_lustre_SOURCES = mount_lustre.c mount_utils.c mount_utils.h $(GSSSRC) \
+ mount_lustre_CPPFLAGS := ${MNTMODCFLAGS}
+ mount_lustre_LDFLAGS  := ${MNTMODLDFLAGS}
+ mount_lustre_LDADD    := $(SELINUX) $(LDLIBMOUNT) $(PLUGIN_LIB) $(GSSLIB)
+-mount_lustre_LDADD    += $(top_builddir)/libcfs/libcfs/libcfs.la $(MNTMODLIBS)
++mount_lustre_LDADD    += $(top_builddir)/lib/libcfs/libcfs.la $(MNTMODLIBS)
+ mount_lustre_LDADD    += liblustreapi.la
+ 
+ mkfs_lustre_SOURCES = mkfs_lustre.c mount_utils.c mount_utils.h $(GSSSRC)
+@@ -272,13 +272,13 @@ l_tunedisk_LDFLAGS  := ${MNTMODLDFLAGS}
+ l_tunedisk_LDADD    := $(mount_lustre_LDADD)
+ 
+ l_foreign_symlink_SOURCES = l_foreign_symlink.c
+-l_foreign_symlink_LDADD := $(top_builddir)/libcfs/libcfs/libcfs.la
+-l_foreign_symlink_DEPENDENCIES := $(top_builddir)/libcfs/libcfs/libcfs.la
++l_foreign_symlink_LDADD := $(top_builddir)/lib/libcfs/libcfs.la
++l_foreign_symlink_DEPENDENCIES := $(top_builddir)/lib/libcfs/libcfs.la
+ 
+ l_getidentity_SOURCES = l_getidentity.c
+-l_getidentity_LDADD := $(top_builddir)/libcfs/libcfs/libcfs.la
++l_getidentity_LDADD := $(top_builddir)/lib/libcfs/libcfs.la
+ l_getidentity_LDFLAGS = -ldl
+-l_getidentity_DEPENDENCIES := $(top_builddir)/libcfs/libcfs/libcfs.la
++l_getidentity_DEPENDENCIES := $(top_builddir)/lib/libcfs/libcfs.la
+ 
+ lhsmtool_posix_SOURCES = lhsmtool_posix.c pid_file.c pid_file.h
+ lhsmtool_posix_LDADD := liblustreapi.la $(PTHREAD_LIBS) \
+
+</pre>
+</body>
+</html>
