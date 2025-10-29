@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-From 061a22e75be462a6394ba61beab4932b3bea5e2c Mon Sep 17 00:00:00 2001
+From d055d13e97418a4bac2808ace5693439fa93c933 Mon Sep 17 00:00:00 2001
 From: Etienne AUJAMES <etienne.aujames@cea.fr>
 Date: Wed, 29 Oct 2025 10:04:38 +0100
 Subject: [PATCH 1/1] LU-19273 utils: add changelog_rec_hsm() helper function
@@ -25,11 +25,11 @@ Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
 Change-Id: I88c92fb596e9ac1b3c3530cdc538f0501c6251b9
 ---
  Documentation/man7/Makefile.am                |  1 +
- Documentation/man7/changelog_rec_hsm.7        | 95 +++++++++++++++++++
- .../include/uapi/linux/lustre/lustre_user.h   | 83 +++++++++-------
+ Documentation/man7/changelog_rec_hsm.7        | 98 +++++++++++++++++++
+ .../include/uapi/linux/lustre/lustre_user.h   | 83 ++++++++++------
  lustre/utils/lfs.c                            |  9 ++
  lustre/utils/llog_reader.c                    |  9 ++
- 5 files changed, 165 insertions(+), 32 deletions(-)
+ 5 files changed, 168 insertions(+), 32 deletions(-)
  create mode 100644 Documentation/man7/changelog_rec_hsm.7
 
 diff --git a/Documentation/man7/Makefile.am b/Documentation/man7/Makefile.am
@@ -46,10 +46,10 @@ index 113641921e..951a4c7d76 100644
  
 diff --git a/Documentation/man7/changelog_rec_hsm.7 b/Documentation/man7/changelog_rec_hsm.7
 new file mode 100644
-index 0000000000..153b6b0792
+index 0000000000..4a63cd7ce1
 --- /dev/null
 +++ b/Documentation/man7/changelog_rec_hsm.7
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,98 @@
 +.TH CHANGELOG_REC_HSM 7 2025-10-28 "Lustre User API" "Lustre Miscellaneous Information"
 +.SH NAME
 +changelog_rec_hsm() \- Get HSM information from a changelog record
@@ -105,8 +105,8 @@ index 0000000000..153b6b0792
 +.BR CLF_HSM_DIRTY =1.
 +This flag indicates that the HSM state has been marked as "dirty" (e.g: a write
 +operation modified the file and updated the HSM state with dirty flag set).
-+
-+.SH HSM EVENT TYPES
++.PP
++The full list of HSM event type is as follows:
 +.PP
 +.BR "enum hsm_event" " {"
 +.EX
@@ -131,12 +131,15 @@ index 0000000000..153b6b0792
 +.TP
 +.BR HE_STATE :
 +Event on HSM state modification.
-+
 +.SH RETURN VALUES
-+.PP
 +Return HSM record flag bitfield
 +.RB ( "union changelog_rec_hsm_flags" ).
-+
++.SH AVAILABILITY
++.B changelog_rec_hsm
++is part of the
++.BR lustre (7)
++user application interface library since release 2.17.0
++.\" Added in commit v2_16_59-22-g6fe6a6ab3e
 +.SH SEE ALSO
 +.BR lfs-changelog (1),
 +.BR llapi_changelog_clear (3),
@@ -146,7 +149,7 @@ index 0000000000..153b6b0792
 +.BR llapi_changelog_start (3),
 +.BR lustreapi (7)
 diff --git a/lustre/include/uapi/linux/lustre/lustre_user.h b/lustre/include/uapi/linux/lustre/lustre_user.h
-index ced4b58b5e..ad7fd11772 100644
+index ced4b58b5e..579e3c6e3a 100644
 --- a/lustre/include/uapi/linux/lustre/lustre_user.h
 +++ b/lustre/include/uapi/linux/lustre/lustre_user.h
 @@ -1862,27 +1862,16 @@ enum changelog_rec_flags {
@@ -193,7 +196,7 @@ index ced4b58b5e..ad7fd11772 100644
  
 +static inline const char *hsm_event2str(enum hsm_event ev)
 +{
-+	static const char *event2str[] = {
++	static const char *const event2str[] = {
 +		"ARCHIVE", "RESTORE", "CANCEL", "RELEASE", "REMOVE", "STATE",
 +	};
 +
@@ -284,7 +287,7 @@ index ced4b58b5e..ad7fd11772 100644
  	CL_RECORD = 10, /* message is a changelog_rec */
  	CL_EOF    = 11, /* at end of current changelog */
 diff --git a/lustre/utils/lfs.c b/lustre/utils/lfs.c
-index e663ee52d4..f3429b2fa9 100644
+index e663ee52d4..bca82a161d 100644
 --- a/lustre/utils/lfs.c
 +++ b/lustre/utils/lfs.c
 @@ -11243,6 +11243,15 @@ static int lfs_changelog(int argc, char **argv)
@@ -295,7 +298,7 @@ index e663ee52d4..f3429b2fa9 100644
 +			union changelog_rec_hsm_flags fl;
 +
 +			fl = changelog_rec_hsm(rec);
-+			printf(" he=%s hf=%hu hr=%hu",
++			printf(" he=%s hf=%u hr=%u",
 +			       hsm_event2str(fl.hf_bits.event),
 +			       fl.hf_bits.flags, fl.hf_bits.error);
 +		}
@@ -304,7 +307,7 @@ index e663ee52d4..f3429b2fa9 100644
  			struct changelog_ext_rename *rnm =
  				changelog_rec_rename(rec);
 diff --git a/lustre/utils/llog_reader.c b/lustre/utils/llog_reader.c
-index 2f52569ab7..353364f24b 100644
+index 2f52569ab7..1b75ca5207 100644
 --- a/lustre/utils/llog_reader.c
 +++ b/lustre/utils/llog_reader.c
 @@ -811,6 +811,15 @@ static void print_changelog_rec(struct llog_changelog_rec *rec)
@@ -315,7 +318,7 @@ index 2f52569ab7..353364f24b 100644
 +		union changelog_rec_hsm_flags fl;
 +
 +		fl = changelog_rec_hsm(&rec->cr);
-+		printf(" hsm_event=%s hsm_flags=%hu hsm_error=%hu",
++		printf(" hsm_event=%s hsm_flags=%u hsm_error=%u",
 +		       hsm_event2str(fl.hf_bits.event),
 +		       fl.hf_bits.flags, fl.hf_bits.error);
 +	}
