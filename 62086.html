@@ -1,0 +1,283 @@
+<html lang="en">
+<body>
+<pre>
+From 8194f90b03855efe8b9d9bec2b44fe891ca093e2 Mon Sep 17 00:00:00 2001
+From: Ronnie Sahlberg <rsahlberg@whamcloud.com>
+Date: Mon, 29 Sep 2025 15:47:15 +1000
+Subject: [PATCH 1/1] LU-19439 ec: Add kunit test for the ec module
+
+Add a kunit test that we compute the ec parities correctly.
+
+Test-Parameters: trivial
+Signed-off-by: Ronnie Sahlberg <rsahlberg@whamcloud.com>
+Change-Id: I1ae4a8a6aee78ab6e86b13ae725b6914cef08c0b
+---
+ debian/dkms.conf.in                           |   1 +
+ lustre.spec.in                                |   1 +
+ lustre/kunit/Makefile.in                      |   5 +-
+ lustre/kunit/autoMakefile.am                  |   3 +-
+ lustre/kunit/ec_test.c                        | 124 ++++++++++++++++++
+ lustre/scripts/dkms.mkconf                    |   1 +
+ .../lutf/python/tests-infra/utility_paths.py  |   1 +
+ lustre/tests/sanity.sh                        |  20 +++
+ rpm/kmp-lustre-tests.files                    |   1 +
+ 9 files changed, 154 insertions(+), 3 deletions(-)
+ create mode 100644 lustre/kunit/ec_test.c
+
+diff --git a/debian/dkms.conf.in b/debian/dkms.conf.in
+index e8f07de54f..1d699fcefa 100644
+--- a/debian/dkms.conf.in
++++ b/debian/dkms.conf.in
+@@ -195,6 +195,7 @@ fi
+ if grep -q ' --enable-tests' <<< ${OPTS}; then
+    # MODULE NAME              PATH TO MODULE   INSTALL PATH
+    # ----------------------   --------------   ------------
++   module ec_test             lustre/kunit     fs/lustre
+    module kinode              lustre/kunit     fs/lustre
+    module obd_mod_rpcs_test   lustre/kunit     fs/lustre
+    module obd_test            lustre/kunit     fs/lustre
+diff --git a/lustre.spec.in b/lustre.spec.in
+index ab56b4a371..e0e1d14acf 100644
+--- a/lustre.spec.in
++++ b/lustre.spec.in
+@@ -862,6 +862,7 @@ mv $basemodpath/fs/osd_wbcfs.ko $basemodpath-osd-wbcfs/fs/osd_wbcfs.ko
+ mkdir -p $basemodpath-tests/fs
+ mv $basemodpath/fs/obd_test.ko $basemodpath-tests/fs/obd_test.ko
+ mv $basemodpath/fs/obd_mod_rpcs_test.ko $basemodpath-tests/fs/obd_mod_rpcs_test.ko
++mv $basemodpath/fs/ec_test.ko $basemodpath-tests/fs/ec_test.ko
+ mv $basemodpath/fs/kinode.ko $basemodpath-tests/fs/kinode.ko
+ %if %{with servers}
+ mv $basemodpath/fs/ldlm_extent.ko $basemodpath-tests/fs/ldlm_extent.ko
+diff --git a/lustre/kunit/Makefile.in b/lustre/kunit/Makefile.in
+index ff69e8c39b..f2d1daf936 100644
+--- a/lustre/kunit/Makefile.in
++++ b/lustre/kunit/Makefile.in
+@@ -8,11 +8,12 @@
+ # Makefile template for kunit
+ #
+ 
+-MODULES := kinode obd_test obd_mod_rpcs_test
++MODULES := ec_test kinode obd_test obd_mod_rpcs_test
+ @TESTS_TRUE@@SERVER_TRUE@MODULES += ldlm_extent
+ @TESTS_TRUE@@SERVER_TRUE@MODULES += llog_test
+ 
+-EXTRA_DIST = kinode.c
++EXTRA_DIST = ec_test.c
++EXTRA_DIST += kinode.c
+ EXTRA_DIST += ldlm_extent.c
+ EXTRA_DIST += llog_test.c
+ EXTRA_DIST += obd_test.c
+diff --git a/lustre/kunit/autoMakefile.am b/lustre/kunit/autoMakefile.am
+index 95ecc5f90d..b489966e31 100644
+--- a/lustre/kunit/autoMakefile.am
++++ b/lustre/kunit/autoMakefile.am
+@@ -9,7 +9,8 @@
+ #
+ 
+ if MODULES
+-modulefs_DATA = kinode.ko
++modulefs_DATA = ec_test.ko
++modulefs_DATA += kinode.ko
+ modulefs_DATA += obd_test.ko
+ modulefs_DATA += obd_mod_rpcs_test.ko
+ if SERVER
+diff --git a/lustre/kunit/ec_test.c b/lustre/kunit/ec_test.c
+new file mode 100644
+index 0000000000..bd487f307b
+--- /dev/null
++++ b/lustre/kunit/ec_test.c
+@@ -0,0 +1,124 @@
++// SPDX-License-Identifier: GPL-2.0
++
++/*
++ * Copyright 2025 Whamcloud. All rights reserved.
++ *
++ */
++
++/*
++ * This file is part of Lustre, http://www.lustre.org/
++ *
++ * Verify the computations in the ec module.
++ *
++ * Author: Ronnie Sahlberg
++ *
++ */
++
++#include <erasure_code.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/completion.h>
++#include <linux/kthread.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/version.h>
++
++/* Random ID passed by userspace, and printed in messages, used to
++ * separate different runs of that module. */
++static int run_id;
++module_param(run_id, int, 0644);
++MODULE_PARM_DESC(run_id, "run ID");
++
++#define PREFIX "lustre_ec_test_%u:"
++
++#define MAX_EC_STRIPES 16
++
++static int ec_test_01(void)
++{
++	__u8 *buf = NULL;
++	__u8 *encode_matrix = NULL;
++	__u8 *g_tbls = NULL;
++	__u8 *stripes[MAX_EC_STRIPES];
++	int i, j, k = 5, p = 3, len = 4096, m;
++	__u8 er[] = { 0xa4, 0xc2, 0x17 };
++	int rc = -1;
++
++	m = k + p;
++	buf =  kmalloc(m * len, GFP_KERNEL);
++	if (buf == NULL)
++		goto out;
++
++	/*
++	 * Create a stripeset with 5 data stripes.with
++	 * the following content
++	 * stripe[0] = { 0, ...
++	 * stripe[1] = { 1, ...
++	 * stripe[2] = { 2, ...
++	 * stripe[3] = { 3, ...
++	 * stripe[4] = { 4, ...
++	 *
++	 *.When computing three parities using a cauchy matric this
++	 * will result in the following parity stripes:
++	 * stripe[5] = { 0xa4, ...
++	 * stripe[6] = { 0xc2, ...
++	 * stripe[7] = { 0x17, ...
++	 */
++	for (i = 0; i < m; i++) {
++		stripes[i] = &buf[i * len];
++		memset(stripes[i], i, len);
++	}
++	g_tbls =  kmalloc(k * p * 32, GFP_KERNEL);
++	if (g_tbls == NULL)
++		goto out;
++
++	encode_matrix =  kmalloc(m * k, GFP_KERNEL);
++	if (encode_matrix == NULL)
++		goto out;
++
++	gf_gen_cauchy1_matrix(encode_matrix, m, k);
++	ec_init_tables(k, p, &encode_matrix[k * k], g_tbls);
++	ec_encode_data(len, k, p, g_tbls, stripes, &stripes[k]);
++
++
++	for (i = 0; i < p; i++)
++		for (j = 0; j < len; j++)
++			if (stripes[i + k][j] != er[i]) {
++				pr_err(PREFIX " Wrong value for p:%d pos:%d "
++				       "Expected 0x%02x but got 0x%02x\n",
++				       run_id, i, j,
++				       er[i], stripes[i + k][j]);
++				goto out;
++			}
++
++	rc = 0;
++ out:
++	kfree(buf);
++	kfree(g_tbls);
++	kfree(encode_matrix);
++	return rc;
++}
++
++static int __init ec_test_init(void)
++{
++
++	if (ec_test_01()) {
++		pr_err(PREFIX " ec_test_01 failed\n", run_id);
++		return -1;
++	}
++	/* below message is checked in sanity.sh test_129 */
++	pr_err(PREFIX " EC test passed\n", run_id);
++
++	return 0;
++}
++
++static void __exit ec_test_exit(void)
++{
++}
++
++MODULE_AUTHOR("OpenSFS, Inc. <http://www.lustre.org/>");
++MODULE_DESCRIPTION("Lustre erasure coding test module");
++MODULE_VERSION(LUSTRE_VERSION_STRING);
++MODULE_LICENSE("GPL");
++
++module_init(ec_test_init);
++module_exit(ec_test_exit);
+diff --git a/lustre/scripts/dkms.mkconf b/lustre/scripts/dkms.mkconf
+index 44d3c4133f..3c739f646a 100755
+--- a/lustre/scripts/dkms.mkconf
++++ b/lustre/scripts/dkms.mkconf
+@@ -186,6 +186,7 @@ fi
+ if grep -q ' --enable-tests' <<< \${OPTS}; then
+     # MODULE NAME              PATH TO MODULE   INSTALL PATH
+     # ----------------------   --------------   ------------
++    module ec_test             lustre/kunit     lustre
+     module obd_mod_rpcs_test   lustre/kunit     lustre
+     module kinode              lustre/kunit     lustre
+     module obd_test            lustre/kunit     lustre
+diff --git a/lustre/tests/lutf/python/tests-infra/utility_paths.py b/lustre/tests/lutf/python/tests-infra/utility_paths.py
+index ae96cd58b8..c3c08455e0 100644
+--- a/lustre/tests/lutf/python/tests-infra/utility_paths.py
++++ b/lustre/tests/lutf/python/tests-infra/utility_paths.py
+@@ -71,6 +71,7 @@ lmodules=[
+ 'lustre/obdecho/obdecho.ko',
+ 'lustre/mgc/mgc.ko',
+ 'lustre/red/red.ko',
++'lustre/kunit/ec_test.ko',
+ 'lustre/kunit/kinode.ko',
+ 'lustre/ost/ost.ko',
+ 'lustre/mgs/mgs.ko',
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index de900cef85..d7c87f5982 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -35945,6 +35945,26 @@ test_909() {
+ }
+ run_test 909 "Verify mdt index"
+ 
++test_910()
++{
++	local run_id=$RANDOM
++
++	# Try to insert the module.
++	load_module kunit/ec_test run_id=$run_id ||
++		error "load_module failed"
++
++	# Anything but success is a test failure
++	dmesg | grep -q \
++	    "lustre_ec_test_$run_id: EC test passed" ||
++	    error "EC test failed"
++
++	# Remove the test module
++	rmmod -v ec_test ||
++		error "rmmod failed (may trigger a failure in a later test)"
++}
++run_test 910 "Test the erasure_coding module"
++
++
+ complete_test $SECONDS
+ [ -f $EXT2_DEV ] && rm $EXT2_DEV || true
+ check_and_cleanup_lustre
+diff --git a/rpm/kmp-lustre-tests.files b/rpm/kmp-lustre-tests.files
+index c8da2d62dc..66d608cb8e 100644
+--- a/rpm/kmp-lustre-tests.files
++++ b/rpm/kmp-lustre-tests.files
+@@ -1,5 +1,6 @@
+ %dir %{modules_fs_path}/%{lustre_name}-tests
+ %dir %{modules_fs_path}/%{lustre_name}-tests/fs
++%{modules_fs_path}/%{lustre_name}-tests/fs/ec_test.ko
+ %{modules_fs_path}/%{lustre_name}-tests/fs/kinode.ko
+ %{modules_fs_path}/%{lustre_name}-tests/fs/obd_test.ko
+ %{modules_fs_path}/%{lustre_name}-tests/fs/obd_mod_rpcs_test.ko
+
+</pre>
+</body>
+</html>
