@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-From 040ff1816abbc1def253bb780d7b0f646c7eba45 Mon Sep 17 00:00:00 2001
+From 1f4850d4248bfef789bb9e67d622d84f0a67c741 Mon Sep 17 00:00:00 2001
 From: Maximilian Dilger <mdilger@whamcloud.com>
 Date: Fri, 17 Oct 2025 11:16:04 -0600
 Subject: [PATCH 1/1] LU-19054 utils: New max client connection limit.
@@ -15,29 +15,29 @@ connections are unaffected.
 Signed-off-by: Max Dilger <mdilger@whamcloud.com>
 Change-Id: Ibef99a9bd1f889abdfeb97942600b66e9a9be123
 ---
- Documentation/man4/mdt.client_count.4       |  1 +
- Documentation/man4/mdt.client_limit.4       |  1 +
- Documentation/man4/nodemap.client_count.4   | 25 ++++++
- Documentation/man4/nodemap.client_limit.4   | 33 ++++++++
- Documentation/man4/obdfilter.client_count.4 |  1 +
- Documentation/man4/obdfilter.client_limit.4 |  1 +
- Documentation/man4/ost.client_count.4       |  1 +
- Documentation/man4/ost.client_limit.4       |  1 +
- lustre/include/lprocfs_status.h             |  6 ++
- lustre/include/lustre_net.h                 | 16 ++++
- lustre/include/lustre_nodemap.h             |  4 +
- lustre/include/obd.h                        |  4 +
- lustre/ldlm/ldlm_lib.c                      | 78 ++++++++++++++++++
- lustre/llite/super25.c                      | 10 ++-
- lustre/mdt/mdt_lproc.c                      |  5 ++
- lustre/obdclass/genops.c                    |  6 ++
- lustre/obdclass/lprocfs_status_server.c     | 38 +++++++++
- lustre/ofd/lproc_ofd.c                      |  5 ++
- lustre/ptlrpc/import.c                      | 33 ++++++++
- lustre/ptlrpc/nodemap_lproc.c               | 76 +++++++++++++++++
- lustre/ptlrpc/nodemap_member.c              | 21 +++++
- lustre/tests/sanity.sh                      | 91 +++++++++++++++++++++
- 22 files changed, 455 insertions(+), 2 deletions(-)
+ Documentation/man4/mdt.client_count.4       |   1 +
+ Documentation/man4/mdt.client_limit.4       |   1 +
+ Documentation/man4/nodemap.client_count.4   |  25 +++++
+ Documentation/man4/nodemap.client_limit.4   |  33 +++++++
+ Documentation/man4/obdfilter.client_count.4 |   1 +
+ Documentation/man4/obdfilter.client_limit.4 |   1 +
+ Documentation/man4/ost.client_count.4       |   1 +
+ Documentation/man4/ost.client_limit.4       |   1 +
+ lustre/include/lprocfs_status.h             |   6 ++
+ lustre/include/lustre_net.h                 |  16 +++
+ lustre/include/lustre_nodemap.h             |   4 +
+ lustre/include/obd.h                        |   4 +
+ lustre/ldlm/ldlm_lib.c                      |  78 +++++++++++++++
+ lustre/llite/super25.c                      |  10 +-
+ lustre/mdt/mdt_lproc.c                      |   5 +
+ lustre/obdclass/genops.c                    |   6 ++
+ lustre/obdclass/lprocfs_status_server.c     |  38 +++++++
+ lustre/ofd/lproc_ofd.c                      |   5 +
+ lustre/ptlrpc/import.c                      |  33 +++++++
+ lustre/ptlrpc/nodemap_lproc.c               |  76 ++++++++++++++
+ lustre/ptlrpc/nodemap_member.c              |  21 ++++
+ lustre/tests/sanity.sh                      | 104 ++++++++++++++++++++
+ 22 files changed, 468 insertions(+), 2 deletions(-)
  create mode 100644 Documentation/man4/mdt.client_count.4
  create mode 100644 Documentation/man4/mdt.client_limit.4
  create mode 100644 Documentation/man4/nodemap.client_count.4
@@ -675,10 +675,10 @@ index 824a544c9d..9518a1a4b3 100644
  
  	RETURN(0);
 diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
-index 3aa8797305..a91f49ead8 100755
+index 3aa8797305..9466edfb3a 100755
 --- a/lustre/tests/sanity.sh
 +++ b/lustre/tests/sanity.sh
-@@ -35121,6 +35121,97 @@ test_820() {
+@@ -35121,6 +35121,110 @@ test_820() {
  }
  run_test 820 "update max EA from open intent"
  
@@ -689,6 +689,7 @@ index 3aa8797305..a91f49ead8 100755
 +	local mdt_param_limit="mdt.$FSNAME-MDT0000.client_limit"
 +	local mdt_param_count="mdt.$FSNAME-MDT0000.client_count"
 +	local old_limit
++	local baseline_count
 +	local current_count
 +
 +	old_limit=$(do_facet mds1 $LCTL get_param -n $mdt_param_limit)
@@ -696,25 +697,37 @@ index 3aa8797305..a91f49ead8 100755
 +
 +	echo "Current client_limit: $old_limit"
 +
-+	# Get current client count (should be at least 1 - this client)
-+	current_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
-+	echo "Current client_count: $current_count"
++	# Get baseline client count (may be 0 if test client isn't counted yet)
++	baseline_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
++	echo "Baseline client_count: $baseline_count"
 +
-+	(( $current_count >= 1 )) ||
-+		error "expected client_count >= 1, got $current_count"
++	# Mount a test client to establish a known baseline
++	local mount1=$TMP/mnt_lustre_821a_$$
++	mkdir -p $mount1
++	stack_trap "rmdir $mount1" EXIT
++
++	mount -t lustre $MGSNID:/$FSNAME $mount1 ||
++		error "Failed to mount test client"
++	stack_trap "umount $mount1" EXIT
++
++	# Verify client count increased
++	current_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
++	echo "Client_count after mount: $current_count"
++	(( $current_count == $baseline_count + 1 )) ||
++		error "client_count should be $((baseline_count + 1)), got $current_count"
 +
 +	# Set client_limit to current_count (at capacity)
 +	echo "Setting client_limit to $current_count (at capacity)"
 +	do_facet mds1 $LCTL set_param $mdt_param_limit=$current_count
 +
 +	# Try to mount another client - should fail
-+	local mount2=$TMP/mnt_lustre_910_$$
++	local mount2=$TMP/mnt_lustre_821b_$$
 +	mkdir -p $mount2
 +	stack_trap "rmdir $mount2" EXIT
 +
 +	# This should fail with EUSERS since we're at capacity
 +	! mount -t lustre $MGSNID:/$FSNAME $mount2 2>&1 |
-+		tee $TMP/mount_910.log
++		tee $TMP/mount_821b.log
 +
 +	do_facet mds1 "dmesg | grep -q 'Refusing connection.*client_limit'" ||
 +		error "Expected 'client_limit' error message in server kernel log"
@@ -742,18 +755,18 @@ index 3aa8797305..a91f49ead8 100755
 +
 +	# Try to exceed limit again
 +	echo "Trying to exceed limit (should fail)"
-+	local mount3=$TMP/mnt_lustre_910b_$$
++	local mount3=$TMP/mnt_lustre_821c_$$
 +	mkdir -p $mount3
 +	stack_trap "rmdir $mount3" EXIT
 +
 +	! mount -t lustre $MGSNID:/$FSNAME $mount3 2>&1 |
-+		tee $TMP/mount_910b.log
++		tee $TMP/mount_821c.log
 +
 +	do_facet mds1 "dmesg | grep -q 'Refusing connection.*client_limit'" ||
 +		error "Expected 'client_limit' error message on second overflow"
 +
-+	# Unmount and verify counter decrements
-+	echo "Unmounting and checking counter decrement"
++	# Unmount mount2 and verify counter decrements
++	echo "Unmounting mount2 and checking counter decrement"
 +	umount $mount2
 +	sleep 2  # Give time for export cleanup
 +
@@ -769,7 +782,7 @@ index 3aa8797305..a91f49ead8 100755
 +	mount -t lustre $MGSNID:/$FSNAME $mount2 ||
 +		error "Failed to mount with unlimited client_limit"
 +
-+	rm -f $TMP/mount_910.log $TMP/mount_910b.log
++	rm -f $TMP/mount_821b.log $TMP/mount_821c.log
 +}
 +run_test 821 "test client_limit connection limit enforcement"
 +
