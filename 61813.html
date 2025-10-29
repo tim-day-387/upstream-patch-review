@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-From f30f4ea6b3c32b3a3e9b2be31567a56cd095e1d3 Mon Sep 17 00:00:00 2001
+From 4ceb87d0eb56d9353ba8736fbde577cc54baaed6 Mon Sep 17 00:00:00 2001
 From: Qian Yingjin <qian@ddn.com>
 Date: Tue, 14 Oct 2025 16:33:48 +0800
 Subject: [PATCH 1/1] LU-19469 llite: hole-aware read optimization for truncate
@@ -50,13 +50,13 @@ Change-Id: I53ffaded1bc92fb60ceecf6b3acc78e979713953
  lustre/llite/llite_internal.h |   2 +
  lustre/llite/rw.c             |  69 +++++++++++--
  lustre/llite/vvp_object.c     |   2 +-
- lustre/lov/lov_io.c           |  38 ++++++++
+ lustre/lov/lov_io.c           |  41 ++++++++
  lustre/mdc/mdc_dev.c          |  12 ++-
  lustre/osc/osc_cache.c        | 176 ++++++++++++++++++++++++++++++++--
  lustre/osc/osc_internal.h     |   5 +
  lustre/osc/osc_io.c           |  47 ++++++++-
  lustre/tests/sanity.sh        |  43 +++++++++
- 12 files changed, 399 insertions(+), 24 deletions(-)
+ 12 files changed, 402 insertions(+), 24 deletions(-)
 
 diff --git a/lustre/include/cl_object.h b/lustre/include/cl_object.h
 index 421b6fb858..bd373c1d6a 100644
@@ -325,18 +325,24 @@ index be69e0b9ac..38ded7aa65 100644
  	if (rc < 0) {
  		CDEBUG(D_VFSTRACE, DFID ": writeback failed: %d\n",
 diff --git a/lustre/lov/lov_io.c b/lustre/lov/lov_io.c
-index b5dcbac55f..c85843a6bc 100644
+index b5dcbac55f..f2ff020a75 100644
 --- a/lustre/lov/lov_io.c
 +++ b/lustre/lov/lov_io.c
-@@ -727,6 +727,7 @@ static void lov_io_sub_inherit(struct lov_io_sub *sub, struct lov_io *lio,
+@@ -724,9 +724,13 @@ static void lov_io_sub_inherit(struct lov_io_sub *sub, struct lov_io *lio,
+ 		}
+ 		if (cl_io_is_trunc(io)) {
+ 			loff_t new_size = parent->u.ci_setattr.sa_attr.lvb_size;
++			__u64 start;
  
  			new_size = lov_size_to_stripe(lsm, index, new_size,
  						      stripe);
-+			io->u.ci_setattr.sa_falloc_offset = start;
++			start = lsm->lsm_entries[index]->lsme_extent.e_start;
++			io->u.ci_setattr.sa_falloc_offset =
++				lov_size_to_stripe(lsm, index, start, stripe);
  			io->u.ci_setattr.sa_attr.lvb_size = new_size;
  			io->u.ci_setattr.sa_attr_uid =
  				parent->u.ci_setattr.sa_attr_uid;
-@@ -1265,6 +1266,43 @@ static int lov_io_read_ahead(const struct lu_env *env,
+@@ -1265,6 +1269,43 @@ static int lov_io_read_ahead(const struct lu_env *env,
  	/* never exceed the end of the stripe */
  	ra->cra_end_idx = min_t(pgoff_t, ra->cra_end_idx,
  				start + pps - start % pps - 1);
