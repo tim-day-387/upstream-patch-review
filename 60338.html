@@ -1,0 +1,1172 @@
+<html lang="en">
+<body>
+<pre>
+From f92f9279eb30c2f6d4e775eea546a68d1d145883 Mon Sep 17 00:00:00 2001
+From: Etienne AUJAMES <etienne.aujames@cea.fr>
+Date: Thu, 24 Jul 2025 15:21:41 +0200
+Subject: [PATCH 1/1] LU-19204 hsm: add command prompt for lhsmtool_posix
+
+This patch adds a command prompt interface to the POSIX copytool to
+communicate with a running daemon. It uses UNIX socket to do so.
+
+The UNIX sockets are stored in: /run/lhsmtool_posix/
+The sockets are named after with lustre instance (lfs getname).
+e.g: /run/lhsmtool_posix/lustre-ffff95c34c3e6800
+
+For now, the main goal is to test the cancel requests sent to a
+copytool:
+ - Freeze the copy threads
+ - Send an HSM action (archive or restore)
+ - Wait for the HSM action to be started on the copytool
+ - Send a cancel via the coordinator (lfs hsm_cancel <file>)
+ - Check if the request is canceled
+ - Unfreeze the copy threads
+
+The secondary goal is to cancel actions directly on the copytool.
+This requires a coordinator change, if the copytool returns -ECANCELED
+for a non-cancel coordinator request, the record state should be
+updated to ARS_CANCELED (not ARS_SUCCEED).
+
+Add regression test sanity-hsm 203 and 204.
+
+*Usages*
+
+Interactive prompt:
+
+ root# lhsmtool_posix -R /mnt/lustre
+ > help
+ help: list available commands
+ list: list all the request running
+ freeze: freeze all thread IOs
+ unfreeze: unfreeze all thread IOs
+ cancel [FID...]: cancel one or several running requests
+ info: display runtime information
+ > freeze
+ > list
+ thread[29615]: cookie: 0x68810ae1, FID: [0x200000401:0x3f:0x0],
+ action: ARCHIVE, cancel: 0
+ thread[29616]: cookie: 0x68810ae2, FID: [0x200000401:0x3d:0x0],
+ action: ARCHIVE, cancel: 0
+ thread[29617]: cookie: 0x68810ae3, FID: [0x200000401:0x3e:0x0],
+ action: ARCHIVE, cancel: 0
+ > info
+ lhsmtool_posix[28958] -p /mnt/hsm/ /mnt/lustre: 3 running requests
+ > cancel [0x200000401:0x3e:0x0]
+ > info
+ lhsmtool_posix[28958] -p /mnt/hsm/ /mnt/lustre: 2 running requests
+ > unfreeze
+
+Cancel a specific running HSM action:
+
+ root# lhsmtool_posix --request="cancel [0x200000401:0x3d:0x0]"
+ /mnt/lustre
+
+Cancel all the running request:
+
+ root# lhsmtool_posix --request="cancel" /mnt/lustre
+
+Test-Parameters: testlist=sanity-hsm
+Test-Parameters: testlist=sanity-hsm env=ONLY=203,ONLY_REPEAT=20
+Test-Parameters: testlist=sanity-hsm env=ONLY=204,ONLY_REPEAT=20
+Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
+Change-Id: I93ceab6c8b92a5adb2335738ab43ac6f298e2833
+---
+ lustre/mdt/mdt_coordinator.c   |   5 +-
+ lustre/tests/sanity-hsm.sh     |  68 ++++
+ lustre/tests/test-framework.sh |  29 ++
+ lustre/utils/lhsmtool_posix.c  | 721 ++++++++++++++++++++++++++++++++-
+ 4 files changed, 804 insertions(+), 19 deletions(-)
+
+diff --git a/lustre/mdt/mdt_coordinator.c b/lustre/mdt/mdt_coordinator.c
+index 74aee0e981..436509f432 100644
+--- a/lustre/mdt/mdt_coordinator.c
++++ b/lustre/mdt/mdt_coordinator.c
+@@ -1567,8 +1567,9 @@ static int hsm_cdt_request_completed(struct mdt_thread_info *mti,
+ 		case ECANCELED:
+ 			/* the request record has already been set to
+ 			 * ARS_CANCELED, this set the cancel request
+-			 * to ARS_SUCCEED */
+-			*status = ARS_SUCCEED;
++			 * to ARS_SUCCEED
++			 */
++			*status = car->car_cancel ? ARS_SUCCEED : ARS_CANCELED;
+ 			break;
+ 		default:
+ 			/* retry only if current policy or requested, and
+diff --git a/lustre/tests/sanity-hsm.sh b/lustre/tests/sanity-hsm.sh
+index 2ec38429e4..c1cf3fda12 100755
+--- a/lustre/tests/sanity-hsm.sh
++++ b/lustre/tests/sanity-hsm.sh
+@@ -4178,6 +4178,74 @@ test_202() {
+ }
+ run_test 202 "Register/Cancel remove"
+ 
++test_203() {
++	mkdir_on_mdt0 $DIR/$tdir
++
++	local f=$DIR/$tdir/$tfile
++	local fid=$(create_small_file "$f")
++
++	copytool setup
++	copytool_request freeze
++
++	$LFS hsm_archive --archive $HSM_ARCHIVE_NUMBER $f
++	wait_request_state $fid ARCHIVE STARTED
++	copytool_request list | grep "$fid" ||
++		error "The archive is not started on the copytool"
++
++	$LFS hsm_cancel $f
++	wait_request_state $fid ARCHIVE CANCELED
++	copytool_request unfreeze
++}
++run_test 203 "Copytool cancel via 'lfs hsm_cancel'"
++
++test_204() {
++	(( MDS1_VERSION >= $(version_code v2_16_58-52) )) ||
++		skip "need MDS version v2_16_58-52 or later"
++
++	mkdir_on_mdt0 $DIR/$tdir
++
++	stack_trap \
++		"set_hsm_param max_requests $(get_hsm_param max_requests)" EXIT
++	set_hsm_param max_requests 10
++
++	copytool setup
++	copytool_request freeze
++
++	local fid f
++	local -a fids files
++
++	for f in $DIR/$tdir/${tfile}{01..10}; do
++		fid=$(create_small_file "$f")
++		fids+=( $fid )
++		files+=( $f )
++	done
++
++	$LFS hsm_archive --archive $HSM_ARCHIVE_NUMBER ${files[@]}
++	for fid in "${fids[@]}"; do
++		wait_request_state $fid ARCHIVE STARTED
++	done
++
++	local count
++	count=$(copytool_request list |
++		grep -cE "$( tr ' ' '|' <<< "${fids[*]}")")
++	(( count == 10 )) ||
++		error "Some archives are not started on the copytool"
++	copytool_request info | grep "10 running requests" ||
++		error "Bad information returned by the copytool"
++
++	fid=${fids[0]}
++	unset fids[0]
++	copytool_request cancel $fid
++	wait_request_state $fid ARCHIVE CANCELED
++
++	copytool_request cancel
++	for fid in "${fids[@]}"; do
++		wait_request_state $fid ARCHIVE CANCELED
++	done
++	copytool_request unfreeze
++}
++run_test 204 "Copytool cancel via copytool request"
++
+ test_220A() { # was test_220
+ 	# test needs a running copytool
+ 	copytool setup
+diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
+index 5d98eab7ca..100756121f 100755
+--- a/lustre/tests/test-framework.sh
++++ b/lustre/tests/test-framework.sh
+@@ -12038,6 +12038,35 @@ copytool()
+ 	fi
+ }
+ 
++copytool_request()
++{
++	# Use default values
++	local facet=$SINGLEAGT
++	local mountpoint="${MOUNT2:-$MOUNT}"
++
++	while (( $# > 0 )); do
++		case "$1" in
++		-f|--facet)
++			shift
++			facet="$1"
++			;;
++		-m|--mountpoint)
++			shift
++			mountpoint="$1"
++			;;
++		*)
++			break
++			;;
++		esac
++		shift
++	done
++
++	(( $# > 0 )) || error "No copytool command specified"
++
++	do_facet $facet "$HSMTOOL -v --request='$*' $mountpoint" ||
++		error "Failed to execute copytool CMD: $*"
++}
++
+ needclients() {
+ 	local client_count=$1
+ 	if [[ $CLIENTCOUNT -lt $client_count ]]; then
+diff --git a/lustre/utils/lhsmtool_posix.c b/lustre/utils/lhsmtool_posix.c
+index 2b7deadef3..9d49ab4216 100644
+--- a/lustre/utils/lhsmtool_posix.c
++++ b/lustre/utils/lhsmtool_posix.c
+@@ -37,7 +37,13 @@
+ #include <sys/xattr.h>
+ #include <sys/syscall.h>
+ #include <sys/types.h>
++#include <sys/socket.h>
++#include <sys/un.h>
++#include <sys/types.h>
++#include <sys/time.h>
++#include <libgen.h>
+ 
++#include <libcfs/util/list.h>
+ #include <libcfs/util/string.h>
+ #include <linux/lustre/lustre_fid.h>
+ #include <lnetconfig/cyaml.h>
+@@ -63,6 +69,7 @@ enum ct_action {
+ 	CA_REBIND,
+ 	CA_MAXSEQ,
+ 	CA_ARCHIVE_UPGRADE,
++	CA_REQUEST,
+ };
+ 
+ enum ct_archive_format {
+@@ -128,6 +135,7 @@ struct options {
+ 	char			*o_src; /* for import, or rebind */
+ 	char			*o_dst; /* for import, or rebind */
+ 	char			*o_pid_file;
++	char			*o_request;
+ };
+ 
+ /* everything else is zeroed */
+@@ -221,6 +229,11 @@ static void usage(const char *name, int rc)
+ 	"       return the max fid sequence of archived files\n"
+ 	"   %s [options] --archive-upgrade=VER\n"
+ 	"      Upgrade or downgrade the archive to version VER\n"
++	"   %s [options] --request=<command> <lustre_mount_point>\n"
++	"      Send a command to the copytool daemon\n"
++	"   %s [options] --request <lustre_mount_point>\n"
++	"      Open a command prompt to communicate with the daemon\n"
++	"      Enter \"help\" at the prompt to get available commands\n"
+ 	"Options:\n"
+ 	"   --abort-on-error          Abort operation on major error\n"
+ 	"   -A, --archive <#>         Archive number (repeatable)\n"
+@@ -238,7 +251,7 @@ static void usage(const char *name, int rc)
+ 	"   -u, --update-interval <s> Interval between progress reports sent\n"
+ 	"                             to Coordinator\n"
+ 	"   -v, --verbose             Produce more verbose output\n",
+-	name, name, name, name, name, name);
++	name, name, name, name, name, name, name, name);
+ 
+ 	exit(rc);
+ }
+@@ -284,6 +297,7 @@ static int ct_parseopts(int argc, char * const *argv)
+ 	{ .val = 'p',	.name = "hsm_root",	.has_arg = required_argument },
+ 	{ .val = 'q',	.name = "quiet",	.has_arg = no_argument },
+ 	{ .val = 'r',	.name = "rebind",	.has_arg = no_argument },
++	{ .val = 'R',	.name = "request",	.has_arg = optional_argument },
+ 	{ .val = 'u',	.name = "update-interval",
+ 						.has_arg = required_argument },
+ 	{ .val = 'u',	.name = "update_interval",
+@@ -305,7 +319,7 @@ static int ct_parseopts(int argc, char * const *argv)
+ 	if (opt.o_archive_id == NULL)
+ 		return -ENOMEM;
+ repeat:
+-	while ((c = getopt_long(argc, argv, "A:b:C:c:F:f:hiMp:P:qrU:u:v",
++	while ((c = getopt_long(argc, argv, "A:b:C:c:F:f:hiMp:P:qrR::U:u:v",
+ 				long_opts, NULL)) != -1) {
+ 		switch (c) {
+ 		case 'A': {
+@@ -410,6 +424,10 @@ repeat:
+ 		case 'r':
+ 			opt.o_action = CA_REBIND;
+ 			break;
++		case 'R':
++			opt.o_action = CA_REQUEST;
++			opt.o_request = optarg;
++			break;
+ 		case 'u':
+ 			opt.o_report_int = atoi(optarg);
+ 			if (opt.o_report_int < 0) {
+@@ -455,6 +473,7 @@ repeat:
+ 		}
+ 		break;
+ 	case CA_MAXSEQ:
++	case CA_REQUEST:
+ 	default:
+ 		/* just mount point */
+ 		break;
+@@ -472,6 +491,9 @@ repeat:
+ 	opt.o_mnt = argv[optind];
+ 	opt.o_mnt_fd = -1;
+ 
++	if (opt.o_action == CA_REQUEST)
++		return 0;
++
+ 	CT_TRACE("action=%d src=%s dst=%s mount_point=%s",
+ 		 opt.o_action, opt.o_src, opt.o_dst, opt.o_mnt);
+ 
+@@ -657,15 +679,18 @@ static int ct_restore_stripe(const char *src, const char *dst, int dst_fd,
+ 
+ #define CT_RC_INIT 1
+ struct ct_th_data {
+-	int				ref;
++	struct list_head		link;
+ 	pthread_t			pthread;
+-	long				hal_flags;
+ 	struct hsm_action_item		*hai;
+ 	struct hsm_copyaction_private	*hcp;
++	int				ref;
++	long				tid;
++	long				hal_flags;
+ 	int				hp_flags;
+ 	int				ct_rc;
+ };
+ 
++static bool ct_freeze_io;
+ static int ct_copy_data(struct hsm_copyaction_private *hcp, const char *src,
+ 			const char *dst, int src_fd, int dst_fd,
+ 			struct ct_th_data *cttd)
+@@ -760,6 +785,10 @@ static int ct_copy_data(struct hsm_copyaction_private *hcp, const char *src,
+ 				 PFID(&hai->hai_fid), rc);
+ 			break;
+ 		}
++		if (ct_freeze_io) {
++			usleep(500000);
++			continue;
++		}
+ 
+ 		rsize = pread(src_fd, buf, chunk, offset);
+ 		if (rsize == 0)
+@@ -1520,6 +1549,7 @@ static int ct_process_item(struct ct_th_data *cttd)
+ 	return 0;
+ }
+ 
++struct list_head ct_thread_list = LIST_HEAD_INIT(ct_thread_list);
+ static void *ct_thread_tree;
+ static unsigned long ct_thread_count;
+ pthread_mutex_t ct_thread_tree_lock = PTHREAD_MUTEX_INITIALIZER;
+@@ -1543,6 +1573,18 @@ static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
+ {
+ 	struct ct_th_data *cttd;
+ 
++	if (which == postorder || which == leaf) {
++		cttd = *(struct ct_th_data **)node;
++		if (cttd->ct_rc == CT_RC_INIT)
++			cttd->ct_rc = -ECANCELED;
++	}
++}
++
++static void ct_thread_cancel_kill_cb(const void *node, const VISIT which,
++				    const int depth)
++{
++	struct ct_th_data *cttd;
++
+ 	if (which == postorder || which == leaf) {
+ 		cttd = *(struct ct_th_data **)node;
+ 		if (cttd->ct_rc == CT_RC_INIT)
+@@ -1550,15 +1592,21 @@ static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
+ 	}
+ }
+ 
+-static void ct_thread_cancel_all(void)
++static void ct_thread_cancel_all(int cancel_rc)
+ {
+-	if (!ct_thread_tree || !ct_thread_count)
++	void (*cb)(const void *a, const VISIT b, const int c);
++
++	if (!ct_thread_tree || !ct_thread_count || !cancel_rc)
+ 		return;
++	if (cancel_rc == -ECANCELED)
++		cb = ct_thread_cancel_all_cb;
++	else
++		cb = ct_thread_cancel_kill_cb;
+ 
+ 	pthread_mutex_lock(&ct_thread_tree_lock);
+ 	CT_WARN("canceling %lu threads for '%s' service",
+ 		ct_thread_count, opt.o_mnt);
+-	twalk(ct_thread_tree, ct_thread_cancel_all_cb);
++	twalk(ct_thread_tree, cb);
+ 	pthread_mutex_unlock(&ct_thread_tree_lock);
+ }
+ 
+@@ -1590,7 +1638,7 @@ again:
+ 	pthread_mutex_unlock(&ct_thread_tree_lock);
+ 
+ 	if (ct_thread_count) {
+-		ct_thread_cancel_all();
++		ct_thread_cancel_all(-ESHUTDOWN);
+ 		goto again;
+ 	}
+ 
+@@ -1617,6 +1665,7 @@ static void ct_thread_end(struct ct_th_data *cttd)
+ 	pthread_mutex_lock(&ct_thread_tree_lock);
+ 	if (!tdelete(cttd, &ct_thread_tree, ct_thread_cmp))
+ 		abort();
++	list_del(&cttd->link);
+ 	ct_thread_count--;
+ 	pthread_cond_signal(&ct_thread_count_cond);
+ 	pthread_mutex_unlock(&ct_thread_tree_lock);
+@@ -1630,13 +1679,19 @@ static void *ct_thread(void *data)
+ 	struct ct_th_data *cttd = data;
+ 	int rc;
+ 
++	cttd->tid = syscall(SYS_gettid);
+ 	rc = ct_process_item(cttd);
+ 
+ 	ct_thread_end(cttd);
+ 	pthread_exit((void *)(intptr_t)rc);
+ }
+ 
+-static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
++enum ct_thread_find_flags {
++	CT_TH_FIND_MATCH_COOKIE = 0x1,
++};
++
++static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai,
++					 int flags)
+ {
+ 	struct ct_th_data **node;
+ 	struct ct_th_data cttd = {
+@@ -1651,7 +1706,8 @@ static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
+ 
+ 	if (!node)
+ 		return NULL;
+-	if ((*node)->hai->hai_cookie != hai->hai_cookie) {
++	if ((flags & CT_TH_FIND_MATCH_COOKIE) &&
++	    (*node)->hai->hai_cookie != hai->hai_cookie) {
+ 		ct_thread_put(*node);
+ 		return NULL;
+ 	}
+@@ -1659,13 +1715,16 @@ static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
+ 	return *node;
+ }
+ 
+-static int ct_thread_cancel(const struct hsm_action_item *hai)
++static int ct_thread_cancel(const struct hsm_action_item *hai, int flags)
+ {
+ 	struct ct_th_data *cttd;
+ 
+-	cttd = ct_thread_find(hai);
+-	if (!cttd)
++	cttd = ct_thread_find(hai, flags);
++	if (!cttd) {
++		CT_ERROR(-ENOENT, "failed to cancel request matching "DFID,
++			 PFID(&hai->hai_fid));
+ 		return -ENOENT;
++	}
+ 
+ 	if (cttd->ct_rc == CT_RC_INIT)
+ 		cttd->ct_rc = -ECANCELED;
+@@ -1682,7 +1741,7 @@ static int ct_process_item_async(const struct hsm_action_item *hai,
+ 	int			 rc = 0;
+ 
+ 	if (hai->hai_action == HSMA_CANCEL)
+-		return ct_thread_cancel(hai);
++		return ct_thread_cancel(hai, CT_TH_FIND_MATCH_COOKIE);
+ 
+ 	data = calloc(1, sizeof(*data));
+ 	if (data == NULL)
+@@ -1702,8 +1761,10 @@ static int ct_process_item_async(const struct hsm_action_item *hai,
+ 	key = tsearch(data, &ct_thread_tree, ct_thread_cmp);
+ 	if (key)
+ 		ct_thread_get(*key);
+-	if (*key == data)
++	if (*key == data) {
+ 		ct_thread_count++;
++		list_add_tail(&data->link, &ct_thread_list);
++	}
+ 	pthread_mutex_unlock(&ct_thread_tree_lock);
+ 	if (!key) {
+ 		rc = -ENOMEM;
+@@ -2326,17 +2387,619 @@ static int ct_max_sequence(void)
+ static int ct_stopping;
+ static void handler(int signal)
+ {
++	/* to interrupt syscall (select()) */
++	if (signal == SIGUSR1)
++		return;
++
+ 	psignal(signal, "exiting");
+ 	if (ct_stopping)
+-		ct_thread_cancel_all();
++		ct_thread_cancel_all(-ESHUTDOWN);
+ 
+ 	ct_stopping++;
+ }
+ 
++/* command line tool (communicate with the daemon using UNIX socket) */
++
++static int ct_unix_socket_path(char *path, int len)
++{
++	char *name;
++	int rc, n;
++
++	if (!opt.o_mnt)
++		return -EINVAL;
++
++	n = snprintf(path, len, "/run/%s/", program_invocation_short_name);
++	if (n >= len)
++		return -ENAMETOOLONG;
++
++	if (mkdir(path, 0700) && errno != EEXIST) {
++		rc = -errno;
++		CT_ERROR(rc, "cannot create socket directory %s", path);
++		return rc;
++	}
++
++	name = path + n;
++	len -= n;
++	rc = llapi_getname(opt.o_mnt, name, len);
++	if (rc < 0) {
++		CT_ERROR(rc, "lustre name instance not found for %s",
++			 opt.o_mnt);
++		return rc;
++	}
++
++	return 0;
++
++}
++
++#define EOT 0x4
++#define EOT_MSG_SIZE  (sizeof(char) + sizeof(int))
++#define CMD_BUF_SIZE 256
++#define MAX_CLIENTS 10
++
++static char ct_cmd_sock_path[PATH_MAX];
++
++static int ct_server_cmd_init(void)
++{
++	struct sockaddr_un addr;
++	int fd, rc;
++
++	memset(&addr, 0, sizeof(addr));
++	addr.sun_family = AF_UNIX;
++	rc = ct_unix_socket_path(addr.sun_path, sizeof(addr.sun_path));
++	if (rc)
++		return rc;
++
++	fd = socket(AF_UNIX, SOCK_STREAM, 0);
++	if (fd < 0) {
++		rc = -errno;
++		CT_ERROR(rc, "failed to open unix socket");
++		return rc;
++	}
++
++	/* Remove the socket file if it already exists */
++	unlink(addr.sun_path);
++
++	if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
++		rc = -errno;
++		CT_ERROR(rc, "failed to create unix socket %s", addr.sun_path);
++		goto err_close;
++	}
++
++	if (listen(fd, MAX_CLIENTS) < 0) {
++		rc = -errno;
++		CT_ERROR(rc, "listen() failed for %s", addr.sun_path);
++		goto err_unlink;
++	}
++
++	strncpy(ct_cmd_sock_path, addr.sun_path, sizeof(ct_cmd_sock_path));
++	addr.sun_path[sizeof(ct_cmd_sock_path) - 1] = '\0';
++
++	return fd;
++
++err_unlink:
++	unlink(addr.sun_path);
++err_close:
++	close(fd);
++
++	return rc;
++}
++
++static void ct_server_cmd_fini(int fd)
++{
++	close(fd);
++	if (ct_cmd_sock_path[0])
++		unlink(ct_cmd_sock_path);
++}
++
++static int build_fd_set(fd_set *readfds, int *fd_arr, int count)
++{
++	int *fd = fd_arr;
++	int max_fd = 0;
++	int i;
++
++	FD_ZERO(readfds);
++	for (i = 0; i < count; i++, fd++) {
++		if (*fd)
++			FD_SET(*fd, readfds);
++		if (*fd > max_fd)
++			max_fd = *fd;
++	}
++
++	return max_fd;
++}
++
++static int ct_server_cmd_connect(int *fd_arr, int count)
++{
++	struct sockaddr_un addr;
++	socklen_t addr_len = sizeof(addr);
++	int server_fd, client_fd;
++	int i, rc;
++
++	if (!count)
++		return -EINVAL;
++
++	server_fd = fd_arr[0];
++	client_fd = accept(server_fd, (struct sockaddr *)&addr, &addr_len);
++	if (client_fd < 0) {
++		rc = -errno;
++		CT_ERROR(rc, "%s: failed to connect new client",  __func__);
++		return rc;
++	}
++
++	for (i = 1; i < count; i++) {
++		if (!fd_arr[i]) {
++			fd_arr[i] = client_fd;
++			CT_DEBUG("%s: new client connected, fd: %d",
++				 __func__, client_fd);
++			return 0;
++		}
++	}
++
++	rc = -ECONNABORTED;
++	CT_ERROR(rc, "%s: failed to connect new client (no slot available)",
++		 __func__);
++
++	return rc;
++}
++
++static int send_buf(int fd, const void *buf, int len)
++{
++	int n;
++
++	n = send(fd, buf, len, 0);
++	if (n < 0)
++		return -errno;
++	if (n != len)
++		return -EIO;
++
++	return 0;
++}
++
++static int send_eot(int fd)
++{
++	char buf[2] = { 0, EOT };
++
++	return send_buf(fd, buf, sizeof(buf));
++}
++
++static int send_status(int fd, int status)
++{
++	return send_buf(fd, &status, sizeof(status));
++}
++
++static int recv_status(int fd, int *status)
++{
++	int n;
++
++	n = recv(fd, status, sizeof(*status), 0);
++	if (n != sizeof(int))
++		return n < 0 ? -errno : -EIO;
++
++	return 0;
++}
++
++static int msg_is_eot(char *buf, int len)
++{
++	if (!len)
++		return 0;
++
++	return (buf[len - 1] == EOT);
++};
++
++struct handle_cmd_struct {
++	char *hdl_cmd;
++	int (*hdl_cb)(int sock_fd, int argc, char **argv);
++	char *hdl_help;
++};
++
++static int cmd_help(int sock_fd, int argc, char **argv);
++static int cmd_list(int sock_fd, int argc, char **argv);
++static int cmd_freeze(int sock_fd, int argc, char **argv);
++static int cmd_unfreeze(int sock_fd, int argc, char **argv);
++static int cmd_cancel(int sock_fd, int argc, char **argv);
++static int cmd_info(int sock_fd, int argc, char **argv);
++
++static struct handle_cmd_struct cmd_array[] = {
++	{ "help", cmd_help, ": list available commands\n"},
++	{ "list", cmd_list, ": list all the request running\n"},
++	{ "freeze", cmd_freeze, ": freeze all thread IOs\n"},
++	{ "unfreeze", cmd_unfreeze, ": unfreeze all thread IOs\n"},
++	{ "cancel", cmd_cancel, " [FID...]: cancel one or several running requests\n"},
++	{ "info", cmd_info, ": display runtime information\n"},
++	{ 0 },
++};
++
++static int cmd_help(int sock_fd, int argc, char **argv)
++{
++	struct handle_cmd_struct *hdl;
++	int rc;
++
++	rc = send_status(sock_fd, 0);
++	if (rc)
++		return rc;
++
++	for (hdl = cmd_array; hdl->hdl_cmd; hdl++) {
++		if (!hdl->hdl_help)
++			continue;
++		rc = send_buf(sock_fd, hdl->hdl_cmd, strlen(hdl->hdl_cmd));
++		if (rc)
++			return rc;
++		rc = send_buf(sock_fd, hdl->hdl_help, strlen(hdl->hdl_help));
++		if (rc)
++			return rc;
++	}
++	return 0;
++}
++
++static int cmd_list(int sock_fd, int argc, char **argv)
++{
++	struct ct_th_data *th_data;
++	char buf[CMD_BUF_SIZE];
++	int rc;
++
++	rc = send_status(sock_fd, 0);
++	if (rc)
++		return rc;
++
++	pthread_mutex_lock(&ct_thread_tree_lock);
++	list_for_each_entry(th_data, &ct_thread_list, link) {
++		struct hsm_action_item	*hai = th_data->hai;
++		int n;
++
++		n = snprintf(buf, sizeof(buf),
++			 "thread[%ld]: cookie: %#jx, FID: "DFID", action: %s, rc: %d\n",
++			 th_data->tid, (uintmax_t)hai->hai_cookie,
++			 PFID(&hai->hai_fid),
++			 hsm_copytool_action2name(hai->hai_action),
++			 th_data->ct_rc > 0 ? 0 : th_data->ct_rc);
++
++		if (n >= sizeof(buf))
++			n = sizeof(buf) - 1;
++
++		rc = send_buf(sock_fd, buf, n);
++		if (rc)
++			return rc;
++	}
++	pthread_mutex_unlock(&ct_thread_tree_lock);
++
++	return 0;
++}
++
++static int cmd_freeze(int sock_fd, int argc, char **argv)
++{
++	int status = ct_freeze_io ? -EALREADY : 0;
++	int rc;
++
++	rc = send_status(sock_fd, status);
++	if (rc || status)
++		return rc ?: status;
++
++	CT_TRACE("freezing thread IOs");
++	ct_freeze_io = true;
++
++	return 0;
++}
++
++static int cmd_unfreeze(int sock_fd, int argc, char **argv)
++{
++	int status = !ct_freeze_io ? -EALREADY : 0;
++	int rc;
++
++	rc = send_status(sock_fd, status);
++	if (rc || status)
++		return rc ?: status;
++
++	CT_TRACE("unfreezing thread IOs");
++	ct_freeze_io = false;
++
++	return 0;
++}
++
++static int cmd_cancel(int sock_fd, int argc, char **argv)
++{
++	struct hsm_action_item hai = { 0 };
++	int i, status, rc;
++
++	if (argc <= 1) {
++		ct_thread_cancel_all(-ECANCELED);
++		rc = send_status(sock_fd, 0);
++
++		return rc;
++	}
++
++	for (i = 1; i < argc; i++) {
++		char *fid_str = argv[i];
++
++		if (fid_str[0] == '[')
++			fid_str++;
++		if (sscanf(fid_str, SFID, RFID(&hai.hai_fid)) != 3) {
++			status = -EINVAL;
++			break;
++		}
++
++		CT_TRACE("canceling running request matching "DFID,
++			 PFID(&hai.hai_fid));
++		status = ct_thread_cancel(&hai, 0);
++		if (status)
++			break;
++	}
++
++	rc = send_status(sock_fd, status);
++
++	return rc ?: status;
++}
++
++static int cmd_info(int sock_fd, int argc, char **argv)
++{
++	char buf[CMD_BUF_SIZE];
++	int n, rc;
++
++	rc = send_status(sock_fd, 0);
++	if (rc)
++		return rc;
++
++	n = snprintf(buf, sizeof(buf),
++		     "%s[%d] -p %s %s: %lu running requests\n",
++		     program_invocation_short_name, getpid(), opt.o_hsm_root,
++		     opt.o_mnt, ct_thread_count);
++	if (n >= sizeof(buf))
++		n = sizeof(buf) - 1;
++
++	rc = send_buf(sock_fd, buf, n);
++
++	return rc;
++}
++
++#define CMD_MAX_ARGS 10
++static int ct_server_handle_cmd(int sock_fd, char *cmd)
++{
++	struct handle_cmd_struct *hdl;
++	char *argv[CMD_MAX_ARGS] = { 0 };
++	char *str = cmd;
++	char *token;
++	int argc = 0, rc = 0;
++
++	token = strsep(&str, " ");
++	for (; token && argc < CMD_MAX_ARGS; token = strsep(&str, " ")) {
++		if (!*token)
++			continue;
++		argv[argc] = token;
++		argc++;
++	}
++
++	if (!argc) {
++		rc = -EINVAL;
++		goto out_err;
++	} else if (token) {
++		rc = -E2BIG;
++		goto out_err;
++	}
++
++	for (hdl = cmd_array; hdl->hdl_cmd; hdl++) {
++		if (strcmp(cmd, hdl->hdl_cmd) != 0)
++			continue;
++
++		rc = hdl->hdl_cb(sock_fd, argc, argv);
++		goto out;
++	}
++	rc = -EINVAL;
++
++out_err:
++	send_status(sock_fd, rc);
++out:
++	if (argv[0])
++		CT_DEBUG("%s: client: %d, cmd: %s, rc: %d",
++			 __func__, sock_fd, argv[0], rc);
++
++	return rc;
++}
++
++static void ct_server_cmd_recv(fd_set *readfds, int *fd_arr, int count)
++{
++	char buf[CMD_BUF_SIZE];
++	int i;
++
++	for (i = 0; i < count; i++) {
++		int client_fd = fd_arr[i];
++		ssize_t recv_len;
++
++		if (!FD_ISSET(client_fd, readfds))
++			continue;
++
++		recv_len = recv(client_fd, buf, sizeof(buf) - 1, 0);
++		if (recv_len < 0) {
++			CT_ERROR(errno, "%s: failed to receive data from %d",
++				 __func__, client_fd);
++			continue;
++		}
++		if (!recv_len) {
++			fd_arr[i] = 0;
++			CT_DEBUG("%s: client disconnected, fd: %d",
++				 __func__, client_fd);
++			close(client_fd);
++			continue;
++		}
++
++		buf[recv_len] = '\0';
++		ct_server_handle_cmd(client_fd, buf);
++		send_eot(client_fd);
++	}
++}
++
++static int ct_server_cmd(int sock_fd)
++{
++	fd_set readfds;
++	int max_fd, activity, rc;
++	int fd_arr[MAX_CLIENTS + 1] = { 0 };
++
++	fd_arr[0] = sock_fd;
++	while (!ct_stopping) {
++		max_fd = build_fd_set(&readfds, fd_arr, ARRAY_SIZE(fd_arr));
++		activity = select(max_fd + 1, &readfds, NULL, NULL, NULL);
++		if (activity < 0 && errno == EINTR)
++			continue;
++		if (activity < 0) {
++			rc = -errno;
++			CT_ERROR(rc, "%s: select", __func__);
++			return rc;
++		}
++
++		/* new connection? */
++		if (FD_ISSET(sock_fd, &readfds)) {
++			rc = ct_server_cmd_connect(fd_arr, ARRAY_SIZE(fd_arr));
++			if (rc)
++				return rc;
++		}
++
++		ct_server_cmd_recv(&readfds, &fd_arr[1], MAX_CLIENTS);
++	}
++
++	return 0;
++}
++
++static void *ct_server_cmd_thread(void *data)
++{
++	int server_fd = *(int *)data;
++	int rc = 0;
++
++	CT_DEBUG("listening command on %s (sock fd: %d)",
++		 ct_cmd_sock_path, server_fd);
++	rc = ct_server_cmd(server_fd);
++	CT_DEBUG("stop listening command on %s (sock fd: %d, rc: %d)",
++		 ct_cmd_sock_path, server_fd, rc);
++
++	return NULL;
++}
++
++static int ct_client_cmd_init(void)
++{
++	struct sockaddr_un addr;
++	int fd, rc;
++
++	memset(&addr, 0, sizeof(addr));
++	addr.sun_family = AF_UNIX;
++	rc = ct_unix_socket_path(addr.sun_path, sizeof(addr.sun_path));
++	if (rc)
++		return rc;
++
++	fd = socket(AF_UNIX, SOCK_STREAM, 0);
++	if (fd < 0) {
++		rc = -errno;
++		CT_ERROR(rc, "failed to open unix socket");
++		return rc;
++	}
++
++	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
++		rc = -errno;
++		CT_ERROR(rc, "failed to connect to %s", addr.sun_path);
++		goto err_close;
++	}
++
++	return fd;
++
++err_close:
++	close(fd);
++
++	return rc;
++}
++
++static int ct_client_cmd_recv(int sock_fd)
++{
++	char buf[CMD_BUF_SIZE];
++	int status = 0, rc = 0;
++	int n;
++
++	rc = recv_status(sock_fd, &status);
++	if (rc)
++		goto out;
++
++	while (1) {
++		int is_eot;
++
++		n = recv(sock_fd, buf, sizeof(buf) - 1, 0);
++		if (n <= 0) {
++			rc = -errno;
++			CT_ERROR(rc, "failed to receive data for %d", sock_fd);
++			break;
++		}
++
++		is_eot = msg_is_eot(buf, n);
++		n = is_eot ? n - 1 : n;
++		if (n) {
++			buf[n] = '\0';
++			fputs(buf, stdout);
++		}
++		if (is_eot)
++			break;
++	}
++	rc = rc ?: status;
++
++out:
++	if (rc < 0)
++		CT_ERROR(rc, "CMD failed");
++
++	return rc;
++}
++
++static int client_send_cmd(int sock_fd, char *buf, int len)
++{
++	int rc = 0;
++
++	rc = send_buf(sock_fd, buf, len);
++	if (rc)
++		return rc;
++	rc = ct_client_cmd_recv(sock_fd);
++
++	return rc;
++}
++
++static int ct_client_cmd(char *cmd)
++{
++	char buf[CMD_BUF_SIZE];
++	int client_fd;
++	int rc = 0;
++
++	client_fd = ct_client_cmd_init();
++	if (client_fd < 0)
++		return -client_fd;
++	if (cmd) {
++		rc = client_send_cmd(client_fd, cmd, strlen(cmd) + 1);
++		goto out_fini;
++	}
++
++	fputs("> ", stdout);
++	while (fgets(buf, sizeof(buf), stdin)) {
++		int len = strlen(buf);
++
++		if (len && buf[0] != '\n') {
++			if (buf[len - 1] == '\n') {
++				len--;
++				buf[len] = '\0';
++			}
++
++			if (strcmp(buf, "exit") == 0 ||
++			    strcmp(buf, "quit") == 0 ||
++			    strcmp(buf, "q") == 0)
++				goto out_fini;
++
++			client_send_cmd(client_fd, buf, len + 1);
++		}
++		fputs("> ", stdout);
++	}
++
++out_fini:
++	close(client_fd);
++
++	return rc;
++}
++
++
+ /* Daemon waits for messages from the kernel; run it in the background. */
+ static int ct_run(void)
+ {
+ 	struct sigaction cleanup_sigaction;
++	pthread_t cmd_thread;
++	int cmd_sock_fd;
+ 	int rc;
+ 
+ 	if (opt.o_daemonize) {
+@@ -2368,12 +3031,26 @@ static int ct_run(void)
+ 		llapi_error_callback_set(llapi_hsm_log_error);
+ 	}
+ 
++	/* start interactive command listener thread */
++	cmd_sock_fd = ct_server_cmd_init();
++	if (cmd_sock_fd < 0)
++		return -cmd_sock_fd;
++
++	rc = -pthread_create(&cmd_thread, NULL, ct_server_cmd_thread,
++			     &cmd_sock_fd);
++	if (rc) {
++		CT_ERROR(rc, "cannot create command thread for '%s'",
++			 opt.o_mnt);
++		goto out_cmd_fini;
++	}
++
+ 	rc = llapi_hsm_copytool_register(&ctdata, opt.o_mnt,
+ 					 opt.o_archive_id_used,
+ 					 opt.o_archive_id, 0);
+ 	if (rc < 0) {
+ 		CT_ERROR(rc, "cannot start copytool interface");
+-		return rc;
++		ct_stopping++;
++		goto out_cmd_join;
+ 	}
+ 
+ 	memset(&cleanup_sigaction, 0, sizeof(cleanup_sigaction));
+@@ -2381,6 +3058,7 @@ static int ct_run(void)
+ 	sigemptyset(&cleanup_sigaction.sa_mask);
+ 	sigaction(SIGINT, &cleanup_sigaction, NULL);
+ 	sigaction(SIGTERM, &cleanup_sigaction, NULL);
++	sigaction(SIGUSR1, &cleanup_sigaction, NULL);
+ 
+ 	while (!ct_stopping) {
+ 		struct hsm_action_list *hal;
+@@ -2452,6 +3130,12 @@ static int ct_run(void)
+ 	if (opt.o_event_fifo != NULL)
+ 		llapi_hsm_unregister_event_fifo(opt.o_event_fifo);
+ 
++out_cmd_join:
++	pthread_kill(cmd_thread, SIGUSR1);
++	pthread_join(cmd_thread, NULL);
++out_cmd_fini:
++	ct_server_cmd_fini(cmd_sock_fd);
++
+ 	return rc == -EINTR ? 0 : rc;
+ }
+ 
+@@ -2636,6 +3320,9 @@ int main(int argc, char **argv)
+ 	if (rc < 0)
+ 		return -rc;
+ 
++	if (opt.o_action == CA_REQUEST)
++		return -ct_client_cmd(opt.o_request);
++
+ 	if (opt.o_hsm_root == NULL) {
+ 		rc = -EINVAL;
+ 		CT_ERROR(rc, "must specify a root directory for the backend");
+
+</pre>
+</body>
+</html>
