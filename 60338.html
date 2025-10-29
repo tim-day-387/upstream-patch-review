@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-From f92f9279eb30c2f6d4e775eea546a68d1d145883 Mon Sep 17 00:00:00 2001
+From c5a5a858eb89ba827e2eafbd10a1aa7e7ea0589d Mon Sep 17 00:00:00 2001
 From: Etienne AUJAMES <etienne.aujames@cea.fr>
 Date: Thu, 24 Jul 2025 15:21:41 +0200
 Subject: [PATCH 1/1] LU-19204 hsm: add command prompt for lhsmtool_posix
@@ -213,7 +213,7 @@ index 5d98eab7ca..100756121f 100755
  	local client_count=$1
  	if [[ $CLIENTCOUNT -lt $client_count ]]; then
 diff --git a/lustre/utils/lhsmtool_posix.c b/lustre/utils/lhsmtool_posix.c
-index 2b7deadef3..9d49ab4216 100644
+index 569d85aa51..192986689c 100644
 --- a/lustre/utils/lhsmtool_posix.c
 +++ b/lustre/utils/lhsmtool_posix.c
 @@ -37,7 +37,13 @@
@@ -345,7 +345,7 @@ index 2b7deadef3..9d49ab4216 100644
  
  		rsize = pread(src_fd, buf, chunk, offset);
  		if (rsize == 0)
-@@ -1520,6 +1549,7 @@ static int ct_process_item(struct ct_th_data *cttd)
+@@ -1518,6 +1547,7 @@ static int ct_process_item(struct ct_th_data *cttd)
  	return 0;
  }
  
@@ -353,7 +353,7 @@ index 2b7deadef3..9d49ab4216 100644
  static void *ct_thread_tree;
  static unsigned long ct_thread_count;
  pthread_mutex_t ct_thread_tree_lock = PTHREAD_MUTEX_INITIALIZER;
-@@ -1543,6 +1573,18 @@ static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
+@@ -1541,6 +1571,18 @@ static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
  {
  	struct ct_th_data *cttd;
  
@@ -372,7 +372,7 @@ index 2b7deadef3..9d49ab4216 100644
  	if (which == postorder || which == leaf) {
  		cttd = *(struct ct_th_data **)node;
  		if (cttd->ct_rc == CT_RC_INIT)
-@@ -1550,15 +1592,21 @@ static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
+@@ -1548,15 +1590,21 @@ static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
  	}
  }
  
@@ -397,7 +397,7 @@ index 2b7deadef3..9d49ab4216 100644
  	pthread_mutex_unlock(&ct_thread_tree_lock);
  }
  
-@@ -1590,7 +1638,7 @@ again:
+@@ -1588,7 +1636,7 @@ again:
  	pthread_mutex_unlock(&ct_thread_tree_lock);
  
  	if (ct_thread_count) {
@@ -406,7 +406,7 @@ index 2b7deadef3..9d49ab4216 100644
  		goto again;
  	}
  
-@@ -1617,6 +1665,7 @@ static void ct_thread_end(struct ct_th_data *cttd)
+@@ -1615,6 +1663,7 @@ static void ct_thread_end(struct ct_th_data *cttd)
  	pthread_mutex_lock(&ct_thread_tree_lock);
  	if (!tdelete(cttd, &ct_thread_tree, ct_thread_cmp))
  		abort();
@@ -414,7 +414,7 @@ index 2b7deadef3..9d49ab4216 100644
  	ct_thread_count--;
  	pthread_cond_signal(&ct_thread_count_cond);
  	pthread_mutex_unlock(&ct_thread_tree_lock);
-@@ -1630,13 +1679,19 @@ static void *ct_thread(void *data)
+@@ -1628,13 +1677,19 @@ static void *ct_thread(void *data)
  	struct ct_th_data *cttd = data;
  	int rc;
  
@@ -435,7 +435,7 @@ index 2b7deadef3..9d49ab4216 100644
  {
  	struct ct_th_data **node;
  	struct ct_th_data cttd = {
-@@ -1651,7 +1706,8 @@ static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
+@@ -1649,7 +1704,8 @@ static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
  
  	if (!node)
  		return NULL;
@@ -445,7 +445,7 @@ index 2b7deadef3..9d49ab4216 100644
  		ct_thread_put(*node);
  		return NULL;
  	}
-@@ -1659,13 +1715,16 @@ static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
+@@ -1657,13 +1713,16 @@ static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
  	return *node;
  }
  
@@ -465,7 +465,7 @@ index 2b7deadef3..9d49ab4216 100644
  
  	if (cttd->ct_rc == CT_RC_INIT)
  		cttd->ct_rc = -ECANCELED;
-@@ -1682,7 +1741,7 @@ static int ct_process_item_async(const struct hsm_action_item *hai,
+@@ -1680,7 +1739,7 @@ static int ct_process_item_async(const struct hsm_action_item *hai,
  	int			 rc = 0;
  
  	if (hai->hai_action == HSMA_CANCEL)
@@ -474,7 +474,7 @@ index 2b7deadef3..9d49ab4216 100644
  
  	data = calloc(1, sizeof(*data));
  	if (data == NULL)
-@@ -1702,8 +1761,10 @@ static int ct_process_item_async(const struct hsm_action_item *hai,
+@@ -1700,8 +1759,10 @@ static int ct_process_item_async(const struct hsm_action_item *hai,
  	key = tsearch(data, &ct_thread_tree, ct_thread_cmp);
  	if (key)
  		ct_thread_get(*key);
@@ -486,7 +486,7 @@ index 2b7deadef3..9d49ab4216 100644
  	pthread_mutex_unlock(&ct_thread_tree_lock);
  	if (!key) {
  		rc = -ENOMEM;
-@@ -2326,17 +2387,619 @@ static int ct_max_sequence(void)
+@@ -2324,17 +2385,619 @@ static int ct_max_sequence(void)
  static int ct_stopping;
  static void handler(int signal)
  {
@@ -1107,7 +1107,7 @@ index 2b7deadef3..9d49ab4216 100644
  	int rc;
  
  	if (opt.o_daemonize) {
-@@ -2368,12 +3031,26 @@ static int ct_run(void)
+@@ -2366,12 +3029,26 @@ static int ct_run(void)
  		llapi_error_callback_set(llapi_hsm_log_error);
  	}
  
@@ -1135,7 +1135,7 @@ index 2b7deadef3..9d49ab4216 100644
  	}
  
  	memset(&cleanup_sigaction, 0, sizeof(cleanup_sigaction));
-@@ -2381,6 +3058,7 @@ static int ct_run(void)
+@@ -2379,6 +3056,7 @@ static int ct_run(void)
  	sigemptyset(&cleanup_sigaction.sa_mask);
  	sigaction(SIGINT, &cleanup_sigaction, NULL);
  	sigaction(SIGTERM, &cleanup_sigaction, NULL);
@@ -1143,7 +1143,7 @@ index 2b7deadef3..9d49ab4216 100644
  
  	while (!ct_stopping) {
  		struct hsm_action_list *hal;
-@@ -2452,6 +3130,12 @@ static int ct_run(void)
+@@ -2450,6 +3128,12 @@ static int ct_run(void)
  	if (opt.o_event_fifo != NULL)
  		llapi_hsm_unregister_event_fifo(opt.o_event_fifo);
  
@@ -1156,7 +1156,7 @@ index 2b7deadef3..9d49ab4216 100644
  	return rc == -EINTR ? 0 : rc;
  }
  
-@@ -2636,6 +3320,9 @@ int main(int argc, char **argv)
+@@ -2634,6 +3318,9 @@ int main(int argc, char **argv)
  	if (rc < 0)
  		return -rc;
  
