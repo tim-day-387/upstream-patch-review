@@ -1,0 +1,77 @@
+<html lang="en">
+<body>
+<pre>
+From 48a05c2dd1e61114c60234409089d183b8eb5e32 Mon Sep 17 00:00:00 2001
+From: Yang Sheng <ys@whamcloud.com>
+Date: Wed, 1 Oct 2025 23:11:29 +0800
+Subject: [PATCH 1/1] LU-15283 quota: lower the message level
+
+Stop output the error message in valid cases.
+Also the message in qmt_work_lvbo_free is not a
+fatal error. So lower the level for it.
+
+Fixes: d527e81246 ("LU-15283 quota: deadlock between reint & lquota_wb")
+Signed-off-by: Yang Sheng <ys@whamcloud.com>
+Change-Id: I3d611fd26030df8ae3cc330418ff9669656fe895
+---
+ lustre/quota/qmt_entry.c | 6 +++---
+ lustre/quota/qsd_reint.c | 8 +++++---
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/lustre/quota/qmt_entry.c b/lustre/quota/qmt_entry.c
+index 4a4557028f..ff63494da6 100644
+--- a/lustre/quota/qmt_entry.c
++++ b/lustre/quota/qmt_entry.c
+@@ -30,9 +30,9 @@ static void qmt_work_lvbo_free(struct work_struct *work)
+ 		struct qmt_pool_info *pool;
+ 
+ 		pool = (struct qmt_pool_info *)lqe->lqe_site->lqs_parent;
+-		CWARN("%s: lvbo for (id=%llx) not fully inited\n",
+-		      pool->qpi_qmt->qmt_svname,
+-		      lqe->lqe_id.qid_uid);
++		CDEBUG(D_QUOTA, "%s: lvbo for (id=%llx) not fully inited\n",
++		       pool->qpi_qmt->qmt_svname,
++		       lqe->lqe_id.qid_uid);
+ 	}
+ 
+ 	/* release lqe reference */
+diff --git a/lustre/quota/qsd_reint.c b/lustre/quota/qsd_reint.c
+index e76dc8e436..6a1e53fd69 100644
+--- a/lustre/quota/qsd_reint.c
++++ b/lustre/quota/qsd_reint.c
+@@ -563,7 +563,7 @@ static bool qqi_reint_delayed(struct qsd_qtype_info *qqi)
+ 	struct qsd_instance	*qsd = qqi->qqi_qsd;
+ 	struct qsd_upd_rec	*upd;
+ 	struct lquota_entry	*lqe, *n;
+-	int			 dqacq = 0;
++	int			 warn = 1, dqacq = 0;
+ 	bool			 delay = false;
+ 	ENTRY;
+ 
+@@ -592,7 +592,7 @@ static bool qqi_reint_delayed(struct qsd_qtype_info *qqi)
+ 	/* check if the reintegration has already started or finished */
+ 	if ((qqi->qqi_glb_uptodate && qqi->qqi_slv_uptodate) ||
+ 	     qqi->qqi_reint || qsd->qsd_stopping || qsd->qsd_updating)
+-		GOTO(out_lock, delay = true);
++		GOTO(out_nowarn, delay = true);
+ 
+ 	/* there could be some unfinished global or index entry updates
+ 	 * (very unlikely), to avoid them messing up with the reint
+@@ -609,10 +609,12 @@ static bool qqi_reint_delayed(struct qsd_qtype_info *qqi)
+ 	qqi->qqi_reint = 1;
+ 
+ 	EXIT;
++out_nowarn:
++	warn = 0;
+ out_lock:
+ 	write_unlock(&qsd->qsd_lock);
+ out:
+-	if (delay)
++	if (warn)
+ 		CERROR("%s: Delaying reintegration for qtype:%d until pending "
+ 		       "updates are flushed.\n",
+ 		       qsd->qsd_svname, qqi->qqi_qtype);
+
+</pre>
+</body>
+</html>
