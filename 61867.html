@@ -1,0 +1,53 @@
+<html lang="en">
+<body>
+<pre>
+From 06da8f8756fd0f075669834b25690a79ec112bf5 Mon Sep 17 00:00:00 2001
+From: Cyril Bordage <cbordage@whamcloud.com>
+Date: Fri, 17 Oct 2025 03:38:22 +0200
+Subject: [PATCH 1/1] LU-19468 tests: Fix bad module load
+
+When IPv6 is used, we need to configure LNet with large nid feature. A
+simple "modprobe lustre" won't do it. For that, we use "load_modules"
+that will do a proper configuration.
+
+Test-Parameters: trivial testlist=conf-sanity env=FORCE_LARGE_NID=true,LOAD_MODULES_REMOTE=true
+Signed-off-by: Cyril Bordage <cbordage@whamcloud.com>
+Change-Id: Ic9f8cf00b825dd9e0d46dea29453014c6780073d
+---
+ lustre/tests/conf-sanity.sh | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/lustre/tests/conf-sanity.sh b/lustre/tests/conf-sanity.sh
+index 5a42388945..c7559f31f6 100755
+--- a/lustre/tests/conf-sanity.sh
++++ b/lustre/tests/conf-sanity.sh
+@@ -294,7 +294,7 @@ test_5f() {
+ run_test 5f "mds down, cleanup after failed mount (bug 2712)"
+ 
+ test_5g() {
+-	modprobe lustre
++	load_modules
+ 	[ "$CLIENT_VERSION" -lt $(version_code 2.9.53) ] &&
+ 		skip "automount of debugfs missing before 2.9.53"
+ 	umount /sys/kernel/debug
+@@ -1258,6 +1258,7 @@ test_30b() {
+ run_test 30b "Remove failover nids"
+ 
+ test_31() { # bug 10734
++	load_modules
+ 	# ipaddr must not exist
+ 	$MOUNT_CMD 4.3.2.1@tcp:/lustre $MOUNT || true
+ 	cleanup || error "cleanup failed with rc $?"
+@@ -4369,7 +4370,7 @@ test_43b() { # LU-5690
+ 
+ 	local fsname=test1234
+ 
+-	load_module llite/lustre
++	load_modules
+ 	local client_ip=$(host_nids_address $HOSTNAME $NETTYPE)
+ 	local host=${client_ip//*./}
+ 	local net=${client_ip/%$host/}
+
+</pre>
+</body>
+</html>
