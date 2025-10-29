@@ -1,0 +1,890 @@
+<html lang="en">
+<body>
+<pre>
+From 70506eac4b4a8e394e32b9cfb2f80a719adf1418 Mon Sep 17 00:00:00 2001
+From: Patrick Farrell <pfarrell@whamcloud.com>
+Date: Wed, 29 Oct 2025 12:46:48 -0400
+Subject: [PATCH 1/1] LU-12187 lfs: add EC setstripe support with X+Y notation
+
+Add support for Erasure Coding (EC) layouts in lfs setstripe
+using simple "X+Y" notation where X is data stripe count and Y
+is parity stripe count.
+
+When --ec is specified, an EC parity mirror is automatically
+created that matches the data mirror's component structure.
+The --ec option can appear anywhere in the command line and
+supports both single and multiple component layouts.
+
+EC Propagation Rules:
+- Single --ec applies to all components in the parity mirror
+- Multiple --ec values propagate bidirectionally: each spreads
+  forward to the next --ec (or end) and backward to the
+  previous --ec (or start)
+- Parity components automatically inherit extents from
+  matching data components
+
+Usage examples:
+  # Single component with EC(8+2)
+  lfs setstripe -E -1 -c 8 --ec 8+2 /mnt/lustre/file
+
+  # Order independent (--ec can appear anywhere)
+  lfs setstripe --ec 8+2 -E -1 -c 8 /mnt/lustre/file
+
+  # Multiple components, single EC spec (both get EC 8+2)
+  lfs setstripe -E 128M -E -1 --ec 8+2 /mnt/lustre/file
+
+  # Different EC for different components
+  lfs setstripe -E 128M --ec 4+2 -E -1 --ec 8+2 /mnt/lustre/file
+
+  # Long form option
+  lfs setstripe --ec-stripe-count 4+2 -E -1 /mnt/lustre/file
+
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I642ad6bc87894a2cb3ce79ca7e69c4d582df1d2a
+---
+ lustre/tests/sanity-ec.sh | 348 ++++++++++++++++++++++++++++++++++
+ lustre/utils/lfs.c        | 388 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 736 insertions(+)
+ create mode 100644 lustre/tests/sanity-ec.sh
+
+diff --git a/lustre/tests/sanity-ec.sh b/lustre/tests/sanity-ec.sh
+new file mode 100644
+index 0000000000..c23685e900
+--- /dev/null
++++ b/lustre/tests/sanity-ec.sh
+@@ -0,0 +1,348 @@
++#!/bin/bash
++#
++# Run select tests by setting ONLY, or as arguments to the script.
++# Skip specific tests by setting EXCEPT.
++set -e
++set +o posix
++
++
++ONLY=${ONLY:-"$*"}
++
++LUSTRE=${LUSTRE:-$(dirname $0)/..}
++. $LUSTRE/tests/test-framework.sh
++init_test_env "$@"
++init_logging
++
++ALWAYS_EXCEPT="$SANITY_EC_EXCEPT "
++# Bug number for skipped test:
++ALWAYS_EXCEPT+="                  "
++# UPDATE THE COMMENT ABOVE WITH BUG NUMBERS WHEN CHANGING ALWAYS_EXCEPT!
++
++build_test_filter
++
++[[ "$MDS1_VERSION" -ge $(version_code 2.15.0) ]] ||
++	skip "Need MDS version at least 2.15.0 for EC support"
++
++check_and_setup_lustre
++DIR=${DIR:-$MOUNT}
++assert_DIR
++rm -rf $DIR/[Rdfs][0-9]*
++
++[ $UID -eq 0 -a $RUNAS_ID -eq 0 ] &&
++	error "\$RUNAS_ID set to 0, but \$UID is also 0!"
++
++check_runas_id $RUNAS_ID $RUNAS_GID $RUNAS
++
++#
++# Verify mirror count with an expected value for a given file.
++#
++verify_mirror_count() {
++	local tf=$1
++	local expected=$2
++	local mirror_count=$($LFS getstripe -N $tf)
++
++	[[ $mirror_count = $expected ]] || {
++		$LFS getstripe -v $tf
++		error "verify mirror count failed on $tf:" \
++		      "$mirror_count != $expected"
++	}
++}
++
++#
++# Verify component count with an expected value for a given file.
++#	$1 composite layout file
++#	$2 expected component number
++#
++verify_comp_count() {
++	local tf=$1
++	local expected=$2
++	local comp_count=$($LFS getstripe --component-count $tf)
++
++	[[ $comp_count = $expected ]] || {
++		$LFS getstripe -v $tf
++		error "verify component count failed on $tf:" \
++		      "$comp_count != $expected"
++	}
++}
++
++#
++# Verify component has the parity flag set
++#
++verify_comp_parity() {
++	local tf=$1
++	local comp_id=$2
++	local flags=$($LFS getstripe -I$comp_id $tf | awk '/lcme_flags:/ { print $2 }')
++
++	[[ $flags =~ "parity" ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify parity flag failed on $tf component $comp_id:" \
++		      "flags=$flags"
++	}
++}
++
++#
++# Verify EC stripe counts (data and coding stripes)
++#
++verify_ec_stripe_count() {
++	local tf=$1
++	local comp_id=$2
++	local expected_dstripe=$3
++	local expected_cstripe=$4
++	local dstripe=$($LFS getstripe -I$comp_id $tf | \
++			awk '/lcme_dstripe_count:/ { print $2 }')
++	local cstripe=$($LFS getstripe -I$comp_id $tf | \
++			awk '/lcme_cstripe_count:/ { print $2 }')
++
++	[[ $dstripe = $expected_dstripe ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify dstripe count failed on $tf component $comp_id:" \
++		      "$dstripe != $expected_dstripe"
++	}
++
++	[[ $cstripe = $expected_cstripe ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify cstripe count failed on $tf component $comp_id:" \
++		      "$cstripe != $expected_cstripe"
++	}
++}
++
++#
++# Verify component extent with expected start and end extent values
++# for a given file and component ID.
++#
++verify_comp_extent() {
++	local tf=$1
++	local comp_id=$2
++	local expected_start=$3
++	local expected_end=$4
++	local start=$($LFS getstripe -I$comp_id --component-start $tf)
++	local end=$($LFS getstripe -I$comp_id --component-end $tf)
++
++	[[ $start = $expected_start ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify component start failed on $tf component $comp_id:" \
++		      "$start != $expected_start"
++	}
++
++	[[ $end = $expected_end ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify component end failed on $tf component $comp_id:" \
++		      "$end != $expected_end"
++	}
++}
++
++#
++# Verify FLR state (ro, wp, sp) for a given file
++#
++verify_flr_state() {
++	local tf=$1
++	local expected_state=$2
++
++	local state=$($LFS getstripe -v $tf | awk '/lcm_flags/{ print $2 }')
++	[[ $expected_state = $state ]] ||
++		error "expected: $expected_state, actual $state"
++}
++
++#
++# Verify component has stale flag set
++#
++verify_comp_stale() {
++	local tf=$1
++	local comp_id=$2
++	local flags=$($LFS getstripe -I$comp_id $tf |
++			awk '/lcme_flags:/ { print $2 }')
++
++	[[ $flags =~ "stale" ]] || {
++		$LFS getstripe -I$comp_id -v $tf
++		error "verify stale flag failed on $tf component $comp_id:" \
++		      "flags=$flags"
++	}
++}
++
++test_1a() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Single component with EC
++	$LFS setstripe -E -1 -c 8 --ec 8+2 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 2
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror (mirror 1, component 0)
++	verify_comp_extent $tf ${ids[0]} 0 EOF
++
++	# Verify parity mirror (mirror 2, component 1)
++	verify_comp_parity $tf ${ids[1]}
++	verify_ec_stripe_count $tf ${ids[1]} 8 2
++	verify_comp_extent $tf ${ids[1]} 0 EOF
++
++	rm -f $tf
++}
++run_test 1a "basic setstripe with single component and EC"
++
++test_1b() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Order independence: --ec before -E
++	$LFS setstripe --ec 8+2 -E -1 -c 8 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 2
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror (mirror 1, component 0)
++	verify_comp_extent $tf ${ids[0]} 0 EOF
++
++	# Verify parity mirror (mirror 2, component 1)
++	verify_comp_parity $tf ${ids[1]}
++	verify_ec_stripe_count $tf ${ids[1]} 8 2
++	verify_comp_extent $tf ${ids[1]} 0 EOF
++
++	rm -f $tf
++}
++run_test 1b "setstripe with --ec before -E (order independence)"
++
++test_1c() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Multiple components, single EC spec
++	$LFS setstripe -E 128M -E -1 --ec 8+2 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 4
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror components (mirror 1)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify parity mirror components (mirror 2)
++	# First parity component
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 8 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	# Second parity component
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	rm -f $tf
++}
++run_test 1c "setstripe with multiple components and single EC spec"
++
++test_1d() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# EC specified on first component, should propagate to second
++	$LFS setstripe -E 128M --ec 8+2 -E -1 -c 4 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 4
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror components (mirror 1)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify parity mirror components (mirror 2)
++	# Both should have EC(8+2) due to propagation
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 8 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	rm -f $tf
++}
++run_test 1d "setstripe with EC propagation to second component"
++
++test_1e() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Different EC for different components
++	$LFS setstripe -E 128M --ec 4+2 -E -1 -c 4 --ec 8+2 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 4
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror components (mirror 1)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify parity mirror components (mirror 2)
++	# First component should have EC(4+2)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 4 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	# Second component should have EC(8+2)
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	rm -f $tf
++}
++run_test 1e "setstripe with different EC for different components"
++
++test_1f() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Different parity counts
++	$LFS setstripe -E 128M --ec 4+1 -E -1 -c 4 --ec 8+1 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 4
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror components (mirror 1)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify parity mirror components (mirror 2)
++	# First component should have EC(4+1)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 4 1
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	# Second component should have EC(8+1)
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 1
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	rm -f $tf
++}
++run_test 1f "setstripe with different parity counts"
++
++complete_test $SECONDS
++check_and_cleanup_lustre
++exit_status
++
+diff --git a/lustre/utils/lfs.c b/lustre/utils/lfs.c
+index 8c14df74f7..e5b1f0bf9e 100644
+--- a/lustre/utils/lfs.c
++++ b/lustre/utils/lfs.c
+@@ -2804,6 +2804,13 @@ static int parse_targets(__u32 *tgts, int size, int offset, char *arg,
+ 	return rc < 0 ? rc : nr;
+ }
+ 
++/* EC specification for a component */
++struct ec_spec {
++	int comp_index;        /* Which component this applies to (-1 = not set) */
++	uint8_t data_count;    /* X in X+Y */
++	uint8_t parity_count;  /* Y in X+Y */
++};
++
+ struct lfs_setstripe_args {
+ 	unsigned long long	 lsa_comp_end;
+ 	unsigned long long	 lsa_stripe_size;
+@@ -2819,12 +2826,21 @@ struct lfs_setstripe_args {
+ 	bool			 lsa_extension_comp;
+ 	__u32			*lsa_tgts;
+ 	char			*lsa_pool_name;
++	/* EC support */
++	struct ec_spec		*lsa_ec_specs;  /* Array of EC specifications */
++	int			 lsa_ec_spec_count; /* Number of EC specs */
++	int			 lsa_comp_count;    /* Total components added */
++	bool			 lsa_has_ec;        /* Whether --ec was specified */
+ };
+ 
+ static inline void setstripe_args_init(struct lfs_setstripe_args *lsa)
+ {
+ 	unsigned int mirror_count = lsa->lsa_mirror_count;
+ 	bool first_comp = lsa->lsa_first_comp;
++	struct ec_spec *ec_specs = lsa->lsa_ec_specs;
++	int ec_spec_count = lsa->lsa_ec_spec_count;
++	int comp_count = lsa->lsa_comp_count;
++	bool has_ec = lsa->lsa_has_ec;
+ 
+ 	memset(lsa, 0, sizeof(*lsa));
+ 
+@@ -2836,6 +2852,10 @@ static inline void setstripe_args_init(struct lfs_setstripe_args *lsa)
+ 
+ 	lsa->lsa_mirror_count = mirror_count;
+ 	lsa->lsa_first_comp = first_comp;
++	lsa->lsa_ec_specs = ec_specs;
++	lsa->lsa_ec_spec_count = ec_spec_count;
++	lsa->lsa_comp_count = comp_count;
++	lsa->lsa_has_ec = has_ec;
+ }
+ 
+ /**
+@@ -3648,6 +3668,7 @@ enum {
+ 	LFS_FILES_FROM,
+ 	LFS_THREAD_OPT,
+ 	LFS_LUSTRE_DIR,
++	LFS_EC_STRIPE_COUNT_OPT,
+ };
+ 
+ #ifndef LCME_USER_MIRROR_FLAGS
+@@ -3657,6 +3678,287 @@ enum {
+ 
+ /* functions */
+ 
++/**
++ * propagate_ec_specs() - Propagate EC specifications to all components.
++ * @ec_specs:      Array of EC specifications.
++ * @ec_spec_count: Number of EC specifications.
++ * @comp_count:    Total number of components.
++ * @ec_map:        Output array mapping component index to EC spec index.
++ *
++ * Propagate EC specifications bidirectionally: each --ec value spreads
++ * forward to the next --ec (or end) and backward to the previous --ec
++ * (or start).
++ *
++ * Return: 0 on success, -ENOMEM on failure.
++ */
++static int propagate_ec_specs(struct ec_spec *ec_specs, int ec_spec_count,
++			      int comp_count, int **ec_map)
++{
++	int *map;
++	int i, j;
++
++	if (ec_spec_count == 0 || comp_count == 0)
++		return -EINVAL;
++
++	/* Allocate map: component index -> EC spec index (-1 = none) */
++	map = malloc(comp_count * sizeof(int));
++	if (!map)
++		return -ENOMEM;
++
++	/* Initialize all to -1 (no EC) */
++	for (i = 0; i < comp_count; i++)
++		map[i] = -1;
++
++	/* Single EC spec: applies to all components */
++	if (ec_spec_count == 1) {
++		for (i = 0; i < comp_count; i++)
++			map[i] = 0;
++		*ec_map = map;
++		return 0;
++	}
++
++	/*
++	 * Multiple EC specs: each propagates bidirectionally.
++	 * For each EC spec, propagate backward to previous EC (or start)
++	 * and forward to next EC (or end).
++	 */
++	for (i = 0; i < ec_spec_count; i++) {
++		int comp_idx = ec_specs[i].comp_index;
++		int prev_boundary = 0;
++		int next_boundary = comp_count;
++
++		/* Find previous EC boundary */
++		for (j = i - 1; j >= 0; j--) {
++			if (ec_specs[j].comp_index < comp_idx) {
++				prev_boundary = ec_specs[j].comp_index + 1;
++				break;
++			}
++		}
++
++		/* Find next EC boundary */
++		for (j = i + 1; j < ec_spec_count; j++) {
++			if (ec_specs[j].comp_index > comp_idx) {
++				next_boundary = ec_specs[j].comp_index;
++				break;
++			}
++		}
++
++		/* Propagate from prev_boundary to next_boundary */
++		for (j = prev_boundary; j < next_boundary; j++)
++			map[j] = i;
++	}
++
++	*ec_map = map;
++	return 0;
++}
++
++/**
++ * create_ec_parity_mirror() - Create parity mirror from data mirror.
++ * @layout:        Layout containing the data mirror.
++ * @ec_specs:      Array of EC specifications.
++ * @ec_spec_count: Number of EC specifications.
++ * @comp_count:    Total number of components in data mirror.
++ *
++ * Create a parity mirror by iterating through the data mirror components,
++ * extracting their properties (extent, stripe_size, pool), and creating
++ * matching EC parity components with the appropriate EC parameters.
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++static int create_ec_parity_mirror(struct llapi_layout *layout,
++				   struct ec_spec *ec_specs,
++				   int ec_spec_count, int comp_count_hint)
++{
++	struct {
++		uint64_t start;
++		uint64_t end;
++		int ec_idx;
++	} *comp_info = NULL;
++	int *ec_map = NULL;
++	int rc, i, comp_count;
++
++	if (!layout || !ec_specs || ec_spec_count == 0)
++		return -EINVAL;
++
++	/* Move to first component of data mirror */
++	rc = llapi_layout_comp_use(layout, LLAPI_LAYOUT_COMP_USE_FIRST);
++	if (rc) {
++		fprintf(stderr, "error: cannot move to first component: %s\n",
++			strerror(errno));
++		return rc;
++	}
++
++	/* Count components by iterating through them */
++	comp_count = 1;
++	while (llapi_layout_comp_use(layout, LLAPI_LAYOUT_COMP_USE_NEXT) == 0)
++		comp_count++;
++
++	/* Propagate EC specs to get mapping for each component */
++	rc = propagate_ec_specs(ec_specs, ec_spec_count, comp_count, &ec_map);
++	if (rc) {
++		fprintf(stderr, "error: failed to propagate EC specs: %s\n",
++			strerror(-rc));
++		return rc;
++	}
++
++	/* Allocate array to store component info */
++	comp_info = calloc(comp_count, sizeof(*comp_info));
++	if (!comp_info) {
++		rc = -ENOMEM;
++		goto out_free;
++	}
++
++	/* Move back to first component */
++	rc = llapi_layout_comp_use(layout, LLAPI_LAYOUT_COMP_USE_FIRST);
++	if (rc) {
++		fprintf(stderr, "error: cannot move to first component: %s\n",
++			strerror(errno));
++		goto out_free;
++	}
++
++	/* Collect extent information from all data mirror components */
++	for (i = 0; i < comp_count; i++) {
++		int ec_idx = ec_map[i];
++
++		if (ec_idx < 0 || ec_idx >= ec_spec_count) {
++			fprintf(stderr,
++				"error: invalid EC mapping for component %d\n",
++				i);
++			rc = -EINVAL;
++			goto out_free;
++		}
++
++		/* Get component extent */
++		rc = llapi_layout_comp_extent_get(layout,
++						  &comp_info[i].start,
++						  &comp_info[i].end);
++		if (rc) {
++			fprintf(stderr,
++				"error: cannot get component %d extent: %s\n",
++				i, strerror(errno));
++			goto out_free;
++		}
++
++		comp_info[i].ec_idx = ec_idx;
++
++		/* Move to next component for next iteration */
++		if (i < comp_count - 1) {
++			rc = llapi_layout_comp_use(layout,
++						   LLAPI_LAYOUT_COMP_USE_NEXT);
++			if (rc) {
++				fprintf(stderr,
++					"error: cannot move to next component: %s\n",
++					strerror(errno));
++				goto out_free;
++			}
++		}
++	}
++
++	/* Now create EC components for each data component */
++	for (i = 0; i < comp_count; i++) {
++		uint8_t data_count, parity_count;
++
++		/* Get EC parameters for this component */
++		data_count = ec_specs[comp_info[i].ec_idx].data_count;
++		parity_count = ec_specs[comp_info[i].ec_idx].parity_count;
++
++		/* Create EC parity component */
++		rc = llapi_layout_comp_add_ec(layout, comp_info[i].start,
++					      comp_info[i].end,
++					      data_count, parity_count);
++		if (rc) {
++			fprintf(stderr,
++				"error: cannot add EC component [%llu, %llu] with EC(%u+%u): %s\n",
++				(unsigned long long)comp_info[i].start,
++				(unsigned long long)comp_info[i].end,
++				data_count, parity_count, strerror(errno));
++			goto out_free;
++		}
++	}
++
++	/* Set mirror count to 2 (1 data + 1 parity) */
++	rc = llapi_layout_mirror_count_set(layout, 2);
++	if (rc) {
++		fprintf(stderr, "error: cannot set mirror count: %s\n",
++			strerror(errno));
++		goto out_free;
++	}
++
++	rc = 0;
++
++out_free:
++	free(comp_info);
++	free(ec_map);
++	return rc;
++}
++
++/**
++ * parse_ec_stripe_count() - Parse EC stripe count in X+Y format.
++ * @optarg:      String containing EC stripe count (e.g., "4+2").
++ * @data_count:  Pointer to store data stripe count (X).
++ * @parity_count: Pointer to store parity stripe count (Y).
++ *
++ * Parse the EC stripe count string in "X+Y" format where X is the number
++ * of data stripes and Y is the number of parity stripes.
++ *
++ * Return: 0 on success, -EINVAL on failure.
++ */
++static int parse_ec_stripe_count(const char *optarg, uint8_t *data_count,
++				  uint8_t *parity_count)
++{
++	char *end;
++	unsigned long data, parity;
++	char *plus;
++
++	/* Find the '+' separator */
++	plus = strchr(optarg, '+');
++	if (!plus) {
++		fprintf(stderr,
++			"error: invalid EC stripe count '%s', expected format: DATA+PARITY\n",
++			optarg);
++		return -EINVAL;
++	}
++
++	/* Parse data count */
++	errno = 0;
++	data = strtoul(optarg, &end, 0);
++	if (errno != 0 || end != plus || data == 0 || data > UINT8_MAX) {
++		fprintf(stderr,
++			"error: invalid data stripe count in '%s'\n", optarg);
++		return -EINVAL;
++	}
++
++	/* Parse parity count */
++	errno = 0;
++	parity = strtoul(plus + 1, &end, 0);
++	if (errno != 0 || *end != '\0' || parity == 0 || parity > UINT8_MAX) {
++		fprintf(stderr,
++			"error: invalid parity stripe count in '%s'\n",
++			optarg);
++		return -EINVAL;
++	}
++
++	/* Validate EC parameters */
++	if (parity >= data) {
++		fprintf(stderr,
++			"error: parity count (%lu) must be less than data count (%lu)\n",
++			parity, data);
++		return -EINVAL;
++	}
++
++	if (data < 2) {
++		fprintf(stderr,
++			"error: data stripe count (%lu) must be at least 2\n",
++			data);
++		return -EINVAL;
++	}
++
++	*data_count = (uint8_t)data;
++	*parity_count = (uint8_t)parity;
++
++	return 0;
++}
++
+ static int guess_only_lustre_mount_root(char *mntdir)
+ {
+ 	int rc;
+@@ -3804,6 +4106,10 @@ static int lfs_setstripe_internal(int argc, char **argv,
+ 	{ .val = 'E',	.name = "comp-end",	.has_arg = required_argument},
+ 	{ .val = 'E',	.name = "component-end",
+ 						.has_arg = required_argument},
++	{ .val = LFS_EC_STRIPE_COUNT_OPT,
++			.name = "ec",		.has_arg = required_argument},
++	{ .val = LFS_EC_STRIPE_COUNT_OPT,
++			.name = "ec-stripe-count", .has_arg = required_argument},
+ 	{ .val = 'f',	.name = "file",		.has_arg = required_argument },
+ 	{ .val = 'F',	.name = "fid",		.has_arg = no_argument },
+ /* find	{ .val = 'g',	.name = "gid",		.has_arg = no_argument }, */
+@@ -4117,6 +4423,7 @@ static int lfs_setstripe_internal(int argc, char **argv,
+ 					goto usage_error;
+ 				}
+ 
++				lsa.lsa_comp_count++;
+ 				setstripe_args_init_inherit(&lsa);
+ 			}
+ 
+@@ -4138,6 +4445,40 @@ static int lfs_setstripe_internal(int argc, char **argv,
+ 				}
+ 			}
+ 			break;
++		case LFS_EC_STRIPE_COUNT_OPT: {
++			uint8_t data_count, parity_count;
++			struct ec_spec *new_specs;
++
++			/* Parse EC stripe count */
++			result = parse_ec_stripe_count(optarg, &data_count,
++						       &parity_count);
++			if (result)
++				goto usage_error;
++
++			/* Allocate or expand EC specs array */
++			new_specs = realloc(lsa.lsa_ec_specs,
++					    (lsa.lsa_ec_spec_count + 1) *
++					    sizeof(struct ec_spec));
++			if (!new_specs) {
++				fprintf(stderr,
++					"%s %s: cannot allocate EC spec array: %s\n",
++					progname, argv[0],
++					strerror(ENOMEM));
++				result = -ENOMEM;
++				goto error;
++			}
++
++			lsa.lsa_ec_specs = new_specs;
++			lsa.lsa_ec_specs[lsa.lsa_ec_spec_count].comp_index =
++				lsa.lsa_comp_count;
++			lsa.lsa_ec_specs[lsa.lsa_ec_spec_count].data_count =
++				data_count;
++			lsa.lsa_ec_specs[lsa.lsa_ec_spec_count].parity_count =
++				parity_count;
++			lsa.lsa_ec_spec_count++;
++			lsa.lsa_has_ec = true;
++			break;
++		}
+ 		case 'F':
+ 			fid_mode = true;
+ 			break;
+@@ -4335,6 +4676,7 @@ create_mirror:
+ 					goto error;
+ 				}
+ 
++				lsa.lsa_comp_count++;
+ 				setstripe_args_init_inherit(&lsa);
+ 
+ 				last_mirror->m_next = new_mirror;
+@@ -4580,6 +4922,20 @@ create_mirror:
+ 			result = -EINVAL;
+ 			goto error;
+ 		}
++		lsa.lsa_comp_count++;
++	}
++
++	/* Create EC parity mirror if --ec was specified */
++	if (lsa.lsa_has_ec && layout && !mirror_mode) {
++		result = create_ec_parity_mirror(layout, lsa.lsa_ec_specs,
++						 lsa.lsa_ec_spec_count,
++						 lsa.lsa_comp_count);
++		if (result) {
++			fprintf(stderr,
++				"error: %s: failed to create EC parity mirror\n",
++				progname);
++			goto error;
++		}
+ 	}
+ 
+ 	if (mirror_flags & MF_NO_VERIFY) {
+@@ -4693,6 +5049,37 @@ create_mirror:
+ 		goto usage_error;
+ 	}
+ 
++	/* Validate EC options */
++	if (lsa.lsa_has_ec) {
++		if (mirror_mode) {
++			fprintf(stderr,
++				"error: %s: --ec cannot be used with -N (mirror mode)\n",
++				progname);
++			goto usage_error;
++		}
++
++		if (!layout) {
++			fprintf(stderr,
++				"error: %s: --ec requires -E to specify component extents\n",
++				progname);
++			goto usage_error;
++		}
++
++		if (foreign_mode) {
++			fprintf(stderr,
++				"error: %s: --ec cannot be used with --foreign\n",
++				progname);
++			goto usage_error;
++		}
++
++		if (comp_add || comp_del || comp_set) {
++			fprintf(stderr,
++				"error: %s: --ec cannot be used with --component-add/del/set\n",
++				progname);
++			goto usage_error;
++		}
++	}
++
+ 	if (migrate_mdt_mode) {
+ 		struct lmv_user_md *lmu;
+ 
+@@ -5057,6 +5444,7 @@ error:
+ 	if (lustre_dir_fd >= 0)
+ 		close(lustre_dir_fd);
+ 	free(buf);
++	free(lsa.lsa_ec_specs);
+ 	return result;
+ }
+ 
+
+</pre>
+</body>
+</html>
