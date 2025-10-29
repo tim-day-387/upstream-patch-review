@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-From ab256428e155d729f673e2fce0d7dce6814a27f9 Mon Sep 17 00:00:00 2001
+From f9751af0ac6ae61b2864da15400dd15ba81ebc46 Mon Sep 17 00:00:00 2001
 From: Andreas Dilger <adilger@whamcloud.com>
 Date: Thu, 23 Oct 2025 22:26:11 +0000
 Subject: [PATCH 1/1] LU-18939 llite: fix readahead pct to use totalram
@@ -25,7 +25,7 @@ Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
  3 files changed, 56 insertions(+), 28 deletions(-)
 
 diff --git a/lustre/llite/lproc_llite.c b/lustre/llite/lproc_llite.c
-index c9004bf87c..e97e3093b7 100644
+index c9004bf87c..35402b5824 100644
 --- a/lustre/llite/lproc_llite.c
 +++ b/lustre/llite/lproc_llite.c
 @@ -417,12 +417,12 @@ static ssize_t max_read_ahead_mb_store(struct kobject *kobj,
@@ -33,7 +33,7 @@ index c9004bf87c..e97e3093b7 100644
  
  	rc = sysfs_memparse_total(buffer, count, &ra_max_mb,
 -				  cfs_totalram_pages() << (PAGE_SHIFT - 1),
-+				  (cfs_totalram_pages() << PAGE_SHIFT),
++				  (cfs_totalram_pages() << PAGE_SHIFT) / 2,
  				  "MiB");
  	if (rc == -ERANGE) {
 -		CERROR("%s: cannot set max_read_ahead_mb=%llu > totalram/2=%luMB: rc = %d\n",
@@ -48,10 +48,10 @@ index c9004bf87c..e97e3093b7 100644
  	pages_number = round_up(ra_max_mb, 1024 * 1024) >> PAGE_SHIFT;
  	CDEBUG(D_INFO, "%s: set max_read_ahead_mb=%llu (%llu pages)\n",
  	       sbi->ll_fsname, PAGES_TO_MiB(pages_number), pages_number);
-+	if (pages_number > cfs_totalram_pages()) {
-+		CERROR("%s: cannot set max_read_ahead_mb=%llu > totalram=%luMB\n",
++	if (pages_number > cfs_totalram_pages() / 2) {
++		CERROR("%s: cannot set max_read_ahead_mb=%llu > totalram/2=%luMB\n",
 +		       sbi->ll_fsname, PAGES_TO_MiB(pages_number),
-+		       PAGES_TO_MiB(cfs_totalram_pages()));
++		       PAGES_TO_MiB(cfs_totalram_pages() / 2));
 +		return -ERANGE;
 +	}
  
