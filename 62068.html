@@ -1,0 +1,54 @@
+<html lang="en">
+<body>
+<pre>
+From 56ecb21b4ac9cd078580c0fb61322d2c18878ce0 Mon Sep 17 00:00:00 2001
+From: Shaun Tancheff <shaun.tancheff@hpe.com>
+Date: Tue, 28 Oct 2025 11:56:12 +0800
+Subject: [PATCH 1/1] LU-19526 compat: provide iov_iter ubuf accessor
+
+Linux commit v5.19-10287-gfcb14cb1bdac
+
+Introduces iter_is_ubuf() and the iov_iter member ubuf
+Provide ubuf accessor to satisfy the compiler while keeping
+the iter_is_ubuf() check in the iov_iter_aligned() compat
+handling for older kernels.
+
+Test-Parameters: trivial
+Fixes: 3a18a7b8cd0 ("LU-17993 llite: add further check for user buffer")
+Signed-off-by: Shaun Tancheff <shaun.tancheff@hpe.com>
+Change-Id: I95192c241af284bd885596563c16bb3a32fff959
+---
+ include/lustre_compat/linux/linux-misc.h | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/include/lustre_compat/linux/linux-misc.h b/include/lustre_compat/linux/linux-misc.h
+index bed19e410c..c6deb352f7 100644
+--- a/include/lustre_compat/linux/linux-misc.h
++++ b/include/lustre_compat/linux/linux-misc.h
+@@ -68,9 +68,12 @@ int lustre_symbols_init(void);
+ #endif
+ #endif /* HAVE_IOV_ITER_TYPE */
+ 
+-#ifndef HAVE_USER_BACKED_ITER
++#ifdef HAVE_USER_BACKED_ITER
++#define iter_ubuf(iter)			((iter)->ubuf)
++#else
+ #define iter_is_ubuf(iter)		0
+ #define user_backed_iter(iter)		iter_is_iovec(iter)
++#define iter_ubuf(iter)			(0ul) /* unused */
+ #endif /* HAVE_USER_BACKED_ITER */
+ 
+ #ifndef HAVE_IOV_ITER_IS_ALIGNED
+@@ -105,7 +108,7 @@ static inline bool iov_iter_is_aligned(const struct iov_iter *i,
+ 	if (likely(iter_is_ubuf(i))) {
+ 		if (i->count & len_mask)
+ 			return false;
+-		if ((unsigned long)(iter_iov(i) + i->iov_offset) & addr_mask)
++		if ((unsigned long)(iter_ubuf(i) + i->iov_offset) & addr_mask)
+ 			return false;
+ 		return true;
+ 	}
+
+</pre>
+</body>
+</html>
