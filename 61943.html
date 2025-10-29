@@ -1,4 +1,4 @@
-From 3f3f3eec842c9739f8274c1dce24fdac0652b6e1 Mon Sep 17 00:00:00 2001
+From 040ff1816abbc1def253bb780d7b0f646c7eba45 Mon Sep 17 00:00:00 2001
 From: Maximilian Dilger <mdilger@whamcloud.com>
 Date: Fri, 17 Oct 2025 11:16:04 -0600
 Subject: [PATCH 1/1] LU-19054 utils: New max client connection limit.
@@ -12,48 +12,74 @@ connections are unaffected.
 Signed-off-by: Max Dilger <mdilger@whamcloud.com>
 Change-Id: Ibef99a9bd1f889abdfeb97942600b66e9a9be123
 ---
- Documentation/man4/nodemap.client_count.4 | 25 +++++++
- Documentation/man4/nodemap.client_limit.4 | 32 ++++++++
- lustre/include/lprocfs_status.h           | 10 +++
- lustre/include/lustre_net.h               | 16 ++++
- lustre/include/lustre_nodemap.h           |  4 +
- lustre/include/obd.h                      |  4 +
- lustre/ldlm/ldlm_lib.c                    | 57 ++++++++++++++
- lustre/llite/super25.c                    | 10 ++-
- lustre/mdt/mdt_lproc.c                    |  5 ++
- lustre/obdclass/genops.c                  |  6 ++
- lustre/obdclass/lprocfs_status_server.c   | 38 ++++++++++
- lustre/ofd/lproc_ofd.c                    |  5 ++
- lustre/ptlrpc/import.c                    | 33 ++++++++
- lustre/ptlrpc/nodemap_lproc.c             | 76 +++++++++++++++++++
- lustre/ptlrpc/nodemap_member.c            | 26 +++++++
- lustre/tests/sanity.sh                    | 91 +++++++++++++++++++++++
- 16 files changed, 436 insertions(+), 2 deletions(-)
+ Documentation/man4/mdt.client_count.4       |  1 +
+ Documentation/man4/mdt.client_limit.4       |  1 +
+ Documentation/man4/nodemap.client_count.4   | 25 ++++++
+ Documentation/man4/nodemap.client_limit.4   | 33 ++++++++
+ Documentation/man4/obdfilter.client_count.4 |  1 +
+ Documentation/man4/obdfilter.client_limit.4 |  1 +
+ Documentation/man4/ost.client_count.4       |  1 +
+ Documentation/man4/ost.client_limit.4       |  1 +
+ lustre/include/lprocfs_status.h             |  6 ++
+ lustre/include/lustre_net.h                 | 16 ++++
+ lustre/include/lustre_nodemap.h             |  4 +
+ lustre/include/obd.h                        |  4 +
+ lustre/ldlm/ldlm_lib.c                      | 78 ++++++++++++++++++
+ lustre/llite/super25.c                      | 10 ++-
+ lustre/mdt/mdt_lproc.c                      |  5 ++
+ lustre/obdclass/genops.c                    |  6 ++
+ lustre/obdclass/lprocfs_status_server.c     | 38 +++++++++
+ lustre/ofd/lproc_ofd.c                      |  5 ++
+ lustre/ptlrpc/import.c                      | 33 ++++++++
+ lustre/ptlrpc/nodemap_lproc.c               | 76 +++++++++++++++++
+ lustre/ptlrpc/nodemap_member.c              | 21 +++++
+ lustre/tests/sanity.sh                      | 91 +++++++++++++++++++++
+ 22 files changed, 455 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/man4/mdt.client_count.4
+ create mode 100644 Documentation/man4/mdt.client_limit.4
  create mode 100644 Documentation/man4/nodemap.client_count.4
  create mode 100644 Documentation/man4/nodemap.client_limit.4
+ create mode 100644 Documentation/man4/obdfilter.client_count.4
+ create mode 100644 Documentation/man4/obdfilter.client_limit.4
+ create mode 100644 Documentation/man4/ost.client_count.4
+ create mode 100644 Documentation/man4/ost.client_limit.4
 
+diff --git a/Documentation/man4/mdt.client_count.4 b/Documentation/man4/mdt.client_count.4
+new file mode 100644
+index 0000000000..834d4e7b1e
+--- /dev/null
++++ b/Documentation/man4/mdt.client_count.4
+@@ -0,0 +1 @@
++.so man4/nodemap.client_count.4
+diff --git a/Documentation/man4/mdt.client_limit.4 b/Documentation/man4/mdt.client_limit.4
+new file mode 100644
+index 0000000000..46b729331d
+--- /dev/null
++++ b/Documentation/man4/mdt.client_limit.4
+@@ -0,0 +1 @@
++.so man4/nodemap.client_limit.4
 diff --git a/Documentation/man4/nodemap.client_count.4 b/Documentation/man4/nodemap.client_count.4
 new file mode 100644
-index 0000000000..1427c2ab4f
+index 0000000000..73ff45384f
 --- /dev/null
 +++ b/Documentation/man4/nodemap.client_count.4
 @@ -0,0 +1,25 @@
 +.TH NODEMAP.CLIENT_COUNT 4 2025-10-27 Lustre "Lustre Kernel Interfaces"
 +.SH NAME
-+nodemap.client_count \- number of current client -> server connections
++nodemap.client_count \- number of current client to server connections
 +.SH SYNOPSIS
 +.SY lctl get_param nodemap.default.client_count
 +.SH DESCRIPTION
 +.B client_count
 +returns the current number of client to server connections. Server to
 +Server connections are not counted. This is a read only parameter. To
-+set a client limit use the client_limit command. This command can be
-+run on the mdt directly or the specified nodemap.
++set a client limit use the client_limit parameter. This parameter can
++be run on the mdt directly or the specified nodemap.
 +.SH EXAMPLES
 +List client connection count:
 +.EX
 +.B # lctl get_param get_param nodemap.default.client_count
-+.B # lctl get_param mdt.lustre-MDT0000.client_count
++.B # lctl get_param mdt.testfs-MDT0000.client_count
 +.EE
 +.SH AVAILABILITY
 +.B nodemap.client_count
@@ -63,30 +89,30 @@ index 0000000000..1427c2ab4f
 +.\" Added in Lustre 2.16.59
 +.SH SEE ALSO
 +.BR nodemap.client_limit (4)
-\ No newline at end of file
 diff --git a/Documentation/man4/nodemap.client_limit.4 b/Documentation/man4/nodemap.client_limit.4
 new file mode 100644
-index 0000000000..bc8646649f
+index 0000000000..1bbc3de867
 --- /dev/null
 +++ b/Documentation/man4/nodemap.client_limit.4
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,33 @@
 +.TH NODEMAP.CLIENT_LIMIT 4 2025-10-27 Lustre "Lustre Kernel Interfaces"
 +.SH NAME
-+nodemap.client_limit \- the maximum allowed client -> server connections
++nodemap.client_limit \- the maximum allowed client to server connections
 +.SH SYNOPSIS
 +.SY lctl get_param nodemap.default.client_limit
 +or
 +.SY lctl set_param nodemap.default.client_limit=VALUE
 +.SH DESCRIPTION
-+Sets the maximum allowed client to server connections. By default this is
-+set to -1 to allow unlimited connections. This will not remove existing
-+connections, only deny new connections after being set. This value can
-+be set on the mdt or individual nodemaps.
++Sets the maximum number of clients that can connect to the specified
++nodemap or target. By default this is set to -1 to allow unlimited
++connections. This will not remove existing connections, only deny
++new connections after being set. This value can be set on MDTs, OSTs
++or individual nodemaps.
 +.SH EXAMPLES
 +List current client limit:
 +.EX
 +.B # lctl get_param nodemap.default.client_limit
-+.B # lctl get_param mdt.lustre-MDT0000.client_limit
++.B # lctl get_param mdt.testfs-MDT0000.client_limit
 +.EE
 +.PP
 +Set current client limit:
@@ -102,19 +128,42 @@ index 0000000000..bc8646649f
 +.\" Added in Lustre 2.16.59
 +.SH SEE ALSO
 +.BR nodemap.client_count (4)
-\ No newline at end of file
+diff --git a/Documentation/man4/obdfilter.client_count.4 b/Documentation/man4/obdfilter.client_count.4
+new file mode 100644
+index 0000000000..834d4e7b1e
+--- /dev/null
++++ b/Documentation/man4/obdfilter.client_count.4
+@@ -0,0 +1 @@
++.so man4/nodemap.client_count.4
+diff --git a/Documentation/man4/obdfilter.client_limit.4 b/Documentation/man4/obdfilter.client_limit.4
+new file mode 100644
+index 0000000000..46b729331d
+--- /dev/null
++++ b/Documentation/man4/obdfilter.client_limit.4
+@@ -0,0 +1 @@
++.so man4/nodemap.client_limit.4
+diff --git a/Documentation/man4/ost.client_count.4 b/Documentation/man4/ost.client_count.4
+new file mode 100644
+index 0000000000..834d4e7b1e
+--- /dev/null
++++ b/Documentation/man4/ost.client_count.4
+@@ -0,0 +1 @@
++.so man4/nodemap.client_count.4
+diff --git a/Documentation/man4/ost.client_limit.4 b/Documentation/man4/ost.client_limit.4
+new file mode 100644
+index 0000000000..46b729331d
+--- /dev/null
++++ b/Documentation/man4/ost.client_limit.4
+@@ -0,0 +1 @@
++.so man4/nodemap.client_limit.4
 diff --git a/lustre/include/lprocfs_status.h b/lustre/include/lprocfs_status.h
-index b8c2e5f360..0dac98f5cf 100644
+index b8c2e5f360..4eac8b201e 100644
 --- a/lustre/include/lprocfs_status.h
 +++ b/lustre/include/lprocfs_status.h
-@@ -605,6 +605,16 @@ extern int lprocfs_connect_flags_seq_show(struct seq_file *m, void *data);
+@@ -605,6 +605,12 @@ extern int lprocfs_connect_flags_seq_show(struct seq_file *m, void *data);
  #ifdef HAVE_SERVER_SUPPORT
  ssize_t num_exports_show(struct kobject *kobj, struct attribute *attr,
  			 char *buf);
-+ssize_t max_clients_show(struct kobject *kobj, struct attribute *attr,
-+			 char *buf);
-+ssize_t max_clients_store(struct kobject *kobj, struct attribute *attr,
-+			  const char *buffer, size_t count);
 +ssize_t client_count_show(struct kobject *kobj, struct attribute *attr,
 +			  char *buf);
 +ssize_t client_limit_show(struct kobject *kobj, struct attribute *attr,
@@ -182,10 +231,10 @@ index ef3e4344e2..7cc1e2ee01 100644
  	 * obd_next_recovery_transno value
  	 */
 diff --git a/lustre/ldlm/ldlm_lib.c b/lustre/ldlm/ldlm_lib.c
-index 79d47e3f01..76f2f659e1 100644
+index 79d47e3f01..e7ed2143f7 100644
 --- a/lustre/ldlm/ldlm_lib.c
 +++ b/lustre/ldlm/ldlm_lib.c
-@@ -1308,6 +1308,24 @@ int target_handle_connect(struct ptlrpc_request *req)
+@@ -1308,6 +1308,26 @@ int target_handle_connect(struct ptlrpc_request *req)
  		}
  	}
  
@@ -198,19 +247,21 @@ index 79d47e3f01..76f2f659e1 100644
 +		if (target->obd_client_limit >= 0 &&
 +		    atomic_read(&target->obd_client_count) >=
 +		    target->obd_client_limit) {
-+			LCONSOLE_WARN("%s: Refusing connection for new client %s (at %s), client_limit (%d) reached (%d connected)\n",
++			rc = -EUSERS;
++			LCONSOLE_WARN("%s: Refusing connection for new client %s (at %s), client_limit (%d) reached (%d connected) rc = %d\n",
 +				      target->obd_name, cluuid.uuid,
 +				      libcfs_nidstr(&req->rq_peer.nid),
 +				      target->obd_client_limit,
-+				      atomic_read(&target->obd_client_count));
-+			GOTO(out, rc = -EUSERS);
++				      atomic_read(&target->obd_client_count),
++					  rc);
++			GOTO(out, rc);
 +		}
 +	}
 +
  	/* lctl gets a backstage, all-access pass. */
  	if (obd_uuid_equals(&cluuid, &target->obd_uuid))
  		goto dont_check_exports;
-@@ -1529,6 +1547,32 @@ dont_check_exports:
+@@ -1529,6 +1549,42 @@ dont_check_exports:
  	if (rc)
  		GOTO(out, rc);
  
@@ -218,6 +269,16 @@ index 79d47e3f01..76f2f659e1 100644
 +	 * Check per-nodemap client limit for new non-server connections.
 +	 * This check is done after export creation since the nodemap is
 +	 * assigned during obd_connect().
++	 *
++	 * NOTE: This check MUST use the 'data' parameter (not
++	 * exp->exp_connect_data) because exp_connect_data is not populated
++	 * until later in the connection process. When nm_member_add() is
++	 * called (via nodemap_add_member()), exp_connect_data is still empty,
++	 * so is_server_connection() would incorrectly return false for
++	 * server connections (LWP, MDT-MDT, MDT-OST), causing them to be
++	 * rejected. The 'data' parameter is already populated at this point.
++	 * For this reason it is simpler to do this check here and not in
++	 * nodemap_member.c
 +	 */
 +	if (!is_server_connection(data) && initial_conn && export) {
 +		struct lu_nodemap *nodemap;
@@ -243,7 +304,7 @@ index 79d47e3f01..76f2f659e1 100644
  	data->ocd_instance = obd2obt(target)->obt_instance;
  
  	/*
-@@ -1681,6 +1725,19 @@ dont_check_exports:
+@@ -1681,6 +1737,19 @@ dont_check_exports:
  	if (test_bit(OBDF_RECOVERING, target->obd_flags) && !lw_client)
  		lustre_msg_add_op_flags(req->rq_repmsg, MSG_CONNECT_RECOVERING);
  
@@ -263,8 +324,24 @@ index 79d47e3f01..76f2f659e1 100644
  out:
  	if (export) {
  		spin_lock(&export->exp_lock);
+@@ -1725,6 +1794,15 @@ int target_handle_disconnect(struct ptlrpc_request *req)
+ 	/* Keep the rq_export around so we can send the reply. */
+ 	req->rq_status = obd_disconnect(class_export_get(req->rq_export));
+ 
++	/*
++	 * Decrement target-level client count for non-server connections.
++	 * This mirrors the increment done in target_handle_connect().
++	 */
++	if (!is_server_connection(&req->rq_export->exp_connect_data) &&
++	    req->rq_export->exp_obd &&
++	    atomic_read(&req->rq_export->exp_obd->obd_client_count) > 0)
++		atomic_dec(&req->rq_export->exp_obd->obd_client_count);
++
+ 	RETURN(0);
+ }
+ 
 diff --git a/lustre/llite/super25.c b/lustre/llite/super25.c
-index 0f8bd9f003..17325507e1 100644
+index 0f8bd9f003..ce0168408f 100644
 --- a/lustre/llite/super25.c
 +++ b/lustre/llite/super25.c
 @@ -195,8 +195,14 @@ static int lustre_fill_super(struct super_block *sb, void *lmd2_data,
@@ -274,7 +351,7 @@ index 0f8bd9f003..17325507e1 100644
 -		CERROR("llite: Unable to mount %s: rc = %d\n",
 -		       s2lsi(sb) ? lmd->lmd_dev : "<unknown>", rc);
 +		if (rc == -EUSERS) {
-+			LCONSOLE_ERROR("Unable to mount %s: server has reached its max_clients limit."
++			LCONSOLE_ERROR("Unable to mount %s: server has reached its max_clients limit. "
 +			"Please contact your administrator to increase the limit or disconnect unused clients.\n",
 +				       s2lsi(sb) ? lmd->lmd_dev : "<unknown>");
 +		} else {
@@ -397,7 +474,7 @@ index 08f882d019..a4fe50d318 100644
  	&lustre_attr_readonly.attr,
  	&lustre_attr_recovery_time_hard.attr,
 diff --git a/lustre/ptlrpc/import.c b/lustre/ptlrpc/import.c
-index ee0668791a..2ab889df87 100644
+index ee0668791a..de0c3c955a 100644
 --- a/lustre/ptlrpc/import.c
 +++ b/lustre/ptlrpc/import.c
 @@ -1409,6 +1409,39 @@ out:
@@ -420,7 +497,7 @@ index ee0668791a..2ab889df87 100644
 +			 * deactivate to prevent background retries.
 +			 *
 +			 * For server connections: treat as temporary error
-+ 			 * and keep retrying (should not happen in practice).
++			 * and keep retrying (should not happen in practice).
 +			 */
 +			LCONSOLE_WARN("%s: connection refused by %s: client_limit reached\n",
 +				      imp->imp_obd->obd_name,
@@ -549,7 +626,7 @@ index 8b72c9ff00..4173fce234 100644
  		.name		= "deny_unknown",
  		.fops		= &nodemap_deny_unknown_fops,
 diff --git a/lustre/ptlrpc/nodemap_member.c b/lustre/ptlrpc/nodemap_member.c
-index 824a544c9d..50aeca859d 100644
+index 824a544c9d..9518a1a4b3 100644
 --- a/lustre/ptlrpc/nodemap_member.c
 +++ b/lustre/ptlrpc/nodemap_member.c
 @@ -28,6 +28,8 @@
@@ -561,7 +638,7 @@ index 824a544c9d..50aeca859d 100644
  	ENTRY;
  
  	/* because all changes to ted_nodemap are with active_config_lock */
-@@ -40,6 +42,21 @@ void nm_member_del(struct lu_nodemap *nodemap, struct obd_export *exp)
+@@ -40,6 +42,16 @@ void nm_member_del(struct lu_nodemap *nodemap, struct obd_export *exp)
  	exp->exp_target_data.ted_nodemap = NULL;
  	spin_unlock(&exp->exp_target_data.ted_nodemap_lock);
  
@@ -575,15 +652,10 @@ index 824a544c9d..50aeca859d 100644
 +	if (!is_server && atomic_read(&nodemap->nm_client_count) > 0)
 +		atomic_dec(&nodemap->nm_client_count);
 +
-+	/* Decrement target-level client count for non-server connections */
-+	if (!is_server && exp->exp_obd &&
-+	    atomic_read(&exp->exp_obd->obd_client_count) > 0)
-+		atomic_dec(&exp->exp_obd->obd_client_count);
-+
  	/* ref formerly held by ted_nodemap */
  	nodemap_putref(nodemap);
  
-@@ -116,6 +133,15 @@ int nm_member_add(struct lu_nodemap *nodemap, struct obd_export *exp)
+@@ -116,6 +128,15 @@ int nm_member_add(struct lu_nodemap *nodemap, struct obd_export *exp)
  	spin_unlock(&exp->exp_target_data.ted_nodemap_lock);
  	list_add(&exp->exp_target_data.ted_nodemap_member,
  		 &nodemap->nm_member_list);
@@ -600,7 +672,7 @@ index 824a544c9d..50aeca859d 100644
  
  	RETURN(0);
 diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
-index 3aa8797305..f847b72294 100755
+index 3aa8797305..a91f49ead8 100755
 --- a/lustre/tests/sanity.sh
 +++ b/lustre/tests/sanity.sh
 @@ -35121,6 +35121,97 @@ test_820() {
@@ -611,18 +683,18 @@ index 3aa8797305..f847b72294 100755
 +test_821() {
 +	[ $PARALLEL == "yes" ] && skip "skip parallel run"
 +
-+	local mdt_client_limit_param="mdt.$FSNAME-MDT0000.client_limit"
-+	local mdt_client_count_param="mdt.$FSNAME-MDT0000.client_count"
-+	local old_client_limit
++	local mdt_param_limit="mdt.$FSNAME-MDT0000.client_limit"
++	local mdt_param_count="mdt.$FSNAME-MDT0000.client_count"
++	local old_limit
 +	local current_count
 +
-+	old_client_limit=$(do_facet mds1 $LCTL get_param -n $mdt_client_limit_param)
-+	stack_trap "do_facet mds1 $LCTL set_param $mdt_client_limit_param=$old_client_limit" EXIT
++	old_limit=$(do_facet mds1 $LCTL get_param -n $mdt_param_limit)
++	stack_trap "do_facet mds1 $LCTL set_param $mdt_param_limit=$old_limit" EXIT
 +
-+	echo "Current client_limit: $old_client_limit"
++	echo "Current client_limit: $old_limit"
 +
 +	# Get current client count (should be at least 1 - this client)
-+	current_count=$(do_facet mds1 $LCTL get_param -n $mdt_client_count_param)
++	current_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
 +	echo "Current client_count: $current_count"
 +
 +	(( $current_count >= 1 )) ||
@@ -630,7 +702,7 @@ index 3aa8797305..f847b72294 100755
 +
 +	# Set client_limit to current_count (at capacity)
 +	echo "Setting client_limit to $current_count (at capacity)"
-+	do_facet mds1 $LCTL set_param $mdt_client_limit_param=$current_count
++	do_facet mds1 $LCTL set_param $mdt_param_limit=$current_count
 +
 +	# Try to mount another client - should fail
 +	local mount2=$TMP/mnt_lustre_910_$$
@@ -648,20 +720,20 @@ index 3aa8797305..f847b72294 100755
 +		error "Expected client-side 'client_limit' error message in dmesg"
 +
 +	# Verify client count didn't increase
-+	local new_count=$(do_facet mds1 $LCTL get_param -n $mdt_client_count_param)
++	local new_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
 +	(( $new_count == $current_count )) ||
 +		error "client_count changed: was $current_count, now $new_count"
 +
 +	# Increase limit by 1, mount should succeed
 +	echo "Increasing client_limit to $((current_count + 1))"
-+	do_facet mds1 $LCTL set_param $mdt_client_limit_param=$((current_count + 1))
++	do_facet mds1 $LCTL set_param $mdt_param_limit=$((current_count + 1))
 +
 +	mount -t lustre $MGSNID:/$FSNAME $mount2 ||
 +		error "Failed to mount with increased limit"
 +	stack_trap "umount $mount2" EXIT
 +
 +	# Verify client count increased
-+	new_count=$(do_facet mds1 $LCTL get_param -n $mdt_client_count_param)
++	new_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
 +	(( $new_count == $((current_count + 1)) )) ||
 +		error "client_count should be $((current_count + 1)), got $new_count"
 +
@@ -682,13 +754,13 @@ index 3aa8797305..f847b72294 100755
 +	umount $mount2
 +	sleep 2  # Give time for export cleanup
 +
-+	new_count=$(do_facet mds1 $LCTL get_param -n $mdt_client_count_param)
++	new_count=$(do_facet mds1 $LCTL get_param -n $mdt_param_count)
 +	(( $new_count == $current_count )) ||
 +		error "after umount, client_count should be $current_count, got $new_count"
 +
 +	# Set client_limit to -1 (unlimited)
 +	echo "Setting client_limit to -1 (unlimited)"
-+	do_facet mds1 $LCTL set_param $mdt_client_limit_param=-1
++	do_facet mds1 $LCTL set_param $mdt_param_limit=-1
 +
 +	# Should now be able to mount without limit check
 +	mount -t lustre $MGSNID:/$FSNAME $mount2 ||
