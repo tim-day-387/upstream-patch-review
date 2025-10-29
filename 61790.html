@@ -1,0 +1,54 @@
+<html lang="en">
+<body>
+<pre>
+From 25f04b73a568d6a26577547420d7a4f8ed111ae7 Mon Sep 17 00:00:00 2001
+From: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Date: Mon, 13 Oct 2025 00:45:48 -0400
+Subject: [PATCH 1/1] LU-17000 lnet: Fix Data race when accessing lp_state
+
+Fix Data race when accessing lp_state. lp_state in
+other places in the code is accessed within lp_lock.
+
+CoverityID: 490491 ("Data race condition")
+Fixes: f0be00678 ("LU-9680 lnet: collect data about peer_ni by using Netlink")
+
+Test-Parameters: trivial testlist=sanity-lnet
+Signed-off-by: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Change-Id: I6f58f94edd437d939c742c11ecb90091c55cd076
+---
+ lnet/lnet/api-ni.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/lnet/lnet/api-ni.c b/lnet/lnet/api-ni.c
+index bc5bd82900..00aacc77dc 100644
+--- a/lnet/lnet/api-ni.c
++++ b/lnet/lnet/api-ni.c
+@@ -7795,6 +7795,7 @@ static int lnet_peer_ni_show_dump(struct sk_buff *msg,
+ 		struct lnet_peer_ni *lpni = NULL;
+ 		struct nlattr *nid_list;
+ 		struct lnet_peer *lp;
++		unsigned int state;
+ 		int count = 1;
+ 		void *hdr;
+ 
+@@ -7824,8 +7825,14 @@ static int lnet_peer_ni_show_dump(struct sk_buff *msg,
+ 		if (lnet_peer_is_multi_rail(lp))
+ 			nla_put_flag(msg, LNET_PEER_NI_ATTR_MULTIRAIL);
+ 
+-		if (gnlh->version >= 3)
+-			nla_put_u32(msg, LNET_PEER_NI_ATTR_STATE, lp->lp_state);
++		if (gnlh->version >= 3) {
++			spin_lock(&lp->lp_lock);
++			state = lp->lp_state;
++			spin_unlock(&lp->lp_lock);
++
++			/* add (peer state)lp_state to @msg */
++			nla_put_u32(msg, LNET_PEER_NI_ATTR_STATE, state);
++		}
+ 
+ 		nid_list = nla_nest_start(msg, LNET_PEER_NI_ATTR_PEER_NI_LIST);
+ 		while ((lpni = lnet_get_next_peer_ni_locked(lp, NULL, lpni)) != NULL) {
+
+</pre>
+</body>
+</html>
