@@ -1,6 +1,6 @@
-From 3b0b8800512e82eae3354824b8678e2944f0810c Mon Sep 17 00:00:00 2001
+From eda7e8f72f155d273160565b5e6675e41a71dca7 Mon Sep 17 00:00:00 2001
 From: Emoly Liu <emoly@whamcloud.com>
-Date: Mon, 27 Oct 2025 16:06:54 +0800
+Date: Wed, 29 Oct 2025 12:11:17 +0800
 Subject: [PATCH 1/1] LU-19276 llapi: add llapi_changelog_(de)register
 
 Add llapi_changelog_register() and llapi_changelog_deregister()
@@ -18,8 +18,8 @@ Change-Id: I732366b9972ba7c2d8ed5b49a405647e2d300c1e
  Documentation/man3/Makefile.am                |   2 +
  .../man3/llapi_changelog_deregister.3         |  46 ++++
  Documentation/man3/llapi_changelog_register.3 |  67 ++++++
- lustre/doc/lctl-changelog_deregister.8        |  23 +-
- lustre/doc/lctl-changelog_register.8          |  23 +-
+ .../man8/lctl-changelog_deregister.8          |  21 +-
+ Documentation/man8/lctl-changelog_register.8  |  23 +-
  lustre/include/lustre/lustreapi.h             |   6 +
  lustre/tests/sanity.sh                        |   4 +-
  lustre/utils/lctl.c                           |  11 +-
@@ -28,12 +28,12 @@ Change-Id: I732366b9972ba7c2d8ed5b49a405647e2d300c1e
  lustre/utils/lustre_cfg.c                     | 205 +---------------
  lustre/utils/obd.c                            | 225 +++++++++---------
  lustre/utils/obdctl.h                         |   4 +-
- 13 files changed, 514 insertions(+), 335 deletions(-)
+ 13 files changed, 513 insertions(+), 334 deletions(-)
  create mode 100644 Documentation/man3/llapi_changelog_deregister.3
  create mode 100644 Documentation/man3/llapi_changelog_register.3
 
 diff --git a/Documentation/man3/Makefile.am b/Documentation/man3/Makefile.am
-index a413802d15..5ac2732142 100644
+index 5eae2381c6..9c54a9d839 100644
 --- a/Documentation/man3/Makefile.am
 +++ b/Documentation/man3/Makefile.am
 @@ -6,11 +6,13 @@
@@ -52,11 +52,11 @@ index a413802d15..5ac2732142 100644
  	llapi_create_volatile_param.3		\
 diff --git a/Documentation/man3/llapi_changelog_deregister.3 b/Documentation/man3/llapi_changelog_deregister.3
 new file mode 100644
-index 0000000000..7a583a19b2
+index 0000000000..7b4b539f4e
 --- /dev/null
 +++ b/Documentation/man3/llapi_changelog_deregister.3
 @@ -0,0 +1,46 @@
-+.TH LLAPI_CHANGELOG_DEREGISTER 3 2025-10-27 "Lustre User API" "Lustre Library Functions"
++.TH LLAPI_CHANGELOG_DEREGISTER 3 2025-10-29 "Lustre User API" "Lustre Library Functions"
 +.SH NAME
 +llapi_changelog_register \- Deregister changelog user on specific MDT device.
 +.SH SYNOPSIS
@@ -104,11 +104,11 @@ index 0000000000..7a583a19b2
 +.BR lctl-changelog_register (8)
 diff --git a/Documentation/man3/llapi_changelog_register.3 b/Documentation/man3/llapi_changelog_register.3
 new file mode 100644
-index 0000000000..6cdcd17e75
+index 0000000000..df53429dbb
 --- /dev/null
 +++ b/Documentation/man3/llapi_changelog_register.3
 @@ -0,0 +1,67 @@
-+.TH LLAPI_CHANGELOG_REGISTER 3 2025-10-27 "Lustre User API" "Lustre Library Functions"
++.TH LLAPI_CHANGELOG_REGISTER 3 2025-10-29 "Lustre User API" "Lustre Library Functions"
 +.SH NAME
 +llapi_changelog_register \- Register changelog user on specific MDT device.
 +.SH SYNOPSIS
@@ -175,13 +175,13 @@ index 0000000000..6cdcd17e75
 +.BR lustreapi (7),
 +.BR llapi_changelog_deregister (3),
 +.BR lctl-changelog_register (8)
-diff --git a/lustre/doc/lctl-changelog_deregister.8 b/lustre/doc/lctl-changelog_deregister.8
-index 541d6e0d60..285378d63f 100644
---- a/lustre/doc/lctl-changelog_deregister.8
-+++ b/lustre/doc/lctl-changelog_deregister.8
+diff --git a/Documentation/man8/lctl-changelog_deregister.8 b/Documentation/man8/lctl-changelog_deregister.8
+index 541d6e0d60..cca198e5ca 100644
+--- a/Documentation/man8/lctl-changelog_deregister.8
++++ b/Documentation/man8/lctl-changelog_deregister.8
 @@ -1,4 +1,4 @@
 -.TH LCTL-CHANGELOG_DEREGISTER 8 2024-08-13 Lustre "Lustre Configuration Utilities"
-+.TH LCTL-CHANGELOG_DEREGISTER 8 2025-09-27 Lustre "Lustre Configuration Utilities"
++.TH LCTL-CHANGELOG_DEREGISTER 8 2025-10-29 Lustre "Lustre Configuration Utilities"
  .SH NAME
  lctl-changelog_deregister \- deregister existing changelog user
  .SH SYNOPSIS
@@ -228,19 +228,13 @@ index 541d6e0d60..285378d63f 100644
  testfs-MDT0000: Deregistered changelog user #1
  .EE
  .RE
-@@ -71,4 +88,4 @@ filesystem package since release 1.7.0
- .\" Added in commit 1.6.0-2540-g2c74bfcb7a
- .SH SEE ALSO
- .BR lctl (8),
--.BR lctl-changelog_register (8)
-+.BR lctl-changelog_deregister (8)
-diff --git a/lustre/doc/lctl-changelog_register.8 b/lustre/doc/lctl-changelog_register.8
-index 04760c526d..a5ce376e18 100644
---- a/lustre/doc/lctl-changelog_register.8
-+++ b/lustre/doc/lctl-changelog_register.8
+diff --git a/Documentation/man8/lctl-changelog_register.8 b/Documentation/man8/lctl-changelog_register.8
+index 04760c526d..b15dd37d5f 100644
+--- a/Documentation/man8/lctl-changelog_register.8
++++ b/Documentation/man8/lctl-changelog_register.8
 @@ -1,4 +1,4 @@
 -.TH LCTL-CHANGELOG_REGISTER 8 2024-08-13 Lustre "Lustre Configuration Utilities"
-+.TH LCTL-CHANGELOG_REGISTER 8 2025-09-27 Lustre "Lustre Configuration Utilities"
++.TH LCTL-CHANGELOG_REGISTER 8 2025-10-29 Lustre "Lustre Configuration Utilities"
  .SH NAME
  lctl-changelog_register \- register changelog user for device
  .SH SYNOPSIS
@@ -322,10 +316,10 @@ index 84329259af..964b098ad1 100644
  int llapi_layout_sanity(struct llapi_layout *layout, bool incomplete, bool flr);
  int llapi_layout_v2_sanity(struct llapi_layout *layout, bool incomplete,
 diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
-index a6e1b0ff52..cd1e52a9e3 100755
+index de900cef85..4fc7204875 100755
 --- a/lustre/tests/sanity.sh
 +++ b/lustre/tests/sanity.sh
-@@ -20864,12 +20864,12 @@ test_160q() {
+@@ -20865,12 +20865,12 @@ test_160q() {
  
  	# set server mask to minimal value like server init does
  	changelog_chmask "MARK"
