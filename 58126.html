@@ -1,4 +1,4 @@
-From 8ac14b92a0c5c22590a07070d4e022461b09671b Mon Sep 17 00:00:00 2001
+From 69941b3cb28d68071384071d7f239351fe9b9872 Mon Sep 17 00:00:00 2001
 From: Sohei Koyama <skoyama@ddn.com>
 Date: Wed, 19 Feb 2025 13:44:38 +0900
 Subject: [PATCH 1/1] LU-18725 utils: create ll_decode_lov
@@ -10,35 +10,35 @@ be obtained with lfs getstripe.
 Signed-off-by: Sohei Koyama <skoyama@ddn.com>
 Change-Id: I50fcb0be067a4cda80aea19fa4b64b8ccf3a9667
 ---
- lustre/doc/Makefile.am            |  1 +
- lustre/doc/ll_decode_lov.8        | 58 ++++++++++++++++++++++
- lustre/tests/sanity.sh            | 10 ++++
- lustre/tests/test-framework.sh    |  3 ++
- lustre/utils/Makefile.am          |  6 ++-
- lustre/utils/liblustreapi.c       | 63 ++++++++++++++++++++----
- lustre/utils/ll_decode_lov.c      | 82 +++++++++++++++++++++++++++++++
- lustre/utils/lustreapi_internal.h | 13 +++++
+ Documentation/man8/Makefile.am     |  1 +
+ Documentation/man8/ll_decode_lov.8 | 58 +++++++++++++++++++++
+ lustre/tests/sanity.sh             | 10 ++++
+ lustre/tests/test-framework.sh     |  3 ++
+ lustre/utils/Makefile.am           |  6 ++-
+ lustre/utils/liblustreapi.c        | 63 +++++++++++++++++++----
+ lustre/utils/ll_decode_lov.c       | 82 ++++++++++++++++++++++++++++++
+ lustre/utils/lustreapi_internal.h  | 13 +++++
  8 files changed, 225 insertions(+), 11 deletions(-)
- create mode 100644 lustre/doc/ll_decode_lov.8
+ create mode 100644 Documentation/man8/ll_decode_lov.8
  create mode 100644 lustre/utils/ll_decode_lov.c
 
-diff --git a/lustre/doc/Makefile.am b/lustre/doc/Makefile.am
-index 3de9f5f38f..8505d74f0b 100644
---- a/lustre/doc/Makefile.am
-+++ b/lustre/doc/Makefile.am
-@@ -28,6 +28,7 @@ MANFILES =					\
+diff --git a/Documentation/man8/Makefile.am b/Documentation/man8/Makefile.am
+index fb5d553057..26cfbf05db 100644
+--- a/Documentation/man8/Makefile.am
++++ b/Documentation/man8/Makefile.am
+@@ -21,6 +21,7 @@ MANFILES = 					\
  	lgss_sk.8				\
  	lhbadm.8				\
  	ll_decode_linkea.8			\
 +	ll_decode_lov.8				\
  	llsom_sync.8				\
  	llstat.8				\
- 	lustre_routes_config.8			\
-diff --git a/lustre/doc/ll_decode_lov.8 b/lustre/doc/ll_decode_lov.8
+ 	lnetctl.8				\
+diff --git a/Documentation/man8/ll_decode_lov.8 b/Documentation/man8/ll_decode_lov.8
 new file mode 100644
 index 0000000000..675e8c75a0
 --- /dev/null
-+++ b/lustre/doc/ll_decode_lov.8
++++ b/Documentation/man8/ll_decode_lov.8
 @@ -0,0 +1,58 @@
 +.TH LL_DECODE_LOV 8 2025-02-19 Lustre "Lustre Configuration Utilities"
 +.SH NAME
@@ -100,10 +100,10 @@ index 0000000000..675e8c75a0
 +.BR lustre (7)
 \ No newline at end of file
 diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
-index a6e1b0ff52..051fac7142 100755
+index de900cef85..ebdfbae349 100755
 --- a/lustre/tests/sanity.sh
 +++ b/lustre/tests/sanity.sh
-@@ -19157,6 +19157,16 @@ test_154C() {
+@@ -19158,6 +19158,16 @@ test_154C() {
  }
  run_test 154C "lfs fid2path on OST FID"
  
@@ -121,10 +121,10 @@ index a6e1b0ff52..051fac7142 100755
  	[ $PARALLEL == "yes" ] && skip "skip parallel run"
  	[ -n "$FILESET" ] && skip "SKIP due to FILESET set"
 diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
-index 91fa67f589..fccf5155f8 100755
+index 1dfbbcf9a8..1281ffe099 100755
 --- a/lustre/tests/test-framework.sh
 +++ b/lustre/tests/test-framework.sh
-@@ -577,6 +577,9 @@ init_test_env() {
+@@ -573,6 +573,9 @@ init_test_env() {
  	export LL_DECODE_LINKEA=${LL_DECODE_LINKEA:-"$LUSTRE/utils/ll_decode_linkea"}
  	[ ! -f "$LL_DECODE_LINKEA" ] &&
  		export LL_DECODE_LINKEA="ll_decode_linkea"
