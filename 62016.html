@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-From f9751af0ac6ae61b2864da15400dd15ba81ebc46 Mon Sep 17 00:00:00 2001
+From e2c81dbc637b34e4fa4f44f8c22b9dddc0355ad1 Mon Sep 17 00:00:00 2001
 From: Andreas Dilger <adilger@whamcloud.com>
 Date: Thu, 23 Oct 2025 22:26:11 +0000
 Subject: [PATCH 1/1] LU-18939 llite: fix readahead pct to use totalram
@@ -19,13 +19,13 @@ Test-Parameters: trivial testlist=sanity env=ONLY=854,ONLY_REPEAT=10
 Fixes: be4e323b56 ("LU-18939 llite: allow readahead params to be set as percentage")
 Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
 ---
- lustre/llite/lproc_llite.c       | 40 ++++++++++++++++++++++---------
+ lustre/llite/lproc_llite.c       | 40 +++++++++++++++++++++++---------
  lustre/obdclass/lprocfs_status.c |  3 ++-
- lustre/tests/sanity.sh           | 41 +++++++++++++++++++-------------
- 3 files changed, 56 insertions(+), 28 deletions(-)
+ lustre/tests/sanity.sh           | 37 ++++++++++++++++++-----------
+ 3 files changed, 54 insertions(+), 26 deletions(-)
 
 diff --git a/lustre/llite/lproc_llite.c b/lustre/llite/lproc_llite.c
-index c9004bf87c..35402b5824 100644
+index c9004bf87c..d6167ccb42 100644
 --- a/lustre/llite/lproc_llite.c
 +++ b/lustre/llite/lproc_llite.c
 @@ -417,12 +417,12 @@ static ssize_t max_read_ahead_mb_store(struct kobject *kobj,
@@ -33,7 +33,7 @@ index c9004bf87c..35402b5824 100644
  
  	rc = sysfs_memparse_total(buffer, count, &ra_max_mb,
 -				  cfs_totalram_pages() << (PAGE_SHIFT - 1),
-+				  (cfs_totalram_pages() << PAGE_SHIFT) / 2,
++				  (cfs_totalram_pages() << PAGE_SHIFT),
  				  "MiB");
  	if (rc == -ERANGE) {
 -		CERROR("%s: cannot set max_read_ahead_mb=%llu > totalram/2=%luMB: rc = %d\n",
@@ -132,7 +132,7 @@ index b4627851ed..5002b11fed 100644
  		++val;
  	}
 diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
-index a6e1b0ff52..e90915d696 100755
+index a6e1b0ff52..5691c263d2 100755
 --- a/lustre/tests/sanity.sh
 +++ b/lustre/tests/sanity.sh
 @@ -35568,13 +35568,14 @@ test_854() {
@@ -220,13 +220,11 @@ index a6e1b0ff52..e90915d696 100755
  			    awk '/^max_cached_mb:/ { print $2 }') ||
  		error "Failed to get final max_cached_mb value"
  	log "Final max_cached_mb: $new_max_cached_mb MB"
--	(( new_max_cached_mb * 100 / total_ram_mb >= 74 &&
--	 new_max_cached_mb * 100 / total_ram_mb <= 76 )) ||
--		error "max_cached_mb changed from 75% of RAM"
 +
 +	# We set it to 75% earlier, verify it's still around that value
-+	(( new_max_cached_mb * 100 / total_ram_mb >= 70 &&
-+	 new_max_cached_mb * 100 / total_ram_mb <= 80 )) ||
+ 	(( new_max_cached_mb * 100 / total_ram_mb >= 74 &&
+ 	 new_max_cached_mb * 100 / total_ram_mb <= 76 )) ||
+-		error "max_cached_mb changed from 75% of RAM"
 +		error "max_cached_mb=$new_max_cached_mb MB not close to 75% of RAM"
 +
 +	log "max_cached_mb percentage functionality verified successfully"
