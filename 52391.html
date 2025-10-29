@@ -1,0 +1,465 @@
+<html lang="en">
+<body>
+<pre>
+From c3ac3ca2f6d1685b4b67235179b50a5b66848cb3 Mon Sep 17 00:00:00 2001
+From: Patrick Farrell <pfarrell@whamcloud.com>
+Date: Fri, 26 Sep 2025 15:50:52 -0400
+Subject: [PATCH 1/1] LU-13805 llite: fail unaligned DIO for RDMA pages
+
+Unaligned DIO needs to directly access the page contents in
+order to copy to the buffer.  This means it can't work with
+RDMA only (non-CPU accessible) pages.
+
+Implement that limitation.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I52bd1d4cc143e1018ddf6942403142f26be4430f
+---
+ lustre/include/cl_object.h   | 17 ++++++++---------
+ lustre/include/lustre_osc.h  |  4 ++--
+ lustre/include/obd_support.h |  1 +
+ lustre/llite/file.c          |  2 +-
+ lustre/llite/llite_lib.c     |  2 +-
+ lustre/llite/rw.c            |  9 +++++----
+ lustre/llite/rw26.c          |  5 +++--
+ lustre/llite/vvp_internal.h  |  4 ++--
+ lustre/llite/vvp_io.c        |  3 ++-
+ lustre/llite/vvp_page.c      |  4 ++--
+ lustre/lov/lov_cl_internal.h | 15 +++++++++------
+ lustre/lov/lov_object.c      | 14 ++++++++------
+ lustre/lov/lov_page.c        | 20 ++++++++++++--------
+ lustre/obdclass/cl_page.c    | 12 ++++++------
+ lustre/osc/osc_page.c        | 16 ++++++++++++++--
+ lustre/tests/sanity.sh       | 22 ++++++++++++++++++++++
+ 16 files changed, 98 insertions(+), 52 deletions(-)
+
+diff --git a/lustre/include/cl_object.h b/lustre/include/cl_object.h
+index 9045154b0d..ca6bfffedc 100644
+--- a/lustre/include/cl_object.h
++++ b/lustre/include/cl_object.h
+@@ -313,8 +313,9 @@ struct cl_object_operations {
+ 	 * \retval valid-pointer pointer to already existing referenced page
+ 	 *         to be used instead of newly created.
+ 	 */
+-	int  (*coo_page_init)(const struct lu_env *env, struct cl_object *obj,
+-			      struct cl_page *page, pgoff_t index);
++	int  (*coo_page_init)(const struct lu_env *env, struct cl_io *io,
++			      struct cl_object *obj, struct cl_page *page,
++			      pgoff_t index);
+ 	/**
+ 	 * Initialize the dio pages structure with information from this layer
+ 	 *
+@@ -2245,14 +2246,12 @@ ssize_t cl_dio_pages_init(const struct lu_env *env, struct cl_object *obj,
+ 			  bool unaligned);
+ 
+ /* cl_page */
+-struct cl_page *cl_page_find(const struct lu_env *env,
+-			     struct cl_object *obj,
+-			     pgoff_t idx, struct page *vmpage,
+-			     enum cl_page_type type);
+-struct cl_page *cl_page_alloc(const struct lu_env *env,
++struct cl_page *cl_page_find(const struct lu_env *env, struct cl_io *io,
++			     struct cl_object *obj, pgoff_t idx,
++			     struct page *vmpage, enum cl_page_type type);
++struct cl_page *cl_page_alloc(const struct lu_env *env, struct cl_io *io,
+ 			      struct cl_object *o, pgoff_t ind,
+-			      struct page *vmpage,
+-			      enum cl_page_type type);
++			      struct page *vmpage, enum cl_page_type type);
+ void cl_page_get(struct cl_page *page);
+ void cl_page_put(const struct lu_env *env,
+ 			    struct cl_page *page);
+diff --git a/lustre/include/lustre_osc.h b/lustre/include/lustre_osc.h
+index 6cca827899..eaba4ab1a6 100644
+--- a/lustre/include/lustre_osc.h
++++ b/lustre/include/lustre_osc.h
+@@ -526,8 +526,8 @@ extern struct lu_context_key osc_session_key;
+ #define OSC_FLAGS (ASYNC_URGENT|ASYNC_READY)
+ 
+ /* osc_page.c */
+-int osc_page_init(const struct lu_env *env, struct cl_object *obj,
+-		  struct cl_page *page, pgoff_t ind);
++int osc_page_init(const struct lu_env *env, struct cl_io *io,
++		  struct cl_object *obj, struct cl_page *page, pgoff_t ind);
+ void osc_index2policy(union ldlm_policy_data *policy,
+ 		      const struct cl_object *obj, pgoff_t start, pgoff_t end);
+ void osc_lru_add_batch(struct client_obd *cli, struct list_head *list);
+diff --git a/lustre/include/obd_support.h b/lustre/include/obd_support.h
+index 967d3f33f6..5e53de493c 100644
+--- a/lustre/include/obd_support.h
++++ b/lustre/include/obd_support.h
+@@ -438,6 +438,7 @@ extern bool obd_enable_fname_encoding;
+ #define OBD_FAIL_OSC_SLOW_PAGE_EVICT		0x417
+ #define OBD_FAIL_OSC_FIEMAP			0x418
+ #define OBD_FAIL_OSC_MARK_COMPRESSED		0x419
++#define OBD_FAIL_OSC_UNALIGNED_RDMA_ONLY	0x420
+ 
+ #define OBD_FAIL_PTLRPC                  0x500
+ #define OBD_FAIL_PTLRPC_ACK              0x501
+diff --git a/lustre/llite/file.c b/lustre/llite/file.c
+index 6cceaf2ab9..b5e3af58d6 100644
+--- a/lustre/llite/file.c
++++ b/lustre/llite/file.c
+@@ -620,7 +620,7 @@ void ll_dom_finish_open(struct inode *inode, struct ptlrpc_request *req)
+ 			break;
+ 		}
+ 		/* attach VM page to CL page cache */
+-		page = cl_page_find(env, obj, vmpage->index, vmpage,
++		page = cl_page_find(env, io, obj, vmpage->index, vmpage,
+ 				    CPT_CACHEABLE);
+ 		if (IS_ERR(page)) {
+ 			ClearPageUptodate(vmpage);
+diff --git a/lustre/llite/llite_lib.c b/lustre/llite/llite_lib.c
+index c083175cb8..d2f22f5510 100644
+--- a/lustre/llite/llite_lib.c
++++ b/lustre/llite/llite_lib.c
+@@ -2158,7 +2158,7 @@ static int ll_io_zero_page(struct inode *inode, pgoff_t index, pgoff_t offset,
+ 	page_locked = true;
+ 	if (!PageDirty(vmpage)) {
+ 		/* associate cl_page */
+-		clpage = cl_page_find(env, clob, vmpage->index,
++		clpage = cl_page_find(env, io, clob, vmpage->index,
+ 				      vmpage, CPT_CACHEABLE);
+ 		if (IS_ERR(clpage))
+ 			GOTO(pagefini, rc = PTR_ERR(clpage));
+diff --git a/lustre/llite/rw.c b/lustre/llite/rw.c
+index d7825a5e77..4629f3753d 100644
+--- a/lustre/llite/rw.c
++++ b/lustre/llite/rw.c
+@@ -237,7 +237,7 @@ static int ll_read_ahead_page(const struct lu_env *env, struct cl_io *io,
+ 		GOTO(out, rc = -EBUSY);
+ 	}
+ 
+-	cp = cl_page_find(env, clob, vmpage->index, vmpage, CPT_CACHEABLE);
++	cp = cl_page_find(env, io, clob, vmpage->index, vmpage, CPT_CACHEABLE);
+ 	if (IS_ERR(cp)) {
+ 		which = RA_STAT_FAILED_GRAB_PAGE;
+ 		msg   = "cl_page_find failed";
+@@ -1507,8 +1507,8 @@ int ll_writepage(struct page *vmpage, struct writeback_control *wbc)
+ 	io->ci_ignore_layout = 1;
+ 	result = cl_io_init(env, io, CIT_MISC, clob);
+ 	if (result == 0) {
+-		page = cl_page_find(env, clob, vmpage->index,
+-				    vmpage, CPT_CACHEABLE);
++		page = cl_page_find(env, io, clob, vmpage->index, vmpage,
++				    CPT_CACHEABLE);
+ 		if (!IS_ERR(page)) {
+ 			cl_page_assume(env, io, page);
+ 			result = cl_page_flush(env, io, page);
+@@ -2168,7 +2168,8 @@ int ll_readpage(struct file *file, struct page *vmpage)
+ 	}
+ 
+ 	LASSERT(io->ci_state == CIS_IO_GOING);
+-	page = cl_page_find(env, clob, vmpage->index, vmpage, CPT_CACHEABLE);
++	page = cl_page_find(env, io, clob, vmpage->index, vmpage,
++			    CPT_CACHEABLE);
+ 	if (!IS_ERR(page)) {
+ 		LASSERT(page->cp_type == CPT_CACHEABLE);
+ 		if (likely(!PageUptodate(vmpage))) {
+diff --git a/lustre/llite/rw26.c b/lustre/llite/rw26.c
+index 90dd1fde9e..b8baf81942 100644
+--- a/lustre/llite/rw26.c
++++ b/lustre/llite/rw26.c
+@@ -318,7 +318,7 @@ ll_direct_rw_pages(const struct lu_env *env, struct cl_io *io, size_t size,
+ 		size_t from = offset & ~PAGE_MASK;
+ 		size_t to = min(from + size, PAGE_SIZE);
+ 
+-		page = cl_page_find(env, obj, offset >> PAGE_SHIFT,
++		page = cl_page_find(env, io, obj, offset >> PAGE_SHIFT,
+ 				    cdp->cdp_pages[i], CPT_TRANSIENT);
+ 		if (IS_ERR(page))
+ 			GOTO(out, rc = PTR_ERR(page));
+@@ -805,7 +805,8 @@ again:
+ 		goto again;
+ 	}
+ 
+-	page = cl_page_find(env, clob, vmpage->index, vmpage, CPT_CACHEABLE);
++	page = cl_page_find(env, io, clob, vmpage->index, vmpage,
++			    CPT_CACHEABLE);
+ 	if (IS_ERR(page))
+ 		GOTO(out, result = PTR_ERR(page));
+ 
+diff --git a/lustre/llite/vvp_internal.h b/lustre/llite/vvp_internal.h
+index 8776db1985..d00b00baf0 100644
+--- a/lustre/llite/vvp_internal.h
++++ b/lustre/llite/vvp_internal.h
+@@ -249,8 +249,8 @@ int vvp_io_init(const struct lu_env *env, struct cl_object *obj,
+ 		struct cl_io *io);
+ int vvp_io_write_commit(const struct lu_env *env, struct cl_io *io,
+ 			enum cl_io_priority prio);
+-int vvp_page_init(const struct lu_env *env, struct cl_object *obj,
+-		  struct cl_page *page, pgoff_t index);
++int vvp_page_init(const struct lu_env *env, struct cl_io *io,
++		  struct cl_object *obj, struct cl_page *page, pgoff_t index);
+ struct lu_object *vvp_object_alloc(const struct lu_env *env,
+ 				   const struct lu_object_header *hdr,
+ 				   struct lu_device *dev);
+diff --git a/lustre/llite/vvp_io.c b/lustre/llite/vvp_io.c
+index e7d15544e9..2e43e4544a 100644
+--- a/lustre/llite/vvp_io.c
++++ b/lustre/llite/vvp_io.c
+@@ -1575,7 +1575,8 @@ static int vvp_io_fault_start(const struct lu_env *env,
+ 		}
+ 	}
+ 
+-	page = cl_page_find(env, obj, fio->ft_index, vmpage, CPT_CACHEABLE);
++	page = cl_page_find(env, io, obj, fio->ft_index, vmpage,
++			    CPT_CACHEABLE);
+ 	if (IS_ERR(page))
+ 		GOTO(out, result = PTR_ERR(page));
+ 
+diff --git a/lustre/llite/vvp_page.c b/lustre/llite/vvp_page.c
+index 1f74b1f701..fc4a86f54b 100644
+--- a/lustre/llite/vvp_page.c
++++ b/lustre/llite/vvp_page.c
+@@ -198,8 +198,8 @@ static const struct cl_page_operations vvp_page_ops = {
+ static const struct cl_page_operations vvp_transient_page_ops = {
+ };
+ 
+-int vvp_page_init(const struct lu_env *env, struct cl_object *obj,
+-		struct cl_page *page, pgoff_t index)
++int vvp_page_init(const struct lu_env *env, struct cl_io *io,
++		  struct cl_object *obj, struct cl_page *page, pgoff_t index)
+ {
+ 	struct cl_page_slice *cpl = cl_object_page_slice(obj, page);
+ 	struct page *vmpage = page->cp_vmpage;
+diff --git a/lustre/lov/lov_cl_internal.h b/lustre/lov/lov_cl_internal.h
+index 89f323ef80..adc16c9c89 100644
+--- a/lustre/lov/lov_cl_internal.h
++++ b/lustre/lov/lov_cl_internal.h
+@@ -573,12 +573,15 @@ int lov_dio_pages_init_composite(const struct lu_env *env,
+ 				 struct cl_dio_pages *cdp, pgoff_t index);
+ int lov_dio_pages_init_foreign(const struct lu_env *env, struct cl_object *obj,
+ 			       struct cl_dio_pages *cdp, pgoff_t index);
+-int   lov_page_init_empty(const struct lu_env *env, struct cl_object *obj,
+-			   struct cl_page *page, pgoff_t index);
+-int   lov_page_init_composite(const struct lu_env *env, struct cl_object *obj,
+-			   struct cl_page *page, pgoff_t index);
+-int   lov_page_init_foreign(const struct lu_env *env, struct cl_object *obj,
+-			     struct cl_page *page, pgoff_t index);
++int lov_page_init_empty(const struct lu_env *env, struct cl_io *io,
++			struct cl_object *obj, struct cl_page *page,
++			pgoff_t index);
++int lov_page_init_composite(const struct lu_env *env, struct cl_io *io,
++			    struct cl_object *obj, struct cl_page *page,
++			    pgoff_t index);
++int lov_page_init_foreign(const struct lu_env *env, struct cl_io *io,
++			  struct cl_object *obj, struct cl_page *page,
++			  pgoff_t index);
+ struct lu_object *lov_object_alloc(const struct lu_env *env,
+ 				      const struct lu_object_header *hdr,
+ 				      struct lu_device *dev);
+diff --git a/lustre/lov/lov_object.c b/lustre/lov/lov_object.c
+index 03ba65e74d..54af7da944 100644
+--- a/lustre/lov/lov_object.c
++++ b/lustre/lov/lov_object.c
+@@ -45,8 +45,9 @@ struct lov_layout_operations {
+ 			 union lov_layout_state *state);
+ 	int  (*llo_print)(const struct lu_env *env, void *cookie,
+ 			  lu_printer_t p, const struct lu_object *o);
+-	int  (*llo_page_init)(const struct lu_env *env, struct cl_object *obj,
+-			      struct cl_page *page, pgoff_t index);
++	int  (*llo_page_init)(const struct lu_env *env, struct cl_io *io,
++			      struct cl_object *obj, struct cl_page *page,
++			      pgoff_t index);
+ 	int  (*llo_dio_pages_init)(const struct lu_env *env,
+ 				   struct cl_object *obj,
+ 				   struct cl_dio_pages *cdp, pgoff_t index);
+@@ -1568,11 +1569,12 @@ static int lov_object_print(const struct lu_env *env, void *cookie,
+ 	return LOV_2DISPATCH_NOLOCK(lu2lov(o), llo_print, env, cookie, p, o);
+ }
+ 
+-static int lov_page_init(const struct lu_env *env, struct cl_object *obj,
+-			 struct cl_page *page, pgoff_t index)
++static int lov_page_init(const struct lu_env *env, struct cl_io *io,
++			 struct cl_object *obj, struct cl_page *page,
++			 pgoff_t index)
+ {
+-	return LOV_2DISPATCH_NOLOCK(cl2lov(obj), llo_page_init, env, obj, page,
+-				    index);
++	return LOV_2DISPATCH_NOLOCK(cl2lov(obj), llo_page_init, env, io, obj,
++				    page, index);
+ }
+ 
+ static int lov_dio_pages_init(const struct lu_env *env, struct cl_object *obj,
+diff --git a/lustre/lov/lov_page.c b/lustre/lov/lov_page.c
+index 33b11cd54c..3388ae40ff 100644
+--- a/lustre/lov/lov_page.c
++++ b/lustre/lov/lov_page.c
+@@ -88,8 +88,9 @@ int lov_dio_pages_init_composite(const struct lu_env *env,
+ 	RETURN(rc);
+ }
+ 
+-int lov_page_init_composite(const struct lu_env *env, struct cl_object *obj,
+-			    struct cl_page *page, pgoff_t index)
++int lov_page_init_composite(const struct lu_env *env, struct cl_io *io,
++			    struct cl_object *obj, struct cl_page *page,
++			    pgoff_t index)
+ {
+ 	struct lov_object *loo = cl2lov(obj);
+ 	struct lov_io *lio = lov_env_io(env);
+@@ -144,7 +145,7 @@ int lov_page_init_composite(const struct lu_env *env, struct cl_object *obj,
+ 
+ 	if (entry < 0 || !lsm_entry_inited(loo->lo_lsm, entry)) {
+ 		/* non-existing layout component */
+-		lov_page_init_empty(env, obj, page, index);
++		lov_page_init_empty(env, io, obj, page, index);
+ 		RETURN(0);
+ 	}
+ 
+@@ -170,7 +171,8 @@ int lov_page_init_composite(const struct lu_env *env, struct cl_object *obj,
+ 	subobj = lovsub2cl(r0->lo_sub[stripe]);
+ 	cl_object_for_each(o, subobj) {
+ 		if (o->co_ops->coo_page_init) {
+-			rc = o->co_ops->coo_page_init(sub->sub_env, o, page,
++			rc = o->co_ops->coo_page_init(sub->sub_env, io, o,
++						      page,
+ 						      suboff >> PAGE_SHIFT);
+ 			if (rc != 0)
+ 				break;
+@@ -188,8 +190,9 @@ int lov_dio_pages_init_empty(const struct lu_env *env, struct cl_object *obj,
+ 	RETURN(0);
+ }
+ 
+-int lov_page_init_empty(const struct lu_env *env, struct cl_object *obj,
+-			struct cl_page *cl_page, pgoff_t index)
++int lov_page_init_empty(const struct lu_env *env, struct cl_io *io,
++			struct cl_object *obj, struct cl_page *cl_page,
++			pgoff_t index)
+ {
+ 	void *addr;
+ 
+@@ -211,8 +214,9 @@ int lov_dio_pages_init_foreign(const struct lu_env *env, struct cl_object *obj,
+ 	RETURN(-ENODATA);
+ }
+ 
+-int lov_page_init_foreign(const struct lu_env *env, struct cl_object *obj,
+-			struct cl_page *page, pgoff_t index)
++int lov_page_init_foreign(const struct lu_env *env, struct cl_io *io,
++			  struct cl_object *obj, struct cl_page *page,
++			  pgoff_t index)
+ {
+ 	CDEBUG(D_PAGE, DFID" has no data\n", PFID(lu_object_fid(&obj->co_lu)));
+ 	RETURN(-ENODATA);
+diff --git a/lustre/obdclass/cl_page.c b/lustre/obdclass/cl_page.c
+index 73b590c593..7731b4eff6 100644
+--- a/lustre/obdclass/cl_page.c
++++ b/lustre/obdclass/cl_page.c
+@@ -372,9 +372,9 @@ check:
+ 	return cl_page;
+ }
+ 
+-struct cl_page *cl_page_alloc(const struct lu_env *env, struct cl_object *o,
+-			      pgoff_t ind, struct page *vmpage,
+-			      enum cl_page_type type)
++struct cl_page *cl_page_alloc(const struct lu_env *env, struct cl_io *io,
++			      struct cl_object *o, pgoff_t ind,
++			      struct page *vmpage, enum cl_page_type type)
+ {
+ 	struct cl_page *cl_page;
+ 	struct cl_object *head;
+@@ -408,7 +408,7 @@ struct cl_page *cl_page_alloc(const struct lu_env *env, struct cl_object *o,
+ 		cl_page->cp_page_index = ind;
+ 		cl_object_for_each(o, head) {
+ 			if (o->co_ops->coo_page_init != NULL) {
+-				result = o->co_ops->coo_page_init(env, o,
++				result = o->co_ops->coo_page_init(env, io, o,
+ 							cl_page, ind);
+ 				if (result != 0) {
+ 					__cl_page_delete(env, cl_page);
+@@ -447,7 +447,7 @@ struct cl_page *cl_page_alloc(const struct lu_env *env, struct cl_object *o,
+  *
+  * Returns struct cl_page derived from @vmpage on success or NULL on failure
+  */
+-struct cl_page *cl_page_find(const struct lu_env *env,
++struct cl_page *cl_page_find(const struct lu_env *env, struct cl_io *io,
+ 			     struct cl_object *o,
+ 			     pgoff_t idx, struct page *vmpage,
+ 			     enum cl_page_type type)
+@@ -486,7 +486,7 @@ struct cl_page *cl_page_find(const struct lu_env *env,
+ 	}
+ 
+ 	/* allocate and initialize cl_page */
+-	page = cl_page_alloc(env, o, idx, vmpage, type);
++	page = cl_page_alloc(env, io, o, idx, vmpage, type);
+ 	RETURN(page);
+ }
+ EXPORT_SYMBOL(cl_page_find);
+diff --git a/lustre/osc/osc_page.c b/lustre/osc/osc_page.c
+index 3c1c4b9cfe..35e9e81744 100644
+--- a/lustre/osc/osc_page.c
++++ b/lustre/osc/osc_page.c
+@@ -18,6 +18,7 @@
+ 
+ #define DEBUG_SUBSYSTEM S_OSC
+ #include <lustre_osc.h>
++#include <lnet/lnet_rdma.h>
+ 
+ #include "osc_internal.h"
+ 
+@@ -217,8 +218,8 @@ static const struct cl_page_operations osc_page_ops = {
+ 	.cpo_page_touch	   = osc_page_touch,
+ };
+ 
+-int osc_page_init(const struct lu_env *env, struct cl_object *obj,
+-		  struct cl_page *cl_page, pgoff_t index)
++int osc_page_init(const struct lu_env *env, struct cl_io *io,
++		  struct cl_object *obj, struct cl_page *cl_page, pgoff_t index)
+ {
+ 	struct osc_object *osc = cl2osc(obj);
+ 	struct osc_page *opg = cl_object_page_slice(obj, cl_page);
+@@ -235,6 +236,17 @@ int osc_page_init(const struct lu_env *env, struct cl_object *obj,
+ 		return result;
+ 
+ 	opg->ops_srvlock = osc_io_srvlock(oio);
++	if ((lnet_is_rdma_only_page(cl_page->cp_vmpage) ||
++	    CFS_FAIL_CHECK(OBD_FAIL_OSC_UNALIGNED_RDMA_ONLY)) &&
++	    io->ci_unaligned_dio) {
++		LASSERT(cl_page->cp_type == CPT_TRANSIENT);
++		/* setting this flag saves a little time if there are further
++		 * stripes, but this is mostly for clarity in case we need this
++		 * info later
++		 */
++		io->ci_allow_unaligned_dio = false;
++		return -EINVAL;
++	}
+ 
+ 	if (cl_page->cp_type == CPT_TRANSIENT) {
+ 		cl_page_slice_add(cl_page, &opg->ops_cl, obj,
+diff --git a/lustre/tests/sanity.sh b/lustre/tests/sanity.sh
+index 44a21e3ae3..87925fd7a4 100755
+--- a/lustre/tests/sanity.sh
++++ b/lustre/tests/sanity.sh
+@@ -15568,6 +15568,28 @@ test_119q()
+ }
+ run_test 119q "Test patchded Unaligned DIO readv() and writev()"
+ 
++test_119r()
++{
++	unaligned_dio_or_skip
++	(( $OSTCOUNT >= 2 )) || skip "needs >= 2 OSTs"
++
++	$LFS setstripe -c 2 -S 1M $DIR/$tfile
++
++	# trivial test of unaligned DIO, should work fine
++	dd if=/dev/urandom bs=4095 of=$DIR/$tfile count=4 \
++		oflag=direct ||
++		error "trivial unaligned dio failed"
++
++#define OBD_FAIL_OSC_UNALIGNED_RDMA_ONLY 0x420
++	$LCTL set_param fail_loc=0x420
++	# trivial test of unaligned DIO
++	dd if=/dev/urandom bs=4095 of=$DIR/$tfile count=4 \
++		oflag=direct &&
++		error "unaligned DIO succeeded with (fake) rdma only page"
++	echo "unaligned DIO with rdma only pages failed as expected"
++}
++run_test 119r "verify unaligned DIO + rdma_only fails as expected"
++
+ test_120a() {
+ 	[ $PARALLEL == "yes" ] && skip "skip parallel run"
+ 	remote_mds_nodsh && skip "remote MDS with nodsh"
+
+</pre>
+</body>
+</html>
