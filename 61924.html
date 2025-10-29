@@ -1,0 +1,1204 @@
+<html lang="en">
+<body>
+<pre>
+From c34d98f1ded14eb5f0957fa57de06f379dd7563b Mon Sep 17 00:00:00 2001
+From: Chris Horn <chris.horn@hpe.com>
+Date: Mon, 6 Oct 2025 14:39:34 -0600
+Subject: [PATCH 1/1] LU-19502 scripts: convert legacy lnet parameters to YAML
+
+Adds a helper script and documentation to convert deprecated ip2nets
+and routes module parameter syntax into the Lustre 2.10+ YAML format
+for lnetctl import.
+
+Test-Parameters: trivial
+Signed-off-by: Chris Horn <chris.horn@hpe.com>
+Change-Id: I76a3086cb42ceaff5d0bb375bf774c3ab72bff1e
+---
+ MAINTAINERS                     |   1 +
+ lustre/doc/Makefile.am          |   1 +
+ lustre/doc/lnet_legacy2yaml.8   | 237 ++++++++++++++++++
+ lustre/scripts/Makefile.am      |   6 +-
+ lustre/scripts/lnet_legacy2yaml | 427 ++++++++++++++++++++++++++++++++
+ lustre/tests/sanity-lnet.sh     | 424 +++++++++++++++++++++++++++++++
+ lustre/tests/test-framework.sh  |   3 +
+ 7 files changed, 1097 insertions(+), 2 deletions(-)
+ create mode 100644 lustre/doc/lnet_legacy2yaml.8
+ create mode 100755 lustre/scripts/lnet_legacy2yaml
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b6c5035180..9a8ebdc7a5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -362,6 +362,7 @@ R:	Chris Horn <chris.horn@hpe.com>
+ S:	Supported
+ F:	Documentation/dlc.txt
+ F:	lustre/conf/ko2iblnd.conf
++F:	lustre/doc/lnet_legacy2yaml.8
+ F:	lustre/doc/lst.8
+ F:	lustre/doc/lustre_routes_config.8
+ F:	lustre/doc/lustre_routes_conversion.8
+diff --git a/lustre/doc/Makefile.am b/lustre/doc/Makefile.am
+index 3de9f5f38f..adbe1f0eff 100644
+--- a/lustre/doc/Makefile.am
++++ b/lustre/doc/Makefile.am
+@@ -30,6 +30,7 @@ MANFILES =					\
+ 	ll_decode_linkea.8			\
+ 	llsom_sync.8				\
+ 	llstat.8				\
++	lnet_legacy2yaml.8			\
+ 	lustre_routes_config.8			\
+ 	lustre_routes_conversion.8		\
+ 	lustre_rsync.8				\
+diff --git a/lustre/doc/lnet_legacy2yaml.8 b/lustre/doc/lnet_legacy2yaml.8
+new file mode 100644
+index 0000000000..a41cd2086f
+--- /dev/null
++++ b/lustre/doc/lnet_legacy2yaml.8
+@@ -0,0 +1,237 @@
++.\" SPDX-License-Identifier: GPL-2.0
++.TH LNET_LEGACY2YAML 8 2025-10-20 Lustre "Lustre Configuration Utilities"
++.SH NAME
++lnet_legacy2yaml \- convert legacy LNet module parameters to YAML
++.SH SYNOPSIS
++.SY lnet_legacy2yaml
++.RI [ options ]
++.RI [ inline-legacy-string ]
++.YS
++.SY lnet_legacy2yaml
++.RI [ -i
++.IR ip2nets_file ]
++.RI [ -r
++.IR routes_file ]
++.RI [ -m
++.IR modprobe_file ]
++.RI [ -o
++.IR output_file ]
++.RI [ --default-hop
++.RI [ HOP ]]
++.RI [ inline-legacy-string ]
++.YS
++.SH DESCRIPTION
++The
++.B lnet_legacy2yaml
++utility parses deprecated Lustre LNet module parameter syntaxes
++.RB ( ip2nets=
++and
++.BR routes= )
++and emits an equivalent YAML document usable by
++.BR lnetctl (8)
++via
++.IP
++lnetctl import < output.yaml
++.P
++Kernel parsing of ip2nets was deprecated in Lustre 2.10; user space
++now resolves interface patterns. This tool facilitates migration from
++legacy module configuration files (e.g.
++.B modprobe.conf
++/
++.BR lustre.conf )
++to the YAML form consumed by modern LNet configuration workflows.
++.P
++Input may be supplied through any combination of positional inline
++argument, file options, or standard input. If no positional inline
++argument is provided and stdin is not a TTY, data is read from stdin.
++Multiple sources accumulate: ip2nets files first, route files, then
++inline/stdin content.
++.SH OPTIONS
++.TP
++.BR -i ", " --ip2nets " \fIFILE\fP"
++File containing one or more ip2nets rules separated by semicolons (;)
++or newlines. May be specified multiple times.
++.TP
++.BR -r ", " --routes " \fIFILE\fP"
++File containing one or more routes entries separated by semicolons (;)
++or newlines. May be specified multiple times.
++.TP
++.BR -m ", " --modprobe " \fIFILE\fP"
++Modprobe configuration file (e.g.
++.BR /etc/modprobe.d/lnet.conf )
++to parse for lnet module parameters. The tool extracts
++.B ip2nets=
++and
++.B routes=
++values from lines matching
++.IP
++.B "options lnet ip2nets=\"...\" routes=\"...\""
++.IP
++May be specified multiple times. Line continuations (backslash-newline)
++are supported.
++.TP
++.BR -o ", " --output " \fIFILE\fP"
++Write YAML to FILE instead of stdout.
++.TP
++.B --default-hop " [\fIHOP\fP]"
++Assign a default hopcount to routes lacking an explicit hop token.
++If HOP is omitted, 1 is used. Range: 1\-255. Explicit hopcounts in input
++are never overridden.
++.TP
++.BR -h ", " --help
++Display usage summary.
++.SH EXIT STATUS
++.TP
++.B 0
++Success.
++.TP
++.B 1
++Usage error or no data provided.
++.TP
++.B 2
++Parsing error or file I/O error (message on stderr).
++.SH NOTES
++.SS Legacy ip2nets Syntax
++Each rule:
++.I net-spec ip-pattern
++.RI "{ " ip-pattern " }"
++.P
++Net spec:
++.I nettype id
++optionally followed by interface list in parentheses, e.g.:
++.IP
++.B "tcp0(eth0,eth1) 192.168.0.*"
++.P
++IP patterns support wildcards
++.RB ( * )
++and bracket expressions for sets/ranges, e.g.:
++.IP
++132.6.[1-3].[2-8/2]
++.P
++Rules are separated by semicolons or newlines. The first matching rule
++for a given network wins.
++.SS Legacy routes Syntax
++Each entry (single hop):
++.IP
++.I netspec
++.RI [ hopcount ]
++.I gateway
++.RI "{ " gateway " ... }"
++.P
++Gateway NIDs may end with an optional priority suffix:
++.BR gateway:PRIORITY
++(e.g.
++.BR 10.0.0.1@o2ib0:5 ).
++The first numeric token (1\-255) after the network spec is treated as
++hopcount. If omitted and
++.B --default-hop
++is not used, hop is left unspecified in YAML.
++.SS YAML Output Format
++The tool emits up to two top-level sequences:
++.IP
++ip2nets:
++.br
++route:
++.P
++Example:
++.nf
++ip2nets:
++  - net-spec: tcp0
++    interfaces:
++         0: eth0
++    ip-range:
++         0: 192.168.0.[2,4]
++  - net-spec: o2ib0
++    ip-range:
++         0: 192.168.0.*
++route:
++  - net: tcp0
++    gateway: 10.0.0.[1-2]@o2ib0
++    hop: 2
++    priority: 5
++  - net: tcp0
++    gateway: 10.0.0.[3-4]@o2ib0
++    hop: 2
++    priority: 10
++.fi
++.P
++Any IP pattern beginning with an asterisk (e.g. *.*.*.*) is
++automatically wrapped in double quotes to avoid YAML alias semantics.
++.SS Behavior Notes
++.IP \(bu 2
++Rule / entry separators: semicolon (;) or newline.
++.IP \(bu
++Comments initiated by '#' are stripped (not valid inside bracket
++expressions).
++.IP \(bu
++IP patterns are preserved verbatim (no expansion of bracket/range
++expressions).
++.IP \(bu
++Interfaces are listed in the order provided.
++.IP \(bu
++Multiple ip2nets/rules files are concatenated in given order.
++.IP \(bu
++Gateway priority parsed only when final colon + digits suffix present
++(naive IPv6 avoidance).
++.IP \(bu
++Modprobe files are processed first, followed by explicit ip2nets files,
++routes files, then inline/stdin content.
++.IP \(bu
++Line continuations in modprobe files (backslash-newline) are handled
++automatically.
++.SH CAVEATS
++.IP \(bu 2
++Does not expand bracket/range expressions to concrete addresses.
++.IP \(bu
++Simple validation only; malformed nested bracket constructs may not
++produce intuitive errors.
++.IP \(bu
++Priority parsing does not support IPv6 literal addresses with trailing
++numeric segments separated by colons.
++.SH EXAMPLES
++Convert simple ip2nets string:
++.IP
++.nf
++.B $ lnet_legacy2yaml \e
++.B "  " 'tcp0(eth0,eth1) 10.0.0.*; o2ib0 192.168.[1-2].*'
++.fi
++.P
++Extract both parameters from an options line:
++.IP
++.nf
++.B $ lnet_legacy2yaml \e
++.B "  " 'options lnet ip2nets="tcp0 10.0.0.*" \e
++.B "  " routes="tcp0 1 10.0.0.1@o2ib0"'
++.fi
++.P
++Parse modprobe configuration file:
++.IP
++.nf
++.B $ lnet_legacy2yaml -m /etc/modprobe.d/lnet.conf \e
++.B "  " -o lnet.yaml
++.fi
++.P
++Files plus default hop:
++.IP
++.nf
++.B $ lnet_legacy2yaml -i ip.rules -r routes.rules \e
++.B "  " --default-hop 2 -o lnet.yaml
++.fi
++.P
++Import into LNet:
++.IP
++.nf
++.B $ lnetctl import < lnet.yaml
++.fi
++.SH AUTHORS
++Generated with assistance from automated tooling; further maintained
++by Lustre contributors.
++.SH AVAILABILITY
++.B lnet_legacy2yaml
++is part of the
++.BR lustre (7)
++filesystem package since release 2.17.0
++.\" Added in commit v2_16_XX
++.SH SEE ALSO
++.BR lustre (7),
++.BR lnetctl (8)
+diff --git a/lustre/scripts/Makefile.am b/lustre/scripts/Makefile.am
+index 8c7f322847..6e6c42ea17 100644
+--- a/lustre/scripts/Makefile.am
++++ b/lustre/scripts/Makefile.am
+@@ -35,7 +35,8 @@ endif
+ endif
+ 
+ if UTILS
+-sbin_SCRIPTS += ldev lustre_routes_config lustre_routes_conversion
++sbin_SCRIPTS += ldev lustre_routes_config lustre_routes_conversion \
++		lnet_legacy2yaml
+ bin_SCRIPTS   = lfs_migrate
+ 
+ if SERVER
+@@ -76,7 +77,8 @@ EXTRA_DIST = lustre_rmmod ldev lc_mon lhbadm \
+ 	     zfsobj2fid ko2iblnd-probe ksocklnd-config statechange-lustre.sh \
+ 	     vdev_attach-lustre.sh vdev_remove-lustre.sh vdev_clear-lustre.sh \
+ 	     bash-completion/lustre bash-completion/lctl bash-completion/lfs \
+-	     remove_changelog remove_updatelog lsvcgss_sysd lnet-sysctl-config
++	     remove_changelog remove_updatelog lsvcgss_sysd lnet-sysctl-config \
++	     lnet_legacy2yaml
+ 
+ CLEANFILES = $(genscripts)
+ 
+diff --git a/lustre/scripts/lnet_legacy2yaml b/lustre/scripts/lnet_legacy2yaml
+new file mode 100755
+index 0000000000..4beb43d957
+--- /dev/null
++++ b/lustre/scripts/lnet_legacy2yaml
+@@ -0,0 +1,427 @@
++#!/usr/bin/env python3
++# SPDX-License-Identifier: GPL-2.0
++"""
++lnet_legacy2yaml
++
++Convert legacy (deprecated) Lustre LNet ip2nets and routes module parameters
++into the YAML format accepted by `lnetctl import` (introduced Lustre 2.10+).
++
++Usage:
++  A) Pass a legacy ip2nets string directly:
++      ./lnet_legacy2yaml 'tcp0(eth0,eth1) 10.0.0.*; o2ib0 192.168.[1-2].*'
++
++  B) Pass a full legacy options line (the tool will extract ip2nets=... and routes=...):
++      ./lnet_legacy2yaml "options lnet 'ip2nets=\"tcp0 10.0.0.*\" routes=...';"
++
++  C) Read from stdin (omit positional argument):
++      echo 'tcp(eth0) 192.168.0.[2,4]; tcp 192.168.0.*' | ./lnet_legacy2yaml
++
++  D) Provide separate files for ip2nets and/or routes:
++      ./lnet_legacy2yaml -i /path/ip2nets.dat -r /path/routes.dat
++
++  E) Mix explicit files with an options line (file contents are appended):
++      ./lnet_legacy2yaml -i ip.rules "options lnet 'routes=\"tcp0 1 nid@o2ib0\"'"
++
++  F) Parse a modprobe configuration file for lnet parameters:
++      ./lnet_legacy2yaml -m /etc/modprobe.d/lnet.conf
++
++  G) Force unspecified route hopcounts to 1 (use when your legacy config
++        assumes an implicit 1 hop but omits it):
++            ./lnet_legacy2yaml -r routes.dat --default-hop
++
++  H) Force unspecified route hopcounts to a specific value (e.g. 2):
++      ./lnet_legacy2yaml -r routes.dat --default-hop 2
++
++The script prints a YAML document to stdout:
++
++ip2nets:
++  - net-spec: tcp0
++    interfaces:
++         0: eth0
++    ip-range:
++         0: 192.168.0.[2,4]
++  - net-spec: tcp
++    ip-range:
++         0: 192.168.0.*
++
++Notes / Assumptions:
++  * We preserve rule order.
++  * Interface order is preserved as given.
++  * Multiple IP patterns in one rule are enumerated (0,1,2,...).
++  * Comments beginning with # (outside of quotes) are stripped.
++  * Rule separators: semicolon ';' or newline. A trailing semicolon is fine.
++  * We do only light validation of IP range tokens; anything matching the
++    allowed character class for r-expr segments is accepted.
++  * Patterns are not expanded—left exactly as provided for user-space matcher.
++
++Exit codes:
++  0 success
++  1 usage / argument error
++  2 parse error (with message on stderr)
++
++Author: (generated by automation) | Version: 1.0 (canonical script name lnet_legacy2yaml)
++Python compatibility: 3.6+ (avoids __future__ annotations & PEP 585 generics)
++"""
++
++import re
++import sys
++import argparse
++from typing import List, Optional, Dict
++
++# Generic regex to detect and extract quoted parameter blocks (ip2nets/routes)
++# Use greedy match to properly capture nested quotes of opposite type
++PARAM_ASSIGN_RE = re.compile(r"(?P<name>ip2nets|routes)\s*=\s*(?P<quote>['\"])(?P<body>.*?)(?P=quote)", re.DOTALL)
++
++# Regex to parse a single rule: <net-spec> <ip-range>+
++# <net-spec> ::= <network>[ ( <iface-list> ) ]
++# <network>  ::= <nettype><number?>  (nettype letters, number optional)
++# Allow network names with embedded digits (e.g., o2ib, o2ib0, tcp1) by accepting
++# an initial alphabetic character followed by alphanumerics. This is looser than
++# the previous pattern which rejected names like 'o2ib0'.
++RULE_HEADER_RE = re.compile(
++    r"^\s*(?P<network>[A-Za-z][A-Za-z0-9]*)(?:\((?P<ifaces>[A-Za-z0-9_,.:/-]+)\))?\s+(?P<rest>.+?)\s*$"
++)
++
++# A loose matcher for an IP pattern token of the legacy form.
++# (We do not deeply validate numeric bounds; we only assert allowed chars and 3 dots)
++IP_PATTERN_RE = re.compile(r"^[A-Za-z0-9\[*\].,/\-]+\.[A-Za-z0-9\[*\].,/\-]+\.[A-Za-z0-9\[*\].,/\-]+\.[A-Za-z0-9\[*\].,/\-]+$")
++
++
++class Rule:
++    """Represents an ip2nets rule with net-spec, interfaces, and IP ranges."""
++
++    def __init__(self, net_spec, interfaces=None, ip_ranges=None):
++        # type: (str, Optional[List[str]], Optional[List[str]]) -> None
++        self.net_spec = net_spec
++        self.interfaces = interfaces if interfaces is not None else []
++        self.ip_ranges = ip_ranges if ip_ranges is not None else []
++
++    def to_yaml_lines(self, idx_pad=9):
++        # type: (int) -> List[str]
++        lines = [f"  - net-spec: {self.net_spec}"]
++        if self.interfaces:
++            lines.append("    interfaces:")
++            for i, iface in enumerate(self.interfaces):
++                lines.append(f"         {i}: {iface}")
++        lines.append("    ip-range:")
++        for i, rng in enumerate(self.ip_ranges):
++            lines.append(f"         {i}: {yaml_quote_if_needed(rng)}")
++        return lines
++
++
++def extract_param_values(raw: str) -> Dict[str, List[str]]:
++    """Extract quoted parameter assignment bodies (ip2nets/routes) from raw.
++
++    Returns dict mapping param name to list of bodies (order of appearance).
++    If no recognized param names found, caller may treat entire raw as a
++    legacy ip2nets string for backwards compatibility.
++    """
++    found = {}  # type: Dict[str, List[str]]
++    for m in PARAM_ASSIGN_RE.finditer(raw):
++        found.setdefault(m.group('name'), []).append(m.group('body'))
++    return found
++
++
++def parse_modprobe_conf(content: str) -> Dict[str, List[str]]:
++    """Parse modprobe configuration file content for lnet parameters.
++
++    Extracts ip2nets and routes values from lines like:
++      options lnet ip2nets="..." routes="..."
++
++    Returns dict mapping param name to list of bodies (order of appearance).
++    """
++    found = {}  # type: Dict[str, List[str]]
++    # Process line by line, handling line continuations
++    lines = content.split('\n')
++    i = 0
++    while i < len(lines):
++        line = lines[i].strip()
++        # Handle line continuations (backslash at end)
++        while line.endswith('\\') and i + 1 < len(lines):
++            line = line[:-1] + ' ' + lines[i + 1].strip()
++            i += 1
++        i += 1
++
++        # Skip comments and empty lines
++        if not line or line.startswith('#'):
++            continue
++
++        # Look for "options lnet ..." lines
++        if line.startswith('options') and 'lnet' in line:
++            # Extract parameter assignments from this line
++            params = extract_param_values(line)
++            for name, bodies in params.items():
++                found.setdefault(name, []).extend(bodies)
++
++    return found
++
++
++def normalize(raw: str) -> str:
++    # Unescape line continuations ending with backslash-newline
++    raw = re.sub(r"\\\n", " ", raw)
++    # Collapse repeated whitespace (but keep inside patterns unaffected)
++    return raw.strip()
++
++
++def split_rules(ip2nets_body: str) -> List[str]:
++    # Split on semicolons OR newlines while preserving order
++    # But we allow semicolons inside brackets theoretically? Semicolons not valid inside bracket grammar; so simple split is fine.
++    parts: List[str] = []
++    for segment in re.split(r"[;\n]", ip2nets_body):
++        seg = segment.strip()
++        if not seg:
++            continue
++        parts.append(seg)
++    return parts
++
++
++def strip_comment(rule: str) -> str:
++    # Remove first # and following characters (simple heuristic)
++    if '#' in rule:
++        return rule.split('#', 1)[0].rstrip()
++    return rule
++
++
++def parse_rule(rule_text: str) -> Rule:
++    header_match = RULE_HEADER_RE.match(rule_text)
++    if not header_match:
++        raise ValueError(f"Cannot parse rule header: '{rule_text}'")
++    net_spec = header_match.group('network')
++    ifaces_raw = header_match.group('ifaces')
++    rest = header_match.group('rest').strip()
++    # Split remaining part by whitespace into IP pattern tokens
++    tokens = [t for t in re.split(r"\s+", rest) if t]
++    if not tokens:
++        raise ValueError(f"No IP patterns found for network '{net_spec}' in rule: '{rule_text}'")
++    ip_ranges: List[str] = []
++    for tok in tokens:
++        if not IP_PATTERN_RE.match(tok):
++            raise ValueError(f"Invalid-looking IP pattern token '{tok}' in rule: '{rule_text}'")
++        ip_ranges.append(tok)
++    interfaces: List[str] = []
++    if ifaces_raw:
++        interfaces = [i.strip() for i in ifaces_raw.split(',') if i.strip()]
++        if not interfaces:
++            raise ValueError(f"Empty interface list in rule: '{rule_text}'")
++    return Rule(net_spec=net_spec, interfaces=interfaces, ip_ranges=ip_ranges)
++
++
++def convert_ip2nets_body(body: str) -> List[Rule]:
++    body = normalize(body)
++    if not body:
++        return []
++    rules: List[Rule] = []
++    for rt in split_rules(body):
++        rt_nc = strip_comment(rt)
++        if not rt_nc:
++            continue
++        rules.append(parse_rule(rt_nc))
++    return rules
++
++
++###############################################
++# routes= parsing support
++###############################################
++
++
++class RouteEntry:
++    """Represents a route entry with net, gateway, hop, and priority."""
++
++    def __init__(self, net, gateway, hop=None, priority=None):
++        # type: (str, str, Optional[int], Optional[int]) -> None
++        self.net = net
++        self.gateway = gateway
++        self.hop = hop
++        self.priority = priority
++
++    def to_yaml_lines(self):
++        # type: () -> List[str]
++        lines = ["  - net: " + self.net, "    gateway: " + self.gateway]
++        if self.hop is not None:
++            lines.append(f"    hop: {self.hop}")
++        if self.priority is not None:
++            lines.append(f"    priority: {self.priority}")
++        return lines
++
++
++HOP_RE = re.compile(r"^(?:[1-9][0-9]{0,2}|0)$")  # allow 0 though typical hopcount 1-255
++PRIORITY_RE = re.compile(r"^[0-9]+$")
++
++
++def parse_routes_body(body: str) -> List[RouteEntry]:
++    body = normalize(body)
++    if not body:
++        return []
++    entries: List[RouteEntry] = []
++    for raw_route in split_rules(body):
++        line = strip_comment(raw_route)
++        if not line:
++            continue
++        tokens = [t for t in line.split() if t]
++        if len(tokens) < 2:
++            raise ValueError(f"routes: incomplete route specification '{line}'")
++        net = tokens[0]
++        idx = 1
++        hop: Optional[int] = None
++        # Detect hop count (1-255) - be lenient but validate range
++        if idx < len(tokens) and HOP_RE.match(tokens[idx]):
++            hop_candidate = int(tokens[idx])
++            if 1 <= hop_candidate <= 255:
++                hop = hop_candidate
++                idx += 1
++            else:
++                raise ValueError(f"routes: hopcount {hop_candidate} out of range 1-255 in '{line}'")
++        if idx >= len(tokens):
++            raise ValueError(f"routes: missing gateway specs in '{line}'")
++        gw_tokens = tokens[idx:]
++        for gw_tok in gw_tokens:
++            # Split optional priority suffix (colon + digits) taking care not to
++            # misparse potential IPv6 addresses (very naive: only treat last
++            # colon as priority separator if rhs is all digits and there is an '@').
++            priority = None
++            base = gw_tok
++            if '@' in gw_tok and ':' in gw_tok:
++                head, tail = gw_tok.rsplit(':', 1)
++                if PRIORITY_RE.match(tail):
++                    base = head
++                    priority = int(tail)
++            entries.append(RouteEntry(net=net, gateway=base, hop=hop, priority=priority))
++    return entries
++
++
++def emit_yaml(ip_rules: List[Rule], route_entries: List[RouteEntry]) -> str:
++    lines: List[str] = []
++    if ip_rules:
++        lines.append("ip2nets:")
++        for r in ip_rules:
++            lines.extend(r.to_yaml_lines())
++    if route_entries:
++        lines.append("route:")
++        for e in route_entries:
++            lines.extend(e.to_yaml_lines())
++    return "\n".join(lines) + ("\n" if lines else "")
++
++
++def yaml_quote_if_needed(token: str) -> str:
++    """Quote tokens that would be misinterpreted by YAML.
++
++    Current rule: if the token starts with '*', YAML would treat it as an alias
++    indicator, so we wrap it in double quotes. We also escape embedded quotes
++    defensively (though they are unlikely in ip2nets patterns).
++    """
++    if token.startswith('*'):
++        return '"' + token.replace('"', '\\"') + '"'
++    return token
++
++
++def main(argv: List[str]) -> int:
++    parser = argparse.ArgumentParser(
++        description="Convert legacy Lustre ip2nets/routes syntax to YAML for lnetctl import"
++    )
++    parser.add_argument('inline', nargs='?', help='Inline legacy string or options lnet line (optional).')
++    parser.add_argument('-i', '--ip2nets', action='append', metavar='FILE', help='File containing ip2nets rules (may be used multiple times).')
++    parser.add_argument('-r', '--routes', action='append', metavar='FILE', help='File containing routes rules (may be used multiple times).')
++    parser.add_argument('-m', '--modprobe', action='append', metavar='FILE', help='Modprobe configuration file to parse for lnet parameters (may be used multiple times).')
++    parser.add_argument('-o', '--output', metavar='FILE', help='Write YAML output to FILE instead of stdout.')
++    parser.add_argument('--default-hop', nargs='?', const=1, type=int, metavar='HOP',
++                        help='Assign hop=HOP to any route entries without an explicit hopcount (default 1 if value omitted).')
++    args = parser.parse_args(argv[1:])
++
++    # Aggregate sources
++    ip_rules: List[Rule] = []
++    route_entries: List[RouteEntry] = []
++
++    def read_file(path: str) -> str:
++        try:
++            with open(path, 'r', encoding='utf-8') as fh:
++                return fh.read()
++        except OSError as e:
++            print(f"Error: cannot read {path}: {e}", file=sys.stderr)
++            sys.exit(2)
++
++    # Process modprobe configuration files first (if any)
++    if args.modprobe:
++        for f in args.modprobe:
++            try:
++                content = read_file(f)
++                params = parse_modprobe_conf(content)
++                if 'ip2nets' in params:
++                    for body in params['ip2nets']:
++                        ip_rules.extend(convert_ip2nets_body(body))
++                if 'routes' in params:
++                    for body in params['routes']:
++                        route_entries.extend(parse_routes_body(body))
++            except ValueError as e:
++                print(f"Error in modprobe file {f}: {e}", file=sys.stderr)
++                return 2
++
++    # Process file-based ip2nets
++    if args.ip2nets:
++        for f in args.ip2nets:
++            try:
++                ip_rules.extend(convert_ip2nets_body(read_file(f)))
++            except ValueError as e:
++                print(f"Error in ip2nets file {f}: {e}", file=sys.stderr)
++                return 2
++
++    # Process file-based routes
++    if args.routes:
++        for f in args.routes:
++            try:
++                route_entries.extend(parse_routes_body(read_file(f)))
++            except ValueError as e:
++                print(f"Error in routes file {f}: {e}", file=sys.stderr)
++                return 2
++
++    # Inline / stdin content
++    inline_raw = None
++    if args.inline is not None:
++        inline_raw = args.inline
++    else:
++        # If no inline and no files, read stdin (heuristic: data piped in)
++        if not sys.stdin.isatty():
++            inline_raw = sys.stdin.read()
++
++    if inline_raw:
++        try:
++            params = extract_param_values(inline_raw)
++            if 'ip2nets' in params:
++                for body in params['ip2nets']:
++                    ip_rules.extend(convert_ip2nets_body(body))
++            if 'routes' in params:
++                for body in params['routes']:
++                    route_entries.extend(parse_routes_body(body))
++            if not params:  # treat entire inline as ip2nets if not already parsed
++                ip_rules.extend(convert_ip2nets_body(inline_raw))
++        except ValueError as e:
++            print(f"Error: {e}", file=sys.stderr)
++            return 2
++
++    if not ip_rules and not route_entries:
++        print("Error: no ip2nets or routes data provided (use -m/-i/-r, inline arg, or stdin)", file=sys.stderr)
++        return 1
++
++    # Apply default hop=1 if requested and hop unspecified
++    if args.default_hop is not None:
++        if not (1 <= args.default_hop <= 255):
++            print(f"Error: --default-hop value {args.default_hop} out of range (1-255)", file=sys.stderr)
++            return 2
++        for e in route_entries:
++            if e.hop is None:
++                e.hop = args.default_hop
++
++    yaml_out = emit_yaml(ip_rules, route_entries)
++    if args.output:
++        try:
++            with open(args.output, 'w', encoding='utf-8') as fh:
++                fh.write(yaml_out)
++        except OSError as e:
++            print(f"Error: cannot write output file {args.output}: {e}", file=sys.stderr)
++            return 2
++    else:
++        sys.stdout.write(yaml_out)
++    return 0
++
++
++if __name__ == '__main__':
++    sys.exit(main(sys.argv))
+diff --git a/lustre/tests/sanity-lnet.sh b/lustre/tests/sanity-lnet.sh
+index a2ff8a73b6..dc7d4cde76 100755
+--- a/lustre/tests/sanity-lnet.sh
++++ b/lustre/tests/sanity-lnet.sh
+@@ -5365,6 +5365,430 @@ test_502() {
+ }
+ run_test 502 "Verify lnetctl peer set --health (MR)"
+ 
++test_600() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      interfaces:
++          0: eth0
++          1: eth1
++      ip-range:
++          0: 10.0.0.*
++    - net-spec: o2ib0
++      ip-range:
++          0: 192.168.[1-2].*
++EOF
++
++	$LEGACY2YAML 'tcp0(eth0,eth1) 10.0.0.*; o2ib0 192.168.[1-2].*' \
++		> $actual || error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 600 "lnet_legacy2yaml: basic ip2nets conversion"
++
++test_601() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++route:
++    - net: tcp0
++      gateway: 10.0.0.1@o2ib0
++      hop: 1
++EOF
++
++	$LEGACY2YAML "routes='tcp0 1 10.0.0.1@o2ib0'" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 601 "lnet_legacy2yaml: basic routes conversion"
++
++test_602() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++route:
++    - net: tcp0
++      gateway: 10.0.0.1@o2ib0
++      hop: 2
++      priority: 7
++EOF
++
++	$LEGACY2YAML "routes='tcp0 2 10.0.0.1@o2ib0:7'" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 602 "lnet_legacy2yaml: routes with priority"
++
++test_603() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++route:
++    - net: tcp0
++      gateway: 10.0.0.1@o2ib0
++      hop: 1
++EOF
++
++	$LEGACY2YAML "routes='tcp0 10.0.0.1@o2ib0'" --default-hop \
++		> $actual || error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 603 "lnet_legacy2yaml: default hop flag"
++
++test_604() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++route:
++    - net: tcp0
++      gateway: 10.0.0.1@o2ib0
++      hop: 3
++EOF
++
++	$LEGACY2YAML --default-hop 3 "routes='tcp0 10.0.0.1@o2ib0'" \
++		> $actual || error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 604 "lnet_legacy2yaml: default hop with explicit value"
++
++test_605() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp
++      ip-range:
++          0: "*.*.*.*"
++EOF
++
++	$LEGACY2YAML 'tcp *.*.*.*' > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 605 "lnet_legacy2yaml: quote leading star in IP pattern"
++
++test_606() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++	local ip_file="$TMP/sanity-lnet-$testnum-ip.rules"
++	local routes_file="$TMP/sanity-lnet-$testnum-routes.rules"
++
++	echo 'tcp0 10.1.0.*' > "$ip_file"
++	echo 'tcp0 1 10.1.0.1@o2ib0:9' > "$routes_file"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      ip-range:
++          0: 10.1.0.*
++route:
++    - net: tcp0
++      gateway: 10.1.0.1@o2ib0
++      hop: 1
++      priority: 9
++EOF
++
++	$LEGACY2YAML -i "$ip_file" -r "$routes_file" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++
++	rm -f "$ip_file" "$routes_file"
++}
++run_test 606 "lnet_legacy2yaml: file inputs"
++
++test_607() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++	local opts
++
++	opts="options lnet 'ip2nets=\"tcp0 10.0.0.*\""
++	opts+=" routes=\"tcp0 1 10.0.0.2@o2ib0\"'"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      ip-range:
++          0: 10.0.0.*
++route:
++    - net: tcp0
++      gateway: 10.0.0.2@o2ib0
++      hop: 1
++EOF
++
++	$LEGACY2YAML "$opts" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 607 \
++	"lnet_legacy2yaml: options line with combined ip2nets and routes"
++
++test_608() {
++	local output
++
++	output=$($LEGACY2YAML 'tcp0' 2>&1)
++	local rc=$?
++
++	((rc == 2)) || error "Expected exit code 2, got $rc"
++	echo "$output" | grep -iq 'error' ||
++		error "Expected error message in output"
++}
++run_test 608 "lnet_legacy2yaml: error on invalid rule (missing IP pattern)"
++
++test_609() {
++	local output
++
++	# Run with no stdin and no args - expect error
++	output=$(echo -n "" | $LEGACY2YAML 2>&1)
++	local rc=$?
++
++	((rc == 1)) || error "Expected exit code 1, got $rc"
++	echo "$output" | grep -iq "no ip2nets or routes data" ||
++		error "Expected 'no data' message in output"
++}
++run_test 609 "lnet_legacy2yaml: error on no input"
++
++test_610() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++	local ip1="$TMP/sanity-lnet-$testnum-ip1.rules"
++	local ip2="$TMP/sanity-lnet-$testnum-ip2.rules"
++	local r1="$TMP/sanity-lnet-$testnum-r1.rules"
++
++	echo 'tcp0 10.0.0.*' > "$ip1"
++	echo 'o2ib0 192.168.0.*' > "$ip2"
++	echo 'tcp0 1 10.0.0.1@o2ib0' > "$r1"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      ip-range:
++          0: 10.0.0.*
++    - net-spec: o2ib0
++      ip-range:
++          0: 192.168.0.*
++route:
++    - net: tcp0
++      gateway: 10.0.0.1@o2ib0
++      hop: 1
++    - net: o2ib0
++      gateway: 192.168.0.1@tcp0
++      hop: 1
++EOF
++
++	$LEGACY2YAML -i "$ip1" -i "$ip2" -r "$r1" \
++		"routes='o2ib0 1 192.168.0.1@tcp0'" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++
++	rm -f "$ip1" "$ip2" "$r1"
++}
++run_test 610 \
++	"lnet_legacy2yaml: multiple files and inline, check order"
++
++test_611() {
++	local output
++
++	output=$($LEGACY2YAML "routes='tcp0 0 10.0.0.1@o2ib0'" 2>&1)
++	local rc=$?
++
++	((rc == 2)) || error "Expected exit code 2, got $rc"
++	echo "$output" | grep -iq "hopcount" ||
++		error "Expected hopcount error in output"
++}
++run_test 611 "lnet_legacy2yaml: invalid hopcount"
++
++test_612() {
++	local output
++
++	output=$($LEGACY2YAML 'tcp0 10.0.0' 2>&1)
++	local rc=$?
++
++	((rc == 2)) || error "Expected exit code 2, got $rc"
++	echo "$output" | grep -iq "invalid.*ip pattern" ||
++		error "Expected invalid IP pattern error in output"
++}
++run_test 612 "lnet_legacy2yaml: malformed IP pattern"
++
++test_613() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      ip-range:
++          0: 10.0.0.*
++          1: 10.0.1.*
++EOF
++
++	$LEGACY2YAML 'tcp0 10.0.0.* 10.0.1.*' > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 613 \
++	"lnet_legacy2yaml: multiple IP patterns in single rule"
++
++test_614() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      interfaces:
++          0: eth0
++          1: eth1
++      ip-range:
++          0: 10.0.0.*
++          1: 10.0.1.*
++EOF
++
++	$LEGACY2YAML 'tcp0(eth0,eth1) 10.0.0.* 10.0.1.*' > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++}
++run_test 614 "lnet_legacy2yaml: interfaces enumeration with multiple IP ranges"
++
++test_615() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++	local modprobe_file="$TMP/sanity-lnet-$testnum-modprobe.conf"
++
++	cat <<EOF > "$modprobe_file"
++# Modprobe configuration file for LNet
++options lnet ip2nets="tcp0(eth0) 10.1.0.*"
++
++# Routes configuration
++options lnet routes="tcp0 1 10.1.0.1@o2ib0:9"
++
++# Line continuation test
++options lnet \\
++  ip2nets="o2ib0 192.168.1.*"
++EOF
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      interfaces:
++          0: eth0
++      ip-range:
++          0: 10.1.0.*
++    - net-spec: o2ib0
++      ip-range:
++          0: 192.168.1.*
++route:
++    - net: tcp0
++      gateway: 10.1.0.1@o2ib0
++      hop: 1
++      priority: 9
++EOF
++
++	$LEGACY2YAML -m "$modprobe_file" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++
++	rm -f "$modprobe_file"
++}
++run_test 615 "lnet_legacy2yaml: modprobe configuration file input"
++
++test_616() {
++	local actual="$TMP/sanity-lnet-$testnum-actual.yaml"
++	local modprobe_file="$TMP/sanity-lnet-$testnum-modprobe.conf"
++	local ip_file="$TMP/sanity-lnet-$testnum-ip.rules"
++
++	cat <<EOF > "$modprobe_file"
++options lnet ip2nets="tcp0 10.0.0.*"
++options lnet routes="tcp0 1 10.0.0.1@o2ib0"
++EOF
++
++	echo 'o2ib0 192.168.0.*' > "$ip_file"
++
++	cat <<EOF > $TMP/sanity-lnet-$testnum-expected.yaml
++ip2nets:
++    - net-spec: tcp0
++      ip-range:
++          0: 10.0.0.*
++    - net-spec: o2ib0
++      ip-range:
++          0: 192.168.0.*
++route:
++    - net: tcp0
++      gateway: 10.0.0.1@o2ib0
++      hop: 1
++EOF
++
++	$LEGACY2YAML -m "$modprobe_file" -i "$ip_file" > $actual ||
++		error "lnet_legacy2yaml failed"
++
++	compare_yaml_files || error "YAML comparison failed"
++
++	rm -f "$modprobe_file" "$ip_file"
++}
++run_test 616 \
++	"lnet_legacy2yaml: combining modprobe file with explicit ip2nets file"
++
++test_617() {
++	reinit_dlc || return $?
++
++	local modprobe_file="$TMP/sanity-lnet-$testnum-modprobe.conf"
++	local yaml_file="$TMP/sanity-lnet-$testnum.yaml"
++	local export_file="$TMP/sanity-lnet-$testnum-expected.yaml"
++	local actual_file="$TMP/sanity-lnet-$testnum-actual.yaml"
++	local if0_ip
++	local ip_pattern
++
++	# Get IP address of the first interface and create pattern
++	if0_ip=$(ip -o -4 a s ${INTERFACES[0]} | awk '{print $4}' | \
++		 sed 's/\/.*//' | head -n 1)
++	[[ -n $if0_ip ]] || error "Cannot determine IP for ${INTERFACES[0]}"
++
++	# Create IP pattern matching the network (e.g., 192.168.1.*)
++	ip_pattern=$(awk -F. '{print $1"."$2"."$3".*"}' <<< "${if0_ip}")
++
++	echo "Configuring network ${NETTYPE} on ${INTERFACES[0]}"
++	add_net "${NETTYPE}" "${INTERFACES[0]}" || return $?
++
++	$LNETCTL export --backup > "$export_file" ||
++		error "lnetctl export failed"
++
++	echo "Generating modprobe configuration"
++	cat <<EOF > "$modprobe_file"
++options lnet ip2nets="${NETTYPE}(${INTERFACES[0]}) ${ip_pattern}"
++EOF
++
++	echo "Generated modprobe configuration:"
++	cat "$modprobe_file"
++
++	echo "Converting modprobe config to YAML"
++	$LEGACY2YAML -m "$modprobe_file" > "$yaml_file" ||
++		error "lnet_legacy2yaml failed"
++
++	echo "Generated YAML configuration:"
++	cat "$yaml_file"
++
++	reinit_dlc || return $?
++
++	do_lnetctl import < "$yaml_file" ||
++		error "lnetctl import failed"
++
++	$LNETCTL export --backup > "$actual_file" ||
++		error "lnetctl export after import failed"
++
++	compare_yaml_files ||
++		error "Round-trip YAML comparison failed"
++
++	rm -f "$modprobe_file" "$yaml_file" "$export_file" "$new_export"
++}
++run_test 617 \
++	"lnet_legacy2yaml: round-trip tunables from LNet to modprobe to YAML"
++
+ complete_test $SECONDS
+ cleanup_testsuite
+ exit_status
+diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
+index 91fa67f589..c5da479313 100755
+--- a/lustre/tests/test-framework.sh
++++ b/lustre/tests/test-framework.sh
+@@ -560,6 +560,9 @@ init_test_env() {
+ 	export LNET_SYSCTL_CONFIG=${LNET_SYSCTL_CONFIG:-"$LUSTRE/scripts/lnet-sysctl-config"}
+ 	[ ! -f "$LNET_SYSCTL_CONFIG" ] &&
+ 		export LNET_SYSCTL_CONFIG=$(which lnet-sysctl-config 2> /dev/null)
++	export LEGACY2YAML=${LEGACY2YAML:-"$LUSTRE/scripts/lnet_legacy2yaml"}
++	[ ! -f "$LEGACY2YAML" ] &&
++		export LEGACY2YAML=$(which lnet_legacy2yaml 2> /dev/null)
+ 
+ 	export PERM_CMD=$(echo ${PERM_CMD:-"$LCTL conf_param"})
+ 
+
+</pre>
+</body>
+</html>

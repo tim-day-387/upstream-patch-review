@@ -1,0 +1,50 @@
+<html lang="en">
+<body>
+<pre>
+From 3ee987d72ba3654db5b8b278e3e8fea6a4521cd6 Mon Sep 17 00:00:00 2001
+From: Andreas Dilger <adilger@whamcloud.com>
+Date: Wed, 15 Oct 2025 12:13:53 -0600
+Subject: [PATCH 1/1] LU-18299 tests: increase runtests deletion time
+
+There may be some delays in releasing OST objects (and their space)
+due to async close RPCs, MDT destroy queue, etc.  Wait longer for
+deletes to complete rather than failing the test intermittently.
+
+Test-Parameters: trivial testlist=runtests env=ONLY=1,ONLY_REPEAT=100
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+Change-Id: If1d72b1a48ba37187b594808ab942630a02ece6f
+---
+ lustre/tests/runtests          | 2 +-
+ lustre/tests/test-framework.sh | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lustre/tests/runtests b/lustre/tests/runtests
+index e8885eb1c4..60372f2d46 100755
+--- a/lustre/tests/runtests
++++ b/lustre/tests/runtests
+@@ -145,7 +145,7 @@ test_1() {
+ 
+ 	log "done"
+ 
+-	wait_delete_completed
++	wait_delete_completed 300
+ 	sleep 5 # let MDS refresh aggregated statfs
+ 	echo "usage after removing all files"
+ 	$LFS df
+diff --git a/lustre/tests/test-framework.sh b/lustre/tests/test-framework.sh
+index 91fa67f589..ebdd109892 100755
+--- a/lustre/tests/test-framework.sh
++++ b/lustre/tests/test-framework.sh
+@@ -4039,7 +4039,7 @@ fstrim_inram_devs() {
+ 
+ wait_delete_completed() {
+ 	wait_delete_completed_mds $1 || return $?
+-	wait_destroy_complete || return $?
++	wait_destroy_complete $1 || return $?
+ 	fstrim_inram_devs
+ }
+ 
+
+</pre>
+</body>
+</html>
