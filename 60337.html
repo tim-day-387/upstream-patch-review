@@ -1,0 +1,539 @@
+<html lang="en">
+<body>
+<pre>
+From d38b77cbd2009cda5006aa49c17cb2b3857ede80 Mon Sep 17 00:00:00 2001
+From: Etienne AUJAMES <etienne.aujames@cea.fr>
+Date: Fri, 27 Jun 2025 20:16:14 +0200
+Subject: [PATCH 1/1] LU-19204 hsm: support cancel requests for lhsmtool_posix
+
+This patch adds the support of HSM cancel request (HSMA_CANCEL) for
+lhsmtool_posix copytool.
+
+The purpose of this patch is to test HSM cancels sent to an copytool.
+
+Thread are registered into a binary tree (the FID is used as key).
+When a cancel is received, the running thread is notified that it
+should stop. The running thread checks the cancel condition in the
+IO loop.
+
+Test-Parameters: testlist=sanity-hsm
+Test-Parameters: testlist=sanity-hsm
+Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
+Change-Id: I1fb75863064ab1bedf660b25d8e4668922644381
+---
+ lustre/utils/lhsmtool_posix.c | 321 +++++++++++++++++++++++++++-------
+ 1 file changed, 257 insertions(+), 64 deletions(-)
+
+diff --git a/lustre/utils/lhsmtool_posix.c b/lustre/utils/lhsmtool_posix.c
+index 0ba00e23c0..8e148cb0f6 100644
+--- a/lustre/utils/lhsmtool_posix.c
++++ b/lustre/utils/lhsmtool_posix.c
+@@ -31,6 +31,8 @@
+ #include <unistd.h>
+ #include <utime.h>
+ #include <signal.h>
++#include <assert.h>
++#include <search.h>
+ #include <sys/time.h>
+ #include <sys/xattr.h>
+ #include <sys/syscall.h>
+@@ -653,10 +655,21 @@ static int ct_restore_stripe(const char *src, const char *dst, int dst_fd,
+ 	return rc;
+ }
+ 
++struct ct_th_data {
++	int				ref;
++	pthread_t			pthread;
++	long				hal_flags;
++	struct hsm_action_item		*hai;
++	struct hsm_copyaction_private	*hcp;
++	int				hp_flags;
++	int				ct_rc;
++};
++
+ static int ct_copy_data(struct hsm_copyaction_private *hcp, const char *src,
+ 			const char *dst, int src_fd, int dst_fd,
+-			const struct hsm_action_item *hai, long hal_flags)
++			struct ct_th_data *cttd)
+ {
++	struct hsm_action_item	*hai = cttd->hai;
+ 	struct hsm_extent	 he;
+ 	__u64			 offset = hai->hai_extent.offset;
+ 	struct stat		 src_st;
+@@ -739,6 +752,14 @@ static int ct_copy_data(struct hsm_copyaction_private *hcp, const char *src,
+ 		int	chunk = (length - write_total > opt.o_chunk_size) ?
+ 				 opt.o_chunk_size : length - write_total;
+ 
++		if (cttd->ct_rc) {
++			rc = cttd->ct_rc;
++			CT_DEBUG("canceling copy for: cookie=%#jx, FID="DFID", err=%d",
++				 (uintmax_t)hai->hai_cookie,
++				 PFID(&hai->hai_fid), rc);
++			break;
++		}
++
+ 		rsize = pread(src_fd, buf, chunk, offset);
+ 		if (rsize == 0)
+ 			/* EOF */
+@@ -999,9 +1020,9 @@ static int ct_begin(struct hsm_copyaction_private **phcp,
+ static int ct_fini(struct hsm_copyaction_private **phcp,
+ 		   const struct hsm_action_item *hai, int hp_flags, int ct_rc)
+ {
+-	struct hsm_copyaction_private	*hcp;
+-	char				 lstr[PATH_MAX];
+-	int				 rc;
++	struct hsm_copyaction_private *hcp;
++	char lstr[PATH_MAX];
++	int rc;
+ 
+ 	CT_TRACE("Action completed, notifying coordinator "
+ 		 "cookie=%#jx, FID="DFID", hp_flags=%d err=%d",
+@@ -1034,8 +1055,9 @@ static int ct_fini(struct hsm_copyaction_private **phcp,
+ 	return rc;
+ }
+ 
+-static int ct_archive(const struct hsm_action_item *hai, const long hal_flags)
++static int ct_archive(struct ct_th_data *cttd)
+ {
++	struct hsm_action_item		*hai = cttd->hai;
+ 	struct hsm_copyaction_private	*hcp = NULL;
+ 	char				 src[PATH_MAX];
+ 	char				 dst[PATH_MAX + 4] = "";
+@@ -1106,7 +1128,7 @@ static int ct_archive(const struct hsm_action_item *hai, const long hal_flags)
+ 		CT_ERROR(rc, "cannot save file striping info of '%s' in '%s'",
+ 			 src, dst);
+ 
+-	rc = ct_copy_data(hcp, src, dst, src_fd, dst_fd, hai, hal_flags);
++	rc = ct_copy_data(hcp, src, dst, src_fd, dst_fd, cttd);
+ 	if (rc < 0) {
+ 		CT_ERROR(rc, "data copy failed from '%s' to '%s'", src, dst);
+ 		goto fini_major;
+@@ -1274,13 +1296,16 @@ out:
+ 	if (!(dst_fd < 0))
+ 		close(dst_fd);
+ 
+-	rc = ct_fini(&hcp, hai, hp_flags, rcf);
++	cttd->hcp = hcp;
++	cttd->hp_flags = hp_flags;
++	cttd->ct_rc = rcf;
+ 
+ 	return rc;
+ }
+ 
+-static int ct_restore(const struct hsm_action_item *hai, const long hal_flags)
++static int ct_restore(struct ct_th_data *cttd)
+ {
++	struct hsm_action_item		*hai = cttd->hai;
+ 	struct hsm_copyaction_private	*hcp = NULL;
+ 	char				 src[PATH_MAX];
+ 	char				 dst[PATH_MAX];
+@@ -1370,7 +1395,7 @@ static int ct_restore(const struct hsm_action_item *hai, const long hal_flags)
+ 		}
+ 	}
+ 
+-	rc = ct_copy_data(hcp, src, dst, src_fd, dst_fd, hai, hal_flags);
++	rc = ct_copy_data(hcp, src, dst, src_fd, dst_fd, cttd);
+ 	if (rc < 0) {
+ 		CT_ERROR(rc, "cannot copy data from '%s' to '%s'",
+ 			 src, dst);
+@@ -1383,8 +1408,6 @@ static int ct_restore(const struct hsm_action_item *hai, const long hal_flags)
+ 	CT_TRACE("data restore from '%s' to '%s' done", src, dst);
+ 
+ fini:
+-	rc = ct_fini(&hcp, hai, hp_flags, rc);
+-
+ 	/* object swaping is done by cdt at copy end, so close of volatile file
+ 	 * cannot be done before */
+ 	if (!(src_fd < 0))
+@@ -1393,11 +1416,16 @@ fini:
+ 	if (!(dst_fd < 0))
+ 		close(dst_fd);
+ 
++	cttd->hcp = hcp;
++	cttd->hp_flags = hp_flags;
++	cttd->ct_rc = rc;
++
+ 	return rc;
+ }
+ 
+-static int ct_remove(const struct hsm_action_item *hai, const long hal_flags)
++static int ct_remove(struct ct_th_data *cttd)
+ {
++	struct hsm_action_item		*hai = cttd->hai;
+ 	struct hsm_copyaction_private	*hcp = NULL;
+ 	char				 dst[PATH_MAX], attr[PATH_MAX + 4];
+ 	int				 rc;
+@@ -1438,14 +1466,16 @@ static int ct_remove(const struct hsm_action_item *hai, const long hal_flags)
+ 	}
+ 
+ fini:
+-	rc = ct_fini(&hcp, hai, 0, rc);
++	cttd->hcp = hcp;
++	cttd->ct_rc = rc;
+ 
+ 	return rc;
+ }
+ 
+-static int ct_process_item(struct hsm_action_item *hai, const long hal_flags)
++static int ct_process_item(struct ct_th_data *cttd)
+ {
+-	int	rc = 0;
++	struct hsm_action_item *hai = cttd->hai;
++	int rc = 0;
+ 
+ 	if (opt.o_verbose >= LLAPI_MSG_INFO || opt.o_dry_run) {
+ 		/* Print the original path */
+@@ -1469,90 +1499,251 @@ static int ct_process_item(struct hsm_action_item *hai, const long hal_flags)
+ 	switch (hai->hai_action) {
+ 	/* set err_major, minor inside these functions */
+ 	case HSMA_ARCHIVE:
+-		rc = ct_archive(hai, hal_flags);
++		rc = ct_archive(cttd);
+ 		break;
+ 	case HSMA_RESTORE:
+-		rc = ct_restore(hai, hal_flags);
++		rc = ct_restore(cttd);
+ 		break;
+ 	case HSMA_REMOVE:
+-		rc = ct_remove(hai, hal_flags);
+-		break;
+-	case HSMA_CANCEL:
+-		CT_TRACE("cancel not implemented for file system '%s'",
+-			 opt.o_mnt);
+-		/* Don't report progress to coordinator for this cookie:
+-		 * the copy function will get ECANCELED when reporting
+-		 * progress. */
+-		err_minor++;
+-		return 0;
++		rc = ct_remove(cttd);
+ 		break;
+ 	default:
+-		rc = -EINVAL;
+-		CT_ERROR(rc, "unknown action %d, on '%s'", hai->hai_action,
+-			 opt.o_mnt);
++		cttd->ct_rc = -EINVAL;
++		CT_ERROR(cttd->ct_rc, "unknown action %d, on '%s'",
++			 hai->hai_action, opt.o_mnt);
+ 		err_minor++;
+-		ct_fini(NULL, hai, 0, rc);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-struct ct_th_data {
+-	long			 hal_flags;
+-	struct hsm_action_item	*hai;
+-};
++static void *ct_thread_tree;
++static unsigned long ct_thread_count;
++pthread_mutex_t ct_thread_tree_lock = PTHREAD_MUTEX_INITIALIZER;
++pthread_cond_t ct_thread_count_cond = PTHREAD_COND_INITIALIZER;
++
++static void ct_thread_get(struct ct_th_data *cttd)
++{
++	__sync_add_and_fetch(&cttd->ref, 1);
++}
++
++static void ct_thread_put(struct ct_th_data *cttd)
++{
++	if (__sync_sub_and_fetch(&cttd->ref, 1) == 0) {
++		free(cttd->hai);
++		free(cttd);
++	}
++}
++
++static void ct_thread_cancel_all_cb(const void *node, const VISIT which,
++				    const int depth)
++{
++	struct ct_th_data *cttd;
++
++	if (which == postorder || which == leaf) {
++		cttd = *(struct ct_th_data **)node;
++		cttd->ct_rc = cttd->ct_rc ?: -ESHUTDOWN;
++	}
++}
++
++static void ct_thread_cancel_all(void)
++{
++	if (!ct_thread_tree || !ct_thread_count)
++		return;
++
++	pthread_mutex_lock(&ct_thread_tree_lock);
++	CT_WARN("canceling %lu threads for '%s' service",
++		ct_thread_count, opt.o_mnt);
++	twalk(ct_thread_tree, ct_thread_cancel_all_cb);
++	pthread_mutex_unlock(&ct_thread_tree_lock);
++}
++
++static void ct_thread_destroy_cb(void *node)
++{
++	/* should have already been deleted */
++	abort();
++}
++
++#define WAIT_THREAD_TIMEOUT 10
++static void ct_thread_wait_all(void)
++{
++	struct timespec deadline = { 0 };
++	int rc;
++
++again:
++	rc = 0;
++	clock_gettime(CLOCK_REALTIME, &deadline);
++	deadline.tv_sec += WAIT_THREAD_TIMEOUT;
++
++	pthread_mutex_lock(&ct_thread_tree_lock);
++	if (ct_thread_count)
++		CT_WARN("waiting %lu threads for '%s' service",
++			ct_thread_count, opt.o_mnt);
++	while (ct_thread_count && !rc)
++		rc = pthread_cond_timedwait(&ct_thread_count_cond,
++					    &ct_thread_tree_lock,
++					    &deadline);
++	pthread_mutex_unlock(&ct_thread_tree_lock);
++
++	if (ct_thread_count) {
++		ct_thread_cancel_all();
++		goto again;
++	}
++
++	tdestroy(ct_thread_tree, ct_thread_destroy_cb);
++}
++
++static int ct_thread_cmp(const void *a, const void *b)
++{
++	const struct ct_th_data *ta = a, *tb = b;
++
++	assert(ta->hai);
++	assert(tb->hai);
++
++	/* this copytool does not support enqueuing actions for the same fid */
++	return memcmp(&ta->hai->hai_fid, &tb->hai->hai_fid,
++		      sizeof(ta->hai->hai_fid));
++}
++
++static void ct_thread_end(struct ct_th_data *cttd)
++{
++	if (!cttd)
++		return;
++
++	pthread_mutex_lock(&ct_thread_tree_lock);
++	if (!tdelete(cttd, &ct_thread_tree, ct_thread_cmp))
++		abort();
++	ct_thread_count--;
++	pthread_cond_signal(&ct_thread_count_cond);
++	pthread_mutex_unlock(&ct_thread_tree_lock);
++
++	ct_fini(&cttd->hcp, cttd->hai, cttd->hp_flags, cttd->ct_rc);
++	ct_thread_put(cttd);
++}
+ 
+ static void *ct_thread(void *data)
+ {
+ 	struct ct_th_data *cttd = data;
+ 	int rc;
+ 
+-	rc = ct_process_item(cttd->hai, cttd->hal_flags);
++	rc = ct_process_item(cttd);
+ 
+-	free(cttd->hai);
+-	free(cttd);
++	ct_thread_end(cttd);
+ 	pthread_exit((void *)(intptr_t)rc);
+ }
+ 
++static struct ct_th_data *ct_thread_find(const struct hsm_action_item *hai)
++{
++	struct ct_th_data **node;
++	struct ct_th_data cttd = {
++		.hai = (void *)hai,
++	};
++
++	pthread_mutex_lock(&ct_thread_tree_lock);
++	node = tfind(&cttd, &ct_thread_tree, ct_thread_cmp);
++	if (node)
++		ct_thread_get(*node);
++	pthread_mutex_unlock(&ct_thread_tree_lock);
++
++	if (!node)
++		return NULL;
++	if ((*node)->hai->hai_cookie != hai->hai_cookie) {
++		ct_thread_put(*node);
++		return NULL;
++	}
++
++	return *node;
++}
++
++static int ct_thread_cancel(const struct hsm_action_item *hai)
++{
++	struct ct_th_data *cttd;
++
++	cttd = ct_thread_find(hai);
++	if (!cttd)
++		return -ENOENT;
++
++	cttd->ct_rc = cttd->ct_rc ?: -ECANCELED;
++	ct_thread_put(cttd);
++
++	return 0;
++}
++
+ static int ct_process_item_async(const struct hsm_action_item *hai,
+ 				 long hal_flags)
+ {
+ 	pthread_attr_t		 attr;
+ 	pthread_t		 thread;
+-	struct ct_th_data	*data;
+-	int			 rc;
++	struct ct_th_data	*data, **key;
++	int			 rc = 0;
++
++	if (hai->hai_action == HSMA_CANCEL)
++		return ct_thread_cancel(hai);
+ 
+-	data = malloc(sizeof(*data));
++	data = calloc(1, sizeof(*data));
+ 	if (data == NULL)
+ 		return -ENOMEM;
+ 
+ 	data->hai = malloc(hai->hai_len);
+ 	if (data->hai == NULL) {
+-		free(data);
+-		return -ENOMEM;
++		rc = -ENOMEM;
++		goto err_free_data;
+ 	}
+ 
+ 	memcpy(data->hai, hai, hai->hai_len);
+ 	data->hal_flags = hal_flags;
+ 
+-	rc = pthread_attr_init(&attr);
+-	if (rc != 0) {
++	pthread_mutex_lock(&ct_thread_tree_lock);
++	key = tsearch(data, &ct_thread_tree, ct_thread_cmp);
++	if (key)
++		ct_thread_get(*key);
++	if (*key == data)
++		ct_thread_count++;
++	pthread_mutex_unlock(&ct_thread_tree_lock);
++	if (!key) {
++		rc = -ENOMEM;
++		goto err_free_hai;
++	}
++	if (*key != data) {
++		struct hsm_action_item *hai_run = (*key)->hai;
++
++		rc = -EEXIST;
++		CT_WARN("unable to insert action cookie=%#jx, a conflicting %s is running for '%s' service: cookie=%#jx FID="DFID,
++			(uintmax_t)hai->hai_cookie,
++			hsm_copytool_action2name(hai_run->hai_action),
++			opt.o_mnt, (uintmax_t)hai_run->hai_cookie,
++			PFID(&hai_run->hai_fid));
++		ct_thread_put(*key);
++		goto err_free_hai;
++	}
++
++	rc = -pthread_attr_init(&attr);
++	if (rc) {
+ 		CT_ERROR(rc, "pthread_attr_init failed for '%s' service",
+ 			 opt.o_mnt);
+-		free(data->hai);
+-		free(data);
+-		return -rc;
++		goto err_tdelete;
+ 	}
+-
+ 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+-
+-	rc = pthread_create(&thread, &attr, ct_thread, data);
+-	if (rc != 0)
++	rc = -pthread_create(&thread, &attr, ct_thread, data);
++	if (rc) {
+ 		CT_ERROR(rc, "cannot create thread for '%s' service",
+ 			 opt.o_mnt);
++		goto err_tdelete;
++	}
+ 
+-	pthread_attr_destroy(&attr);
+ 	return 0;
++
++err_tdelete:
++	ct_thread_end(data);
++
++	return rc;
++
++err_free_hai:
++	free(data->hai);
++err_free_data:
++	free(data);
++
++	return rc;
+ }
+ 
+ static int ct_import_one(const char *src, const char *dst)
+@@ -2127,19 +2318,14 @@ static int ct_max_sequence(void)
+ 	return 0;
+ }
+ 
++static int ct_stopping;
+ static void handler(int signal)
+ {
+ 	psignal(signal, "exiting");
+-	/* If we don't clean up upon interrupt, umount thinks there's a ref
+-	 * and doesn't remove us from mtab (EINPROGRESS). The lustre client
+-	 * does successfully unmount and the mount is actually gone, but the
+-	 * mtab entry remains. So this just makes mtab happier. */
+-	llapi_hsm_copytool_unregister(&ctdata);
++	if (ct_stopping)
++		ct_thread_cancel_all();
+ 
+-	/* Also remove fifo upon signal as during normal/error exit */
+-	if (opt.o_event_fifo != NULL)
+-		llapi_hsm_unregister_event_fifo(opt.o_event_fifo);
+-	_exit(1);
++	ct_stopping++;
+ }
+ 
+ /* Daemon waits for messages from the kernel; run it in the background. */
+@@ -2191,7 +2377,7 @@ static int ct_run(void)
+ 	sigaction(SIGINT, &cleanup_sigaction, NULL);
+ 	sigaction(SIGTERM, &cleanup_sigaction, NULL);
+ 
+-	while (1) {
++	while (!ct_stopping) {
+ 		struct hsm_action_list *hal;
+ 		struct hsm_action_item *hai;
+ 		int msgsize;
+@@ -2200,6 +2386,8 @@ static int ct_run(void)
+ 		CT_TRACE("waiting for message from kernel");
+ 
+ 		rc = llapi_hsm_copytool_recv(ctdata, &hal, &msgsize);
++		if (rc == -EINTR)
++			continue;
+ 		if (rc == -ESHUTDOWN) {
+ 			CT_TRACE("shutting down");
+ 			break;
+@@ -2250,11 +2438,16 @@ static int ct_run(void)
+ 			break;
+ 	}
+ 
++	/* Wait all running actions to finish */
++	if (!ct_stopping)
++		ct_stopping++;
++	ct_thread_wait_all();
++
+ 	llapi_hsm_copytool_unregister(&ctdata);
+ 	if (opt.o_event_fifo != NULL)
+ 		llapi_hsm_unregister_event_fifo(opt.o_event_fifo);
+ 
+-	return rc;
++	return rc == -EINTR ? 0 : rc;
+ }
+ 
+ static int ct_config_get_str(struct cYAML *obj, const char *key, char **pvalue)
+
+</pre>
+</body>
+</html>
