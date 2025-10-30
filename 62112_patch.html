@@ -1,0 +1,19 @@
+<html lang="en">
+<body>
+<pre>
+LU-19147 osd-ldiskfs: tune readcache_max_filesize default based on RAM size
+
+The default readcache_max_filesize was set to OSD_MAX_CACHE_SIZE
+(OBD_OBJECT_EOF), which effectively means no limit on file size
+for caching.
+
+Change the default to scale with actual RAM size using
+(totalram_pages() << PAGE_SHIFT) / 64, which allocates approximately
+1.6% of total system memory for file caching
+
+Signed-off-by: Chakshu Kansal <ckansal@ddn.com>
+Change-Id: I7fadbd09bd7ce8a988c619b4f880874a307f83e9
+
+</pre>
+</body>
+</html>
