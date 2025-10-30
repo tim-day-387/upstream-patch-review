@@ -1,0 +1,30 @@
+<html lang="en">
+<body>
+<pre>
+LU-18667 lustre: replace egrep and fgrep
+
+Starting from GNU grep version 3.8, egrep and fgrep are
+warned as obsolescent and should be replaced by grep -E
+and grep -F.
+
+  # cat /usr/bin/egrep
+  #!/usr/bin/sh
+  cmd=${0##*/}
+  echo "$cmd: warning: $cmd is obsolescent; using grep -E" >&2
+  exec grep -E "$@"
+
+  # cat /usr/bin/fgrep
+  #!/usr/bin/sh
+  cmd=${0##*/}
+  echo "$cmd: warning: $cmd is obsolescent; using grep -F" >&2
+  exec grep -F "$@"
+
+This patch replaces egrep and fgrep in Lustre codes to
+eliminate the warnings.
+
+Change-Id: I7984125a338b0c3a668fe4a1564280b8652fe75f
+Signed-off-by: Jian Yu <yujian@whamcloud.com>
+
+</pre>
+</body>
+</html>
