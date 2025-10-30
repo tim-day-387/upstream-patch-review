@@ -1,0 +1,21 @@
+<html lang="en">
+<body>
+<pre>
+LU-19523 ldiskfs: fix format errors on RHEL8 aarch64
+
+This patch fixes build errors on RHEL8 aarch64:
+ldiskfs/mballoc.c: In function ‘ldiskfs_seq_mb_stats_show’:
+ldiskfs/mballoc.c:3091:32: error: format ‘%llu’ expects argument of type
+‘long long unsigned int’, but argument 3 has type ‘long int’ [-Werror=format=]
+  seq_printf(seq, "\t\thits: %llu\n", atomic64_read(&sbi->s_bal_cX_hits[0]));
+                             ~~~^
+                             %lu
+
+Test-Parameters: trivial
+Fixes: 1534c43ccb ("LU-14438 ldiskfs: backport ldiskfs mballoc patches")
+Change-Id: Ie5c19df8c12fd90380da84bfae781bbe5cbb3ee4
+Signed-off-by: Alex Deiter <adeiter@ddn.com>
+
+</pre>
+</body>
+</html>
