@@ -1,0 +1,31 @@
+<html lang="en">
+<body>
+<pre>
+LU-19478 tests: remove sleep in wait_nm_sync in local mode
+
+When wait_nm_sync() detects that the MGS is colocated with the MDS and
+OSS, it uses an arbitrary 10 second sleep to wait for nodemap
+synchronization to finish. However, in this configuration there is no
+synchronization of the nodemap file and changes to the nodemap file
+are instant (all server types use the same ptlrpc layer where the
+nodemap is located).
+
+There are further restrictions in sanity-sec tests 27* and 72* which
+skip the test if the MGS and MDS/OSS are colocated because it is not
+possible to tell when synchronization has occurred. This is not
+required either due to the same argument as above. In fact, it is
+preferred to still run these tests in this "merged" server
+configuration as it increases test coverage for these configurations.
+
+This patch removes these restrictions from the corresponding tests and
+wait_nm_sync, increasing test coverage and speed.
+
+Test-Parameters: trivial
+Test-Parameters: testlist=sanity-sec
+Test-Parameters: testlist=sanity-sec combinedmdsmgs=false mdscount=1 mdtcount=2 osscount=1 ostcount=8
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: Ib87b4e16e3d2207e7f0c2c8c9cdfe46ce56eab5c
+
+</pre>
+</body>
+</html>
