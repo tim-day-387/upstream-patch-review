@@ -1,0 +1,26 @@
+<html lang="en">
+<body>
+<pre>
+LU-18687 obd: don't always use vfree_atomic
+
+There is a large chance upstream will not want to export
+vfree_atomic(). Also there are issues with our approach to
+export vfree_atomic() so reintroduce our manual version of
+handling vfree_atomic(). Sadly this shows that the day will
+come that some key component in the kernel needed by Lustre
+will not be available and permentally break out of tree
+Lustre. We do limit the use of this functionality to only
+the ptlrpc layer. Instead of working around poor coding we
+should fix any potential __might_sleep issues. The only
+reason we need this functionality is to handle the poor
+import lock handling in the ptlrpc layer. What is really
+needed is to rework the locking in ptlrpc and this code can
+go away.
+
+Fixes: 87da90954 ("LU-18687 compat: use unexported vfree_atomic in kernel")
+Change-Id: I588f171e242eb0b61003ece4e664add4c90bc865
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+
+</pre>
+</body>
+</html>
