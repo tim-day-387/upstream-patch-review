@@ -1,0 +1,230 @@
+<html lang="en">
+<body>
+<pre>
+From 0e56ee3c37a0f8619818252a91e2d62696442088 Mon Sep 17 00:00:00 2001
+From: Patrick Farrell <pfarrell@whamcloud.com>
+Date: Wed, 29 Oct 2025 12:54:55 -0400
+Subject: [PATCH 1/1] LU-12187 tests: add EC tests for -N (mirror mode)
+
+Add comprehensive tests for EC (Erasure Coding) with -N option
+to verify that EC works correctly in mirror mode.
+
+Tests cover:
+- Single data mirror with EC using -N
+- Two data mirrors, one with EC
+- Two data mirrors, both with EC
+- Multiple identical EC mirrors using -N count
+- Mixed regular and EC mirrors
+
+These tests currently fail as -N with --ec is not yet
+implemented, but provide the test framework for verifying
+the implementation.
+
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I7b77b4bbae7f9a2120cda14cf66896fd39991b1b
+---
+ lustre/tests/sanity-ec.sh | 186 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 186 insertions(+)
+
+diff --git a/lustre/tests/sanity-ec.sh b/lustre/tests/sanity-ec.sh
+index c23685e900..ca3ec14e15 100644
+--- a/lustre/tests/sanity-ec.sh
++++ b/lustre/tests/sanity-ec.sh
+@@ -342,6 +342,192 @@ test_1f() {
+ }
+ run_test 1f "setstripe with different parity counts"
+ 
++test_2a() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Single data mirror with EC using -N
++	$LFS setstripe -N -E 128M -E -1 --ec 8+2 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 2
++	verify_comp_count $tf 4
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify data mirror (mirror 1)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify parity mirror (mirror 2)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 8 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	rm -f $tf
++}
++run_test 2a "setstripe with -N and EC"
++
++test_2b() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Two data mirrors, one with EC
++	$LFS setstripe -N -E 128M -E -1 --ec 8+2 \
++			-N -E 256M -E -1 \
++			$tf || error "setstripe failed"
++
++	verify_mirror_count $tf 3
++	verify_comp_count $tf 6
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify mirror 1 (data with EC)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify mirror 2 (parity for mirror 1)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 8 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	# Verify mirror 3 (data without EC)
++	verify_comp_extent $tf ${ids[4]} 0 268435456
++	verify_comp_extent $tf ${ids[5]} 268435456 EOF
++
++	rm -f $tf
++}
++run_test 2b "setstripe with -N: two data mirrors, one with EC"
++
++test_2c() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Two data mirrors, both with EC
++	$LFS setstripe -N -E 128M --ec 4+2 -E -1 --ec 8+2 \
++			-N -E 256M --ec 6+1 -E -1 \
++			$tf || error "setstripe failed"
++
++	verify_mirror_count $tf 4
++	verify_comp_count $tf 8
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify mirror 1 (data)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify mirror 2 (parity for mirror 1)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 4 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	# Verify mirror 3 (data)
++	verify_comp_extent $tf ${ids[4]} 0 268435456
++	verify_comp_extent $tf ${ids[5]} 268435456 EOF
++
++	# Verify mirror 4 (parity for mirror 3)
++	verify_comp_parity $tf ${ids[6]}
++	verify_ec_stripe_count $tf ${ids[6]} 6 1
++	verify_comp_extent $tf ${ids[6]} 0 268435456
++
++	verify_comp_parity $tf ${ids[7]}
++	verify_ec_stripe_count $tf ${ids[7]} 6 1
++	verify_comp_extent $tf ${ids[7]} 268435456 EOF
++
++	rm -f $tf
++}
++run_test 2c "setstripe with -N: two data mirrors, both with EC"
++
++test_2d() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Multiple identical EC mirrors using -N count
++	$LFS setstripe -N2 -E 128M -E -1 --ec 8+2 $tf ||
++		error "setstripe failed"
++
++	verify_mirror_count $tf 4
++	verify_comp_count $tf 8
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify mirror 1 (data)
++	verify_comp_extent $tf ${ids[0]} 0 134217728
++	verify_comp_extent $tf ${ids[1]} 134217728 EOF
++
++	# Verify mirror 2 (parity for mirror 1)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 8 2
++	verify_comp_extent $tf ${ids[2]} 0 134217728
++
++	verify_comp_parity $tf ${ids[3]}
++	verify_ec_stripe_count $tf ${ids[3]} 8 2
++	verify_comp_extent $tf ${ids[3]} 134217728 EOF
++
++	# Verify mirror 3 (data, identical to mirror 1)
++	verify_comp_extent $tf ${ids[4]} 0 134217728
++	verify_comp_extent $tf ${ids[5]} 134217728 EOF
++
++	# Verify mirror 4 (parity for mirror 3, identical to mirror 2)
++	verify_comp_parity $tf ${ids[6]}
++	verify_ec_stripe_count $tf ${ids[6]} 8 2
++	verify_comp_extent $tf ${ids[6]} 0 134217728
++
++	verify_comp_parity $tf ${ids[7]}
++	verify_ec_stripe_count $tf ${ids[7]} 8 2
++	verify_comp_extent $tf ${ids[7]} 134217728 EOF
++
++	rm -f $tf
++}
++run_test 2d "setstripe with -N2: multiple identical EC mirrors"
++
++test_2e() {
++	local tf=$DIR/$tfile
++	local ids
++
++	# Mixed: regular mirror + EC mirror
++	$LFS setstripe -N -E -1 -c 4 \
++			-N -E -1 -c 8 --ec 8+2 \
++			$tf || error "setstripe failed"
++
++	verify_mirror_count $tf 3
++	verify_comp_count $tf 3
++
++	# Get component IDs
++	ids=($($LFS getstripe $tf | awk '/lcme_id/{print $2}' | tr '\n' ' '))
++
++	# Verify mirror 1 (data, no EC)
++	verify_comp_extent $tf ${ids[0]} 0 EOF
++
++	# Verify mirror 2 (data with EC)
++	verify_comp_extent $tf ${ids[1]} 0 EOF
++
++	# Verify mirror 3 (parity for mirror 2)
++	verify_comp_parity $tf ${ids[2]}
++	verify_ec_stripe_count $tf ${ids[2]} 8 2
++	verify_comp_extent $tf ${ids[2]} 0 EOF
++
++	rm -f $tf
++}
++run_test 2e "setstripe with -N: mixed regular and EC mirrors"
++
+ complete_test $SECONDS
+ check_and_cleanup_lustre
+ exit_status
+
+</pre>
+</body>
+</html>
