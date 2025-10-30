@@ -1,0 +1,28 @@
+<html lang="en">
+<body>
+<pre>
+LU-18951 utils: lctl lcfg_erase erase fsname params
+
+When the "lctl lcfg_erase" command erases the filesystem
+configuration logs, it should also erase the persistent
+"lctl set_param" parameters for that filesystem from the MGS.
+
+Fix snapshot_create() and snapshot_destroy() to have a proper
+NULL-terminated argv[] array.  Previously, it only checked
+argc, and was not using getopt_long() so it didn't crash.
+
+Fix netlink YAML processing when running on a system without it.
+
+Add a missing unmountmds() helper function to test-framework.sh.
+Add conf-sanity.sh test_250 to test this.
+
+Test-Parameters: testlist=conf-sanity env=ONLY=250,ONLY_REPEAT=100 fstype=zfs
+Fixes: ba0d5ffc1c ("LU-9680 utils: new llapi_param_display_value().")
+Fixes: 86ba46c244 ("LU-9680 obdclass: user netlink to collect devices information")
+Fixes: d73849a05e ("LU-8900 snapshot: user space snapshot tools")
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+Change-Id: I237a4f6906dabd64aa2106b6917e9660a959fd72
+
+</pre>
+</body>
+</html>
