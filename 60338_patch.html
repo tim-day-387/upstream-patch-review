@@ -1,0 +1,73 @@
+<html lang="en">
+<body>
+<pre>
+LU-19204 hsm: add command prompt for lhsmtool_posix
+
+This patch adds a command prompt interface to the POSIX copytool to
+communicate with a running daemon. It uses UNIX socket to do so.
+
+The UNIX sockets are stored in: /run/lhsmtool_posix/
+The sockets are named after with lustre instance (lfs getname).
+e.g: /run/lhsmtool_posix/lustre-ffff95c34c3e6800
+
+For now, the main goal is to test the cancel requests sent to a
+copytool:
+ - Freeze the copy threads
+ - Send an HSM action (archive or restore)
+ - Wait for the HSM action to be started on the copytool
+ - Send a cancel via the coordinator (lfs hsm_cancel <file>)
+ - Check if the request is canceled
+ - Unfreeze the copy threads
+
+The secondary goal is to cancel actions directly on the copytool.
+This requires a coordinator change, if the copytool returns -ECANCELED
+for a non-cancel coordinator request, the record state should be
+updated to ARS_CANCELED (not ARS_SUCCEED).
+
+Add regression test sanity-hsm 203 and 204.
+
+*Usages*
+
+Interactive prompt:
+
+ root# lhsmtool_posix -R /mnt/lustre
+ > help
+ help: list available commands
+ list: list all the request running
+ freeze: freeze all thread IOs
+ unfreeze: unfreeze all thread IOs
+ cancel [FID...]: cancel one or several running requests
+ info: display runtime information
+ > freeze
+ > list
+ thread[29615]: cookie: 0x68810ae1, FID: [0x200000401:0x3f:0x0],
+ action: ARCHIVE, cancel: 0
+ thread[29616]: cookie: 0x68810ae2, FID: [0x200000401:0x3d:0x0],
+ action: ARCHIVE, cancel: 0
+ thread[29617]: cookie: 0x68810ae3, FID: [0x200000401:0x3e:0x0],
+ action: ARCHIVE, cancel: 0
+ > info
+ lhsmtool_posix[28958] -p /mnt/hsm/ /mnt/lustre: 3 running requests
+ > cancel [0x200000401:0x3e:0x0]
+ > info
+ lhsmtool_posix[28958] -p /mnt/hsm/ /mnt/lustre: 2 running requests
+ > unfreeze
+
+Cancel a specific running HSM action:
+
+ root# lhsmtool_posix --request="cancel [0x200000401:0x3d:0x0]"
+ /mnt/lustre
+
+Cancel all the running request:
+
+ root# lhsmtool_posix --request="cancel" /mnt/lustre
+
+Test-Parameters: testlist=sanity-hsm
+Test-Parameters: testlist=sanity-hsm env=ONLY=203,ONLY_REPEAT=20
+Test-Parameters: testlist=sanity-hsm env=ONLY=204,ONLY_REPEAT=20
+Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
+Change-Id: I93ceab6c8b92a5adb2335738ab43ac6f298e2833
+
+</pre>
+</body>
+</html>
