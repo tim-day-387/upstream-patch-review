@@ -1,0 +1,28 @@
+<html lang="en">
+<body>
+<pre>
+LU-12668 ec: Add a function to compute chunk layout of k in ec
+
+When creating a k,m ec comp the total number of stripes in the data
+comp we are protecting may not be evenly divisible with k.
+This adds a function that will split 'total' into a set of smaller
+chunks of size 'k', or smaller.
+The aim is to create as few chunks as possible to map all the stripes in
+'total' but also maintain as small as possible difference between the
+largest and smallest resulting chunk sizes.
+
+This implementation will split the total into at most two different
+sizes, k0 and k1, where k0 and k1 only differ by 1.
+
+Examples:
+Splitting 19 by 7 results in 1 x (k0 == 7) + 2 * (k1 == 6) chunks
+Splitting 17 by 7 results in 2 x (k0 == 6) + 1 x (k1 == 5)
+Splitting 15 by 7 results in 3 x (k == 5) (pathological case)
+
+Test-Parameters: trivial
+Signed-off-by: Ronnie Sahlberg <rsahlberg@whamcloud.com>
+Change-Id: Ibbbad78578bebedab62119415f535278b0e53523
+
+</pre>
+</body>
+</html>
