@@ -1,0 +1,29 @@
+<html lang="en">
+<body>
+<pre>
+LU-13980 osd: remove osd_object_release LASSERT
+
+The LASSERT() in osd_object_release() can be hit in situations
+where the ldiskfs inode state is inconsistent with the osd_object
+state in memory.  Replace the LASSERT() with CERROR() so that
+this is not a fatal error.
+
+This can be triggered by "rm O/0/dN/objid" of an object *while the
+filesystem is mounted as both ldiskfs and lustre*, but it isn't
+clear if this represents a legitimate error case since "real" data
+corruption of the underlying *storage* would be totally different
+than i_nlink=0 suddenly appearing in the in-memory inode without
+any other memory corruption.  That said, this *has* also been seen
+in several other real cases, so it seems the LASSERT() is overly
+aggressive and crashing on IO errors is bad.
+
+Remove the empty *_object_release() methods from various layers,
+since they are optional, and it is better to skip them entirely.
+
+Fixes: bfd07915c9e4 ("LU-7680 mdd: put migrated object on the orphan list")
+Signed-off-by: Andreas Dilger <adilger@whamcloud.com>
+Change-Id: If4709b98c4632be51d53faf286a0c504994e9bfb
+
+</pre>
+</body>
+</html>
