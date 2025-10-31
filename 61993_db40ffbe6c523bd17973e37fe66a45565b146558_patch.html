@@ -1,0 +1,24 @@
+<html lang="en">
+<body>
+<pre>
+LU-19506 nodemap: use closest fileset on subdir mount
+
+When using two filesets that share a directory hierarchy and differing
+fileset flags, the read-only flag is not be applied for subdir mounts
+that match multiple filesets. E.g., for the following filesets:
+1. /dir
+2. /dir/subdir (ro)
+mounting "/dir/subdir" matches the "/dir" fileset that is set as rw.
+
+This patch fixes this issue by always considering the closest matching
+fileset to the specified subdir on mount. Sanity-sec/27e is modified
+to verify the fix.
+
+Fixes: e899baa2b2 ("LU-18357 ptlrpc: Add read-only flag for nodemap filesets")
+Test-Parameters: trivial testlist=sanity-sec
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: Iefdb92e2ad9ffc4ea2f3632f74fb4cf0a8d253f3
+
+</pre>
+</body>
+</html>
