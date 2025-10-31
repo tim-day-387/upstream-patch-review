@@ -1,0 +1,21 @@
+<html lang="en">
+<body>
+<pre>
+LU-19551 nodemap: deny setting default quota offset nodemap
+
+When a client is associated with a nodemap that has offsets defined,
+the nodemap maps the PROJID and UID for ID 0 to the offset (depending
+on the offset, it may also be squashed). Therefore, a root user of
+such a nodemap can attempt to set the default quota (ID 0) but it is
+actually offset.
+
+Instead, tenant root users should get an error (EPERM) when trying to
+set the default quota, so that only the "global root" user can set the
+tenant nodemap. This patch implements this error case.
+
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: I4530872dad977fe1a099f4d333bb751c4ac7dc0f
+
+</pre>
+</body>
+</html>
