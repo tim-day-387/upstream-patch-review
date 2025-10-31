@@ -1,0 +1,20 @@
+<html lang="en">
+<body>
+<pre>
+LU-19536 obdclass: use wait queue for DIO copy sync
+
+Replace spinlock with wait queue in __ll_dio_user_copy
+to avoid holding spinlock during operations that can
+sleep (page faults, memory context switching, data
+copy loops).
+
+The wait queue's internal spinlock is used for brief
+state protection. Racing threads wait for the first
+thread to complete the copy operation.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Ie0adef566cc9007024dff4ada2d8e77a18b02a04
+
+</pre>
+</body>
+</html>
