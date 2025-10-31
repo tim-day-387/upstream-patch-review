@@ -1,0 +1,30 @@
+<html lang="en">
+<body>
+<pre>
+LU-19264 ldlm: improve server notify clients to reclaim locks
+
+This patch introduces three improvements to the LDLM lock reclaim
+mechanism:
+
+1. Use ptlrpc_set to manage all asynchronous notify requests sent
+   to clients, and wait for all of them to complete before exiting
+   the server-side lock reclaim process.
+
+2. Introduce LDLM_SET_INFO to define the data structure used to
+   notify clients with information such as:
+     - lock server memory pressure estimation
+     - total number of locks maintained by the server
+     - number of locks to be reclaimed
+   This allows clients to make more informed decisions when
+   revoking locks.
+
+3. Add a sysfs tunable for the LDLM reclaim policy. The new file
+   `ldlm_reclaim_pol` under sysfs allows setting the lock reclaim
+   policy dynamically.
+
+Signed-off-by: Weizhao Lin <weizhao.days@gmail.com>
+Change-Id: Ia3fbab52783427b3aa4ff8ec5bfa1252ce0ba548
+
+</pre>
+</body>
+</html>
