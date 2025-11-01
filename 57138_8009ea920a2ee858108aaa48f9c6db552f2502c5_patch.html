@@ -1,0 +1,20 @@
+<html lang="en">
+<body>
+<pre>
+LU-18489 readahead: use page index when increase stride read window
+
+We should use page index when increasing stride read window,
+the read will be in units of page size anyway, plus currently
+the increased window is calculated as
+(ras_rpc_pages / stride_byte) * stride_length,
+for a small stride_byte less than a page size this could end up
+with a huge unintended readahead window.
+
+Test-Parameters: testlist=sanity env=ONLY=101b,ONLY_REPEAT=100
+Fixes: 0923e40551 ("LU-12518 readahead: convert stride page index to byte")
+Signed-off-by: Li Dongyang <dongyangli@ddn.com>
+Change-Id: Ia87b0bbd5a9e5f89e53a3d166ad37d401b8ccd13
+
+</pre>
+</body>
+</html>
