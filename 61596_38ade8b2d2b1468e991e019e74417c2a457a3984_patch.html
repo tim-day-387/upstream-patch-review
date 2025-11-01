@@ -1,0 +1,30 @@
+<html lang="en">
+<body>
+<pre>
+LU-19437 lnet: protect Lustre added peers
+
+LNet peers added by Lustre via LNetAddPeer() shouldn't
+be marked for deletion by discovery like manually
+configured peers. Problem occurs when local and remote
+peers have different 'discovery' setting. Such peer is
+marked for deletion locally. Flag LNET_PEER_CONFIGURED
+prevents such behavior for any manually configured peers
+but not for those added via LNetAddPeer() by Lustre
+
+Meanwhile LNET_PEER_CONFIGURED can't be used there
+because it prevents other peer modifications by LNet
+and using it would break parallel peer discovery and
+peer merging.
+
+Patch adds new flag LNET_PEER_BY_LUSTRE to protect peer
+from deletion during discovery only
+
+Test 73f was added in conf-sanity to simulate this
+
+Test-Parameters: testlist=conf-sanity env=ONLY=73
+Signed-off-by: Mikhail Pershin <mpershin@whamcloud.com>
+Change-Id: Ib8c08d4925d13005ce250d7f5280426d0eef28ed
+
+</pre>
+</body>
+</html>
