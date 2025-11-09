@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-19506 nodemap: appended filesets must consider alt filesets
+
+When mounting a subdirectory, several mounting rules are in place that
+handle matching a subdirectory to the correct fileset. Here, the man
+page for "lctl nodemap_fileset_add" states case 4: "If fileset matches
+in 3, the presented mounting subdirectory is appended to the primary
+fileset."
+
+However, this results in the read-only flag not being considered if
+the appended fileset now matches a read-only alternate fileset. For
+instance, for the fileset configuration
+1. /dir
+2. /dir/subdir (ro)
+it is possible to mount "...:/FSNAME/subdir", which appends "subdir"
+to the primary fileset, resulting in the subdirectory "/dir/subdir".
+Currently, no other fileset is considered, but, in such a case, the
+alt fileset imposes read-only restrictions. Therefore, alt filesets
+should be considered in case 4 of the mounting rules for filesets.
+
+This patch addresses this issue and modifies sanity-sec test_27e to
+test this case.
+
+Fixes: e899baa2b2 ("LU-18357 ptlrpc: Add read-only flag for nodemap filesets")
+Test-Parameters: trivial testlist=sanity-sec
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: I0e6531a09b78595fc2c9e1f55c9a9bcf6617a73a
+
+</pre>
+</body>
+</html>
