@@ -1,0 +1,30 @@
+<html lang="en">
+<body>
+<pre>
+LU-12187 ec: accomodate ec layout at LOD
+
+Modify the LOD to support the erasure-coding layout. We support
+taking the incoming lmm from the client in compressed form and
+then change it to a 1 to 1 mapping. The parity components are
+stored in a Xarray using the data component index that is being
+parityt checked. This allows us to easily determine if a data
+component is being checked and we can locate easily locate the
+EC component to mark it stale for example. The reverse is also
+true in that we compress the data before sending the data to
+the client.
+
+This provides the most basic support to allow setup for a
+file layout with EC components. Currently we don't store any
+EC setup data on disk so inherit is not supported with EC at
+this time. Since we can having so many EC components which
+multiple even more with mirrors a separate xattr will be
+needed to prevent overflows. That will de done in a latter
+patch.
+
+Signed-off-by: Bobi Jam <bobijam@whamcloud.com>
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+Change-Id: Ia8fa1fb490821dbadc5aaad17b3c646b88f83442
+
+</pre>
+</body>
+</html>
