@@ -1,0 +1,32 @@
+<html lang="en">
+<body>
+<pre>
+LU-16499 lfs: add auto-stripe option to lfs migrate command
+
+Add a "-A" flag to lfs migrate, which will automatically select the
+stripe count as the file is rewritten. Initial algorithm to
+determine stripe count is sqrt(size_in_GB)+1, with an additional cap
+on object size, though the algorithm or thresholds could conceivably
+change in the future. The primary intent for this feature is to be
+able to give users a tool to fix stripe settings on existing files
+based on file size.
+
+A new "-K" flag specifies the object size cap. On each OST, the
+amount of space available for migration is capped by dividing the
+free space of the smallest OST by the specified value.
+
+A new "-M" flag allows OSTs with free space less than the specified
+value to be considered unavailable for migration.
+
+A new "-X" flag limits the amount of free space on each OST that
+can be used for migration to the specified value. This flag is
+useful for testing by simulating OSTs that are nearly full.
+
+Test-Parameters: trivial
+
+Signed-off-by: Chakshu Kansal <ckansal@ddn.com>
+Change-Id: Iecf136858dc76be74871bb7ac88d693f12b4b6f6
+
+</pre>
+</body>
+</html>
