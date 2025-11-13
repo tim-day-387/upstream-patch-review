@@ -1,0 +1,37 @@
+<html lang="en">
+<body>
+<pre>
+LU-19556 llite: prevent deadlock in nested fsync during write
+
+When vvp_io_write_start() calls generic_write_sync(), it may trigger
+ll_fsync() while still holding an active IO context from the parent
+write operation. This creates a deadlock scenario where fsync
+operations attempt to acquire layout locks unnecessarily.
+
+Here is how this happens:
+1. ll_file_io_generic() (write) increments lo_active_ios
+2. vvp_io_write_start() calls generic_write_sync() -> ll_fsync()
+3. ll_fsync() -> vvp_io_init() -> ll_layout_refresh()
+4. ll_layout_refresh() waits for lo_active_ios == 0
+5. Deadlock: fsync waits for the write operation that called it
+
+fsync operations should not acquire layout locks because:
+1. fsync only flushes already-mapped pages to disk
+2. The mapping from file offsets to OST objects already occurred
+   during the original write operations that populated the page cache
+3. Layout changes should only affect NEW writes, not existing cached
+   data
+4. When layout changes occur, OSTs take full extent locks to flush
+   client cache before the layout change completes
+
+This fix aligns with the principle that layout changes affect future
+operations, not past operations already in the page cache. By
+preventing unnecessary layout lock acquisition during fsync, we
+eliminate the deadlock while maintaining proper filesystem semantics.
+
+Signed-off-by: Artem Blagodarenko <ablagodarenko@ddn.com>
+Change-Id: I9b449edac388f3c1a2ad6925925ecbf89605c889
+
+</pre>
+</body>
+</html>
