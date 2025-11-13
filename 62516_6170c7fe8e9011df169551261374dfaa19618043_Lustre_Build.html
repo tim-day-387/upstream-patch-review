@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+PATCH:
+EX-12623 mgs: sync nodemap configs by Raft
+
+Synchronize the nodemap configrations between different MGS,
+if there is a replica MGS in the current node, the global MGC
+won't enqueue for the nodemap config, it will use the nodemap
+configs from the replica MGS.
+
+Test-Parameters: mdtcount=6 testlist=sanity-raft
+Change-Id: I992c1fa4a312e191fb11395345c5887b315540e7
+Signed-off-by: Hongchao Zhang <hongchao@whamcloud.com>
+
+BUILD:
+configure.ac:25: installing 'config/compile'
+configure.ac:20: installing 'config/config.guess'
+configure.ac:20: installing 'config/config.sub'
+configure.ac:22: installing 'config/install-sh'
+configure.ac:22: installing 'config/missing'
+contrib/cc-plugins/Makefile.am: installing 'config/depcomp'
+configure.ac:35: error: required file 'lustre/lraft/Makefile.in' not found
+Error 1 at ./ci-lustre/build-lustre 69 from: ./autogen.sh, exiting
+./ci-lustre/build-lustre: line 70: ./configure: No such file or directory
+Error 127 at ./ci-lustre/build-lustre 70 from: ./configure LLVM="-20" CFLAGS="-Wno-error=attribute-warning" CONFIG_SITE="$ktest_dir/ci-lustre/config.site.ktest", exiting
+make: *** No targets specified and no makefile found.  Stop.
+Error 2 at ./ci-lustre/build-lustre 71 from: make -j$(nproc), exiting
+/home/timothy/git/lustre-release//lnet/lnet/lnet.ko not found!
+
+</pre>
+</body>
+</html>
