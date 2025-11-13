@@ -1,0 +1,24 @@
+<html lang="en">
+<body>
+<pre>
+LU-19557 llapi: fix race in printf username/group cache
+
+The printf_format_directive() function used static variables
+to cache username and group name lookups. With parallel find
+enabled by default, multiple worker threads call this function
+concurrently, causing race conditions where threads overwrite
+each other's cached values.
+
+This resulted in test_56eaa failures showing incorrect
+usernames/groups (e.g., 'root' instead of 'sanityusr').
+
+Fix by making the cache variables thread-local using
+__thread, so each worker thread has its own cache.
+
+Fixes: a00b941661 ("LU-17814 utils: Enable pfind by default")
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I782d605ca2d6ecebccc1f6b628d31f5e98a48133
+
+</pre>
+</body>
+</html>
