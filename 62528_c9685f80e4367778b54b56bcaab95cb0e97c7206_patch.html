@@ -1,0 +1,27 @@
+<html lang="en">
+<body>
+<pre>
+Fix for 6f
+
+The issue is that reading the EC mirror gets truncated at EOF for the
+file while the EC data might extend beyond.
+
+Example:
+File is 8 bytes.
+Stripe size is 4M, we have two parities.
+
+The parity data will be stored as:
+First parity  EC offsets 0-8
+Second parity EC offsets <stripe-size> - <stripe-size>+8
+
+We need to decide what "lfs mirror read" means if the mirorr we read is
+a parity.
+But for now, fold this patch into the commit that adds this test.
+
+Test-Parameters: fortestonly
+Signed-off-by: Ronnie Sahlberg <rsahlberg@whamcloud.com>
+Change-Id: If7c3e091b4cacf0027dabc2453a7307d695700c2
+
+</pre>
+</body>
+</html>
