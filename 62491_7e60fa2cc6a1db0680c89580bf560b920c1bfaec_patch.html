@@ -1,0 +1,26 @@
+<html lang="en">
+<body>
+<pre>
+LU-18756 ofd: add per-object bit for resource id repair
+
+The resource ID repair checks whether a UID/GID/PROJID is not set on
+an OST object yet. If all or some IDs are not set and the requirements
+are met, the IDs are updated asynchronously, e.g., as part of a read
+operation.
+
+Checking whether it is necessary to repair an object requires
+retrieving its attributes. Currently, this needs to be done repeatedly
+even if the object does not need to be repaired because all IDs are
+already set, resulting in needless calls to "dt_attr_get()".
+
+This patch adds a new per-object bit to "struct ofd_object" to signify
+that the object IDs are all set. The bit is set when the ID repair
+verified an object's IDs. This provides a fast path for the ID repair
+to skip retrieving the object attributes when its not needed.
+
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: I5360044e25ac60a9ed2acac3dcfb4f01976c658a
+
+</pre>
+</body>
+</html>
