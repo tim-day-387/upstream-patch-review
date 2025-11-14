@@ -1,0 +1,1638 @@
+<html lang="en">
+<body>
+<pre>
+PATCH:
+LU-19388 osd: remove calls to alloc_file_pseudo()
+
+fput() which we need to call after alloc_file_pseudo() doesn't release
+file struct right away and postponed jobs to release it may create
+a massive load to system interrupting regular Lustre processing.
+
+The reason for using alloc_file_pseudo() was due to the removal
+of kallsyms_lookup_name(). The function iterate_dir() will crash
+unless security_file_alloc() and security_file_free() are not
+called. Now that Lustre uses kprobes to export functions we
+can unwind the work of LU-13783.
+
+Signed-off-by: Alex Zhuravlev <bzzz@whamcloud.com>
+Change-Id: Iee1f11d8545055b6f5686dd6395c9707f3357b7c
+
+BUILD:
+configure.ac:25: installing 'config/compile'
+configure.ac:20: installing 'config/config.guess'
+configure.ac:20: installing 'config/config.sub'
+configure.ac:22: installing 'config/install-sh'
+configure.ac:22: installing 'config/missing'
+contrib/cc-plugins/Makefile.am: installing 'config/depcomp'
+configure: WARNING: Cannot find python in your system path
+find: '/usr/src/kernels/': No such file or directory
+grep: /tmp/ktest-out/kernel_build.x86_64/include/generated/package.h: No such file or directory
+configure: WARNING: Kernel Distro seems to be neither RedHat, SuSE, openEuler, Ubuntu nor Debian
+configure: WARNING: Kernel Distro seems to be neither RedHat, SuSE, openEuler, Ubuntu nor Debian
+configure: WARNING: --with-ldiskfs is deprecated, please use --enable-ldiskfs
+configure: WARNING: no backends were configured
+configure: WARNING: CUDA or GDS sources not found. Using embedded GDS headers.
+
+CC:            clang-20
+CFLAGS:        -Wno-error=attribute-warning 
+EXTRA_CFLAGS:  
+
+EXTRA_KCFLAGS: -include /home/timothy/git/lustre-release/undef.h -include /home/timothy/git/lustre-release/config.h  -g -I/home/timothy/git/lustre-release/libcfs/include -I/home/timothy/git/lustre-release/libcfs/include/libcfs -I/home/timothy/git/lustre-release/lnet/include/uapi -I/home/timothy/git/lustre-release/lnet/include -I/home/timothy/git/lustre-release/lustre/include/uapi -I/home/timothy/git/lustre-release/lustre/include -I/home/timothy/git/lustre-release/include -Wno-format-truncation
+
+LD:            ld.lld-20 -m elf_x86_64
+
+CXX:           clang++-20
+CPPFLAGS:      -include /home/timothy/git/lustre-release/undef.h -include /home/timothy/git/lustre-release/config.h -I/home/timothy/git/lustre-release/lnet/include/uapi -I/home/timothy/git/lustre-release/lustre/include/uapi -I/home/timothy/git/lustre-release/libcfs/include -I/home/timothy/git/lustre-release/lnet/utils/ -I/home/timothy/git/lustre-release/lustre/include 
+
+Type 'make' to build Lustre.
+Making all in .
+/home/timothy/git/lustre-release/lustre/llite/file.c:2494:29: warning: implicit truncation from 'int' to a one-bit wide bit-field changes value from 1 to -1 [-Wsingle-bit-bitfield-constant-conversion]
+ 2494 |                 args->via_hybrid_switched = 1;
+      |                                           ^ ~
+1 warning generated.
+/home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_wbcfs.o: warning: objtool: osd_create() falls through to next function osd_destroy()
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:970:2: warning: cast from 'void (*)(struct mgs_target_info *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  970 |         DEFINE_MSGF("mgs_target_info", 0, sizeof(struct mgs_target_info),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  971 |                     lustre_swab_mgs_target_info, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:975:2: warning: cast from 'void (*)(struct mgs_target_nidlist *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  975 |         DEFINE_MSGF("mgs_target_nidlist", 0, sizeof(struct mgs_target_nidlist),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  976 |                     lustre_swab_mgs_target_nidlist, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:988:2: warning: cast from 'void (*)(struct mgs_config_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  988 |         DEFINE_MSGF("mgs_config_read request", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  989 |                     sizeof(struct mgs_config_body),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  990 |                     lustre_swab_mgs_config_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:994:2: warning: cast from 'void (*)(struct mgs_config_res *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  994 |         DEFINE_MSGF("mgs_config_read reply ", 0, sizeof(struct mgs_config_res),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  995 |                     lustre_swab_mgs_config_res, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:999:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  999 |         DEFINE_MSGF("generic u32", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1000 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1012:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1012 |         DEFINE_MSGF("getinfo_vallen", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1013 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1021:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1021 |         DEFINE_MSGF("seq_query_opc", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1022 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1026:2: warning: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1026 |         DEFINE_MSGF("seq_query_range", 0, sizeof(struct lu_seq_range),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1027 |                     lustre_swab_lu_seq_range, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1031:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1031 |         DEFINE_MSGF("fld_query_opc", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1032 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1036:2: warning: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1036 |         DEFINE_MSGF("fld_query_mdfld", 0, sizeof(struct lu_seq_range),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1037 |                     lustre_swab_lu_seq_range, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1041:2: warning: cast from 'void (*)(struct mdt_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1041 |         DEFINE_MSGF("mdt_body", 0, sizeof(struct mdt_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1042 |                     lustre_swab_mdt_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1046:2: warning: cast from 'int (*)(struct obd_quotactl *, __u32)' (aka 'int (*)(struct obd_quotactl *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 1046 |         DEFINE_MSGFL("obd_quotactl", 0, sizeof(struct obd_quotactl),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1047 |                      lustre_swab_obd_quotactl, NULL);
+      |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1055:2: warning: cast from 'void (*)(struct quota_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1055 |         DEFINE_MSGF("quota_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1056 |                     sizeof(struct quota_body), lustre_swab_quota_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1060:2: warning: cast from 'void (*)(struct mdt_ioepoch *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1060 |         DEFINE_MSGF("mdt_ioepoch", 0, sizeof(struct mdt_ioepoch),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1061 |                     lustre_swab_mdt_ioepoch, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1065:2: warning: cast from 'void (*)(struct ptlrpc_body_v3 *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1065 |         DEFINE_MSGF("ptlrpc_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1066 |                     sizeof(struct ptlrpc_body), lustre_swab_ptlrpc_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1070:2: warning: cast from 'void (*)(struct close_data *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1070 |         DEFINE_MSGF("data_version", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1071 |                     sizeof(struct close_data), lustre_swab_close_data, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1075:2: warning: cast from 'void (*)(struct obd_statfs *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1075 |         DEFINE_MSGF("obd_statfs", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1076 |                     sizeof(struct obd_statfs), lustre_swab_obd_statfs, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1122:2: warning: cast from 'void (*)(struct llogd_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1122 |         DEFINE_MSGF("llogd_body", 0, sizeof(struct llogd_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1123 |                     lustre_swab_llogd_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1127:2: warning: cast from 'void (*)(struct llog_log_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1127 |         DEFINE_MSGF("llog_log_hdr", 0, sizeof(struct llog_log_hdr),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1128 |                     lustre_swab_llog_hdr, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1132:2: warning: cast from 'void (*)(struct llogd_conn_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1132 |         DEFINE_MSGF("llogd_conn_body", 0, sizeof(struct llogd_conn_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1133 |                     lustre_swab_llogd_conn_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1147:2: warning: cast from 'void (*)(struct obd_connect_data *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1147 |         DEFINE_MSGF("cdata",
+      |         ^~~~~~~~~~~~~~~~~~~~
+ 1148 |                     RMF_F_NO_SIZE_CHECK /* we allow extra space for interop */,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1149 |                     sizeof(struct obd_connect_data),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1150 |                     lustre_swab_connect, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1154:2: warning: cast from 'void (*)(struct ldlm_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1154 |         DEFINE_MSGF("dlm_req", RMF_F_NO_SIZE_CHECK /* ldlm_request_bufsize */,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1155 |                     offsetof(struct ldlm_request,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1156 |                              lock_handle[LDLM_LOCKREQ_HANDLES]),
+      |                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1157 |                     lustre_swab_ldlm_request, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1161:2: warning: cast from 'void (*)(struct ldlm_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1161 |         DEFINE_MSGF("dlm_rep", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+ 1162 |                     sizeof(struct ldlm_reply), lustre_swab_ldlm_reply, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1166:2: warning: cast from 'void (*)(struct ldlm_intent *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1166 |         DEFINE_MSGF("ldlm_intent", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1167 |                     sizeof(struct ldlm_intent), lustre_swab_ldlm_intent, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1188:2: warning: cast from 'void (*)(struct mdt_rec_reint *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1188 |         DEFINE_MSGF("rec_reint", 0, sizeof(struct mdt_rec_reint),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1189 |                     lustre_swab_mdt_rec_reint, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1215:2: warning: cast from 'void (*)(struct layout_intent *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1215 |         DEFINE_MSGF("layout_intent", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1216 |                     sizeof(struct layout_intent), lustre_swab_layout_intent,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1217 |                     NULL);
+      |                     ~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1228:2: warning: cast from 'void (*)(struct ost_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1228 |         DEFINE_MSGF("ost_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1229 |                     sizeof(struct ost_body), lustre_swab_ost_body,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1230 |                     dump_ost_body);
+      |                     ~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1228:2: warning: cast from 'void (*)(struct ost_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1228 |         DEFINE_MSGF("ost_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1229 |                     sizeof(struct ost_body), lustre_swab_ost_body,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1230 |                     dump_ost_body);
+      |                     ~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1234:2: warning: cast from 'void (*)(struct obd_ioobj *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1234 |         DEFINE_MSGF("obd_ioobj", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1235 |                     sizeof(struct obd_ioobj), lustre_swab_obd_ioobj, dump_ioo);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1234:2: warning: cast from 'void (*)(struct obd_ioobj *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1234 |         DEFINE_MSGF("obd_ioobj", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1235 |                     sizeof(struct obd_ioobj), lustre_swab_obd_ioobj, dump_ioo);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1239:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1239 |         DEFINE_MSGF("niobuf_remote", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1240 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1241 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1239:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1239 |         DEFINE_MSGF("niobuf_remote", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1240 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1241 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1245:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1245 |         DEFINE_MSGF("niobuf_inline", RMF_F_NO_SIZE_CHECK,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1246 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1247 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1245:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1245 |         DEFINE_MSGF("niobuf_inline", RMF_F_NO_SIZE_CHECK,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1246 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1247 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1251:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1251 |         DEFINE_MSGF("niobuf_rcs", RMF_F_STRUCT_ARRAY, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1252 |                     lustre_swab_generic_32s, dump_rcs);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1251:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1251 |         DEFINE_MSGF("niobuf_rcs", RMF_F_STRUCT_ARRAY, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1252 |                     lustre_swab_generic_32s, dump_rcs);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1256:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1256 |         DEFINE_MSGF("eavals_lens", RMF_F_STRUCT_ARRAY, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1257 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1261:2: warning: cast from 'void (*)(__u64 *)' (aka 'void (*)(unsigned long long *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1261 |         DEFINE_MSGF("obd_id", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~
+ 1262 |                     sizeof(__u64), lustre_swab_ost_last_id, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1266:2: warning: cast from 'void (*)(struct lu_fid *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1266 |         DEFINE_MSGF("fid", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~
+ 1267 |                     sizeof(struct lu_fid), lustre_swab_lu_fid, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1271:2: warning: cast from 'void (*)(struct ost_id *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1271 |         DEFINE_MSGF("ost_id", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~
+ 1272 |                     sizeof(struct ost_id), lustre_swab_ost_id, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1276:2: warning: cast from 'void (*)(struct ll_fiemap_info_key *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1276 |         DEFINE_MSGF("fiemap_key", 0, sizeof(struct ll_fiemap_info_key),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1277 |                     lustre_swab_fiemap_info_key, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1281:2: warning: cast from 'int (*)(struct fiemap *, __u32)' (aka 'int (*)(struct fiemap *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 1281 |         DEFINE_MSGFL("fiemap", 0, -1, lustre_swab_fiemap, NULL);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1285:2: warning: cast from 'void (*)(struct idx_info *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1285 |         DEFINE_MSGF("idx_info", 0, sizeof(struct idx_info),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1286 |                     lustre_swab_idx_info, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1292:2: warning: cast from 'void (*)(struct hsm_user_state *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1292 |         DEFINE_MSGF("hsm_user_state", 0, sizeof(struct hsm_user_state),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1293 |                     lustre_swab_hsm_user_state, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1297:2: warning: cast from 'void (*)(struct hsm_state_set *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1297 |         DEFINE_MSGF("hsm_state_set", 0, sizeof(struct hsm_state_set),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1298 |                     lustre_swab_hsm_state_set, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1302:2: warning: cast from 'void (*)(struct hsm_progress_kernel *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1302 |         DEFINE_MSGF("hsm_progress", 0, sizeof(struct hsm_progress_kernel),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1303 |                     lustre_swab_hsm_progress_kernel, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1307:2: warning: cast from 'void (*)(struct hsm_current_action *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1307 |         DEFINE_MSGF("hsm_current_action", 0, sizeof(struct hsm_current_action),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1308 |                     lustre_swab_hsm_current_action, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1312:2: warning: cast from 'void (*)(struct hsm_user_item *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1312 |         DEFINE_MSGF("hsm_user_item", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1313 |                     sizeof(struct hsm_user_item), lustre_swab_hsm_user_item,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1314 |                     NULL);
+      |                     ~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1318:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1318 |         DEFINE_MSGF("hsm_archive", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1319 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1323:2: warning: cast from 'void (*)(struct hsm_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1323 |         DEFINE_MSGF("hsm_request", 0, sizeof(struct hsm_request),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1324 |                     lustre_swab_hsm_request, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1328:2: warning: cast from 'void (*)(struct mdc_swap_layouts *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1328 |         DEFINE_MSGF("swap_layouts", 0, sizeof(struct  mdc_swap_layouts),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1329 |                     lustre_swab_swap_layouts, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1333:2: warning: cast from 'void (*)(struct lfsck_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1333 |         DEFINE_MSGF("lfsck_request", 0, sizeof(struct lfsck_request),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1334 |                     lustre_swab_lfsck_request, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1338:2: warning: cast from 'void (*)(struct lfsck_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1338 |         DEFINE_MSGF("lfsck_reply", 0, sizeof(struct lfsck_reply),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1339 |                     lustre_swab_lfsck_reply, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1343:2: warning: cast from 'void (*)(struct ladvise_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1343 |         DEFINE_MSGF("ladvise_request", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1344 |                     sizeof(struct ladvise_hdr),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1345 |                     lustre_swab_ladvise_hdr, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1349:2: warning: cast from 'void (*)(struct lu_ladvise *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1349 |         DEFINE_MSGF("ladvise_request", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1350 |                     sizeof(struct lu_ladvise),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1351 |                     lustre_swab_ladvise, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1355:4: warning: cast from 'void (*)(struct batch_update_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1355 |                         DEFINE_MSGF("batch_update_reply", 0, -1,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1356 |                                     lustre_swab_batch_update_reply, NULL);
+      |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1359:39: warning: cast from 'void (*)(struct but_update_header *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1359 | struct req_msg_field RMF_BUT_HEADER = DEFINE_MSGF("but_update_header", 0,
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1360 |                                 -1, lustre_swab_but_update_header, NULL);
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1363:36: warning: cast from 'void (*)(struct but_update_buffer *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1363 | struct req_msg_field RMF_BUT_BUF = DEFINE_MSGF("but_update_buf",
+      |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1364 |                         RMF_F_STRUCT_ARRAY, sizeof(struct but_update_buffer),
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1365 |                         lustre_swab_but_update_buffer, NULL);
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2349:3: warning: cast from 'char *(*)(struct lustre_msg_v2 *, __u32, __u32)' (aka 'char *(*)(struct lustre_msg_v2 *, unsigned int, unsigned int)') to 'typeof (getter)' (aka 'void *(*)(struct lustre_msg_v2 *, unsigned int, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 2349 |                 (typeof(getter))lustre_msg_string : lustre_msg_buf;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2959:39: warning: cast from 'int (*)(struct object_update_request *, __u32)' (aka 'int (*)(struct object_update_request *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 2959 | struct req_msg_field RMF_OUT_UPDATE = DEFINE_MSGFL("object_update", 0, -1,
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2960 |                                 lustre_swab_object_update_request, NULL);
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2964:4: warning: cast from 'int (*)(struct object_update_reply *, __u32)' (aka 'int (*)(struct object_update_reply *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 2964 |                         DEFINE_MSGFL("object_update_reply", 0, -1,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2965 |                                     lustre_swab_object_update_reply, NULL);
+      |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2968:46: warning: cast from 'void (*)(struct out_update_header *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 2968 | struct req_msg_field RMF_OUT_UPDATE_HEADER = DEFINE_MSGF("out_update_header", 0,
+      |                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2969 |                                 -1, lustre_swab_out_update_header, NULL);
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2972:43: warning: cast from 'void (*)(struct out_update_buffer *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 2972 | struct req_msg_field RMF_OUT_UPDATE_BUF = DEFINE_MSGF("update_buf",
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~
+ 2973 |                         RMF_F_STRUCT_ARRAY, sizeof(struct out_update_buffer),
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2974 |                         lustre_swab_out_update_buffer, NULL);
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+63 warnings generated.
+/home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.c:97:19: error: static declaration of 'compat_security_file_alloc' follows non-static declaration
+   97 | static inline int compat_security_file_alloc(struct file *file)
+      |                   ^
+/home/timothy/git/lustre-release/include/lustre_compat/linux/security.h:8:5: note: previous declaration is here
+    8 | int compat_security_file_alloc(struct file *file);
+      |     ^
+/home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.c:102:20: error: static declaration of 'compat_security_file_free' follows non-static declaration
+  102 | static inline void compat_security_file_free(struct file *file)
+      |                    ^
+/home/timothy/git/lustre-release/include/lustre_compat/linux/security.h:9:6: note: previous declaration is here
+    9 | void compat_security_file_free(struct file *file);
+      |      ^
+2 errors generated.
+make[7]: *** [/home/timothy/git/linux/scripts/Makefile.build:229: /home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.o] Error 1
+make[6]: *** [/home/timothy/git/linux/scripts/Makefile.build:478: /home/timothy/git/lustre-release/libcfs/libcfs] Error 2
+make[5]: *** [/home/timothy/git/linux/scripts/Makefile.build:478: /home/timothy/git/lustre-release/libcfs] Error 2
+make[5]: *** Waiting for unfinished jobs....
+/home/timothy/git/lustre-release/lustre/ptlrpc/ptlrpc.o: warning: objtool: ldlm_run_ast_work() falls through to next function ldlm_discard_bl_list()
+make[4]: *** [/home/timothy/git/linux/Makefile:1945: /home/timothy/git/lustre-release] Error 2
+make[3]: *** [/home/timothy/git/linux/Makefile:224: __sub-make] Error 2
+make[2]: *** [autoMakefile:1243: modules] Error 2
+make[1]: *** [autoMakefile:749: all-recursive] Error 1
+make: *** [autoMakefile:597: all] Error 2
+Error 2 at ./ci-lustre/build-lustre 101 from: bear -- make -s -j$(nproc), exiting
+[2/344] Processing file /home/timothy/git/lustre-release/lustre/fld/fld_index.c
+[1/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_member.c
+[3/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/llog_cat.c
+[4/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nrs_crr.c
+[5/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lod_lov.c
+[6/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/llog_osd.c
+[7/344] Processing file /home/timothy/git/lustre-release/lustre/mgs/mgs_llog.c
+[8/344] Processing file /home/timothy/git/lustre-release/lustre/mgc/mgc_request.c
+[9/344] Processing file /home/timothy/git/lustre-release/lustre/llite/lcommon_misc.c
+[10/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/upcall_cache_internal.c
+[11/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/client.c
+[12/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_entry.c
+[13/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_resource.c
+[14/344] Processing file /home/timothy/git/lustre-release/lustre/lfsck/lfsck_lib.c
+[15/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_io.c
+[16/344] Processing file /home/timothy/git/lustre-release/lustre_compat/mm/shrinker_debug.c
+[17/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/genops.c
+[18/344] Processing file /home/timothy/git/lustre-release/lustre/fld/fld_cache.c
+[19/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_trans.c
+[20/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_obd.c
+[21/344] Processing file /home/timothy/git/lustre-release/lustre/osp/osp_precreate.c
+[22/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-me.c
+[23/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_dev.c
+[24/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_index_hash.c
+[25/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_acl.c
+[26/344] Processing file /home/timothy/git/lustre-release/lustre/lfsck/lfsck_namespace.c
+[27/344] Processing file /home/timothy/git/lustre-release/lustre/lmv/lproc_lmv.c
+[28/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lu_ucred.c
+[29/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nrs_orr.c
+[30/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_offset.c
+[31/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_io.c
+[32/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/ptlrpc_module.c
+[33/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_lproc.c
+[34/344] Processing file /home/timothy/git/lustre-release/lustre_compat/lib/generic-radix-tree.c
+[35/344] Processing file /home/timothy/git/lustre-release/lustre/llite/glimpse.c
+[36/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_fileset_alt.c
+[37/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_hsm_cdt_requests.c
+[38/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/jobid.c
+[39/344] Processing file /home/timothy/git/lustre-release/lnet/klnds/socklnd/socklnd.c
+[40/344] Processing file /home/timothy/git/lustre-release/lnet/klnds/socklnd/socklnd_lib.c
+[41/344] Processing file /home/timothy/git/lustre-release/lustre/lfsck/lfsck_bookmark.c
+[42/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_access_log.c
+[43/344] Processing file /home/timothy/git/lustre-release/lustre/target/update_trans.c
+[44/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/cl_page.c
+[45/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/router.c
+[46/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_lockd.c
+[47/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_lib.c
+[48/344] Processing file /home/timothy/git/lustre-release/lustre_compat/kernel/sched/wait.c
+[49/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/peer.c
+[50/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_recovery.c
+[51/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_lproc.c
+[52/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_hsm.c
+[53/344] Processing file /home/timothy/git/lustre-release/lustre/target/tgt_main.c
+[54/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/hooks.c
+[55/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lnet_debugfs.c
+[56/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/range_lock.c
+[57/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_idmap.c
+[58/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lo.c
+[59/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/local_storage.c
+[60/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_objects.c
+[61/344] Processing file /home/timothy/git/lustre-release/lustre/kunit/llog_test.c
+[62/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/keyring.c
+[63/344] Processing file /home/timothy/git/lustre-release/lustre/llite/llite_mmap.c
+[64/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/policy.c
+[65/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lovsub_object.c
+[66/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_merge.c
+[67/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qmt_handler.c
+[68/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_handler.c
+[69/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qmt_dev.c
+[70/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/md_attrs.c
+[71/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/fail.c
+[72/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/pers.c
+[73/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_extent.c
+[74/344] Processing file /home/timothy/git/lustre-release/lustre_compat/kernel/sched/wait_bit.c
+[75/344] Processing file /home/timothy/git/lustre-release/lustre/llite/xattr.c
+[76/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lovsub_dev.c
+[77/344] Processing file /home/timothy/git/lustre-release/lustre/lmv/lmv_intent.c
+[78/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/class_obd.c
+[79/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_dev.c
+[80/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/recover.c
+[81/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_request.c
+[82/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/obd_sysfs.c
+[83/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/pack_generic.c
+[84/344] Processing file /home/timothy/git/lustre-release/lnet/klnds/socklnd/socklnd_modparams.c
+[85/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_open.c
+[86/344] Processing file /home/timothy/git/lustre-release/lustre/fid/fid_store.c
+[87/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_flock.c
+[88/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/scrub.c
+[89/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec_plain.c
+[90/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec_config.c
+[91/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/obdo_server.c
+[92/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/wbcfs.c
+[93/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/heap.c
+[94/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_dir.c
+[95/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_object.c
+[96/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nrs_delay.c
+[97/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_reint.c
+[98/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/integrity.c
+[99/344] Processing file /home/timothy/git/lustre-release/lustre/target/tgt_handler.c
+[100/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/connection.c
+[101/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-md.c
+[102/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_handler.c
+[103/344] Processing file /home/timothy/git/lustre-release/lustre/lfsck/lfsck_engine.c
+[104/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_som.c
+[105/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec_ctx.c
+[106/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_acl.c
+[107/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/keysetup.c
+[108/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/lproc_ptlrpc.c
+[109/344] Processing file /home/timothy/git/lustre-release/lustre/mgs/mgs_barrier.c
+[110/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lu_object.c
+[111/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/fname.c
+[112/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qmt_entry.c
+[113/344] Processing file /home/timothy/git/lustre-release/lustre/llite/crypto.c
+[114/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/errno.c
+[115/344] Processing file /home/timothy/git/lustre-release/lustre/quota/lquota_lib.c
+[116/344] Processing file /home/timothy/git/lustre-release/lustre/target/barrier.c
+[117/344] Processing file /home/timothy/git/lustre-release/lustre/fid/fid_lib.c
+[118/344] Processing file /home/timothy/git/lustre-release/lustre/llite/dir.c
+[119/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_writeback.c
+[120/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_lvb.c
+[121/344] Processing file /home/timothy/git/lustre-release/lustre/target/tgt_mount.c
+[122/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec_lproc.c
+[123/344] Processing file /home/timothy/git/lustre-release/lustre/target/tgt_lastrcvd.c
+[124/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_reclaim.c
+[125/344] Processing file /home/timothy/git/lustre-release/lustre/osp/osp_md_object.c
+[126/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_fs.c
+[127/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_io.c
+[128/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/linkea.c
+[129/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_io.c
+[130/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/rpc.c
+[131/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_lock.c
+[132/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_object.c
+[133/344] Processing file /home/timothy/git/lustre-release/lustre/llite/pcc.c
+[134/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_hsm_cdt_actions.c
+[135/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_request.c
+[136/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec_gc.c
+[137/344] Processing file /home/timothy/git/lustre-release/lustre/llite/acl.c
+[138/344] Processing file /home/timothy/git/lustre-release/lustre/fid/lproc_fid.c
+[139/344] Processing file /home/timothy/git/lustre-release/lnet/klnds/socklnd/socklnd_cb.c
+[140/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/llog_net.c
+[141/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nrs_tbf.c
+[142/344] Processing file /home/timothy/git/lustre-release/lustre/fld/lproc_fld.c
+[143/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lproc_lov.c
+[144/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_locks.c
+[145/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lod_sub_object.c
+[146/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_handler.c
+[147/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/debug.c
+[148/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/conctl.c
+[149/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/framework.c
+[150/344] Processing file /home/timothy/git/lustre-release/lustre/llite/file.c
+[151/344] Processing file /home/timothy/git/lustre-release/lustre_compat/lib/glob.c
+[152/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/llog_swab.c
+[153/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/module.c
+[154/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/layout.c
+[155/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_reint.c
+[156/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_trans.c
+[157/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_mds.c
+[158/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_request.c
+[159/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nrs.c
+[160/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/conrpc.c
+[161/344] Processing file /home/timothy/git/lustre-release/lustre/fld/fld_request.c
+[162/344] Processing file /home/timothy/git/lustre-release/lustre/osp/osp_sync.c
+[163/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/config.c
+[164/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lu_tgt_descs.c
+[165/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/cl_lock.c
+[166/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lod_qos.c
+[167/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_lproc.c
+[168/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_inodebits.c
+[169/344] Processing file /home/timothy/git/lustre-release/lustre/lmv/lmv_fld.c
+[170/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lod_dev.c
+[171/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/lproc_ofd.c
+[172/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/import.c
+[173/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_fs.c
+[174/344] Processing file /home/timothy/git/lustre-release/lustre/llite/namei.c
+[175/344] Processing file /home/timothy/git/lustre-release/lustre/quota/lquota_disk.c
+[176/344] Processing file /home/timothy/git/lustre-release/lustre/llite/vvp_dev.c
+[177/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec_null.c
+[178/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_ea.c
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:970:2: warning: cast from 'void (*)(struct mgs_target_info *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  970 |         DEFINE_MSGF("mgs_target_info", 0, sizeof(struct mgs_target_info),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  971 |                     lustre_swab_mgs_target_info, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:975:2: warning: cast from 'void (*)(struct mgs_target_nidlist *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  975 |         DEFINE_MSGF("mgs_target_nidlist", 0, sizeof(struct mgs_target_nidlist),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  976 |                     lustre_swab_mgs_target_nidlist, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:988:2: warning: cast from 'void (*)(struct mgs_config_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  988 |         DEFINE_MSGF("mgs_config_read request", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  989 |                     sizeof(struct mgs_config_body),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  990 |                     lustre_swab_mgs_config_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:994:2: warning: cast from 'void (*)(struct mgs_config_res *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  994 |         DEFINE_MSGF("mgs_config_read reply ", 0, sizeof(struct mgs_config_res),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  995 |                     lustre_swab_mgs_config_res, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:999:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+  999 |         DEFINE_MSGF("generic u32", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1000 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1012:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1012 |         DEFINE_MSGF("getinfo_vallen", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1013 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1021:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1021 |         DEFINE_MSGF("seq_query_opc", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1022 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1026:2: warning: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1026 |         DEFINE_MSGF("seq_query_range", 0, sizeof(struct lu_seq_range),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1027 |                     lustre_swab_lu_seq_range, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1031:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1031 |         DEFINE_MSGF("fld_query_opc", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1032 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1036:2: warning: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1036 |         DEFINE_MSGF("fld_query_mdfld", 0, sizeof(struct lu_seq_range),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1037 |                     lustre_swab_lu_seq_range, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1041:2: warning: cast from 'void (*)(struct mdt_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1041 |         DEFINE_MSGF("mdt_body", 0, sizeof(struct mdt_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1042 |                     lustre_swab_mdt_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1046:2: warning: cast from 'int (*)(struct obd_quotactl *, __u32)' (aka 'int (*)(struct obd_quotactl *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 1046 |         DEFINE_MSGFL("obd_quotactl", 0, sizeof(struct obd_quotactl),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1047 |                      lustre_swab_obd_quotactl, NULL);
+      |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1055:2: warning: cast from 'void (*)(struct quota_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1055 |         DEFINE_MSGF("quota_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1056 |                     sizeof(struct quota_body), lustre_swab_quota_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1060:2: warning: cast from 'void (*)(struct mdt_ioepoch *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1060 |         DEFINE_MSGF("mdt_ioepoch", 0, sizeof(struct mdt_ioepoch),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1061 |                     lustre_swab_mdt_ioepoch, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1065:2: warning: cast from 'void (*)(struct ptlrpc_body_v3 *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1065 |         DEFINE_MSGF("ptlrpc_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1066 |                     sizeof(struct ptlrpc_body), lustre_swab_ptlrpc_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1070:2: warning: cast from 'void (*)(struct close_data *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1070 |         DEFINE_MSGF("data_version", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1071 |                     sizeof(struct close_data), lustre_swab_close_data, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1075:2: warning: cast from 'void (*)(struct obd_statfs *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1075 |         DEFINE_MSGF("obd_statfs", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1076 |                     sizeof(struct obd_statfs), lustre_swab_obd_statfs, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1122:2: warning: cast from 'void (*)(struct llogd_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1122 |         DEFINE_MSGF("llogd_body", 0, sizeof(struct llogd_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1123 |                     lustre_swab_llogd_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1127:2: warning: cast from 'void (*)(struct llog_log_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1127 |         DEFINE_MSGF("llog_log_hdr", 0, sizeof(struct llog_log_hdr),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1128 |                     lustre_swab_llog_hdr, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1132:2: warning: cast from 'void (*)(struct llogd_conn_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1132 |         DEFINE_MSGF("llogd_conn_body", 0, sizeof(struct llogd_conn_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1133 |                     lustre_swab_llogd_conn_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1147:2: warning: cast from 'void (*)(struct obd_connect_data *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1147 |         DEFINE_MSGF("cdata",
+      |         ^~~~~~~~~~~~~~~~~~~~
+ 1148 |                     RMF_F_NO_SIZE_CHECK /* we allow extra space for interop */,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1149 |                     sizeof(struct obd_connect_data),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1150 |                     lustre_swab_connect, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1154:2: warning: cast from 'void (*)(struct ldlm_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1154 |         DEFINE_MSGF("dlm_req", RMF_F_NO_SIZE_CHECK /* ldlm_request_bufsize */,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1155 |                     offsetof(struct ldlm_request,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1156 |                              lock_handle[LDLM_LOCKREQ_HANDLES]),
+      |                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1157 |                     lustre_swab_ldlm_request, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1161:2: warning: cast from 'void (*)(struct ldlm_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1161 |         DEFINE_MSGF("dlm_rep", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+ 1162 |                     sizeof(struct ldlm_reply), lustre_swab_ldlm_reply, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1166:2: warning: cast from 'void (*)(struct ldlm_intent *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1166 |         DEFINE_MSGF("ldlm_intent", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1167 |                     sizeof(struct ldlm_intent), lustre_swab_ldlm_intent, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1188:2: warning: cast from 'void (*)(struct mdt_rec_reint *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1188 |         DEFINE_MSGF("rec_reint", 0, sizeof(struct mdt_rec_reint),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1189 |                     lustre_swab_mdt_rec_reint, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1215:2: warning: cast from 'void (*)(struct layout_intent *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1215 |         DEFINE_MSGF("layout_intent", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1216 |                     sizeof(struct layout_intent), lustre_swab_layout_intent,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1217 |                     NULL);
+      |                     ~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1228:2: warning: cast from 'void (*)(struct ost_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1228 |         DEFINE_MSGF("ost_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1229 |                     sizeof(struct ost_body), lustre_swab_ost_body,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1230 |                     dump_ost_body);
+      |                     ~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1228:2: warning: cast from 'void (*)(struct ost_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1228 |         DEFINE_MSGF("ost_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1229 |                     sizeof(struct ost_body), lustre_swab_ost_body,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1230 |                     dump_ost_body);
+      |                     ~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1234:2: warning: cast from 'void (*)(struct obd_ioobj *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1234 |         DEFINE_MSGF("obd_ioobj", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1235 |                     sizeof(struct obd_ioobj), lustre_swab_obd_ioobj, dump_ioo);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1234:2: warning: cast from 'void (*)(struct obd_ioobj *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1234 |         DEFINE_MSGF("obd_ioobj", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1235 |                     sizeof(struct obd_ioobj), lustre_swab_obd_ioobj, dump_ioo);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1239:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1239 |         DEFINE_MSGF("niobuf_remote", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1240 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1241 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1239:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1239 |         DEFINE_MSGF("niobuf_remote", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1240 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1241 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1245:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1245 |         DEFINE_MSGF("niobuf_inline", RMF_F_NO_SIZE_CHECK,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1246 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1247 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1245:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1245 |         DEFINE_MSGF("niobuf_inline", RMF_F_NO_SIZE_CHECK,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1246 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1247 |                     dump_rniobuf);
+      |                     ~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1251:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1251 |         DEFINE_MSGF("niobuf_rcs", RMF_F_STRUCT_ARRAY, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1252 |                     lustre_swab_generic_32s, dump_rcs);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1251:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1251 |         DEFINE_MSGF("niobuf_rcs", RMF_F_STRUCT_ARRAY, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1252 |                     lustre_swab_generic_32s, dump_rcs);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1256:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1256 |         DEFINE_MSGF("eavals_lens", RMF_F_STRUCT_ARRAY, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1257 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1261:2: warning: cast from 'void (*)(__u64 *)' (aka 'void (*)(unsigned long long *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1261 |         DEFINE_MSGF("obd_id", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~
+ 1262 |                     sizeof(__u64), lustre_swab_ost_last_id, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1266:2: warning: cast from 'void (*)(struct lu_fid *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1266 |         DEFINE_MSGF("fid", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~
+ 1267 |                     sizeof(struct lu_fid), lustre_swab_lu_fid, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1271:2: warning: cast from 'void (*)(struct ost_id *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1271 |         DEFINE_MSGF("ost_id", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~
+ 1272 |                     sizeof(struct ost_id), lustre_swab_ost_id, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1276:2: warning: cast from 'void (*)(struct ll_fiemap_info_key *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1276 |         DEFINE_MSGF("fiemap_key", 0, sizeof(struct ll_fiemap_info_key),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1277 |                     lustre_swab_fiemap_info_key, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1281:2: warning: cast from 'int (*)(struct fiemap *, __u32)' (aka 'int (*)(struct fiemap *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 1281 |         DEFINE_MSGFL("fiemap", 0, -1, lustre_swab_fiemap, NULL);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1285:2: warning: cast from 'void (*)(struct idx_info *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1285 |         DEFINE_MSGF("idx_info", 0, sizeof(struct idx_info),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1286 |                     lustre_swab_idx_info, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1292:2: warning: cast from 'void (*)(struct hsm_user_state *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1292 |         DEFINE_MSGF("hsm_user_state", 0, sizeof(struct hsm_user_state),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1293 |                     lustre_swab_hsm_user_state, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1297:2: warning: cast from 'void (*)(struct hsm_state_set *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1297 |         DEFINE_MSGF("hsm_state_set", 0, sizeof(struct hsm_state_set),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1298 |                     lustre_swab_hsm_state_set, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1302:2: warning: cast from 'void (*)(struct hsm_progress_kernel *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1302 |         DEFINE_MSGF("hsm_progress", 0, sizeof(struct hsm_progress_kernel),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1303 |                     lustre_swab_hsm_progress_kernel, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1307:2: warning: cast from 'void (*)(struct hsm_current_action *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1307 |         DEFINE_MSGF("hsm_current_action", 0, sizeof(struct hsm_current_action),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1308 |                     lustre_swab_hsm_current_action, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1312:2: warning: cast from 'void (*)(struct hsm_user_item *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1312 |         DEFINE_MSGF("hsm_user_item", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1313 |                     sizeof(struct hsm_user_item), lustre_swab_hsm_user_item,
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1314 |                     NULL);
+      |                     ~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1318:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1318 |         DEFINE_MSGF("hsm_archive", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1319 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1323:2: warning: cast from 'void (*)(struct hsm_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1323 |         DEFINE_MSGF("hsm_request", 0, sizeof(struct hsm_request),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1324 |                     lustre_swab_hsm_request, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1328:2: warning: cast from 'void (*)(struct mdc_swap_layouts *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1328 |         DEFINE_MSGF("swap_layouts", 0, sizeof(struct  mdc_swap_layouts),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1329 |                     lustre_swab_swap_layouts, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1333:2: warning: cast from 'void (*)(struct lfsck_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1333 |         DEFINE_MSGF("lfsck_request", 0, sizeof(struct lfsck_request),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1334 |                     lustre_swab_lfsck_request, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1338:2: warning: cast from 'void (*)(struct lfsck_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1338 |         DEFINE_MSGF("lfsck_reply", 0, sizeof(struct lfsck_reply),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1339 |                     lustre_swab_lfsck_reply, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1343:2: warning: cast from 'void (*)(struct ladvise_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1343 |         DEFINE_MSGF("ladvise_request", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1344 |                     sizeof(struct ladvise_hdr),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1345 |                     lustre_swab_ladvise_hdr, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1349:2: warning: cast from 'void (*)(struct lu_ladvise *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1349 |         DEFINE_MSGF("ladvise_request", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1350 |                     sizeof(struct lu_ladvise),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1351 |                     lustre_swab_ladvise, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1355:4: warning: cast from 'void (*)(struct batch_update_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1355 |                         DEFINE_MSGF("batch_update_reply", 0, -1,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1356 |                                     lustre_swab_batch_update_reply, NULL);
+      |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1359:39: warning: cast from 'void (*)(struct but_update_header *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1359 | struct req_msg_field RMF_BUT_HEADER = DEFINE_MSGF("but_update_header", 0,
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1360 |                                 -1, lustre_swab_but_update_header, NULL);
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:1363:36: warning: cast from 'void (*)(struct but_update_buffer *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 1363 | struct req_msg_field RMF_BUT_BUF = DEFINE_MSGF("but_update_buf",
+      |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1364 |                         RMF_F_STRUCT_ARRAY, sizeof(struct but_update_buffer),
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1365 |                         lustre_swab_but_update_buffer, NULL);
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2349:3: warning: cast from 'char *(*)(struct lustre_msg_v2 *, __u32, __u32)' (aka 'char *(*)(struct lustre_msg_v2 *, unsigned int, unsigned int)') to 'typeof (getter)' (aka 'void *(*)(struct lustre_msg_v2 *, unsigned int, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 2349 |                 (typeof(getter))lustre_msg_string : lustre_msg_buf;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[179/344] Processing file /home/timothy/git/lustre-release/lustre/lmv/lmv_obd.c
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2959:39: warning: cast from 'int (*)(struct object_update_request *, __u32)' (aka 'int (*)(struct object_update_request *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 2959 | struct req_msg_field RMF_OUT_UPDATE = DEFINE_MSGFL("object_update", 0, -1,
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2960 |                                 lustre_swab_object_update_request, NULL);
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2964:4: warning: cast from 'int (*)(struct object_update_reply *, __u32)' (aka 'int (*)(struct object_update_reply *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
+ 2964 |                         DEFINE_MSGFL("object_update_reply", 0, -1,
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2965 |                                     lustre_swab_object_update_reply, NULL);
+      |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:961:18: note: expanded from macro 'DEFINE_MSGFL'
+  961 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2968:46: warning: cast from 'void (*)(struct out_update_header *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 2968 | struct req_msg_field RMF_OUT_UPDATE_HEADER = DEFINE_MSGF("out_update_header", 0,
+      |                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2969 |                                 -1, lustre_swab_out_update_header, NULL);
+      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:2972:43: warning: cast from 'void (*)(struct out_update_buffer *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
+ 2972 | struct req_msg_field RMF_OUT_UPDATE_BUF = DEFINE_MSGF("update_buf",
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~
+ 2973 |                         RMF_F_STRUCT_ARRAY, sizeof(struct out_update_buffer),
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2974 |                         lustre_swab_out_update_buffer, NULL);
+      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/ptlrpc/layout.c:953:17: note: expanded from macro 'DEFINE_MSGF'
+  953 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/timothy/git/lustre-release/lustre/llite/file.c:2494:29: warning: implicit truncation from 'int' to a one-bit wide bit-field changes value from 1 to -1 [-Wsingle-bit-bitfield-constant-conversion]
+ 2494 |                 arg[180/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/nidstrings.c
+s->via_hybrid_switched = 1;
+      |                                           ^ ~
+[181/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_reint.c
+[182/344] Processing file /home/timothy/git/lustre-release/lustre/obdecho/echo_client.c
+[183/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lustre_peer.c
+[184/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/llog_server.c
+63 warnings generated.
+[185/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-ptl.c
+[186/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-cpt.c
+[187/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/lproc_mdc.c
+1 warning generated.
+[188/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_lib.c
+[189/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/pack_server.c
+[190/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lprocfs_status_server.c
+[191/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lnet-crypto.c
+[192/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_device.c
+[193/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/module.c
+[194/344] Processing file /home/timothy/git/lustre-release/lustre/llite/super25.c
+[195/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lproc_lod.c
+[196/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_pool.c
+[197/344] Processing file /home/timothy/git/lustre-release/lustre/lfsck/lfsck_layout.c
+[198/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/ping_test.c
+[199/344] Processing file /home/timothy/git/lustre-release/lustre/target/out_handler.c
+[200/344] Processing file /home/timothy/git/lustre-release/lustre/llite/llite_nfs.c
+[201/344] Processing file /home/timothy/git/lustre-release/lustre/llite/rw.c
+[202/344] Processing file /home/timothy/git/lustre-release/lustre/llite/llite_foreign_symlink.c
+[203/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/cl_io.c
+[204/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_dev.c
+[205/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_dev.c
+[206/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_lock.c
+[207/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_page.c
+[208/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/obd_cksum.c
+[209/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/console.c
+[210/344] Processing file /home/timothy/git/lustre-release/lustre/kunit/obd_mod_rpcs_test.c
+[211/344] Processing file /home/timothy/git/lustre-release/lustre/target/tgt_grant.c
+[212/344] Processing file /home/timothy/git/lustre-release/lustre/target/update_records.c
+[213/344] Processing file /home/timothy/git/lustre-release/lustre/mgs/mgs_nids.c
+[214/344] Processing file /home/timothy/git/lustre-release/lustre/quota/lquota_entry.c
+[215/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qmt_lock.c
+[216/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/idmap.c
+[217/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nrs_fifo.c
+[218/344] Processing file /home/timothy/git/lustre-release/lustre/quota/lproc_quota.c
+[219/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_request.c
+[220/344] Processing file /home/timothy/git/lustre-release/lustre/kunit/kinode.c
+[221/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_xattr.c
+[222/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_pack.c
+[223/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_lib.c
+[224/344] Processing file /home/timothy/git/lustre-release/lustre/llite/statahead.c
+[225/344] Processing file /home/timothy/git/lustre-release/lustre/mgc/lproc_mgc.c
+[226/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_lproc.c
+[227/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_obd.c
+[228/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/hash.c
+[229/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_coordinator.c
+[230/344] Processing file /home/timothy/git/lustre-release/lustre/osp/osp_object.c
+[231/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lprocfs_counters.c
+[232/344] Processing file /home/timothy/git/lustre-release/lustre/ec/ec_base.c
+[233/344] Processing file /home/timothy/git/lustre-release/lustre/mgs/lproc_mgs.c
+[234/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/obd_mount.c
+[235/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/udsp.c
+[236/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/sec.c
+[237/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/brw_test.c
+[238/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_batch.c
+[239/344] Processing file /home/timothy/git/lustre-release/lustre/osc/lproc_osc.c
+[240/344] Processing file /home/timothy/git/lustre-release/lustre/llite/vvp_page.c
+[241/344] Processing file /home/timothy/git/lustre-release/lustre/target/out_lib.c
+[242/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_orphans.c
+[243/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/cl_object.c
+[244/344] Processing file /home/timothy/git/lustre-release/lustre/llite/lproc_llite.c
+[245/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_lock.c
+[246/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/llog_obd.c
+[247/344] Processing file /home/timothy/git/lustre-release/lustre_compat/symbols.c
+[248/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_handler.c
+[249/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lu_tgt_pool.c
+[250/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_range.c
+[251/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_dlm.c
+[252/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/dt_object.c
+[253/344] Processing file /home/timothy/git/lustre-release/lustre/obdecho/echo.c
+[254/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/hkdf.c
+[255/344] Processing file /home/timothy/git/lustre-release/lustre/llite/lcommon_cl.c
+[256/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/keysetup_v1.c
+[257/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_object.c
+[258/344] Processing file /home/timothy/git/lustre-release/lustre/llite/dcache.c
+[259/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_io.c
+[260/344] Processing file /home/timothy/git/lustre-release/lustre/llite/xattr_security.c
+[261/344] Processing file /home/timothy/git/lustre-release/lustre/osp/osp_dev.c
+[262/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-msg.c
+[263/344] Processing file /home/timothy/git/lustre-release/lustre/llite/llite_lib.c
+[264/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/net_fault.c
+[265/344] Processing file /home/timothy/git/lustre-release/lnet/klnds/socklnd/socklnd_proto.c
+/home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.c:97:19: error: static declaration of 'compat_security_file_alloc' follows non-static declaration
+   97 | static inline int compat_security_file_alloc(struct file *file)
+      |                   ^
+/home/timothy/git/lustre-release/include/lustre_compat/linux/security.h:8:5: note: previous declaration is here
+    8 | int compat_security_file_alloc(struct file *file);
+      |     ^
+/home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.c:102:20: error: static declaration of 'compat_security_file_free' follows non-static declaration
+  102 | static inline void compat_security_file_free(struct file *file)
+      |                    ^
+/home/timothy/git/lustre-release/include/lustre_compat/linux/security.h:9:6: note: previous declaration is here
+    9 | void compat_security_file_free(struct file *file);
+      |      ^
+[266/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_hsm_cdt_agent.c
+[267/344] Processing file /home/timothy/git/lustre-release/lustre/target/update_recovery.c
+[268/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/adler.c
+2 errors generated.
+Error while processing /home/timothy/git/lustre-release/lustre_compat/symbols.c.
+[269/344] Processing file /home/timothy/git/lustre-release/lustre/fid/fid_request.c
+[270/344] Processing file /home/timothy/git/lustre-release/lustre/fid/fid_handler.c
+[271/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_hash.c
+[272/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/l_lock.c
+[273/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_identity.c
+[274/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_lvb.c
+[275/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lustre_handles.c
+[276/344] Processing file /home/timothy/git/lustre-release/lustre/llite/vvp_object.c
+[277/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_lock.c
+[278/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/pinger.c
+[279/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lock.c
+[280/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lprocfs_jobstats.c
+[281/344] Processing file /home/timothy/git/lustre-release/lustre/llite/rw26.c
+[282/344] Processing file /home/timothy/git/lustre-release/lustre/mgs/mgs_handler.c
+[283/344] Processing file /home/timothy/git/lustre-release/lustre/llite/symlink.c
+[284/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_object.c
+[285/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/niobuf.c
+[286/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qmt_pool.c
+[287/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/module.c
+[288/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lod_object.c
+[289/344] Processing file /home/timothy/git/lustre-release/lustre/mgc/mgc_request_server.c
+[290/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_lib.c
+[291/344] Processing file /home/timothy/git/lustre-release/lustre/osp/osp_trans.c
+[292/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_request.c
+[293/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/batch.c
+[294/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-socket.c
+[295/344] Processing file /home/timothy/git/lustre-release/lustre/mdd/mdd_permission.c
+[296/344] Processing file /home/timothy/git/lustre-release/lnet/selftest/timer.c
+[297/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lib-move.c
+[298/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/page_pools.c
+[299/344] Processing file /home/timothy/git/lustre-release/lustre/kunit/obd_test.c
+[300/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/kernelcomm.c
+[301/344] Processing file /home/timothy/git/lustre-release/lustre/llite/llite_foreign.c
+[302/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_plain.c
+[303/344] Processing file /home/timothy/git/lustre-release/lustre/osp/lwp_dev.c
+[304/344] Processing file /home/timothy/git/lustre-release/lustre/fld/fld_handler.c
+[305/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/upcall_cache.c
+[306/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/llog_client.c
+[307/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/crypto/crypto.c
+[308/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/api-ni.c
+[309/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/llog.c
+[310/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/obd_config.c
+[311/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/lnet_rdma.c
+[312/344] Processing file /home/timothy/git/lustre-release/lustre/lod/lod_pool.c
+[313/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_batch.c
+[314/344] Processing file /home/timothy/git/lustre-release/lustre/lfsck/lfsck_striped_dir.c
+[315/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_restripe.c
+[316/344] Processing file /home/timothy/git/lustre-release/lustre/mgs/mgs_fs.c
+[317/344] Processing file /home/timothy/git/lustre-release/lustre/ldlm/ldlm_lock.c
+[318/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/obdo.c
+[319/344] Processing file /home/timothy/git/lustre-release/lustre/mdc/mdc_changelog.c
+[320/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/lprocfs_status.c
+[321/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_cache.c
+[322/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/ptlrpcd.c
+[323/344] Processing file /home/timothy/git/lustre-release/lustre/osd-wbcfs/osd_dirent.c
+[324/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/tracefile.c
+[325/344] Processing file /home/timothy/git/lustre-release/lustre/mdt/mdt_hsm_cdt_client.c
+[326/344] Processing file /home/timothy/git/lustre-release/lustre/quota/qsd_config.c
+[327/344] Processing file /home/timothy/git/lustre-release/libcfs/libcfs/linux/linux-prim.c
+[328/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/events.c
+[329/344] Processing file /home/timothy/git/lustre-release/lustre/obdecho/debug.c
+[330/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_pool.c
+[331/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/statfs_pack.c
+[332/344] Processing file /home/timothy/git/lustre-release/lustre/obdclass/llog_ioctl.c
+[333/344] Processing file /home/timothy/git/lustre-release/lustre/ofd/ofd_oss.c
+[334/344] Processing file /home/timothy/git/lustre-release/lnet/lnet/acceptor.c
+[335/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/nodemap_storage.c
+[336/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/wiretest.c
+[337/344] Processing file /home/timothy/git/lustre-release/lustre/llite/vvp_io.c
+[338/344] Processing file /home/timothy/git/lustre-release/lustre/target/tgt_fmd.c
+[339/344] Processing file /home/timothy/git/lustre-release/lustre/lov/lov_page.c
+[340/344] Processing file /home/timothy/git/lustre-release/lustre/ptlrpc/service.c
+[341/344] Processing file /home/timothy/git/lustre-release/lustre/llite/xattr_cache.c
+[342/344] Processing file /home/timothy/git/lustre-release/lustre/osc/osc_quota.c
+[343/344] Processing file /home/timothy/git/lustre-release/lustre/kunit/ldlm_extent.c
+[344/344] Processing file /home/timothy/git/lustre-release/lustre/osp/lproc_osp.c
+Failed to run action on /home/timothy/git/lustre-release/lustre_compat/symbols.c
+
+/home/timothy/git/lustre-release/lustre/obdclass/cl_io.c:1117: warning: Function 'cl_2queue_assume' is unused
+/home/timothy/git/lustre-release/lustre/include/cl_object.h:2522: note: declared here
+/home/timothy/git/lustre-release/lustre/obdclass/cl_object.c:975: warning: Function 'cl_attr2lvb' is unused
+/home/timothy/git/lustre-release/lustre/include/cl_object.h:2692: note: declared here
+/home/timothy/git/lustre-release/lustre/obdclass/cl_object.c:74: warning: Function 'cl_object_header_fini' is unused
+/home/timothy/git/lustre-release/lustre/include/cl_object.h:2178: note: declared here
+/home/timothy/git/lustre-release/lustre/mdt/mdt_hsm_cdt_requests.c:79: warning: Function 'dump_requests' is unused
+/home/timothy/git/lustre-release/lustre/mdt/mdt_internal.h:1136: note: declared here
+/home/timothy/git/lustre-release/lustre/fld/fld_request.c:489: warning: Function 'fld_client_flush' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_fld.h:140: note: declared here
+/home/timothy/git/lustre-release/lnet/lnet/peer.c:1204: warning: Function 'lnet_peer_del_pref_nid' is unused
+/home/timothy/git/lustre-release/lnet/include/lnet/lib-lnet.h:655: note: declared here
+/home/timothy/git/lustre-release/lnet/selftest/console.c:740: warning: Function 'lstcon_group_info' is unused
+/home/timothy/git/lustre-release/lnet/selftest/console.h:204: note: declared here
+/home/timothy/git/lustre-release/lustre/obdclass/lu_object.c:618: warning: Function 'lu_object_invariant' is unused
+/home/timothy/git/lustre-release/lustre/include/lu_object.h:826: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/pack_generic.c:3035: warning: Function 'lustre_swab_batch_update_request' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_swab.h:113: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/pack_generic.c:2299: warning: Function 'lustre_swab_lmv_desc' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_swab.h:71: note: declared here
+/home/timothy/git/lustre-release/lustre/mdt/mdt_coordinator.c:76: warning: Function 'mdt_hsm_dump_hal' is unused
+/home/timothy/git/lustre-release/lustre/mdt/mdt_internal.h:1148: note: declared here
+/home/timothy/git/lustre-release/lustre/mgs/lproc_mgs.c:367: warning: Function 'mgs_counter_incr' is unused
+/home/timothy/git/lustre-release/lustre/mgs/mgs_internal.h:290: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/client.c:3217: warning: Function 'ptlrpc_restart_req' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_net.h:2076: note: declared here
+/home/timothy/git/lustre-release/lustre/quota/qmt_entry.c:1002: warning: Function 'qti_lqes_del' is unused
+/home/timothy/git/lustre-release/lustre/quota/qmt_internal.h:486: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/sec.c:348: warning: Function 'sptlrpc_cli_ctx_display' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:1054: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/sec.c:1895: warning: Function 'sptlrpc_cli_install_rvs_ctx' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:1179: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/sec.c:1664: warning: Function 'sptlrpc_import_flush_root_ctx' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:1093: note: declared here
+/home/timothy/git/lustre-release/lustre/ptlrpc/sec_config.c:407: warning: Function 'sptlrpc_rule_set_dump' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:365: note: declared here
+/home/timothy/git/lustre-release/lustre/include/cfs_hash.h:573: warning: Function 'cfs_hash_bd_depmax_get' is unused
+/home/timothy/git/lustre-release/lustre/include/cfs_hash.h:537: warning: Function 'cfs_hash_bd_index_get' is unused
+/home/timothy/git/lustre-release/lustre/include/cfs_hash.h:503: warning: Function 'cfs_hash_dec_and_lock' is unused
+/home/timothy/git/lustre-release/lustre/include/cl_object.h:2132: warning: Function 'cl_object_next' is unused
+/home/timothy/git/lustre-release/lustre/include/cl_object.h:2142: warning: Function 'cl_object_site' is unused
+/home/timothy/git/lustre-release/lnet/selftest/console.h:168: warning: Function 'lstcon_id2hash' is unused
+/home/timothy/git/lustre-release/lustre/include/dt_object.h:2479: warning: Function 'dt_thread_no_locks' is unused
+/home/timothy/git/lustre-release/lustre/ptlrpc/heap.h:160: warning: Function 'binheap_remove_root' is unused
+/home/timothy/git/lustre-release/lustre/ptlrpc/heap.h:142: warning: Function 'binheap_size' is unused
+/home/timothy/git/lustre-release/lustre/ptlrpc/../../lustre/ldlm/ldlm_extent.c:51: warning: Function 'extent_prev_lock' is unused
+/home/timothy/git/lustre-release/lustre/ptlrpc/../../lustre/ldlm/ldlm_extent.c:106: warning: Function 'extent_replace' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:343: warning: Function 'gss_base64url_decode' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:503: warning: Function 'gss_buffer_get' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:464: warning: Function 'gss_buffer_read' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:189: warning: Function 'gss_buffer_write' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:397: warning: Function 'gss_string_read' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:529: warning: Function 'gss_u32_read' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:230: warning: Function 'gss_u32_write' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:166: warning: Function 'gss_u64_write_hex_string' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lgss.h:143: warning: Function 'gss_u64_write_string' is unused
+/home/timothy/git/lustre-release/lnet/include/lnet/lib-lnet.h:915: warning: Function 'lnet_copy_flat2kiov' is unused
+/home/timothy/git/lustre-release/lnet/include/lnet/lib-lnet.h:904: warning: Function 'lnet_copy_kiov2flat' is unused
+/home/timothy/git/lustre-release/include/lustre_compat/linux/llcrypt.h:779: warning: Function 'llcrypt_encrypt_symlink' is unused
+/home/timothy/git/lustre-release/include/lustre_compat/linux/llcrypt.h:118: warning: Function 'llcrypt_handle_d_move' is unused
+/home/timothy/git/lustre-release/include/lustre_compat/linux/llcrypt.h:253: warning: Function 'llcrypt_match_name' is unused
+/home/timothy/git/lustre-release/include/lustre_compat/linux/llcrypt.h:685: warning: Function 'llcrypt_prepare_lookup' is unused
+/home/timothy/git/lustre-release/lustre/llite/llite_internal.h:1347: warning: Function 'll_lov_delay_create_clear' is unused
+/home/timothy/git/lustre-release/lustre/llite/llite_internal.h:637: warning: Function 'obd_connect_has_enc_fid2path' is unused
+/home/timothy/git/lustre-release/lustre/llite/llite_internal.h:1698: warning: Function 'sbi2mdc' is unused
+/home/timothy/git/lustre-release/lustre/obdclass/llog_ioctl.c:183: warning: Function 'llog_idx_is_eof' is unused
+/home/timothy/git/lustre-release/lnet/include/uapi/linux/lnet/lnet-crypto.h:271: warning: Function 'cfs_crypto_crypt_alg' is unused
+/home/timothy/git/lustre-release/lnet/include/uapi/linux/lnet/lnet-crypto.h:253: warning: Function 'cfs_crypto_crypt_keysize' is unused
+/home/timothy/git/lustre-release/lnet/include/uapi/linux/lnet/lnet-crypto.h:232: warning: Function 'cfs_crypto_crypt_name' is unused
+/home/timothy/git/lustre-release/lustre/lov/lov_internal.h:66: warning: Function 'copy_lsm_entry' is unused
+/home/timothy/git/lustre-release/lustre/lov/lov_internal.h:170: warning: Function 'lsm_has_objects' is unused
+/home/timothy/git/lustre-release/lustre/include/lprocfs_status.h:638: warning: Function 'lprocfs_import_seq_write' is unused
+/home/timothy/git/lustre-release/lustre/include/lu_object.h:848: warning: Function 'lu_object_clear_agent_entry' is unused
+/home/timothy/git/lustre-release/lustre/include/lu_object.h:843: warning: Function 'lu_object_set_agent_entry' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_compat.h:98: warning: Function 'cfs_bio_alloc' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_compat.h:435: warning: Function 'll_vfs_removexattr' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_export.h:353: warning: Function 'exp_connect_multibulk' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_export.h:460: warning: Function 'exp_connect_parity' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_export.h:487: warning: Function 'exp_connect_sparse' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_fid.h:619: warning: Function 'fid_build_pdo_res_name' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_fid.h:756: warning: Function 'fid_hash' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_fid.h:282: warning: Function 'fid_is_fs_root' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_fid.h:103: warning: Function 'fid_is_llog' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_fid.h:358: warning: Function 'fid_is_local_storage' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_fid.h:271: warning: Function 'fid_is_name_llog' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_fid.h:114: warning: Function 'fid_seq_is_special' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_fiemap.h:38: warning: Function 'get_fe_device' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_fiemap.h:42: warning: Function 'set_fe_device' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_fiemap.h:50: warning: Function 'set_fe_stripenr' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_lmv.h:219: warning: Function 'lmv_le_to_cpu' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_log.h:505: warning: Function 'llog_connect' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_net.h:2520: warning: Function 'lustre_request_magic' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_net.h:2369: warning: Function 'lustre_shrink_reply' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_net.h:1496: warning: Function 'thread_is_init' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_net.h:1526: warning: Function 'thread_set_flags' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_ostid.h:118: warning: Function 'ostid_set_seq_llog' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_scrub.h:255: warning: Function 'osd_scrub2name' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:1023: warning: Function 'cli_ctx_is_dead' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:999: warning: Function 'cli_ctx_is_ready' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:1011: warning: Function 'cli_ctx_is_uptodate' is unused
+/home/timothy/git/lustre-release/lustre/include/lustre_sec.h:882: warning: Function 'sec_is_rootonly' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:2228: warning: Function 'changelog_rec_snamelen' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:2594: warning: Function 'hal_size' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:1930: warning: Function 'hsm_get_cl_error' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:1905: warning: Function 'hsm_get_cl_event' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:1918: warning: Function 'hsm_get_cl_flags' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:1240: warning: Function 'lmv_hash_is_restriping' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:963: warning: Function 'lu_extent_is_whole' is unused
+/home/timothy/git/lustre-release/lustre/include/uapi/linux/lustre/lustre_user.h:2850: warning: Function 'pcc_type2string' is unused
+/home/timothy/git/lustre-release/lustre/include/md_object.h:645: warning: Function 'mdo_statfs' is unused
+/home/timothy/git/lustre-release/lustre/mdd/mdd_internal.h:400: warning: Function 'mdd_object_get' is unused
+/home/timothy/git/lustre-release/lustre/mdt/mdt_internal.h:673: warning: Function 'mdt_child_ops' is unused
+/home/timothy/git/lustre-release/lustre/mdt/mdt_internal.h:691: warning: Function 'mdt_conn_flags' is unused
+/home/timothy/git/lustre-release/lustre/mdt/mdt_internal.h:1209: warning: Function 'mdt_req2med' is unused
+/home/timothy/git/lustre-release/lustre/include/obd.h:1537: warning: Function 'obd_is_osd_wbcfs' is unused
+/home/timothy/git/lustre-release/lustre/include/obd_support.h:1055: warning: Function 'lma_to_lustre_flags' is unused
+/home/timothy/git/lustre-release/lustre/include/obd_support.h:1061: warning: Function 'lustre_to_lma_flags' is unused
+/home/timothy/git/lustre-release/lustre/ofd/ofd_internal.h:209: warning: Function 'fo2dt' is unused
+/home/timothy/git/lustre-release/lustre/osp/osp_internal.h:427: warning: Function 'osp_buf_prep' is unused
+/home/timothy/git/lustre-release/lustre/osp/osp_internal.h:486: warning: Function 'osp_object_child' is unused
+/home/timothy/git/lustre-release/lustre/osp/osp_internal.h:492: warning: Function 'osp_seq_site' is unused
+/home/timothy/git/lustre-release/lustre/ptlrpc/ptlrpc_internal.h:200: warning: Function 'nrs_pol2svcpt' is unused
+/home/timothy/git/lustre-release/lustre/quota/qmt_pool.c:53: warning: Function 'qpi_putref_locked' is unused
+/home/timothy/git/lustre-release/lnet/klnds/socklnd/socklnd.h:599: warning: Function 'ksocknal_conns_per_peer' is unused
+/home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.c:97: warning: Function 'compat_security_file_alloc' is unused
+/home/timothy/git/lustre-release/libcfs/libcfs/../../lustre_compat/symbols.c:102: warning: Function 'compat_security_file_free' is unused
+/home/timothy/git/lustre-release/lustre/llite/vvp_internal.h:211: warning: Function 'cl2vvp_dev' is unused
+/home/timothy/git/lustre-release/lustre/llite/vvp_io.c:976: warning: Function 'll_account_page_dirtied' is unused
+/home/timothy/git/lustre-release//lnet/lnet/lnet.ko not found!
+
+</pre>
+</body>
+</html>
