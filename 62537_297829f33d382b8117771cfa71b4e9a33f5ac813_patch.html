@@ -1,0 +1,29 @@
+<html lang="en">
+<body>
+<pre>
+LU-18756 ofd: Add PFID repair to resource ID repair
+
+The resource ID repair checks whether a UID/GID/PROJID is not set on
+an OST object yet. If all or some IDs are not set and the requirements
+are met, the IDs are updated asynchronously, e.g., as part of a read
+operation.
+
+This patch adds support for repairing the parent FID stored in the
+"trusted.fid" xattr field for OST objects which references the
+corresponding MDT inode. Repairing the PFID is done in the same
+transaction as the ID repair. It can therefore repair IDs, the PFID or
+both, depending on the current state of the object.
+
+As a fast path, the PFID is stored in the "ofo_ff.ff_parent" field in
+the "ofd_object", which is also used to check whether repair is
+required before loading the xattr, if the field is not yet set.
+
+Sanity-sec 75b is modified to exercise PFID repair in the three
+configurations: IDs-only missing, PFID-only missing, or both missing.
+
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: Iafa97b1204a96ef3349009a340fd812528ae43ef
+
+</pre>
+</body>
+</html>
