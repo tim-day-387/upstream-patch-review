@@ -1,0 +1,25 @@
+<html lang="en">
+<body>
+<pre>
+LU-15367 llite: Add iotrace support for flock
+
+Add D_IOTRACE logging to ll_file_flock to enable
+tracking of flock operations in iotrace logs.
+
+The iotrace_to_multiop.py script is updated to parse
+ll_file_flock iotrace messages and convert them to
+multiop 'j' commands (flock exclusive lock).
+
+The script filters out unlock operations (type 2) and
+only generates 'j' commands for actual lock operations
+(type 0 or 1).
+
+A new test (test_441c) is added to verify that flock
+operations are correctly captured and converted.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I4cac0c096b399a330aa1b58238e2ecb5b408ba4a
+
+</pre>
+</body>
+</html>
