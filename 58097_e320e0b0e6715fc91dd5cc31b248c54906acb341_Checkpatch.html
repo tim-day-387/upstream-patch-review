@@ -1,0 +1,42 @@
+<html lang="en">
+<body>
+<pre>
+WARNING: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#580: FILE: lustre/llite/llite_lib.c:3201:
++			LASSERTF(!folio_test_uptodate(folio) &&
++				 !folio_test_dirty(folio) &&
++				 !folio_test_private(folio), "%px", folio);
+
+WARNING: Argument 'page' is not used in function-like macro
+#1819: FILE: lustre/llite/vvp_internal.h:284:
++#define vvp_folio_memcg_lock(page)
+
+WARNING: Argument 'page' is not used in function-like macro
+#1820: FILE: lustre/llite/vvp_internal.h:285:
++#define vvp_folio_memcg_unlock(page)
+
+WARNING: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#1860: FILE: lustre/llite/vvp_io.c:1011:
++	LASSERTF(folio->mapping,
+ 		 "mapping must be set. page %px, page->private (cl_page) %px\n",
++		 folio, (void *)folio->private);
+
+WARNING: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#1944: FILE: lustre/llite/vvp_io.c:1070:
++		LASSERTF(folio->mapping == mapping,
++			 "all pages must have the same mapping.  page %px, mapping %px, first mapping %px\n",
++			 folio, folio->mapping, mapping);
+
+total: 0 errors, 5 warnings, 3279 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
+</pre>
+</body>
+</html>
