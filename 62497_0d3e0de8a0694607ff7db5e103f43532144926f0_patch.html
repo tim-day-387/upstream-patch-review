@@ -1,0 +1,34 @@
+<html lang="en">
+<body>
+<pre>
+LU-7266 ldlm: Fix LDLM pool Server Lock Volume
+
+In the previous implementation of SLV/CLV, there exists misalignment
+between SLV and CLV, thus their comparison failed to produce the
+desired effect.
+
+The goal of this patch is to fix the impl, so we could
+1. enable clients retaining enough locks to accelerate their
+   computation;
+2. revoke locks from clients during memory pressure.
+
+Here is how we fix it,
+- align their lock granularity, both based on sizeof(ldlm_lock);
+- align SVR_POOL_MAX_AGE with CLI_LRU_MAX_AGE, reduce from 36000 to
+  360;
+- instead of gradual adjustment based on grant_plan which to some
+  degree exhibit significant delay, we switch to a method based on
+  `memory pressure` and `clients connected`, which from my point of
+  view could just align SLV with CLV.
+- new slv calculation formula:
+    slv = lock_limit * pool_max_age * adjust_factor / client_count
+
+To fallback to the previous implementation, parameter
+`slv_pressure_adjust` is provided as well.
+
+Signed-off-by: Keguang Xu <squalfof@gmail.com>
+Change-Id: If8a6f247127576965ae45c349a4ab04fb286615a
+
+</pre>
+</body>
+</html>
