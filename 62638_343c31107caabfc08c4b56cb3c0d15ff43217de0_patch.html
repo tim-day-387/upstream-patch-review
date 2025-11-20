@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-19619 llite: fix size_t vs ssize_t in ll_get_user_pages
+
+ll_get_user_pages() stores the return value of
+iov_iter_get_pages_alloc2() in a size_t variable,
+but iov_iter_get_pages_alloc2 returns ssize_t
+(signed size_t).
+
+When iov_iter_get_pages_alloc2() returns -EFAULT
+due to a bad userspace pointer, the negative errno
+is interpreted as a very large positive value. This
+is then passed to iov_iter_revert(), triggering a
+kernel warning on an invalid number of bytes to
+revert the iovec:
+
+WARNING: CPU: 103 PID: 1628036 at lib/iov_iter.c:666
+iov_iter_revert+0xcc/0xe0
+
+Since ll_get_user_pages() returns ssize_t and the
+caller correctly interprets the error, the impact
+is limited to a spurious warning when userspace
+provides a bad pointer.
+
+Fix by changing the result variable to ssize_t.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Iddd739e27e2d23fb58db00d7dd9dfa96d3859f3e
+
+</pre>
+</body>
+</html>
