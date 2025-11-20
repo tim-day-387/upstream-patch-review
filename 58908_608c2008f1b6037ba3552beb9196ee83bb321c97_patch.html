@@ -1,0 +1,23 @@
+<html lang="en">
+<body>
+<pre>
+LU-19595 llog: support 64bit consecutive index
+
+The record index in plain llog is relative index in the llog, to get
+the global record index in the catalog, save last record index of
+previous llog in the llog header, then (rec_index + llog_offset - 1)
+is the global record index in the catalog, herein '-1' is because
+llog header occupies index 0.
+
+Add field llh_glb_offset in the struct llog_log_hdr, and add
+LLOG_F_EXT_GBL_OFFSET flag. Enables this feature by default.
+
+Test-Parameters: testlist=sanity serverversion=2.15 env=ONLY="1 2 3 4 5"
+Test-Parameters: testlist=sanity clientversion=2.15 env=ONLY="1 2 3 4 5"
+Lustre-change: https://review.whamcloud.com/58908
+Signed-off-by: Lai Siyao <lai.siyao@whamcloud.com>
+Change-Id: I963914fe2969e54f6bf96593f5c1d01b4e16308c
+
+</pre>
+</body>
+</html>
