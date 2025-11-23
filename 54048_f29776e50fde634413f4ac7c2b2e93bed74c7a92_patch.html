@@ -1,0 +1,21 @@
+<html lang="en">
+<body>
+<pre>
+LU-15069 llite: remove cra_contention
+
+cra_contention attempts to add a heuristic to make readahead
+less aggressive when there is lock contention, but all it
+does is prevent readahead expanding when there *might* be
+lock contention.
+
+The normal readahead lock boundary checking functions just
+fine to handle lock contention - it will not do readahead
+if there is no lock.  The rest is just an unnecessary and
+confusing extra.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Ief9ee1ac1ee4039b938e02a217b00bdff3bf7308
+
+</pre>
+</body>
+</html>
