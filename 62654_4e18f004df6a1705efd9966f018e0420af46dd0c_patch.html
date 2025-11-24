@@ -1,0 +1,31 @@
+<html lang="en">
+<body>
+<pre>
+LU-0000 llite: fix EOF issues with parity mirrors
+
+COMMIT MESSAGE INCOMPLETE
+
+Designated mirror IO is used for mirror resync and similar
+operations that need to read from a specific mirror
+regardless of the client's cached file size. This is
+critical for EC/parity mirrors which store encoded data
+and have different EOF than data mirrors.
+
+Skip client-side EOF checks and size updates for
+designated mirror reads to ensure they always reach the
+server:
+
+- Skip file_read_confine_iter() in do_file_read_iter()
+- Skip vvp_prep_size() in vvp_io_read_start()
+- Skip EOF checks in ll_direct_IO_impl()
+
+Also block O_APPEND with designated mirror IO since
+O_APPEND requires knowing EOF, which designated mirror IO
+specifically avoids.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I1cf4e51b44f34b7f2b0a0b08ed17026b3ea766c0
+
+</pre>
+</body>
+</html>
