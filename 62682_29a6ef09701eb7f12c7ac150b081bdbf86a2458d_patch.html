@@ -1,0 +1,39 @@
+<html lang="en">
+<body>
+<pre>
+LU-19626 tests: multiop running out of single-letter commands
+
+Problem: The multiop test utility uses single-letter
+commands (a-z, A-Z) to perform file operations. We've used
+up most of the alphabet - only 4 letters remain unused
+(b, h, k, q). We need a way to expand beyond the current
+52-command limit without breaking existing tests.
+
+Solution: Implement two-character prefix commands using
+unused letters. A prefix letter like 'q' is followed by a
+second character to specify the command (e.g., 'qe', 'qf').
+This gives us ~50 additional commands per prefix letter.
+
+This is the only safe expansion method because existing
+commands can be chained (e.g., 'Oc' = open then close), so
+we can't repurpose currently-used letters as prefixes.
+
+Implementation:
+- Use 'q' as the first prefix command
+- Add 'qe[num]' for lseek(SEEK_END) with optional offset
+- Reserve 'qq' for future nested prefixes
+- Keep h and k reserved for later use
+
+Also fix a bug where commands with numeric arguments would
+lose their return value due to the main loop resetting rc=0
+at each iteration.
+
+Add test_855 to sanity.sh to verify the new functionality.
+
+Test-Parameters: trivial
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I723717b8c26c2dd6e5534a15d34f8d543a2c2d74
+
+</pre>
+</body>
+</html>
