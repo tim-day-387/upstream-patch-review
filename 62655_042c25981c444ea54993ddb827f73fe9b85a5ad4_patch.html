@@ -1,0 +1,30 @@
+<html lang="en">
+<body>
+<pre>
+LU-0000 llite: block O_APPEND and truncate on parity mirrors
+
+Parity mirrors store EC-encoded data which has a
+different EOF than regular data mirrors. Operations
+that depend on EOF (O_APPEND and truncate) don't make
+sense on parity mirrors because:
+
+1. Parity data is computed, not directly written
+2. Parity mirrors have different EOF than data mirrors
+3. These operations would require knowing the parity
+   mirror's EOF, which is not meaningful
+
+Add ll_mirror_is_parity() helper that uses
+cl_object_layout_get() to check if a mirror ID
+corresponds to a parity mirror by examining the
+LCME_FL_PARITY flag in the layout.
+
+Block O_APPEND in LL_IOC_FLR_SET_MIRROR ioctl and
+truncate in cl_setattr_ost() when the designated
+mirror is a parity mirror, returning -EINVAL.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I500277ef37933eda04ad9db05cd314ab859caafb
+
+</pre>
+</body>
+</html>
