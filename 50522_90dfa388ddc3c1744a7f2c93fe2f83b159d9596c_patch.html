@@ -1,0 +1,24 @@
+<html lang="en">
+<body>
+<pre>
+LU-16554 tgt: Specify exact size for packet in out_handle
+
+Out update request always lists reply size minimum as 4K in
+out_update_header (lustre/osp/osp_trans.c::osp_prep_update_req())
+
+Out update reply blindly uses this size to create the pack size,
+not actually checking the size of the packed reply.
+(lustre/target/out_handler.c::out_handle())
+
+If the former behavior is changed, than the later behavior will
+break. Currently there's a 4K buffer to hold ~100B of data.
+
+This patch fix changes the size for generating the response
+packet size to be more accurate.
+
+Signed-off-by: Vitaliy Kuznetsov <vkuznetsov@ddn.com>
+Change-Id: I9d195a2f646ae6e2a838cb15c4a543ba109da232
+
+</pre>
+</body>
+</html>
