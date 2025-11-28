@@ -1,0 +1,35 @@
+<html lang="en">
+<body>
+<pre>
+LU-0000 llapi: skip I/O to SOM components during resync
+
+SOM (Size-on-MDS) components have no OST objects and
+store only metadata on the MDS. During mirror resync,
+attempting to perform I/O operations (read, write,
+punch, truncate) on SOM components fails with I/O
+errors.
+
+This patch adds a helper function is_som_component() to
+identify SOM components by their LCME_FL_SOM flag, and
+skips all I/O operations on these components during
+resync in llapi_mirror_resync_many_params().
+
+SOM components are still included in the stale component
+list returned by llapi_mirror_find_stale(), so their
+stale flags are properly cleared after resync completes.
+This allows the FLR (File Level Redundancy) state
+machine to function correctly for files with SOM
+mirrors.
+
+Test 215 in sanity-flr.sh is updated to verify that SOM
+components are marked stale after writes and have their
+stale flags cleared after resync.
+
+Test-Parameters: fortestonly
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I6e21da23d5b204568c58f2db83135229191cd02f
+
+</pre>
+</body>
+</html>
