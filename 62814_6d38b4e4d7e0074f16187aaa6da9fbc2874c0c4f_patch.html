@@ -1,0 +1,39 @@
+<html lang="en">
+<body>
+<pre>
+LU-0000 tests: verify SOM data accuracy in SOM mirrors
+
+Add comprehensive tests to verify that SOM (Size-on-MDS)
+data stored in SOM mirrors accurately reflects the actual
+file size and block count after various operations.
+
+Extended test 215 to verify SOM data matches actual file
+attributes after resync using 'lfs getsom'.
+
+Added test 222 to comprehensively test SOM data accuracy
+across multiple file operations:
+- Single-threaded write
+- Direct I/O write (oflag=direct)
+- Append operation
+- Truncate to smaller size
+- Truncate to larger size (sparse file)
+- Sparse file writes (write at offset)
+- fdatasync operations
+
+Added test 223 to verify SOM data accuracy with
+multi-threaded concurrent writes.
+
+Each test verifies that both size and block count in the
+SOM mirror match the actual file attributes after resync,
+providing coverage similar to the existing SOM tests in
+sanity.sh (tests 806-809) but specifically for SOM
+mirrors.
+
+Test-Parameters: fortestonly
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Ie518090b22d59ef8f20371ad697217395f9a792e
+
+</pre>
+</body>
+</html>
