@@ -1,0 +1,38 @@
+<html lang="en">
+<body>
+<pre>
+LU-0000 tests: add SOM mirror tests to sanity-flr
+
+Add test suite for SOM (Size-on-MDS) mirror functionality
+to sanity-flr.sh. These tests verify the basic CLI and FLR
+integration for SOM mirrors.
+
+Test 212 verifies basic SOM file creation with lfs
+setstripe --som, checking that it creates a 2-mirror file
+with correct component structure.
+
+Test 213 validates option compatibility, ensuring --som
+requires -N and rejects --ec.
+
+Test 214 checks that lfs getstripe correctly displays SOM
+component properties including the 'som' flag.
+
+Test 215 verifies FLR machinery integration by confirming
+SOM components are marked stale after writes to the data
+mirror.
+
+Also add LCME_FL_SOM entry to comp_flags_table in
+lustreapi.h so lfs getstripe displays 'som' instead of
+the raw hex value 0x800.
+
+Note: Resync support for SOM mirrors is deferred to a
+later phase and requires additional server-side changes.
+
+Test-Parameters: fortestonly
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I6eb9055121d7fb6231e52c88b9cd21b6c4827285
+
+</pre>
+</body>
+</html>
