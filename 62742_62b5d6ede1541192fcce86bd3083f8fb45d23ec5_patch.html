@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: fix dm-flakey device handling
+
+The recent parallel unmount commit attempted to fix
+device name functions to return the actual mounted
+device for dm-flakey support, but this created circular
+dependencies during initialization that caused hangs.
+
+The proper solution is to add a new facet_real_dev()
+function that returns the currently mounted device
+(which could be a dm-flakey device) when the facet is
+mounted, or falls back to the logical device name when
+unmounted.
+
+This is needed because direct device access tools like
+debugfs, tune2fs, dumpe2fs, and e2fsck need to access
+the actual mounted device (dm-flakey) to see current
+filesystem state, not the underlying physical device
+which may have stale data buffered in the dm layer.
+
+Updated all test code that uses these tools to call
+facet_real_dev() instead of ostdevname() or mdsdevname()
+to get the correct device for direct access.
+
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I8d9785351904fc4f21721f872a8cdce7958159a5
+
+</pre>
+</body>
+</html>
