@@ -1,0 +1,22 @@
+<html lang="en">
+<body>
+<pre>
+LU-19649 ldiskfs: fix error handling in dx_probe/ext4-pdirop.patch
+
+Since 3ba733f879c2 ("ext4: avoid cycles in directory h-tree"),
+dx_probe will check if we have cycles,
+however ext4-pdirop.patch handles this differently, most versions
+place the check for last index level code block in front of the
+upstream change, except for oe2203/ext4-pdirop.patch and
+rhel8.7/ext4-pdirop.patch.
+
+Make all the versions consistent, which checks for cycles first and
+if there's a cycle, release htree spin lock before bailing out.
+
+Test-Parameters: trivial
+Signed-off-by: Li Dongyang <dongyangli@ddn.com>
+Change-Id: I93047798ac12715cd2b479c449dac9582755a7f7
+
+</pre>
+</body>
+</html>
