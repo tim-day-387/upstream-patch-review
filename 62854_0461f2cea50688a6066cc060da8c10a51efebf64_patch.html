@@ -1,0 +1,21 @@
+<html lang="en">
+<body>
+<pre>
+DRAFT LU-12668 ec: Update resync and verify to block granularity
+
+Instead of writing and verifying the entire parity stripes
+compute what regions of the parity stripes are actually protecting
+data and what is not and only write/verify those blocks.
+
+This greatly reduces the storage required for small files.
+
+Example: --ec 4+2 and stripe_size 4M and a small file containing 6 bytes.
+Instead of this requiring 2 * 4MB of parity storage
+we will now only consume 2 fs blocks on the OST.
+
+Signed-off-by: Ronnie Sahlberg <rsahlberg@whamcloud.com>
+Change-Id: I0364aa9c061f0af6cd910de7dd0a59309984c5d1
+
+</pre>
+</body>
+</html>
