@@ -1,0 +1,20 @@
+<html lang="en">
+<body>
+<pre>
+LU-19611 mdt: clear all lock handle cookies in error path
+
+The error path in mdt_intent_lock_replace() only clears
+mlh_reg_lh.cookie but not mlh_rreg_lh.cookie or mlh_pdo_lh.cookie.
+This leaves stale or uninitialized values in these fields, which
+can trigger assertion failures during cleanup.
+
+When ldlm_handle2lock_long() returns NULL (lock not found), the
+cleanup code must clear all lock handle cookies to prevent the
+assertion in mdt_thread_info_fini() from failing.
+
+Signed-off-by: Max Wang <wamax@amazon.com>
+Change-Id: I88e3b393bbbb2eef5bb1485f86345532ff9038e7
+
+</pre>
+</body>
+</html>
