@@ -1,0 +1,29 @@
+<html lang="en">
+<body>
+<pre>
+LU-19653 tests: fix multiop argument handling bugs
+
+The LU-15367 patch introduced two bugs in multiop:
+
+1. The pop_arg() function resets cur_arg to 3 or 4 on
+every call instead of initializing it once. This causes
+commands that use POP_ARG() (K, l, L, n, N) to loop
+infinitely, always returning the same argument.
+
+2. The default case in the getopt switch statement does
+not exit after printing the usage message. When getopt
+encounters an invalid option, it repeatedly returns '?',
+causing an infinite loop that fills test logs (2.2GB+
+logs observed on aarch64 test systems).
+
+The fixes ensure cur_arg is initialized only once using
+a static bool, and add exit(1) to the getopt default
+case.
+
+Fixes: 424418efb8 ("LU-15367 tests: Multiop command from file")
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I13cd576a6a8256bc8c0c126d70cdf478762163a4
+
+</pre>
+</body>
+</html>
