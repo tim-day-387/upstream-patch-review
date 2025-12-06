@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=49590c7affb6422b9c5ca50393b16bb7;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=db642badab384ee1b8f30832028c7fe5;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=0e226ac3f51f4961a03d52d2ba340513;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=b3f9060abc274219a3497bf510ef4f3d;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -38,13 +38,14 @@ CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
 Loading modules from /workspace/lustre-release/lustre
-detected 16 online CPUs by sysfs
+detected 4 online CPUs by sysfs
 MODOPTS_LIBCFS=
-libcfs will create CPU partition based on online CPUs
+Force libcfs to create 2 CPU partitions
+../libcfs/libcfs/libcfs options: 'cpu_npartitions=2'
 libcfs: loading out-of-tree module taints kernel.
 Key type ._llcrypt registered
 Key type .llcrypt registered
-libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_95_ga350451
 ptlrpc/ptlrpc options: 'lbug_on_grant_miscount=1'
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
@@ -77,17 +78,17 @@ Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
 lustre-bot-kvm: executing set_hostid
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
 Loading modules from /workspace/lustre-release/lustre
-detected 16 online CPUs by sysfs
+detected 4 online CPUs by sysfs
 MODOPTS_LIBCFS=
-libcfs will create CPU partition based on online CPUs
+Force libcfs to create 2 CPU partitions
 gss/krb5 is not supported
 Formatting mgs, mds, osts
 Checking servers environments
 Checking clients lustre-bot-kvm environments
 Loading modules from /workspace/lustre-release/lustre
-detected 16 online CPUs by sysfs
+detected 4 online CPUs by sysfs
 MODOPTS_LIBCFS=
-libcfs will create CPU partition based on online CPUs
+Force libcfs to create 2 CPU partitions
 gss/krb5 is not supported
 Setup mgs, mdt, osts
 Start mds1: mount -t lustre -v lustre-wbcfs /mnt/lustre-mds1
@@ -104,10 +105,10 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2913) used greatest stack depth: 23568 bytes left
 arg[0] = /sbin/mount.lustre
-arg[1] = -v
-arg[2] = -o
+mount.lustre (26arg[1] = -v97) used greates
+t stack depth: 2arg[2] = -o3664 bytes left
+
 arg[3] = rw
 arg[4] = lustre-wbcfs
 arg[5] = /mnt/lustre-mds1
@@ -125,10 +126,6 @@ OSD_WBC_INDEX=0
 svname -> lustre:OST0000
 OSD_WBC_MGS_NID=10.0.2.15@tcp
 params -> mgsnode=10.0.2.15@tcp
-Lustre: lustre-OST0000: new disk, initializing
-Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
-Lustre: Skipped 1 previous similar message
-Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
@@ -150,8 +147,11 @@ svname -> lustre:OST0001
 OSD_WBC_MGS_NID=10.0.2.15@tcp
 params -> mgsnode=10.0.2.15@tcp
 Lustre: lustre-OST0001: new disk, initializing
+Lustre: Skipped 1 previous similar message
 Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
+Lustre: Skipped 2 previous similar messages
 Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
+Lustre: Skipped 1 previous similar message
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
@@ -168,18 +168,19 @@ Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-MDT0000: local client 13463d22-95ab-4c38-9cfd-1e74c2290c44 w/o recovery
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client b93b0f48-44f0-4db1-91a6-74dfae78b576 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88811c232000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88811c232000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888114158000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888114158000.idle_timeout=debug
 setting jobstats to procname_uid
 Setting lustre.sys.jobid_var from disable to procname_uid
 Waiting 90s for 'procname_uid'
-Updated after 3s: want 'procname_uid' got 'procname_uid'
 disable quota as required
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 mdt.lustre-MDT0000.identity_upcall=NONE
@@ -208,15 +209,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Sat Dec  6 19:36:02 UTC 2025
+Started at Sat Dec  6 20:09:43 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/193602
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/193602
-Logging to shared log directory: /tmp/test_logs/2025-12-06/193602
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/200942
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/200942
+Logging to shared log directory: /tmp/test_logs/2025-12-06/200942
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.95
@@ -227,8 +228,8 @@ OSS: 2.16.61.95
 Lustre: DEBUG MARKER: OSS: 2.16.61.95
 running: sanity ONLY=101i 101j 101m 102a 102b 102c 102d 102f 102h 102ha 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Sat Dec  6 19:36:03 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 19:36:03 UTC 2025
+-----============= acceptance-small: sanity ============----- Sat Dec  6 20:09:46 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 20:09:46 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -262,8 +263,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 19:36:05 (1765049765) ===
-Lustre: DEBUG MARKER: === sanity: start setup 19:36:05 (1765049765) ===
+=== sanity: start setup 20:09:48 (1765051788) ===
+Lustre: DEBUG MARKER: === sanity: start setup 20:09:48 (1765051788) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -271,90 +272,90 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88811c232000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88811c232000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888114158000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888114158000.idle_timeout=debug
 disable quota as required
-Lustre: 5225:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 19:36:07 (1765049767) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 19:36:07 (1765049767) ===
+Lustre: 5018:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 20:09:53 (1765051793) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 20:09:53 (1765051793) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4366]
+ [touch] [/mnt/lustre/d0_runas_test/f4158]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 101i: allow current readahead to exceed reservation ========================================================== 19:36:09 (1765049769)
-Lustre: DEBUG MARKER: == sanity test 101i: allow current readahead to exceed reservation ========================================================== 19:36:09 (1765049769)
+== sanity test 101i: allow current readahead to exceed reservation ========================================================== 20:09:56 (1765051796)
+Lustre: DEBUG MARKER: == sanity test 101i: allow current readahead to exceed reservation ========================================================== 20:09:56 (1765051796)
 10+0 records in
 10+0 records out
-10485760 bytes (10 MB, 10 MiB) copied, 0.344575 s, 30.4 MB/s
-llite.lustre-ffff88811c232000.max_read_ahead_per_file_mb=1
+10485760 bytes (10 MB, 10 MiB) copied, 0.476485 s, 22.0 MB/s
+llite.lustre-ffff888114158000.max_read_ahead_per_file_mb=1
 Reset readahead stats
-llite.lustre-ffff88811c232000.read_ahead_stats=0
+llite.lustre-ffff888114158000.read_ahead_stats=0
 5+0 records in
 5+0 records out
-10485760 bytes (10 MB, 10 MiB) copied, 0.360046 s, 29.1 MB/s
-llite.lustre-ffff88811c232000.read_ahead_stats=
-snapshot_time             1765049770.225510224 secs.nsecs
-start_time                1765049769.832963964 secs.nsecs
-elapsed_time              0.392546260 secs.nsecs
+10485760 bytes (10 MB, 10 MiB) copied, 0.417568 s, 25.1 MB/s
+llite.lustre-ffff888114158000.read_ahead_stats=
+snapshot_time             1765051797.632391845 secs.nsecs
+start_time                1765051797.185969452 secs.nsecs
+elapsed_time              0.446422393 secs.nsecs
 hits                      2555 samples [pages]
 misses                    5 samples [pages]
 zero_size_window          2555 samples [pages]
 failed_to_fast_read       5 samples [pages]
 readahead_pages           5 samples [pages] 511 511 2555
-llite.lustre-ffff88811c232000.max_read_ahead_per_file_mb=67
-PASS 101i (1s)
+llite.lustre-ffff888114158000.max_read_ahead_per_file_mb=64
+PASS 101i (2s)
 
-== sanity test 101j: A complete read block should be submitted when no RA ========================================================== 19:36:10 (1765049770)
-Lustre: DEBUG MARKER: == sanity test 101j: A complete read block should be submitted when no RA ========================================================== 19:36:10 (1765049770)
-llite.lustre-ffff88811c232000.hybrid_io=0
+== sanity test 101j: A complete read block should be submitted when no RA ========================================================== 20:09:58 (1765051798)
+Lustre: DEBUG MARKER: == sanity test 101j: A complete read block should be submitted when no RA ========================================================== 20:09:58 (1765051798)
+llite.lustre-ffff888114158000.hybrid_io=0
 Disable read-ahead
 16+0 records in
 16+0 records out
-16777216 bytes (17 MB, 16 MiB) copied, 0.430244 s, 39.0 MB/s
+16777216 bytes (17 MB, 16 MiB) copied, 0.60379 s, 27.8 MB/s
 Reset readahead stats
 4096+0 records in
 4096+0 records out
-16777216 bytes (17 MB, 16 MiB) copied, 13.2065 s, 1.3 MB/s
-snapshot_time             1765049784.646582228 secs.nsecs
-start_time                1765049771.391930066 secs.nsecs
-elapsed_time              13.254652162 secs.nsecs
+16777216 bytes (17 MB, 16 MiB) copied, 17.5905 s, 954 kB/s
+snapshot_time             1765051817.415895211 secs.nsecs
+start_time                1765051799.781564604 secs.nsecs
+elapsed_time              17.634330607 secs.nsecs
 failed_to_fast_read       4096 samples [pages]
 Reset readahead stats
 16+0 records in
 16+0 records out
-16777216 bytes (17 MB, 16 MiB) copied, 0.748563 s, 22.4 MB/s
-snapshot_time             1765049785.694121966 secs.nsecs
-start_time                1765049784.862310503 secs.nsecs
-elapsed_time              0.831811463 secs.nsecs
+16777216 bytes (17 MB, 16 MiB) copied, 0.370139 s, 45.3 MB/s
+snapshot_time             1765051817.969451294 secs.nsecs
+start_time                1765051817.565707988 secs.nsecs
+elapsed_time              0.403743306 secs.nsecs
 failed_to_fast_read       16 samples [pages]
 forceread_pages           16 samples [pages] 255 255 4080
 Reset readahead stats
 1+0 records in
 1+0 records out
-16777216 bytes (17 MB, 16 MiB) copied, 0.378417 s, 44.3 MB/s
-snapshot_time             1765049786.352973330 secs.nsecs
-start_time                1765049785.880382537 secs.nsecs
-elapsed_time              0.472590793 secs.nsecs
+16777216 bytes (17 MB, 16 MiB) copied, 0.24688 s, 68.0 MB/s
+snapshot_time             1765051818.388248637 secs.nsecs
+start_time                1765051818.120356218 secs.nsecs
+elapsed_time              0.267892419 secs.nsecs
 failed_to_fast_read       1 samples [pages]
 forceread_pages           1 samples [pages] 4095 4095 4095
-PASS 101j (16s)
+PASS 101j (20s)
 
-== sanity test 101m: read ahead for small file and last stripe of the file ========================================================== 19:36:26 (1765049786)
-Lustre: DEBUG MARKER: == sanity test 101m: read ahead for small file and last stripe of the file ========================================================== 19:36:26 (1765049786)
+== sanity test 101m: read ahead for small file and last stripe of the file ========================================================== 20:10:18 (1765051818)
+Lustre: DEBUG MARKER: == sanity test 101m: read ahead for small file and last stripe of the file ========================================================== 20:10:18 (1765051818)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
  SKIP: sanity test_101m need >= 2.13.57 and ldiskfs for fallocate
 Lustre: DEBUG MARKER: SKIP: sanity test_101m need >= 2.13.57 and ldiskfs for fallocate
-SKIP 101m (1s)
+SKIP 101m (0s)
 
-== sanity test 102a: user xattr test ============================================================================================ 19:36:27 (1765049787)
-Lustre: DEBUG MARKER: == sanity test 102a: user xattr test ============================================================================================ 19:36:27 (1765049787)
+== sanity test 102a: user xattr test ============================================================================================ 20:10:18 (1765051818)
+Lustre: DEBUG MARKER: == sanity test 102a: user xattr test ============================================================================================ 20:10:18 (1765051818)
 set/get xattr...
  sanity test_102a: @@@@@@ FAIL: /mnt/lustre/f102a.sanity missing trusted.name1=value1 
 Lustre: DEBUG MARKER: sanity test_102a: @@@@@@ FAIL: /mnt/lustre/f102a.sanity missing trusted.name1=value1
@@ -365,12 +366,12 @@ Lustre: DEBUG MARKER: sanity test_102a: @@@@@@ FAIL: /mnt/lustre/f102a.sanity mi
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:13269:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/193602/sanity.test_102a.*.1765049787.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/200942/sanity.test_102a.*.1765051818.log
 Dumping logs only on local client.
-FAIL 102a (2s)
+FAIL 102a (1s)
 
-== sanity test 102b: getfattr/setfattr for trusted.lov EAs ========================================================== 19:36:29 (1765049789)
-Lustre: DEBUG MARKER: == sanity test 102b: getfattr/setfattr for trusted.lov EAs ========================================================== 19:36:29 (1765049789)
+== sanity test 102b: getfattr/setfattr for trusted.lov EAs ========================================================== 20:10:19 (1765051819)
+Lustre: DEBUG MARKER: == sanity test 102b: getfattr/setfattr for trusted.lov EAs ========================================================== 20:10:19 (1765051819)
 test layout '-S 65536 -i 1 -c 2'
 lmm_stripe_count:  2
 lmm_stripe_size:   65536
@@ -386,6 +387,7 @@ get/set/list trusted.lov xattr ...
 getfattr: Removing leading '/' from absolute path names
 setfattr 4 /mnt/lustre/f102b.sanity.2
 setfattr: /mnt/lustre/f102b.sanity.2: Numerical result out of range
+setfattr (6103) used greatest stack depth: 23656 bytes left
 setfattr 6 /mnt/lustre/f102b.sanity.2
 setfattr: /mnt/lustre/f102b.sanity.2: Numerical result out of range
 setfattr 8 /mnt/lustre/f102b.sanity.2
@@ -496,6 +498,7 @@ setfattr 158 /mnt/lustre/f102b.sanity.2
 setfattr 160 /mnt/lustre/f102b.sanity.2
 setfattr 162 /mnt/lustre/f102b.sanity.2
 test layout '-E 1M -S 65536 -i 1 -c 2 -Eeof -S4M'
+lfs (6186) used greatest stack depth: 23512 bytes left
 lcm_layout_gen:    2
 lcm_mirror_count:  1
 lcm_entry_count:   2
@@ -1008,11 +1011,10 @@ setfattr: /mnt/lustre/f102b.sanity.2: Numerical result out of range
 setfattr 480 /mnt/lustre/f102b.sanity.2
 setfattr: /mnt/lustre/f102b.sanity.2: Numerical result out of range
 setfattr 482 /mnt/lustre/f102b.sanity.2
-rm (6648) used greatest stack depth: 23512 bytes left
-PASS 102b (3s)
+PASS 102b (1s)
 
-== sanity test 102c: non-root getfattr/setfattr for lustre.lov EAs ===================================================================== 19:36:32 (1765049792)
-Lustre: DEBUG MARKER: == sanity test 102c: non-root getfattr/setfattr for lustre.lov EAs ===================================================================== 19:36:32 (1765049792)
+== sanity test 102c: non-root getfattr/setfattr for lustre.lov EAs ===================================================================== 20:10:20 (1765051820)
+Lustre: DEBUG MARKER: == sanity test 102c: non-root getfattr/setfattr for lustre.lov EAs ===================================================================== 20:10:20 (1765051820)
 get/set/list lustre.lov xattr ...
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-S] [65536] [-i] [1] [-c] [2] [/mnt/lustre/d102c.sanity/f102c.sanity]
@@ -1029,17 +1031,16 @@ running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [getstripe] [-c] [/mnt/lustre/d102c.sanity/f102c.sanity2]
 PASS 102c (1s)
 
-== sanity test 102d: tar restore stripe info from tarfile,not keep osts ========================================================== 19:36:33 (1765049793)
-Lustre: DEBUG MARKER: == sanity test 102d: tar restore stripe info from tarfile,not keep osts ========================================================== 19:36:33 (1765049793)
-PASS 102d (5s)
+== sanity test 102d: tar restore stripe info from tarfile,not keep osts ========================================================== 20:10:21 (1765051821)
+Lustre: DEBUG MARKER: == sanity test 102d: tar restore stripe info from tarfile,not keep osts ========================================================== 20:10:21 (1765051821)
+PASS 102d (2s)
 
-== sanity test 102f: tar copy files, not keep osts ======= 19:36:38 (1765049798)
-Lustre: DEBUG MARKER: == sanity test 102f: tar copy files, not keep osts ======= 19:36:38 (1765049798)
-expr (7097) used greatest stack depth: 23432 bytes left
-PASS 102f (4s)
+== sanity test 102f: tar copy files, not keep osts ======= 20:10:23 (1765051823)
+Lustre: DEBUG MARKER: == sanity test 102f: tar copy files, not keep osts ======= 20:10:23 (1765051823)
+PASS 102f (2s)
 
-== sanity test 102h: grow xattr from inside inode to external block ========================================================== 19:36:42 (1765049802)
-Lustre: DEBUG MARKER: == sanity test 102h: grow xattr from inside inode to external block ========================================================== 19:36:42 (1765049802)
+== sanity test 102h: grow xattr from inside inode to external block ========================================================== 20:10:25 (1765051825)
+Lustre: DEBUG MARKER: == sanity test 102h: grow xattr from inside inode to external block ========================================================== 20:10:25 (1765051825)
 save trusted.big on /mnt/lustre/f102h.sanity
 Lustre: DEBUG MARKER: save trusted.big on /mnt/lustre/f102h.sanity
 /mnt/lustre/f102h.sanity: trusted.big: No such attribute
@@ -1053,33 +1054,33 @@ Lustre: DEBUG MARKER: sanity test_102h: @@@@@@ FAIL: trusted.big different after
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:13459:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/193602/sanity.test_102h.*.1765049802.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/200942/sanity.test_102h.*.1765051825.log
 Dumping logs only on local client.
-FAIL 102h (2s)
+FAIL 102h (0s)
 
-== sanity test 102ha: grow xattr from inside inode to external inode ========================================================== 19:36:44 (1765049804)
-Lustre: DEBUG MARKER: == sanity test 102ha: grow xattr from inside inode to external inode ========================================================== 19:36:44 (1765049804)
+== sanity test 102ha: grow xattr from inside inode to external inode ========================================================== 20:10:25 (1765051825)
+Lustre: DEBUG MARKER: == sanity test 102ha: grow xattr from inside inode to external inode ========================================================== 20:10:25 (1765051825)
 
  SKIP: sanity test_102ha ea_inode feature disabled
 Lustre: DEBUG MARKER: SKIP: sanity test_102ha ea_inode feature disabled
-SKIP 102ha (0s)
+SKIP 102ha (1s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 41 sec ================= 19:36:45 (1765049805)
-Lustre: DEBUG MARKER: == sanity test complete, duration 41 sec ================= 19:36:45 (1765049805)
+== sanity test complete, duration 41 sec ================= 20:10:27 (1765051827)
+Lustre: DEBUG MARKER: == sanity test complete, duration 41 sec ================= 20:10:27 (1765051827)
 sanity: FAIL: test_102a /mnt/lustre/f102a.sanity missing trusted.name1=value1
 sanity: FAIL: test_102h trusted.big different after saving trusted.big
-=== sanity: start cleanup 19:36:46 (1765049806) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 19:36:46 (1765049806) ===
+=== sanity: start cleanup 20:10:27 (1765051827) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 20:10:27 (1765051827) ===
 skip cleanup
-=== sanity: finish cleanup 19:36:46 (1765049806) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 19:36:46 (1765049806) ===
+=== sanity: finish cleanup 20:10:27 (1765051827) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 20:10:27 (1765051827) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 1
-Finished at Sat Dec  6 19:36:46 UTC 2025 in 44s
+Finished at Sat Dec  6 20:10:27 UTC 2025 in 45s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 /workspace/lustre-release/lustre/tests/test-framework.sh: line 6803: cd: HOME not set
 cat: /etc/system-release: No such file or directory
@@ -1105,37 +1106,38 @@ CLIENT_OS_VERSION_CODE=0
 Stopping clients: lustre-bot-kvm /mnt/lustre (opts:-f)
 Stopping client lustre-bot-kvm /mnt/lustre opts:-f
 Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 8440:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88811c232000: inode [0x200000401:0x20:0x0] mdc close failed: rc = -108
-LustreError: 8440:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 8237:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888114158000: inode [0x200000401:0x20:0x0] mdc close failed: rc = -108
+LustreError: 8237:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
 Stopping /mnt/lustre-mds1 (opts:-f) on lustre-bot-kvm
+mdt00_003 (5999) used greatest stack depth: 23320 bytes left
 Lustre: server umount lustre-MDT0000 complete
 Stopping /mnt/lustre-ost1 (opts:-f) on lustre-bot-kvm
-LustreError: 2918:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765049818 with bad export cookie 4279079290970392010
+LustreError: 2703:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765051839 with bad export cookie 2168019467352334159
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 8524:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 8524:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+LustreError: 8321:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 8321:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
 Stopping /mnt/lustre-ost2 (opts:-f) on lustre-bot-kvm
-LustreError: 8565:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 8565:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 8362:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 8362:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 8839:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 8839:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 8635:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8635:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 modules unloaded.
 
-========= PASSED sanity-quick in 157s
+========= PASSED sanity-quick in 147s
 
 Passed: sanity-quick
 Failed: 
 Kernel version: 6.12.57-ktest
 TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=49590c7affb6422b9c5ca50393b16bb7\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=0e226ac3f51f4961a03d52d2ba340513\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
 ACPI: PM: Preparing to enter system sleep state S5
 reboot: Power down
 </pre>

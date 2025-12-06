@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=48f8ce25f8334b7fb53386e25e932c87;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=abc6aaacfe314548986ff1883d030f04;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=7ac2a493a3c746aea1bca056724a02ac;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=5079a0dcd960409bb5aee886a660fdc3;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -38,13 +38,14 @@ CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
 Loading modules from /workspace/lustre-release/lustre
-detected 16 online CPUs by sysfs
+detected 4 online CPUs by sysfs
 MODOPTS_LIBCFS=
-libcfs will create CPU partition based on online CPUs
+Force libcfs to create 2 CPU partitions
+../libcfs/libcfs/libcfs options: 'cpu_npartitions=2'
 libcfs: loading out-of-tree module taints kernel.
 Key type ._llcrypt registered
 Key type .llcrypt registered
-libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_95_ga350451
 ptlrpc/ptlrpc options: 'lbug_on_grant_miscount=1'
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
@@ -77,17 +78,17 @@ Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
 lustre-bot-kvm: executing set_hostid
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
 Loading modules from /workspace/lustre-release/lustre
-detected 16 online CPUs by sysfs
+detected 4 online CPUs by sysfs
 MODOPTS_LIBCFS=
-libcfs will create CPU partition based on online CPUs
+Force libcfs to create 2 CPU partitions
 gss/krb5 is not supported
 Formatting mgs, mds, osts
 Checking servers environments
 Checking clients lustre-bot-kvm environments
 Loading modules from /workspace/lustre-release/lustre
-detected 16 online CPUs by sysfs
+detected 4 online CPUs by sysfs
 MODOPTS_LIBCFS=
-libcfs will create CPU partition based on online CPUs
+Force libcfs to create 2 CPU partitions
 gss/krb5 is not supported
 Setup mgs, mdt, osts
 Start mds1: mount -t lustre -v lustre-wbcfs /mnt/lustre-mds1
@@ -114,7 +115,7 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-mds1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-mds1, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,param=mgsnode=10.0.2.15@tcp,svname=lustre-MDT0000,device=lustre-wbcfs
-mount.lustre (2910) used greatest stack depth: 23584 bytes left
+mount.lustre (2697) used greatest stack depth: 24128 bytes left
 Started wbcfs-target
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Start ost1: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost1
@@ -139,6 +140,7 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-ost1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-ost1, flags=0x1000000 options=osd=osd-wbcfs,mgsnode=10.0.2.15@tcp,virgin,update,svname=lustre-OST0000,device=lustre-wbcfs
+mount.lustre (2855) used greatest stack depth: 23656 bytes left
 Started wbcfs-target
 fstrim: /mnt/lustre-ost1: the discard operation is not supported
 Start ost2: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost2
@@ -162,17 +164,19 @@ mounting device lustre-wbcfs at /mnt/lustre-ost2, flags=0x1000000 options=osd=os
 Started wbcfs-target
 fstrim: /mnt/lustre-ost2: the discard operation is not supported
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 38f04264-4e19-437f-8aa9-374999248d84 w/o recovery
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
+Lustre: lustre-MDT0000: local client 545dd5b2-86e5-49b8-a42c-2836e7d7092e w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88810ea5c000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88810ea5c000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888108c1c000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888108c1c000.idle_timeout=debug
 setting jobstats to procname_uid
 Setting lustre.sys.jobid_var from disable to procname_uid
 Waiting 90s for 'procname_uid'
@@ -205,15 +209,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Sat Dec  6 19:36:13 UTC 2025
+Started at Sat Dec  6 20:09:52 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/193612
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/193612
-Logging to shared log directory: /tmp/test_logs/2025-12-06/193612
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/200950
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/200950
+Logging to shared log directory: /tmp/test_logs/2025-12-06/200950
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.95
@@ -224,8 +228,8 @@ OSS: 2.16.61.95
 Lustre: DEBUG MARKER: OSS: 2.16.61.95
 running: sanity ONLY=27W 27X 28 29 30a 30b 30c 30d 31a 31b 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Sat Dec  6 19:36:15 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 19:36:15 UTC 2025
+-----============= acceptance-small: sanity ============----- Sat Dec  6 20:09:57 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 20:09:57 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -259,8 +263,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 19:36:17 (1765049777) ===
-Lustre: DEBUG MARKER: === sanity: start setup 19:36:17 (1765049777) ===
+=== sanity: start setup 20:10:00 (1765051800) ===
+Lustre: DEBUG MARKER: === sanity: start setup 20:10:00 (1765051800) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -268,51 +272,50 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88810ea5c000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88810ea5c000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888108c1c000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888108c1c000.idle_timeout=debug
 disable quota as required
-Lustre: 5208:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 19:36:20 (1765049780) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 19:36:20 (1765049780) ===
+Lustre: 5025:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 20:10:04 (1765051804) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 20:10:04 (1765051804) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4348]
+ [touch] [/mnt/lustre/d0_runas_test/f4165]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 27W: test enable_setstripe_gid ============ 19:36:21 (1765049781)
-Lustre: DEBUG MARKER: == sanity test 27W: test enable_setstripe_gid ============ 19:36:21 (1765049781)
+== sanity test 27W: test enable_setstripe_gid ============ 20:10:05 (1765051805)
+Lustre: DEBUG MARKER: == sanity test 27W: test enable_setstripe_gid ============ 20:10:05 (1765051805)
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-c] [1] [/mnt/lustre/d27W.sanity/f27W.sanity]
-llite.lustre-ffff88810ea5c000.enable_setstripe_gid=0
-running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-c] [1] [/mnt/lustre/d27W.sanity/f27W.sanity]
-lfs setstripe: setstripe warning for '/mnt/lustre/d27W.sanity/f27W.sanity': Setstripe is restricted by your administrator, default striping applied
-llite.lustre-ffff88810ea5c000.enable_setstripe_gid=1000
-running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-c] [1] [/mnt/lustre/d27W.sanity/f27W.sanity]
-llite.lustre-ffff88810ea5c000.enable_setstripe_gid=1
+llite.lustre-ffff888108c1c000.enable_setstripe_gid=0
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-c] [1] [/mnt/lustre/d27W.sanity/f27W.sanity]
 lfs setstripe: setstripe warning for '/mnt/lustre/d27W.sanity/f27W.sanity': Setstripe is restricted by your administrator, default striping applied
-llite.lustre-ffff88810ea5c000.enable_setstripe_gid=-1
+lfs (5368) used greatest stack depth: 23624 bytes left
+llite.lustre-ffff888108c1c000.enable_setstripe_gid=1000
+running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
+ [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-c] [1] [/mnt/lustre/d27W.sanity/f27W.sanity]
+llite.lustre-ffff888108c1c000.enable_setstripe_gid=1
+running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
+ [/workspace/lustre-release/lustre/utils/lfs] [setstripe] [-c] [1] [/mnt/lustre/d27W.sanity/f27W.sanity]
+lfs setstripe: setstripe warning for '/mnt/lustre/d27W.sanity/f27W.sanity': Setstripe is restricted by your administrator, default striping applied
+llite.lustre-ffff888108c1c000.enable_setstripe_gid=-1
 PASS 27W (1s)
 
-== sanity test 27X: lfs migrate honors --overstripe-count option ========================================================== 19:36:22 (1765049782)
-Lustre: DEBUG MARKER: == sanity test 27X: lfs migrate honors --overstripe-count option ========================================================== 19:36:22 (1765049782)
+== sanity test 27X: lfs migrate honors --overstripe-count option ========================================================== 20:10:06 (1765051806)
+Lustre: DEBUG MARKER: == sanity test 27X: lfs migrate honors --overstripe-count option ========================================================== 20:10:06 (1765051806)
 1+0 records in
 1+0 records out
-1024 bytes (1.0 kB, 1.0 KiB) copied, 0.0135303 s, 75.7 kB/s
-LustreError: 3053:0:(ofd_dev.c:1877:ofd_destroy_hdl()) lustre-OST0000: error destroying object [0x240000400:0x8:0x0]: -5
+1024 bytes (1.0 kB, 1.0 KiB) copied, 0.00899822 s, 114 kB/s
 PASS 27X (1s)
 
-== sanity test 28: create/mknod/mkdir with bad file types ====================================================================== 19:36:23 (1765049783)
-Lustre: DEBUG MARKER: == sanity test 28: create/mknod/mkdir with bad file types ====================================================================== 19:36:23 (1765049783)
-LustreError: 2926:0:(wbcfs.c:285:memfs_create_inode()) Unsupport file mode 010644
-createtest (5758) used greatest stack depth: 23512 bytes left
+== sanity test 28: create/mknod/mkdir with bad file types ====================================================================== 20:10:07 (1765051807)
+Lustre: DEBUG MARKER: == sanity test 28: create/mknod/mkdir with bad file types ====================================================================== 20:10:07 (1765051807)
+LustreError: 2724:0:(wbcfs.c:285:memfs_create_inode()) Unsupport file mode 010644
 createtest: ERROR mknod /mnt/lustre/d28/ct-mknod0010644: Operation not supported
  sanity test_28: @@@@@@ FAIL: createtest failed 
 Lustre: DEBUG MARKER: sanity test_28: @@@@@@ FAIL: createtest failed
@@ -323,26 +326,26 @@ Lustre: DEBUG MARKER: sanity test_28: @@@@@@ FAIL: createtest failed
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:3802:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/193612/sanity.test_28.*.1765049784.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/200950/sanity.test_28.*.1765051808.log
 Dumping logs only on local client.
 FAIL 28 (1s)
 
-== sanity test 29: IT_GETATTR regression  ====================================================================================== 19:36:24 (1765049784)
-Lustre: DEBUG MARKER: == sanity test 29: IT_GETATTR regression ====================================================================================== 19:36:24 (1765049784)
+== sanity test 29: IT_GETATTR regression  ====================================================================================== 20:10:08 (1765051808)
+Lustre: DEBUG MARKER: == sanity test 29: IT_GETATTR regression ====================================================================================== 20:10:08 (1765051808)
 first d29
 Lustre: DEBUG MARKER: first d29
 total 0
--rw-r--r-- 1 root root 0 Dec  6 19:36 foo
+-rw-r--r-- 1 root root 0 Dec  6 20:10 foo
 second d29
 Lustre: DEBUG MARKER: second d29
 total 0
--rw-r--r-- 1 root root 0 Dec  6 19:36 foo
+-rw-r--r-- 1 root root 0 Dec  6 20:10 foo
 done
 Lustre: DEBUG MARKER: done
 PASS 29 (3s)
 
-== sanity test 30a: execute binary from Lustre (execve) ======================================================================== 19:36:27 (1765049787)
-Lustre: DEBUG MARKER: == sanity test 30a: execute binary from Lustre (execve) ======================================================================== 19:36:27 (1765049787)
+== sanity test 30a: execute binary from Lustre (execve) ======================================================================== 20:10:11 (1765051811)
+Lustre: DEBUG MARKER: == sanity test 30a: execute binary from Lustre (execve) ======================================================================== 20:10:11 (1765051811)
 NR_REBOOTS
 afs
 bin
@@ -369,10 +372,10 @@ tmp
 usr
 var
 workspace
-PASS 30a (0s)
+PASS 30a (1s)
 
-== sanity test 30b: execute binary from Lustre as non-root ===================================================================== 19:36:27 (1765049787)
-Lustre: DEBUG MARKER: == sanity test 30b: execute binary from Lustre as non-root ===================================================================== 19:36:27 (1765049787)
+== sanity test 30b: execute binary from Lustre as non-root ===================================================================== 20:10:12 (1765051812)
+Lustre: DEBUG MARKER: == sanity test 30b: execute binary from Lustre as non-root ===================================================================== 20:10:12 (1765051812)
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/mnt/lustre/ls] [/]
 NR_REBOOTS
@@ -401,10 +404,10 @@ tmp
 usr
 var
 workspace
-PASS 30b (1s)
+PASS 30b (0s)
 
-== sanity test 30c: execute binary from Lustre without read perms ============================================================== 19:36:28 (1765049788)
-Lustre: DEBUG MARKER: == sanity test 30c: execute binary from Lustre without read perms ============================================================== 19:36:28 (1765049788)
+== sanity test 30c: execute binary from Lustre without read perms ============================================================== 20:10:12 (1765051812)
+Lustre: DEBUG MARKER: == sanity test 30c: execute binary from Lustre without read perms ============================================================== 20:10:12 (1765051812)
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/mnt/lustre/ls] [/]
 NR_REBOOTS
@@ -435,112 +438,113 @@ var
 workspace
 PASS 30c (1s)
 
-== sanity test 30d: execute binary from Lustre while clear locks ========================================================== 19:36:29 (1765049789)
-Lustre: DEBUG MARKER: == sanity test 30d: execute binary from Lustre while clear locks ========================================================== 19:36:29 (1765049789)
+== sanity test 30d: execute binary from Lustre while clear locks ========================================================== 20:10:13 (1765051813)
+Lustre: DEBUG MARKER: == sanity test 30d: execute binary from Lustre while clear locks ========================================================== 20:10:13 (1765051813)
 ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
 ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
 ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
 ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
 ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
 ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 3.65692 s, 36.7 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 3.79561 s, 35.4 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 3.31503 s, 40.5 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 2.92124 s, 45.9 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 2.94106 s, 45.6 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 3.02926 s, 44.3 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 2.83396 s, 47.4 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 2.57994 s, 52.0 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 2.37633 s, 56.5 MB/s
-ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
-ldlm.namespaces.lustre-MDT0000-mdc-ffff88810ea5c000.lru_size=clear
-ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
-ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
-ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
-128+0 records in
-128+0 records out
-134217728 bytes (134 MB, 128 MiB) copied, 2.07431 s, 64.7 MB/s
-PASS 30d (36s)
+128+0 records indd (6143) used greatest stack depth: 23544 bytes left
 
-== sanity test 31a: open-unlink file ============================================================================================ 19:37:05 (1765049825)
-Lustre: DEBUG MARKER: == sanity test 31a: open-unlink file ============================================================================================ 19:37:05 (1765049825)
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 3.13504 s, 42.8 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.84341 s, 47.2 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.7386 s, 49.0 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.46436 s, 54.5 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.35126 s, 57.1 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.41402 s, 55.6 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.29633 s, 58.4 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.33472 s, 57.5 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.06392 s, 65.0 MB/s
+ldlm.namespaces.lustre-MDT0000-lwp-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0000.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-lwp-OST0001.lru_size=clear
+ldlm.namespaces.lustre-MDT0000-mdc-ffff888108c1c000.lru_size=clear
+ldlm.namespaces.lustre-OST0000-osc-MDT0000.lru_size=clear
+ldlm.namespaces.lustre-OST0001-osc-MDT0000.lru_size=clear
+ldlm.namespaces.mdt-lustre-MDT0000_UUID.lru_size=clear
+128+0 records in
+128+0 records out
+134217728 bytes (134 MB, 128 MiB) copied, 2.01246 s, 66.7 MB/s
+PASS 30d (30s)
+
+== sanity test 31a: open-unlink file ============================================================================================ 20:10:43 (1765051843)
+Lustre: DEBUG MARKER: == sanity test 31a: open-unlink file ============================================================================================ 20:10:43 (1765051843)
 opening
 writing
 unlinking /mnt/lustre/f31
@@ -561,8 +565,8 @@ SUCCESS - goto beer
 /mnt/lustre/f31: absent OK
 PASS 31a (0s)
 
-== sanity test 31b: unlink file with multiple links while open ================================================================= 19:37:05 (1765049825)
-Lustre: DEBUG MARKER: == sanity test 31b: unlink file with multiple links while open ================================================================= 19:37:05 (1765049825)
+== sanity test 31b: unlink file with multiple links while open ================================================================= 20:10:43 (1765051843)
+Lustre: DEBUG MARKER: == sanity test 31b: unlink file with multiple links while open ================================================================= 20:10:43 (1765051843)
 /mnt/lustre/f31 has type file OK
 PASS 31b (1s)
 resend_count is set to 4 4
@@ -570,17 +574,17 @@ resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 53 sec ================= 19:37:08 (1765049828)
-Lustre: DEBUG MARKER: == sanity test complete, duration 53 sec ================= 19:37:08 (1765049828)
+== sanity test complete, duration 48 sec ================= 20:10:45 (1765051845)
+Lustre: DEBUG MARKER: == sanity test complete, duration 48 sec ================= 20:10:45 (1765051845)
 sanity: FAIL: test_28 createtest failed
-=== sanity: start cleanup 19:37:08 (1765049828) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 19:37:08 (1765049828) ===
+=== sanity: start cleanup 20:10:45 (1765051845) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 20:10:45 (1765051845) ===
 skip cleanup
-=== sanity: finish cleanup 19:37:08 (1765049828) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 19:37:08 (1765049828) ===
+=== sanity: finish cleanup 20:10:45 (1765051845) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 20:10:45 (1765051845) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 1
-Finished at Sat Dec  6 19:37:08 UTC 2025 in 56s
+Finished at Sat Dec  6 20:10:45 UTC 2025 in 55s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 /workspace/lustre-release/lustre/tests/test-framework.sh: line 6803: cd: HOME not set
 cat: /etc/system-release: No such file or directory
@@ -606,36 +610,37 @@ CLIENT_OS_VERSION_CODE=0
 Stopping clients: lustre-bot-kvm /mnt/lustre (opts:-f)
 Stopping client lustre-bot-kvm /mnt/lustre opts:-f
 Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 7954:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 7769:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
 Stopping /mnt/lustre-mds1 (opts:-f) on lustre-bot-kvm
+mdt00_002 (2722) used greatest stack depth: 23520 bytes left
 Lustre: server umount lustre-MDT0000 complete
 Stopping /mnt/lustre-ost1 (opts:-f) on lustre-bot-kvm
-LustreError: 2915:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765049839 with bad export cookie 13909321378009097429
+LustreError: 2707:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765051857 with bad export cookie 2221169262201526741
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 8038:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 8038:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+LustreError: 7849:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 7849:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
 Stopping /mnt/lustre-ost2 (opts:-f) on lustre-bot-kvm
-LustreError: 8079:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 8079:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 7890:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 7890:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 8353:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 8353:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 8164:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8164:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 modules unloaded.
 
-========= PASSED sanity-quick in 177s
+========= PASSED sanity-quick in 167s
 
 Passed: sanity-quick
 Failed: 
 Kernel version: 6.12.57-ktest
 TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=48f8ce25f8334b7fb53386e25e932c87\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=7ac2a493a3c746aea1bca056724a02ac\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
 ACPI: PM: Preparing to enter system sleep state S5
 reboot: Power down
 </pre>
