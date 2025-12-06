@@ -1,8 +1,8 @@
 <html lang="en">
 <body>
 <pre>
-time="2025-12-06T06:00:33Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=c6d3cf304dbe497aa90dd66870bc9bc9;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=df6ae964d7e946e48a6ec66c0ba157fc;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+time="2025-12-06T06:15:04Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=1211b7d93e414ebba0bdb07fdfc5600b;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=56876d48990d493583a4197471c756e8;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -106,9 +106,8 @@ Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
 arg[0] = /sbin/mount.lustre
-mount.lustre (29arg[1] = -v23) used greates
-t stack depth: 2arg[2] = -o4216 bytes left
-
+arg[1] = -v
+arg[2] = -o
 arg[3] = rw
 arg[4] = lustre-wbcfs
 arg[5] = /mnt/lustre-mds1
@@ -116,6 +115,7 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-mds1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-mds1, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,param=mgsnode=10.0.2.15@tcp,svname=lustre-MDT0000,device=lustre-wbcfs
+mount.lustre (2912) used greatest stack depth: 24216 bytes left
 Started wbcfs-target
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Start ost1: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost1
@@ -134,13 +134,13 @@ arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
 arg[3] = rw
-arg[4] = lustre-wbcfsmount.lustre (3067) used greatest stack depth: 23968 bytes left
-
+arg[4] = lustre-wbcfs
 arg[5] = /mnt/lustre-ost1
 source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-ost1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-ost1, flags=0x1000000 options=osd=osd-wbcfs,mgsnode=10.0.2.15@tcp,virgin,update,svname=lustre-OST0000,device=lustre-wbcfs
+mount.lustre (3056) used greatest stack depth: 24032 bytes left
 Started wbcfs-target
 fstrim: /mnt/lustre-ost1: the discard operation is not supported
 Start ost2: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost2
@@ -165,21 +165,20 @@ Started wbcfs-target
 fstrim: /mnt/lustre-ost2: the discard operation is not supported
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: lustre-MDT0000: local client dfb7d95c-49c0-4ba6-aecf-9407767975ba w/o recovery
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client d1e0b66d-2788-4dac-bdcf-5251a9c49271 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888116dcc000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888116dcc000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810f43a000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810f43a000.idle_timeout=debug
 setting jobstats to procname_uid
 Setting lustre.sys.jobid_var from disable to procname_uid
 Waiting 90s for 'procname_uid'
+Updated after 2s: want 'procname_uid' got 'procname_uid'
 disable quota as required
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 mdt.lustre-MDT0000.identity_upcall=NONE
@@ -208,29 +207,27 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Sat Dec  6 06:04:57 UTC 2025
+Started at Sat Dec  6 06:17:01 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/060454
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/060454
-Logging to shared log directory: /tmp/test_logs/2025-12-06/060454
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/061659
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/061659
+Logging to shared log directory: /tmp/test_logs/2025-12-06/061659
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.95
 Lustre: DEBUG MARKER: Client: 2.16.61.95
 MDS: 2.16.61.95
-Lustre: lustre-OST0000-osc-ffff888116dcc000: disconnect after 25s idle
-Lustre: lustre-OST0001-osc-ffff888116dcc000: disconnect after 31s idle
 Lustre: DEBUG MARKER: MDS: 2.16.61.95
 OSS: 2.16.61.95
 Lustre: DEBUG MARKER: OSS: 2.16.61.95
 running: sanity ONLY=126 127a 127b 127c 127d 127e 128 129 130a 130b 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Sat Dec  6 06:05:16 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 06:05:16 UTC 2025
+-----============= acceptance-small: sanity ============----- Sat Dec  6 06:17:04 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 06:17:04 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -264,78 +261,645 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 06:05:20 (1765001120) ===
-Lustre: DEBUG MARKER: === sanity: start setup 06:05:20 (1765001120) ===
+=== sanity: start setup 06:17:06 (1765001826) ===
+Lustre: DEBUG MARKER: === sanity: start setup 06:17:06 (1765001826) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-Using TIMEOUT=100INFO: task jbd2/vda-8:130 blocked for more than 10 seconds.
-rcu: INFO: rcu_sched detected stalls on CPUs/tas
-ks:
-clocksource: Long readout interval, skipping watchdog check: cs_nsec: 19816052142 wd_nsec: 19816046980
-      Tainted: G           O       6.12.57-ktest #1
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-task:jbd2/vda-8      state:D stack:28496 pid:130   tgid:130   ppid:2      flags:0x00004000
-Call Trace:
- <TASK>
- __schedule+0x12aa/0x1d40
- schedule+0xae/0x250
- io_schedule+0x8e/0xe0
- bit_wait_io+0x16/0xd0
- __wait_on_bit+0xac/0x310
- ? bit_wait+0xd0/0xd0
- ? bit_wait+0xd0/0xd0
- out_of_line_wait_on_bit+0xdc/0x100
- ? bit_waitqueue+0x40/0x40
- jbd2_journal_commit_transaction+0x26ef/0x47f0
- kjournald2+0x3c2/0x590
- ? wake_bit_function+0x210/0x210
- kthread+0x335/0x3d0
- ? jbd2_seq_info_show+0x620/0x620
- ? kthread_unuse_mm+0x130/0x130
- ret_from_fork+0x34/0x60
- ? kthread_unuse_mm+0x130/0x130
- ret_from_fork_asm+0x11/0x20
- </TASK>
-
-Showing all locks held in the system:
-1 lock held by khungtaskd/99:
- #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
-4 locks held by tee/4337:
-1 lock held by lsmod/5163:
- #0: ffff88810d188140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
-
-=============================================
-
-rcu: 	2-...!: (1 GPs behind) idle=e36c/0/0x1 softirq=3782/3783 fqs=2
-rcu: 	(detected by 2, t=2457 jiffies, g=7577, q=647 ncpus=16)
-CPU: 2 UID: 0 PID: 0 Comm: swapper/2 Tainted: G           O       6.12.57-ktest #1
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:pv_native_safe_halt+0x13/0x20
-Code: 62 86 7d e8 2f 00 00 00 48 2b 05 c0 5d 76 00 c3 cc cc cc cc cc cc cc f3 0f 1e fa eb 07 0f 00 2d 25 d2 27 00 f3 0f 1e fa fb f4 <c3> cc cc cc cc cc cc cc cc cc cc cc cc 66 0f 1f 00 50 8b 37 83 e6
-RSP: 0018:ffffc90000177eb8 EFLAGS: 00000206
-RAX: ffff8882a2d00000 RBX: ffff888101df8000 RCX: ffffffff827c2ba0
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: 000000000024e364
-RBP: 0000000000000002 R08: ffff8882a2d39713 R09: 1ffff110545a72e2
-R10: dffffc0000000000 R11: ffffed10545a72e3 R12: 0000000000000000
-R13: 1ffff110203bf000 R14: ffffffff8396b2e8 R15: dffffc0000000000
-FS:  0000000000000000(0000) GS:ffff8882a2d00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f7b627d47fc CR3: 0000000003468000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- default_idle+0x9/0x10
- default_idle_call+0x3b/0x60
- do_idle+0x143/0x3a0
- cpu_startup_entry+0x49/0x70
- start_secondary+0xeb/0xf0
- common_startup_64+0x129/0x137
- </TASK>
+Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
+osc.lustre-OST0000-osc-ffff88810f43a000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810f43a000.idle_timeout=debug
+disable quota as required
+Lustre: 5213:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 06:17:10 (1765001830) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 06:17:10 (1765001830) ===
+running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
+ [true]
+running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
+ [touch] [/mnt/lustre/d0_runas_test/f4353]
+preparing for tests involving mounts
+mke2fs 1.47.2 (1-Jan-2025)
+
+debug=all
+resend_count is set to 4 4
+resend_count is set to 4 4
+resend_count is set to 4 4
+resend_count is set to 4 4
+resend_count is set to 4 4
+
+== sanity test 126: check that the fsgid provided by the client is taken into account ========================================================== 06:17:14 (1765001834)
+Lustre: DEBUG MARKER: == sanity test 126: check that the fsgid provided by the client is taken into account ========================================================== 06:17:14 (1765001834)
+running as uid/gid/euid/egid 0/1/0/1, groups: 1
+ [touch] [/mnt/lustre/f126.sanity]
+PASS 126 (1s)
+
+== sanity test 127a: verify the client stats are sane ==== 06:17:16 (1765001836)
+Lustre: DEBUG MARKER: == sanity test 127a: verify the client stats are sane ==== 06:17:16 (1765001836)
+enable_stats_header=1
+stats before reset
+osc.lustre-OST0000-osc-MDT0000.stats=
+snapshot_time             1765001836.404775802 secs.nsecs
+start_time                1765001788.664628923 secs.nsecs
+elapsed_time              47.740146879 secs.nsecs
+req_waittime              16 samples [usecs] 381 41936 77246 1985183774
+req_active                16 samples [reqs] 1 2 18 22
+ost_create                2 samples [usecs] 1142 1145 2287 2615189
+ost_destroy               1 samples [usecs] 5565 5565 5565 30969225
+ost_get_info              1 samples [usecs] 622 622 622 386884
+ost_connect               1 samples [usecs] 1158 1158 1158 1340964
+ost_statfs                10 samples [usecs] 252 41786 54978 1820509378
+seq_query                 1 samples [usecs] 10163 10163 10163 103286569
+osc.lustre-OST0000-osc-ffff88810f43a000.stats=
+snapshot_time             1765001836.404867554 secs.nsecs
+start_time                1765001786.496749137 secs.nsecs
+elapsed_time              49.908118417 secs.nsecs
+req_waittime              3 samples [usecs] 359 2494 4366 8638086
+req_active                3 samples [reqs] 1 1 3 3
+ost_setattr               1 samples [usecs] 2432 2432 2432 5914624
+ost_connect               1 samples [usecs] 1465 1465 1465 2146225
+ost_statfs                1 samples [usecs] 305 305 305 93025
+osc.lustre-OST0001-osc-MDT0000.stats=
+snapshot_time             1765001836.404922708 secs.nsecs
+start_time                1765001788.671049933 secs.nsecs
+elapsed_time              47.733872775 secs.nsecs
+req_waittime              16 samples [usecs] 420 25096 59896 817849698
+req_active                16 samples [reqs] 1 2 17 19
+ost_create                2 samples [usecs] 743 1160 1903 1897649
+ost_destroy               1 samples [usecs] 9221 9221 9221 85026841
+ost_get_info              1 samples [usecs] 3021 3021 3021 9126441
+ost_connect               1 samples [usecs] 1260 1260 1260 1587600
+ost_statfs                10 samples [usecs] 237 25003 36852 663385048
+seq_query                 1 samples [usecs] 3275 3275 3275 10725625
+osc.lustre-OST0001-osc-ffff88810f43a000.stats=
+snapshot_time             1765001836.404999191 secs.nsecs
+start_time                1765001786.539010903 secs.nsecs
+elapsed_time              49.865988288 secs.nsecs
+req_waittime              5 samples [usecs] 223 14629 25843 288535981
+req_active                5 samples [reqs] 1 1 5 5
+ldlm_glimpse_enqueue      1 samples [reqs] 1 1 1 1
+ost_setattr               1 samples [usecs] 13664 13664 13664 186704896
+ost_connect               1 samples [usecs] 266 266 266 70756
+ost_statfs                1 samples [usecs] 193 193 193 37249
+ldlm_cancel               1 samples [usecs] 1368 1368 1368 1871424
+osc.lustre-OST0000-osc-MDT0000.stats=0
+osc.lustre-OST0000-osc-ffff88810f43a000.stats=0
+osc.lustre-OST0001-osc-MDT0000.stats=0
+osc.lustre-OST0001-osc-ffff88810f43a000.stats=0
+1+0 records in
+1+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0382092 s, 54.9 MB/s
+dd (6105) used greatest stack depth: 23592 bytes left
+1+0 records in
+1+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.113024 s, 18.6 MB/s
+got name=req_waittime count=6 unit=[usecs] min=768 max=9914
+got name=req_active count=6 unit=[reqs] min=1 max=2
+got name=ldlm_extent_enqueue count=2 unit=[reqs] min=1 max=1
+got name=read_bytes count=1 unit=[bytes] min=2097152 max=2097152clocksource: Long readout interval, skipping watchdog check: cs_nsec: 3337672289 wd_nsec: 3337671431
+
+got name=write_bytes count=1 unit=[bytes] min=2097152 max=2097152
+got name=ost_read count=1 unit=[usecs] min=4937 max=4937
+got name=ost_write count=1 unit=[usecs] min=9791 max=9791
+got name=ost_punch count=1 unit=[usecs] min=1730 max=1730
+got name=ldlm_cancel count=1 unit=[usecs] min=617 max=617
+PASS 127a (5s)
+
+== sanity test 127b: verify the llite client stats are sane ========================================================== 06:17:20 (1765001840)
+Lustre: DEBUG MARKER: == sanity test 127b: verify the llite client stats are sane ========================================================== 06:17:20 (1765001840)
+stats before reset
+llite.lustre-ffff88810f43a000.stats=
+snapshot_time             1765001840.523528662 secs.nsecs
+start_time                1765001786.462472875 secs.nsecs
+elapsed_time              54.061055787 secs.nsecs
+read_bytes                1 samples [bytes] 2097152 2097152 2097152 4398046511104
+write_bytes               1 samples [bytes] 2097152 2097152 2097152 4398046511104
+hybrid_write_bytes        1 samples [bytes] 2097152 2097152 2097152 4398046511104
+read                      1 samples [usecs] 100865 100865 100865 10173748225
+write                     1 samples [usecs] 33800 33800 33800 1142440000
+ioctl                     131 samples [reqs]
+open                      6 samples [usecs] 43 3703 3940 13723644
+close                     6 samples [usecs] 544 13201 33468 300932730
+seek                      1 samples [usecs] 16 16 16 256
+readdir                   4 samples [usecs] 1 9439 9459 89094987
+setattr                   4 samples [usecs] 885 37703 52449 1569095759
+truncate                  1 samples [usecs] 13198 13198 13198 174187204
+getattr                   13 samples [usecs] 54 10750 26907 182525621
+unlink                    3 samples [usecs] 3794 20906 43307 797675721
+mkdir                     1 samples [usecs] 13776 13776 13776 189778176
+rmdir                     1 samples [usecs] 3922 3922 3922 15382084
+mknod                     3 samples [usecs] 1168 13065 21803 229363349
+statfs                    1 samples [usecs] 6715 6715 6715 45091225
+getxattr                  1 samples [usecs] 2398 2398 2398 5750404
+listxattr                 1 samples [usecs] 8200 8200 8200 67240000
+inode_permission          43 samples [usecs] 1 7143 32637 150320271
+opencount                 8 samples [reqs] 1 3 11 19
+openclosetime             2 samples [usecs] 64982 240550 305532 62086962824
+hybrid_noswitch           2 samples [reqs]
+hybrid_writesize_switch   1 samples [reqs]
+llite.lustre-ffff88810f43a000.stats=0
+1+0 records in
+1+0 records out
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.0180033 s, 228 kB/s
+dd (6213) used greatest stack depth: 23512 bytes left
+1+0 records in
+1+0 records out
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00337246 s, 1.2 MB/s
+1+0 records in
+1+0 records out
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.0611512 s, 67.0 kB/s
+1+0 records in
+1+0 records out
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.016606 s, 247 kB/s
+got name=read_bytes count=2 unit=[bytes] min=4096 max=4096
+got name=write_bytes count=2 unit=[bytes] min=4096 max=4096
+got name=read count=2 unit=[usecs] min=97 max=22410
+got name=write count=2 unit=[usecs] min=701 max=5750
+got name=open count=4 unit=[usecs] min=40 max=40725
+got name=close count=4 unit=[usecs] min=42 max=31411
+got name=seek count=2 unit=[usecs] min=9 max=12
+got name=truncate count=1 unit=[usecs] min=23630 max=23630
+got name=mknod count=1 unit=[usecs] min=11646 max=11646
+got name=getxattr count=1 unit=[usecs] min=19587 max=19587
+got name=inode_permission count=9 unit=[usecs] min=2 max=41017
+got name=opencount count=4 unit=[reqs] min=1 max=4
+got name=openclosetime count=3 unit=[usecs] min=25344 max=172182
+got name=hybrid_noswitch count=4 unit=[reqs] min= max=
+PASS 127b (2s)
+
+== sanity test 127c: test llite extent stats with regular & mmap i/o ========================================================== 06:17:22 (1765001842)
+Lustre: DEBUG MARKER: == sanity test 127c: test llite extent stats with regular
+llite.lustre-ffff88810f43a000.extents_stats=1
+1+0 records in
+1+0 records out
+3072 bytes (3.1 kB, 3.0 KiB) copied, 0.0114172 s, 269 kB/s
+1+0 records in
+1+0 records out
+3072 bytes (3.1 kB, 3.0 KiB) copied, 0.0277305 s, 111 kB/s
+1+0 records in
+1+0 records out
+3072 bytes (3.1 kB, 3.0 KiB) copied, 0.00712834 s, 431 kB/s
+1+0 records in
+1+0 records out
+3072 bytes (3.1 kB, 3.0 KiB) copied, 0.000284063 s, 10.8 MB/s
+1+0 records in
+1+0 records out
+6144 bytes (6.1 kB, 6.0 KiB) copied, 0.0063415 s, 969 kB/s
+1+0 records in
+1+0 records out
+6144 bytes (6.1 kB, 6.0 KiB) copied, 0.00219803 s, 2.8 MB/s
+1+0 records in
+1+0 records out
+6144 bytes (6.1 kB, 6.0 KiB) copied, 0.0098377 s, 625 kB/s
+1+0 records in
+1+0 records out
+6144 bytes (6.1 kB, 6.0 KiB) copied, 0.00942865 s, 652 kB/s
+1+0 records in
+1+0 records out
+12288 bytes (12 kB, 12 KiB) copied, 0.0136092 s, 903 kB/s
+1+0 records in
+1+0 records out
+12288 bytes (12 kB, 12 KiB) copied, 0.00449994 s, 2.7 MB/s
+1+0 records in
+1+0 records out
+12288 bytes (12 kB, 12 KiB) copied, 0.00168508 s, 7.3 MB/s
+1+0 records in
+1+0 records out
+12288 bytes (12 kB, 12 KiB) copied, 0.00330865 s, 3.7 MB/s
+1+0 records in
+1+0 records out
+24576 bytes (25 kB, 24 KiB) copied, 0.0272953 s, 900 kB/s
+1+0 records in
+1+0 records out
+24576 bytes (25 kB, 24 KiB) copied, 0.00511939 s, 4.8 MB/s
+1+0 records in
+1+0 records out
+24576 bytes (25 kB, 24 KiB) copied, 0.00249443 s, 9.9 MB/s
+1+0 records in
+1+0 records out
+24576 bytes (25 kB, 24 KiB) copied, 0.0134114 s, 1.8 MB/s
+1+0 records in
+1+0 records out
+49152 bytes (49 kB, 48 KiB) copied, 0.00837204 s, 5.9 MB/s
+1+0 records in
+1+0 records out
+49152 bytes (49 kB, 48 KiB) copied, 0.00489808 s, 10.0 MB/s
+1+0 records in
+1+0 records out
+49152 bytes (49 kB, 48 KiB) copied, 0.0131829 s, 3.7 MB/s
+1+0 records in
+1+0 records out
+49152 bytes (49 kB, 48 KiB) copied, 0.00424792 s, 11.6 MB/s
+1+0 records in
+1+0 records out
+98304 bytes (98 kB, 96 KiB) copied, 0.0109573 s, 9.0 MB/s
+1+0 records in
+1+0 records out
+98304 bytes (98 kB, 96 KiB) copied, 0.0074436 s, 13.2 MB/s
+1+0 records in
+1+0 records out
+98304 bytes (98 kB, 96 KiB) copied, 0.00397835 s, 24.7 MB/s
+1+0 records in
+1+0 records out
+98304 bytes (98 kB, 96 KiB) copied, 0.00903849 s, 10.9 MB/s
+1+0 records in
+1+0 records out
+196608 bytes (197 kB, 192 KiB) copied, 0.0330771 s, 5.9 MB/s
+1+0 records in
+1+0 records out
+196608 bytes (197 kB, 192 KiB) copied, 0.00689076 s, 28.5 MB/s
+1+0 records in
+1+0 records out
+196608 bytes (197 kB, 192 KiB) copied, 0.010643 s, 18.5 MB/s
+1+0 records in
+1+0 records out
+196608 bytes (197 kB, 192 KiB) copied, 0.00892466 s, 22.0 MB/s
+1+0 records in
+1+0 records out
+393216 bytes (393 kB, 384 KiB) copied, 0.0328548 s, 12.0 MB/s
+1+0 records in
+1+0 records out
+393216 bytes (393 kB, 384 KiB) copied, 0.0190482 s, 20.6 MB/s
+1+0 records in
+1+0 records out
+393216 bytes (393 kB, 384 KiB) copied, 0.0101151 s, 38.9 MB/s
+1+0 records in
+1+0 records out
+393216 bytes (393 kB, 384 KiB) copied, 0.0169169 s, 23.2 MB/s
+1+0 records in
+1+0 records out
+786432 bytes (786 kB, 768 KiB) copied, 0.0683564 s, 11.5 MB/s
+1+0 records in
+1+0 records out
+786432 bytes (786 kB, 768 KiB) copied, 0.0205468 s, 38.3 MB/s
+1+0 records in
+1+0 records out
+786432 bytes (786 kB, 768 KiB) copied, 0.00487972 s, 161 MB/s
+1+0 records in
+1+0 records out
+786432 bytes (786 kB, 768 KiB) copied, 0.00369535 s, 213 MB/s
+1+0 records in
+1+0 records out
+1572864 bytes (1.6 MB, 1.5 MiB) copied, 0.0490992 s, 32.0 MB/s
+1+0 records in
+1+0 records out
+1572864 bytes (1.6 MB, 1.5 MiB) copied, 0.0375863 s, 41.8 MB/s
+1+0 records in
+1+0 records out
+1572864 bytes (1.6 MB, 1.5 MiB) copied, 0.00613299 s, 256 MB/s
+1+0 records in
+1+0 records out
+1572864 bytes (1.6 MB, 1.5 MiB) copied, 0.0213573 s, 73.6 MB/s
+1+0 records in
+1+0 records out
+3145728 bytes (3.1 MB, 3.0 MiB) copied, 0.0515438 s, 61.0 MB/s
+1+0 records in
+1+0 records out
+3145728 bytes (3.1 MB, 3.0 MiB) copied, 0.0516072 s, 61.0 MB/s
+1+0 records in
+1+0 records out
+3145728 bytes (3.1 MB, 3.0 MiB) copied, 0.135307 s, 23.2 MB/s
+1+0 records in
+1+0 records out
+3145728 bytes (3.1 MB, 3.0 MiB) copied, 0.0147456 s, 213 MB/s
+1+0 records in
+1+0 records out
+6291456 bytes (6.3 MB, 6.0 MiB) copied, 0.100807 s, 62.4 MB/s
+1+0 records in
+1+0 records out
+6291456 bytes (6.3 MB, 6.0 MiB) copied, 0.0892033 s, 70.5 MB/s
+1+0 records in
+1+0 records out
+6291456 bytes (6.3 MB, 6.0 MiB) copied, 0.229834 s, 27.4 MB/s
+1+0 records in
+1+0 records out
+6291456 bytes (6.3 MB, 6.0 MiB) copied, 0.0106075 s, 593 MB/s
+1+0 records in
+1+0 records out
+12582912 bytes (13 MB, 12 MiB) copied, 0.464918 s, 27.1 MB/s
+1+0 records in
+1+0 records out
+12582912 bytes (13 MB, 12 MiB) copied, 0.309126 s, 40.7 MB/s
+1+0 records in
+1+0 records out
+12582912 bytes (13 MB, 12 MiB) copied, 0.180496 s, 69.7 MB/s
+1+0 records in
+1+0 records out
+12582912 bytes (13 MB, 12 MiB) copied, 0.142312 s, 88.4 MB/s
+1+0 records in
+1+0 records out
+25165824 bytes (25 MB, 24 MiB) copied, 0.444656 s, 56.6 MB/s
+1+0 records in
+1+0 records out
+25165824 bytes (25 MB, 24 MiB) copied, 0.491884 s, 51.2 MB/s
+1+0 records in
+1+0 records out
+25165824 bytes (25 MB, 24 MiB) copied, 0.411987 s, 61.1 MB/s
+1+0 records in
+1+0 records out
+25165824 bytes (25 MB, 24 MiB) copied, 0.285958 s, 88.0 MB/s
+1+0 records in
+1+0 records out
+50331648 bytes (50 MB, 48 MiB) copied, 0.499701 s, 101 MB/s
+1+0 records in
+1+0 records out
+50331648 bytes (50 MB, 48 MiB) copied, 0.631778 s, 79.7 MB/s
+1+0 records in
+1+0 records out
+50331648 bytes (50 MB, 48 MiB) copied, 0.575885 s, 87.4 MB/s
+1+0 records in
+1+0 records out
+50331648 bytes (50 MB, 48 MiB) copied, 0.577508 s, 87.2 MB/s
+llite.lustre-ffff88810f43a000.extents_stats=
+snapshot_time:            1765001852.312668358 secs.nsecs
+start_time:               1765001842.356963666 secs.nsecs
+elapsed_time:             9.955704692 secs.nsecs
+                               read       |                write
+      extents            calls    % cum%  |          calls    % cum%
+   0K -    4K :              2    6    6  |              2    6    6
+   4K -    8K :              2    6   13  |              2    6   13
+   8K -   16K :              2    6   20  |              2    6   20
+  16K -   32K :              2    6   26  |              2    6   26
+  32K -   64K :              2    6   33  |              2    6   33
+  64K -  128K :              2    6   40  |              2    6   40
+ 128K -  256K :              2    6   46  |              2    6   46
+ 256K -  512K :              2    6   53  |              2    6   53
+ 512K - 1024K :              2    6   60  |              2    6   60
+   1M -    2M :              2    6   66  |              2    6   66
+   2M -    4M :              2    6   73  |              2    6   73
+   4M -    8M :              2    6   80  |              2    6   80
+   8M -   16M :              2    6   86  |              2    6   86
+  16M -   32M :              2    6   93  |              2    6   93
+  32M -   64M :              2    6  100  |              2    6  100
+llite.lustre-ffff88810f43a000.extents_stats=c
+1+0 records in
+1+0 records out
+524288 bytes (524 kB, 512 KiB) copied, 0.0457856 s, 11.5 MB/s
+llite.lustre-ffff88810f43a000.extents_stats=
+snapshot_time:            1765001853.831073364 secs.nsecs
+start_time:               1765001853.473965695 secs.nsecs
+elapsed_time:             0.357107669 secs.nsecs
+                               read       |                write
+      extents            calls    % cum%  |          calls    % cum%
+   0K -    4K :              0    0    0  |              0    0    0
+   4K -    8K :            256  100  100  |            128   99   99
+   8K -   16K :              0    0  100  |              0    0   99
+  16K -   32K :              0    0  100  |              0    0   99
+  32K -   64K :              0    0  100  |              0    0   99
+  64K -  128K :              0    0  100  |              0    0   99
+ 128K -  256K :              0    0  100  |              0    0   99
+ 256K -  512K :              0    0  100  |              0    0   99
+ 512K - 1024K :              0    0  100  |              1    0  100
+llite.lustre-ffff88810f43a000.extents_stats=0
+PASS 127c (12s)
+
+== sanity test 127d: OSC RPC latency histograms for read and write latency ========================================================== 06:17:34 (1765001854)
+Lustre: DEBUG MARKER: == sanity test 127d: OSC RPC latency histograms for read and write latency ========================================================== 06:17:34 (1765001854)
+osc.lustre-OST0000-osc-ffff88810f43a000.rpc_stats=clear
+osc.lustre-OST0001-osc-ffff88810f43a000.rpc_stats=clear
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB, 10 MiB) copied, 0.45372 s, 23.1 MB/s
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB, 10 MiB) copied, 0.438795 s, 23.9 MB/s
+RPC stats after I/O:
+snapshot_time:            1765001856.048510816 secs.nsecs
+start_time:               1765001854.922699950 secs.nsecs
+elapsed_time:             1.125810866 secs.nsecs
+read RPCs in flight:  0
+write RPCs in flight: 0
+DIO RPCs in flight: 0
+pending write pages:  0
+pending read pages:   0
+
+			read			write
+pages per rpc         rpcs   % cum % |       rpcs   % cum %
+1:		         0   0   0   |          0   0   0
+2:		         0   0   0   |          0   0   0
+4:		         0   0   0   |          0   0   0
+8:		         0   0   0   |          0   0   0
+16:		         0   0   0   |          0   0   0
+32:		         0   0   0   |          0   0   0
+64:		         0   0   0   |          0   0   0
+128:		         0   0   0   |          1 100 100
+
+			read			write
+rpcs in flight        rpcs   % cum % |       rpcs   % cum %
+1:		         0   0   0   |          1 100 100
+
+			read			write
+offset                rpcs   % cum % |       rpcs   % cum %
+0:		         0   0   0   |          1 100 100
+
+			read			write
+RPC latency (us)       count   % cum % |       count   % cum %
+0:		         0   0   0   |          0   0   0
+1:		         0   0   0   |          0   0   0
+2:		         0   0   0   |          0   0   0
+4:		         0   0   0   |          0   0   0
+8:		         0   0   0   |          0   0   0
+16:		         0   0   0   |          0   0   0
+32:		         0   0   0   |          0   0   0
+64:		         0   0   0   |          0   0   0
+128:		         0   0   0   |          0   0   0
+256:		         0   0   0   |          0   0   0
+512:		         0   0   0   |          0   0   0
+1024:		         0   0   0   |          0   0   0
+2048:		         0   0   0   |          0   0   0
+4096:		         0   0   0   |          1 100 100
+snapshot_time:            1765001856.048582280 secs.nsecs
+start_time:               1765001854.924992710 secs.nsecs
+elapsed_time:             1.123589570 secs.nsecs
+read RPCs in flight:  0
+write RPCs in flight: 0
+DIO RPCs in flight: 0
+pending write pages:  0
+pending read pages:   0
+
+			read			write
+pages per rpc         rpcs   % cum % |       rpcs   % cum %
+1:		         0   0   0   |          0   0   0
+2:		         0   0   0   |          0   0   0
+4:		         0   0   0   |          0   0   0
+8:		         0   0   0   |          0   0   0
+16:		         0   0   0   |          0   0   0
+32:		         0   0   0   |          0   0   0
+64:		         0   0   0   |          0   0   0
+128:		         0   0   0   |          0   0   0
+256:		         1  25  25   |          0   0   0
+512:		         1  25  50   |          1  33  33
+1024:		         2  50 100   |          2  66 100
+
+			read			write
+rpcs in flight        rpcs   % cum % |       rpcs   % cum %
+1:		         3  75  75   |          3 100 100
+2:		         1  25 100   |          0   0 100
+
+			read			write
+offset                rpcs   % cum % |       rpcs   % cum %
+0:		         1  25  25   |          1  33  33
+1:		         0   0  25   |          0   0  33
+2:		         0   0  25   |          0   0  33
+4:		         0   0  25   |          0   0  33
+8:		         0   0  25   |          0   0  33
+16:		         0   0  25   |          0   0  33
+32:		         0   0  25   |          0   0  33
+64:		         0   0  25   |          0   0  33
+128:		         0   0  25   |          0   0  33
+256:		         1  25  50   |          0   0  33
+512:		         0   0  50   |          0   0  33
+1024:		         1  25  75   |          1  33  66
+2048:		         1  25 100   |          1  33 100
+
+			read			write
+RPC latency (us)       count   % cum % |       count   % cum %
+0:		         0   0   0   |          0   0   0
+1:		         0   0   0   |          0   0   0
+2:		         0   0   0   |          0   0   0
+4:		         0   0   0   |          0   0   0
+8:		         0   0   0   |          0   0   0
+16:		         0   0   0   |          0   0   0
+32:		         0   0   0   |          0   0   0
+64:		         0   0   0   |          0   0   0
+128:		         0   0   0   |          0   0   0
+256:		         0   0   0   |          0   0   0
+512:		         0   0   0   |          0   0   0
+1024:		         0   0   0   |          0   0   0
+2048:		         1  25  25   |          0   0   0
+4096:		         1  25  50   |          0   0   0
+8192:		         0   0  50   |          3 100 100
+16384:		         2  50 100   |          0   0 100
+Read latency found: 1
+Write latency found: 1
+PASS 127d (2s)
+
+== sanity test 127e: client IO latency histograms by size ========================================================== 06:17:36 (1765001856)
+Lustre: DEBUG MARKER: == sanity test 127e: client IO latency histograms by size ========================================================== 06:17:36 (1765001856)
+osc.lustre-OST0000-osc-ffff88810f43a000.io_latency_stats=clear
+osc.lustre-OST0001-osc-ffff88810f43a000.io_latency_stats=clear
+Generating I/O with size 4096K
+10+0 records in
+10+0 records out
+41943040 bytes (42 MB, 40 MiB) copied, 0.760637 s, 55.1 MB/s
+10+0 records in
+10+0 records out
+41943040 bytes (42 MB, 40 MiB) copied, 0.670164 s, 62.6 MB/s
+osc.*.io_latency_stats stats after I/O:
+osc.lustre-OST0000-osc-ffff88810f43a000.io_latency_stats=
+io_latency_by_size:
+snapshot_time: 1765001859.882644943
+start_time:   1765001858.187823546
+elapsed_time: 1.694821397
+rd_4096K: { 4096us: 4, 8192us: 4, 16384us: 2, }
+wr_4096K: { 8192us: 6, 16384us: 4, }
+osc.lustre-OST0001-osc-ffff88810f43a000.io_latency_stats=
+io_latency_by_size:
+snapshot_time: 1765001859.882707861
+start_time:   1765001858.195160263
+elapsed_time: 1.687547598
+PASS 127e (4s)
+
+== sanity test 128: interactive lfs for 2 consecutive find's ========================================================== 06:17:40 (1765001860)
+Lustre: DEBUG MARKER: == sanity test 128: interactive lfs for 2 consecutive find's ========================================================== 06:17:40 (1765001860)
+lfs: failed for 'find': No such file or directory
+/mnt/lustre/f128.sanity
+PASS 128 (1s)
+
+== sanity test 129: test directory size limit ================================================================================== 06:17:41 (1765001861)
+Lustre: DEBUG MARKER: == sanity test 129: test directory size limit ================================================================================== 06:17:41 (1765001861)
+
+ SKIP: sanity test_129 ldiskfs only test
+Lustre: DEBUG MARKER: SKIP: sanity test_129 ldiskfs only test
+SKIP 129 (7s)
+
+== sanity test 130a: FIEMAP (1-stripe file) ============== 06:17:48 (1765001868)
+Lustre: DEBUG MARKER: == sanity test 130a: FIEMAP (1-stripe file) ============== 06:17:48 (1765001868)
+
+ SKIP: sanity test_130a filefrag missing logical ordering
+Lustre: DEBUG MARKER: SKIP: sanity test_130a filefrag missing logical ordering
+SKIP 130a (0s)
+
+== sanity test 130b: FIEMAP (2-stripe file) ============== 06:17:48 (1765001868)
+Lustre: DEBUG MARKER: == sanity test 130b: FIEMAP (2-stripe file) ============== 06:17:48 (1765001868)
+
+ SKIP: sanity test_130b filefrag missing logical ordering
+Lustre: DEBUG MARKER: SKIP: sanity test_130b filefrag missing logical ordering
+SKIP 130b (1s)
+== sanity test complete, duration 48 sec ================= 06:17:52 (1765001872)
+Lustre: DEBUG MARKER: == sanity test complete, duration 48 sec ================= 06:17:52 (1765001872)
+=== sanity: start cleanup 06:17:52 (1765001872) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 06:17:52 (1765001872) ===
+skip cleanup
+=== sanity: finish cleanup 06:17:52 (1765001872) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 06:17:52 (1765001872) ===
+debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
+sanity returned 0
+Finished at Sat Dec  6 06:17:53 UTC 2025 in 54s
+/workspace/lustre-release/lustre/tests/auster: completed with rc 0
+/workspace/lustre-release/lustre/tests/test-framework.sh: line 6803: cd: HOME not set
+cat: /etc/system-release: No such file or directory
+mgs: 
+MGS_OS_ID=debian
+MGS_OS_VERSION_CODE=0
+MGS_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+mds1: 
+MDS1_OS_ID=debian
+MDS1_OS_VERSION_CODE=0
+MDS1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+ost1: 
+OST1_OS_VERSION_CODE=0
+OST1_OS_ID=debian
+OST1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+client: 
+CLIENT_OS_ID_LIKE= debian
+CLIENT_OS_ID=debian
+CLIENT_OS_VERSION_CODE=0
+Stopping clients: lustre-bot-kvm /mnt/lustre (opts:-f)
+Stopping client lustre-bot-kvm /mnt/lustre opts:-f
+Lustre: lustre-OST0001-osc-ffff88810f43a000: disconnect after 22s idle
+Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+LustreError: 8009:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88810f43a000: inode [0x200000401:0x6:0x0] mdc close failed: rc = -108
+LustreError: 8009:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+Lustre: Unmounted lustre-client
+Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
+Stopping /mnt/lustre-mds1 (opts:-f) on lustre-bot-kvm
+LustreError: 8037:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
+LustreError: 8037:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+mdt00_000 (2931) used greatest stack depth: 23504 bytes left
+Lustre: server umount lustre-MDT0000 complete
+Stopping /mnt/lustre-ost1 (opts:-f) on lustre-bot-kvm
+LustreError: 2915:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765001894 with bad export cookie 16929971334713139239
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+LustreError: 8089:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 8089:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+Lustre: server umount lustre-OST0000 complete
+Stopping /mnt/lustre-ost2 (opts:-f) on lustre-bot-kvm
+LustreError: 8131:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 8131:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+Lustre: server umount lustre-OST0001 complete
+LNet: 8405:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8405:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+Key type .llcrypt unregistered
+Key type ._llcrypt unregistered
+modules unloaded.
+
+========= PASSED sanity-quick in 213s
+
+Passed: sanity-quick
+Failed: 
+Kernel version: 6.12.57-ktest
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=1211b7d93e414ebba0bdb07fdfc5600b\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 
 </pre>
 </body>

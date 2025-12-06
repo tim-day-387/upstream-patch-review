@@ -1,8 +1,8 @@
 <html lang="en">
 <body>
 <pre>
-time="2025-12-06T06:00:25Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=2f7d63bd88c4433abe987b8259226787;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=3ee78f177a8847f4841c463ef958a75b;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+time="2025-12-06T06:15:04Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=87123d2651484e2a89f72b7d13c0a789;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=3d2dc1b81d5b48ad809370e8f8afc0e1;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -108,14 +108,14 @@ Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
-arg[3] = rwmount.lustre (2929) used greatest stack depth: 23568 bytes left
-
+arg[3] = rw
 arg[4] = lustre-wbcfs
 arg[5] = /mnt/lustre-mds1
 source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-mds1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-mds1, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,param=mgsnode=10.0.2.15@tcp,svname=lustre-MDT0000,device=lustre-wbcfs
+mount.lustre (2912) used greatest stack depth: 24208 bytes left
 Started wbcfs-target
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Start ost1: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost1
@@ -140,10 +140,8 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-ost1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-ost1, flags=0x1000000 options=osd=osd-wbcfs,mgsnode=10.0.2.15@tcp,virgin,update,svname=lustre-OST0000,device=lustre-wbcfs
+mount.lustre (3052) used greatest stack depth: 24032 bytes left
 Started wbcfs-target
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 fstrim: /mnt/lustre-ost1: the discard operation is not supported
 Start ost2: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost2
 Lustre is using wbcfs as backend
@@ -153,9 +151,6 @@ OSD_WBC_INDEX=1
 svname -> lustre:OST0001
 OSD_WBC_MGS_NID=10.0.2.15@tcp
 params -> mgsnode=10.0.2.15@tcp
-Lustre: lustre-OST0001: new disk, initializing
-Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
-Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
@@ -169,19 +164,22 @@ mounting device lustre-wbcfs at /mnt/lustre-ost2, flags=0x1000000 options=osd=os
 Started wbcfs-target
 fstrim: /mnt/lustre-ost2: the discard operation is not supported
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: lustre-MDT0000: local client 1632119b-48de-4aed-ab1f-ae550b32e9e9 w/o recovery
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client 8a74df5e-3bf1-456b-91eb-c39ffec2aa4c w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88812fd52000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88812fd52000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88811ba88000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88811ba88000.idle_timeout=debug
 setting jobstats to procname_uid
 Setting lustre.sys.jobid_var from disable to procname_uid
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
+Waiting 90s for 'procname_uid'
+Updated after 2s: want 'procname_uid' got 'procname_uid'
 disable quota as required
-Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 mdt.lustre-MDT0000.identity_upcall=NONE
 lustre-wbcfs on /mnt/lustre-mds1 type lustre (rw,svname=lustre-MDT0000,mgs,osd=osd-wbcfs)
@@ -209,29 +207,27 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Sat Dec  6 06:04:13 UTC 2025
+Started at Sat Dec  6 06:17:04 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/060410
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/060410
-Logging to shared log directory: /tmp/test_logs/2025-12-06/060410
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/061703
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/061703
+Logging to shared log directory: /tmp/test_logs/2025-12-06/061703
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.95
 Lustre: DEBUG MARKER: Client: 2.16.61.95
 MDS: 2.16.61.95
-Lustre: lustre-OST0000-osc-ffff88812fd52000: disconnect after 21s idle
-Lustre: lustre-OST0001-osc-ffff88812fd52000: disconnect after 23s idle
 Lustre: DEBUG MARKER: MDS: 2.16.61.95
 OSS: 2.16.61.95
 Lustre: DEBUG MARKER: OSS: 2.16.61.95
 running: sanity ONLY=150e 150f 150g 150h 150ia 150ib 150ic 151 152 153 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Sat Dec  6 06:04:27 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 06:04:27 UTC 2025
+-----============= acceptance-small: sanity ============----- Sat Dec  6 06:17:09 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 06:17:09 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -265,8 +261,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 06:04:27 (1765001067) ===
-Lustre: DEBUG MARKER: === sanity: start setup 06:04:27 (1765001067) ===
+=== sanity: start setup 06:17:12 (1765001832) ===
+Lustre: DEBUG MARKER: === sanity: start setup 06:17:12 (1765001832) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -274,18 +270,18 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88812fd52000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88812fd52000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88811ba88000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88811ba88000.idle_timeout=debug
 disable quota as required
-Lustre: 5220:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 06:04:29 (1765001069) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 06:04:29 (1765001069) ===
-rm (5350) used greatest stack depth: 23464 bytes left
+Lustre: 5211:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+Lustre: lustre-OST0000-osc-ffff88811ba88000: disconnect after 25s idle
+=== sanity: finish setup 06:17:21 (1765001841) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 06:17:21 (1765001841) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4360]
-Lustre: lustre-OST0001: local client 1632119b-48de-4aed-ab1f-ae550b32e9e9 w/o recovery
+ [touch] [/mnt/lustre/d0_runas_test/f4351]
+Lustre: lustre-OST0000: local client 8a74df5e-3bf1-456b-91eb-c39ffec2aa4c w/o recovery
 Lustre: Skipped 2 previous similar messages
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
@@ -297,17 +293,17 @@ resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 
-== sanity test 150e: Verify 60% of available OST space consumed by fallocate ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150e: Verify 60% of available OST space consumed by fallocate ========================================================== 06:04:30 (1765001070)
+== sanity test 150e: Verify 60% of available OST space consumed by fallocate ========================================================== 06:17:25 (1765001845)
+Lustre: DEBUG MARKER: == sanity test 150e: Verify 60% of available OST space consumed by fallocate ========================================================== 06:17:25 (1765001845)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
  SKIP: sanity test_150e need >= 2.13.57 and ldiskfs for fallocate
 Lustre: DEBUG MARKER: SKIP: sanity test_150e need >= 2.13.57 and ldiskfs for fallocate
-SKIP 150e (0s)
+SKIP 150e (1s)
 
-== sanity test 150f: Verify fallocate punch functionality ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150f: Verify fallocate punch functionality ========================================================== 06:04:30 (1765001070)
+== sanity test 150f: Verify fallocate punch functionality ========================================================== 06:17:26 (1765001846)
+Lustre: DEBUG MARKER: == sanity test 150f: Verify fallocate punch functionality ========================================================== 06:17:26 (1765001846)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
@@ -315,8 +311,8 @@ fallocate not supported
 Lustre: DEBUG MARKER: SKIP: sanity test_150f need >= 2.13.57 and ldiskfs for fallocate
 SKIP 150f (0s)
 
-== sanity test 150g: Verify fallocate punch on large range ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150g: Verify fallocate punch on large range ========================================================== 06:04:30 (1765001070)
+== sanity test 150g: Verify fallocate punch on large range ========================================================== 06:17:26 (1765001846)
+Lustre: DEBUG MARKER: == sanity test 150g: Verify fallocate punch on large range ========================================================== 06:17:26 (1765001846)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
@@ -324,17 +320,17 @@ fallocate not supported
 Lustre: DEBUG MARKER: SKIP: sanity test_150g need >= 2.13.57 and ldiskfs for fallocate
 SKIP 150g (0s)
 
-== sanity test 150h: Verify extend fallocate updates the file size ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150h: Verify extend fallocate updates the file size ========================================================== 06:04:30 (1765001070)
+== sanity test 150h: Verify extend fallocate updates the file size ========================================================== 06:17:26 (1765001846)
+Lustre: DEBUG MARKER: == sanity test 150h: Verify extend fallocate updates the file size ========================================================== 06:17:26 (1765001846)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
  SKIP: sanity test_150h need >= 2.13.57 and ldiskfs for fallocate
 Lustre: DEBUG MARKER: SKIP: sanity test_150h need >= 2.13.57 and ldiskfs for fallocate
-SKIP 150h (0s)
+SKIP 150h (1s)
 
-== sanity test 150ia: Verify fallocate zero-range ZERO functionality ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150ia: Verify fallocate zero-range ZERO functionality ========================================================== 06:04:30 (1765001070)
+== sanity test 150ia: Verify fallocate zero-range ZERO functionality ========================================================== 06:17:27 (1765001847)
+Lustre: DEBUG MARKER: == sanity test 150ia: Verify fallocate zero-range ZERO functionality ========================================================== 06:17:27 (1765001847)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
@@ -342,55 +338,55 @@ fallocate not supported
 Lustre: DEBUG MARKER: SKIP: sanity test_150ia need >= 2.13.57 and ldiskfs for fallocate
 SKIP 150ia (0s)
 
-== sanity test 150ib: Verify fallocate zero-range PREALLOC functionality ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150ib: Verify fallocate zero-range PREALLOC functionality ========================================================== 06:04:30 (1765001070)
+== sanity test 150ib: Verify fallocate zero-range PREALLOC functionality ========================================================== 06:17:27 (1765001847)
+Lustre: DEBUG MARKER: == sanity test 150ib: Verify fallocate zero-range PREALLOC functionality ========================================================== 06:17:27 (1765001847)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
  SKIP: sanity test_150ib need >= 2.13.57 and ldiskfs for fallocate
 Lustre: DEBUG MARKER: SKIP: sanity test_150ib need >= 2.13.57 and ldiskfs for fallocate
-SKIP 150ib (0s)
+SKIP 150ib (1s)
 
-== sanity test 150ic: Verify fallocate LARGE zero PREALLOC functionality ========================================================== 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 150ic: Verify fallocate LARGE zero PREALLOC functionality ========================================================== 06:04:30 (1765001070)
+== sanity test 150ic: Verify fallocate LARGE zero PREALLOC functionality ========================================================== 06:17:28 (1765001848)
+Lustre: DEBUG MARKER: == sanity test 150ic: Verify fallocate LARGE zero PREALLOC functionality ========================================================== 06:17:28 (1765001848)
 
  SKIP: sanity test_150ic only check on DoM component
 Lustre: DEBUG MARKER: SKIP: sanity test_150ic only check on DoM component
 SKIP 150ic (0s)
 
-== sanity test 151: test cache on oss and controls ========================================================================================= 06:04:30 (1765001070)
-Lustre: DEBUG MARKER: == sanity test 151: test cache on oss and controls ========================================================================================= 06:04:30 (1765001070)
+== sanity test 151: test cache on oss and controls ========================================================================================= 06:17:28 (1765001848)
+Lustre: DEBUG MARKER: == sanity test 151: test cache on oss and controls ========================================================================================= 06:17:28 (1765001848)
 error: get_param: param_path 'osd-*/lustre-OST*/read_cache_enable': No such file or directory
 
  SKIP: sanity test_151 not cache-capable obdfilter
 Lustre: DEBUG MARKER: SKIP: sanity test_151 not cache-capable obdfilter
 SKIP 151 (1s)
 
-== sanity test 152: test read/write with enomem ====================================================================================== 06:04:31 (1765001071)
-Lustre: DEBUG MARKER: == sanity test 152: test read/write with enomem ====================================================================================== 06:04:31 (1765001071)
+== sanity test 152: test read/write with enomem ====================================================================================== 06:17:29 (1765001849)
+Lustre: DEBUG MARKER: == sanity test 152: test read/write with enomem ====================================================================================== 06:17:29 (1765001849)
 fail_loc=0x80000226
 1+0 records in
 1+0 records out
-6096 bytes (6.1 kB, 6.0 KiB) copied, 8.3667e-05 s, 72.9 MB/s
-Lustre: lustre-OST0000: local client 1632119b-48de-4aed-ab1f-ae550b32e9e9 w/o recovery
+6096 bytes (6.1 kB, 6.0 KiB) copied, 0.00190667 s, 3.2 MB/s
+Lustre: lustre-OST0001: local client 8a74df5e-3bf1-456b-91eb-c39ffec2aa4c w/o recovery
 fail_loc=0
 fail_loc=0x80000226
 fail_loc=0
-PASS 152 (0s)
+PASS 152 (1s)
 
-== sanity test 153: test if fdatasync does not crash ================================================================================= 06:04:31 (1765001071)
-Lustre: DEBUG MARKER: == sanity test 153: test if fdatasync does not crash ================================================================================= 06:04:31 (1765001071)
-PASS 153 (0s)
-== sanity test complete, duration 5 sec ================== 06:04:32 (1765001072)
-Lustre: DEBUG MARKER: == sanity test complete, duration 5 sec ================== 06:04:32 (1765001072)
-=== sanity: start cleanup 06:04:32 (1765001072) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 06:04:32 (1765001072) ===
+== sanity test 153: test if fdatasync does not crash ================================================================================= 06:17:30 (1765001850)
+Lustre: DEBUG MARKER: == sanity test 153: test if fdatasync does not crash ================================================================================= 06:17:30 (1765001850)
+PASS 153 (1s)
+== sanity test complete, duration 25 sec ================= 06:17:34 (1765001854)
+Lustre: DEBUG MARKER: == sanity test complete, duration 25 sec ================= 06:17:34 (1765001854)
+=== sanity: start cleanup 06:17:34 (1765001854) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 06:17:34 (1765001854) ===
 skip cleanup
-=== sanity: finish cleanup 06:04:32 (1765001072) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 06:04:32 (1765001072) ===
+=== sanity: finish cleanup 06:17:35 (1765001855) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 06:17:35 (1765001855) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 0
-Finished at Sat Dec  6 06:04:32 UTC 2025 in 22s
+Finished at Sat Dec  6 06:17:35 UTC 2025 in 32s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 /workspace/lustre-release/lustre/tests/test-framework.sh: line 6803: cd: HOME not set
 cat: /etc/system-release: No such file or directory
@@ -416,25 +412,42 @@ CLIENT_OS_VERSION_CODE=0
 Stopping clients: lustre-bot-kvm /mnt/lustre (opts:-f)
 Stopping client lustre-bot-kvm /mnt/lustre opts:-f
 Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 7545:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88812fd52000: inode [0x200000401:0x3:0x0] mdc close failed: rc = -108
-LustreError: 7545:0:(obd_class.h:479:obd_check_dev()) Device 21 not setup
+LustreError: 7529:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88811ba88000: inode [0x200000401:0x3:0x0] mdc close failed: rc = -108
+LustreError: 7529:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
 Stopping /mnt/lustre-mds1 (opts:-f) on lustre-bot-kvm
-LustreError: 7571:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 7571:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 7557:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
+LustreError: 7557:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-MDT0000 complete
 Stopping /mnt/lustre-ost1 (opts:-f) on lustre-bot-kvm
-LustreError: 5224:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765001085 with bad export cookie 8287382732076540456
+LustreError: 2917:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765001869 with bad export cookie 6796589122069649332
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 7624:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 7624:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 7609:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 7609:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-OST0000 complete
 Stopping /mnt/lustre-ost2 (opts:-f) on lustre-bot-kvm
-LustreError: 7677:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 7677:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
-LustreError: 7677:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 7649:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 7649:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
+LNet: 7924:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 7924:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+Key type .llcrypt unregistered
+Key type ._llcrypt unregistered
+clocksource: Long readout interval, skipping watchdog check: cs_nsec: 1917948984 wd_nsec: 1917948536
+modules unloaded.
+
+========= PASSED sanity-quick in 193s
+
+Passed: sanity-quick
+Failed: 
+Kernel version: 6.12.57-ktest
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=87123d2651484e2a89f72b7d13c0a789\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 
 </pre>
 </body>
