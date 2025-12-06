@@ -1,8 +1,8 @@
 <html lang="en">
 <body>
 <pre>
-time="2025-12-06T06:19:56Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=0503fbb93b6e432db6347567a17544bf;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=3616ace73fcc4404a21a0fe0cc9652e2;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+time="2025-12-06T07:26:11Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=b09ce31a34334c0d85b3d072decd5fa2;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=45b16b64bfa043158607fce599a7a211;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -103,11 +103,13 @@ params -> mgsnode=10.0.2.15@tcp
 Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2953) used greatest stack depth: 26304 bytes left
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
-arg[2] = -o
+arg[2] = -omount.lustre (2913) used greatest stack depth: 23600 bytes left
+
 arg[3] = rw
 arg[4] = lustre-wbcfs
 arg[5] = /mnt/lustre-mds1
@@ -115,7 +117,6 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-mds1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-mds1, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,param=mgsnode=10.0.2.15@tcp,svname=lustre-MDT0000,device=lustre-wbcfs
-mount.lustre (2908) used greatest stack depth: 23568 bytes left
 Started wbcfs-target
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Start ost1: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost1
@@ -126,6 +127,10 @@ OSD_WBC_INDEX=0
 svname -> lustre:OST0000
 OSD_WBC_MGS_NID=10.0.2.15@tcp
 params -> mgsnode=10.0.2.15@tcp
+Lustre: lustre-OST0000: new disk, initializing
+Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
+Lustre: Skipped 1 previous similar message
+Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
@@ -136,7 +141,6 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-ost1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-ost1, flags=0x1000000 options=osd=osd-wbcfs,mgsnode=10.0.2.15@tcp,virgin,update,svname=lustre-OST0000,device=lustre-wbcfs
-mount.lustre (3048) used greatest stack depth: 23536 bytes left
 Started wbcfs-target
 fstrim: /mnt/lustre-ost1: the discard operation is not supported
 Start ost2: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost2
@@ -160,21 +164,23 @@ mounting device lustre-wbcfs at /mnt/lustre-ost2, flags=0x1000000 options=osd=os
 Started wbcfs-target
 fstrim: /mnt/lustre-ost2: the discard operation is not supported
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 73f4a10d-e037-4228-9f91-223fa350ca1e w/o recovery
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+Lustre: lustre-MDT0000: local client d1a937d7-cd58-433d-94a9-afa2d3ba8f0f w/o recovery
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88811c656000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88811c656000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888132d00000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888132d00000.idle_timeout=debug
 setting jobstats to procname_uid
 Setting lustre.sys.jobid_var from disable to procname_uid
 Waiting 90s for 'procname_uid'
-Updated after 4s: want 'procname_uid' got 'procname_uid'
+Updated after 3s: want 'procname_uid' got 'procname_uid'
 disable quota as required
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 mdt.lustre-MDT0000.identity_upcall=NONE
@@ -203,15 +209,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Sat Dec  6 06:20:46 UTC 2025
+Started at Sat Dec  6 07:27:20 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/062045
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/062045
-Logging to shared log directory: /tmp/test_logs/2025-12-06/062045
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/072719
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/072719
+Logging to shared log directory: /tmp/test_logs/2025-12-06/072719
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.95
@@ -222,8 +228,8 @@ OSS: 2.16.61.95
 Lustre: DEBUG MARKER: OSS: 2.16.61.95
 running: sanity ONLY=421c 421d 421e 421f 421g 421h 422 423 424 425 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Sat Dec  6 06:20:48 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 06:20:48 UTC 2025
+-----============= acceptance-small: sanity ============----- Sat Dec  6 07:27:23 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 07:27:23 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -257,8 +263,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 06:20:49 (1765002049) ===
-Lustre: DEBUG MARKER: === sanity: start setup 06:20:49 (1765002049) ===
+=== sanity: start setup 07:27:25 (1765006045) ===
+Lustre: DEBUG MARKER: === sanity: start setup 07:27:25 (1765006045) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -266,19 +272,16 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88811c656000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88811c656000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888132d00000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888132d00000.idle_timeout=debug
 disable quota as required
-Lustre: 5217:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 06:20:50 (1765002050) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 06:20:50 (1765002050) ===
+Lustre: 5219:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 07:27:27 (1765006047) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 07:27:27 (1765006047) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4357]
-LustreError: 5351:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
-LustreError: 5351:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff88811c656000: ptlrpc_queue_wait failed: rc = -95
-LustreError: 5351:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+ [touch] [/mnt/lustre/d0_runas_test/f4359]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
@@ -289,33 +292,38 @@ resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 
-== sanity test 421c: rm by fid against hardlinked files == 06:20:52 (1765002052)
-Lustre: DEBUG MARKER: == sanity test 421c: rm by fid against hardlinked files == 06:20:52 (1765002052)
-total: 3 open/close in 0.02 seconds: 184.33 ops/second
-total: 180 link in 0.17 seconds: 1090.49 ops/second
+== sanity test 421c: rm by fid against hardlinked files == 07:27:31 (1765006051)
+Lustre: DEBUG MARKER: == sanity test 421c: rm by fid against hardlinked files == 07:27:31 (1765006051)
+total: 3 open/close in 0.03 seconds: 112.96 ops/second
+total: 180 link in 0.37 seconds: 492.09 ops/second
 PASS 421c (1s)
 
-== sanity test 421d: rmfid en masse ====================== 06:20:53 (1765002053)
-Lustre: DEBUG MARKER: == sanity test 421d: rmfid en masse ====================== 06:20:53 (1765002053)
-total: 4097 open/close in 4.66 seconds: 879.53 ops/second
-PASS 421d (12s)
+== sanity test 421d: rmfid en masse ====================== 07:27:32 (1765006052)
+Lustre: DEBUG MARKER: == sanity test 421d: rmfid en masse ====================== 07:27:32 (1765006052)
+Lustre: lustre-OST0001-osc-ffff888132d00000: disconnect after 25s idle
+ - open/close 3504 (time 1765006062.70 total 10.00 last 350.34)
+total: 4097 open/close in 11.46 seconds: 357.36 ops/second
+Lustre: lustre-OST0000-osc-ffff888132d00000: disconnect after 23s idle
+PASS 421d (28s)
 
-== sanity test 421e: rmfid in DNE ======================== 06:21:05 (1765002065)
-Lustre: DEBUG MARKER: == sanity test 421e: rmfid in DNE ======================== 06:21:05 (1765002065)
+== sanity test 421e: rmfid in DNE ======================== 07:28:00 (1765006080)
+Lustre: DEBUG MARKER: == sanity test 421e: rmfid in DNE ======================== 07:28:00 (1765006080)
 
  SKIP: sanity test_421e needs >= 2 MDTs
 Lustre: DEBUG MARKER: SKIP: sanity test_421e needs >= 2 MDTs
 SKIP 421e (0s)
 
-== sanity test 421f: rmfid checks permissions ============ 06:21:05 (1765002065)
-Lustre: DEBUG MARKER: == sanity test 421f: rmfid checks permissions ============ 06:21:05 (1765002065)
+== sanity test 421f: rmfid checks permissions ============ 07:28:00 (1765006080)
+Lustre: DEBUG MARKER: == sanity test 421f: rmfid checks permissions ============ 07:28:00 (1765006080)
+Lustre: lustre-OST0001: local client d1a937d7-cd58-433d-94a9-afa2d3ba8f0f w/o recovery
+Lustre: Skipped 2 previous similar messages
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/mnt/lustre] [[0x200000401:0x100b:0x0]]
 lfs rmfid: cannot remove FIDs: Operation not permitted
 total 0
-drwxrwxrwx 2 root root  60 Dec  6 06:21 .
-drwxr-xr-x 5 root root 100 Dec  6 06:21 ..
--rw-r--r-- 1 root root   0 Dec  6 06:21 f
+drwxrwxrwx 2 root root  60 Dec  6 07:28 .
+drwxr-xr-x 5 root root 100 Dec  6 07:28 ..
+-rw-r--r-- 1 root root   0 Dec  6 07:28 f
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/mnt/lustre] [[0x200000401:0x100b:0x0]]
 lfs rmfid: cannot remove FIDs: Operation not permitted
@@ -327,42 +335,49 @@ running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/mnt/lustre] [[0x200000401:0x100d:0x0]]
 lfs rmfid: cannot remove FIDs: Operation not permitted
-Starting client: lustre-bot-kvm:  -o user_xattr,flock,user_fid2path 10.0.2.15@tcp:/lustre /tmp/lustre-eHHjwi
-Lustre: lustre-MDT0000: local client 3d2f0f9b-566d-406e-abf0-fd9e8a4075d7 w/o recovery
-Lustre: Skipped 2 previous similar messages
+Starting client: lustre-bot-kvm:  -o user_xattr,flock,user_fid2path 10.0.2.15@tcp:/lustre /tmp/lustre-rI9ts3
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/tmp/lustre-eHHjwi] [[0x200000401:0x100d:0x0]]
+ [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/tmp/lustre-rI9ts3] [[0x200000401:0x100d:0x0]]
 total 0
-drwxrwxrwx 2 root root  60 Dec  6 06:21 .
-drwxr-xr-x 5 root root 100 Dec  6 06:21 ..
--rw-r--r-- 1 root root   0 Dec  6 06:21 f
+drwxrwxrwx 2 root root  60 Dec  6 07:28 .
+drwxr-xr-x 5 root root 100 Dec  6 07:28 ..
+-rw-r--r-- 1 root root   0 Dec  6 07:28 f
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/tmp/lustre-eHHjwi] [[0x200000402:0x1:0x0]]
+ [/workspace/lustre-release/lustre/utils/lfs] [rmfid] [/tmp/lustre-rI9ts3] [[0x200000402:0x1:0x0]]
 lfs rmfid: cannot remove [0x200000402:0x1:0x0]: Permission denied
-10.0.2.15@tcp:/lustre /tmp/lustre-eHHjwi lustre rw,checksum,encrypt,flock,lazystatfs,lruresize,nolock,statfs_project,user_fid2path,user_xattr,verbose 0 0
-Stopping client lustre-bot-kvm /tmp/lustre-eHHjwi (opts:)
-LustreError: 7011:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff8881521fe000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
+10.0.2.15@tcp:/lustre /tmp/lustre-rI9ts3 lustre rw,checksum,encrypt,flock,lazystatfs,lruresize,nolock,statfs_project,user_fid2path,user_xattr,verbose 0 0
+Stopping client lustre-bot-kvm /tmp/lustre-rI9ts3 (opts:)
+LustreError: 7011:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff888117ef4000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
 LustreError: 7011:0:(obd_class.h:479:obd_check_dev()) Device 27 not setup
 Lustre: Unmounted lustre-client
 PASS 421f (1s)
 
-== sanity test 421g: rmfid to return errors properly ===== 06:21:06 (1765002066)
-Lustre: DEBUG MARKER: == sanity test 421g: rmfid to return errors properly ===== 06:21:06 (1765002066)
+== sanity test 421g: rmfid to return errors properly ===== 07:28:01 (1765006081)
+Lustre: DEBUG MARKER: == sanity test 421g: rmfid to return errors properly ===== 07:28:01 (1765006081)
 
  SKIP: sanity test_421g needs >= 2 MDTs
 Lustre: DEBUG MARKER: SKIP: sanity test_421g needs >= 2 MDTs
 SKIP 421g (0s)
 
-== sanity test 421h: rmfid with fileset mount ============ 06:21:06 (1765002066)
-Lustre: DEBUG MARKER: == sanity test 421h: rmfid with fileset mount ============ 06:21:06 (1765002066)
+== sanity test 421h: rmfid with fileset mount ============ 07:28:01 (1765006081)
+Lustre: DEBUG MARKER: == sanity test 421h: rmfid with fileset mount ============ 07:28:01 (1765006081)
 File /mnt/lustre/d421h.sanity/subdir/file0 FID [0x200000401:0x1010:0x0]
 File /mnt/lustre/d421h.sanity/subdir/fileA FID [0x200000401:0x1011:0x0]
 File /mnt/lustre/d421h.sanity/subdir/fileB FID [0x200000401:0x1012:0x0]
 File /mnt/lustre/d421h.sanity/subdir/fileC FID [0x200000401:0x1013:0x0]
 File /mnt/lustre/d421h.sanity/fileD FID [0x200000401:0x1014:0x0]
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre/d421h.sanity/subdir /mnt/lustre_other
+Lustre: lustre-MDT0000: local client aa8fa08b-b8f7-4f70-a7ac-0259f2f4e1a4 w/o recovery
+Lustre: Skipped 4 previous similar messages
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+LustreError: 7158:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88811d8fe000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
+LustreError: 7158:0:(lov_obd.c:783:lov_cleanup()) Skipped 1 previous similar message
+LustreError: 7158:0:(obd_class.h:479:obd_check_dev()) Device 27 not setup
+LustreError: 7158:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+Lustre: Unmounted lustre-client
 Removing FIDs:
 /workspace/lustre-release/lustre/utils/lfs rmfid /mnt/lustre_other [0x200000401:0x1010:0x0] [0x200000401:0x1011:0x0] [0x200000401:0x1014:0x0] [0x200000401:0x1012:0x0] [0x200000401:0x1013:0x0]
 lfs rmfid: cannot remove [0x200000401:0x1013:0x0]: No such file or directory
@@ -370,62 +385,51 @@ lfs rmfid: cannot remove [0x200000401:0x1014:0x0]: No such file or directory
 lfs rmfid: cannot remove [0x200000401:0x1010:0x0]: No such file or directory
 10.0.2.15@tcp:/lustre/d421h.sanity/subdir /mnt/lustre_other lustre rw,checksum,encrypt,flock,lazystatfs,lruresize,nolock,statfs_project,nouser_fid2path,user_xattr,verbose 0 0
 Stopping client lustre-bot-kvm /mnt/lustre_other (opts:)
-LustreError: 7201:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88815052e000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
-LustreError: 7201:0:(lov_obd.c:783:lov_cleanup()) Skipped 3 previous similar messages
-LustreError: 7201:0:(obd_class.h:479:obd_check_dev()) Device 27 not setup
-LustreError: 7201:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
-Lustre: Unmounted lustre-client
-Lustre: Skipped 1 previous similar message
 stat: cannot statx '/mnt/lustre/d421h.sanity/subdir/fileA': No such file or directory
 stat: cannot statx '/mnt/lustre/d421h.sanity/subdir/fileB': No such file or directory
   File: /mnt/lustre/d421h.sanity/subdir/fileC
   Size: 0         	Blocks: 0          IO Block: 4194304 regular empty file
 Device: 1273,181606	Inode: 144115205272506387  Links: 2
 Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-Access: 2025-12-06 06:21:06.000000000 +0000
-Modify: 2025-12-06 06:21:06.000000000 +0000
-Change: 2025-12-06 06:21:06.000000000 +0000
- Birth: 2025-12-06 06:21:06.000000000 +0000
+Access: 2025-12-06 07:28:02.000000000 +0000
+Modify: 2025-12-06 07:28:02.000000000 +0000
+Change: 2025-12-06 07:28:02.000000000 +0000
+ Birth: 2025-12-06 07:28:02.000000000 +0000
   File: /mnt/lustre/d421h.sanity/fileD
   Size: 0         	Blocks: 0          IO Block: 4194304 regular empty file
 Device: 1273,181606	Inode: 144115205272506388  Links: 1
 Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-Access: 2025-12-06 06:21:06.000000000 +0000
-Modify: 2025-12-06 06:21:06.000000000 +0000
-Change: 2025-12-06 06:21:06.000000000 +0000
- Birth: 2025-12-06 06:21:06.000000000 +0000
+Access: 2025-12-06 07:28:02.000000000 +0000
+Modify: 2025-12-06 07:28:02.000000000 +0000
+Change: 2025-12-06 07:28:02.000000000 +0000
+ Birth: 2025-12-06 07:28:02.000000000 +0000
 PASS 421h (1s)
 
-== sanity test 422: kill a process with RPC in progress == 06:21:07 (1765002067)
-Lustre: DEBUG MARKER: == sanity test 422: kill a process with RPC in progress == 06:21:07 (1765002067)
+== sanity test 422: kill a process with RPC in progress == 07:28:03 (1765006083)
+Lustre: DEBUG MARKER: == sanity test 422: kill a process with RPC in progress == 07:28:03 (1765006083)
 1+0 records in
 1+0 records out
-1024 bytes (1.0 kB, 1.0 KiB) copied, 0.0028019 s, 365 kB/s
+1024 bytes (1.0 kB, 1.0 KiB) copied, 0.00300829 s, 340 kB/s
 1+0 records in
 1+0 records out
-1024 bytes (1.0 kB, 1.0 KiB) copied, 0.00203627 s, 503 kB/s
+1024 bytes (1.0 kB, 1.0 KiB) copied, 0.00352776 s, 290 kB/s
 at_max=0
 at_max=0
 fail_loc=0x8000050a
 fail_val=210000
-LustreError: 3228:0:(service.c:2536:ptlrpc_server_handle_request()) @@@ HIT  req@ffff88811f4e2ac0 x1850738756724992/t0(0) o101->73f4a10d-e037-4228-9f91-223fa350ca1e@0@lo:0/0 lens 576/0 e 0 to 0 dl 1765002167 ref 1 fl Interpret:/600/ffffffff rc 0/-1 job:'touch.0' uid:0 gid:0 projid:0
-LustreError: 3228:0:(service.c:2537:ptlrpc_server_handle_request()) cfs_fail_timeout id 50a sleeping for 210000ms
+LustreError: 3239:0:(service.c:2536:ptlrpc_server_handle_request()) @@@ HIT  req@ffff8881146f4c00 x1850742929010944/t0(0) o101->d1a937d7-cd58-433d-94a9-afa2d3ba8f0f@0@lo:0/0 lens 576/0 e 0 to 0 dl 1765006183 ref 1 fl Interpret:/600/ffffffff rc 0/-1 job:'touch.0' uid:0 gid:0 projid:0
+LustreError: 3239:0:(service.c:2537:ptlrpc_server_handle_request()) cfs_fail_timeout id 50a sleeping for 210000ms
+LustreError: 6689:0:(service.c:2536:ptlrpc_server_handle_request()) @@@ HIT  req@ffff888110d150c0 x1850742929011328/t0(0) o6->lustre-MDT0000-mdtlov_UUID@0@lo:0/0 lens 544/0 e 0 to 0 dl 1765006184 ref 1 fl Interpret:/200/ffffffff rc 0/-1 job:'osp-syn-1-0.0' uid:0 gid:0 projid:4294967295
 fail_loc=0x80000722
 fail_val=205
-LustreError: 2938:0:(mdd_dir.c:3534:mdd_rename()) cfs_fail_timeout id 722 sleeping for 207000ms
-Lustre: 7389:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765002067/real 1765002067]  req@ffff88811f4e3dc0 x1850738756724992/t0(0) o101->lustre-MDT0000-mdc-ffff88811c656000@0@lo:12/10 lens 576/1152 e 0 to 1 dl 1765002167 ref 2 fl Rpc:XQr/600/ffffffff rc 0/-1 job:'touch.0' uid:0 gid:0 projid:0
-Lustre: lustre-MDT0000-mdc-ffff88811c656000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: 7389:0:(client.c:2478:ptlrpc_expire_one_request()) Skipped 1 previous similar message
-Lustre: lustre-MDT0000: Client 73f4a10d-e037-4228-9f91-223fa350ca1e (at 0@lo) reconnecting
-Lustre: lustre-MDT0000-mdc-ffff88811c656000: Connection restored to 0@lo (at 0@lo)
-kill 7396
-Lustre: DEBUG MARKER: touch
-Lustre: 7389:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765002169/real 1765002169]  req@ffff88811f4e3dc0 x1850738756724992/t0(0) o101->lustre-MDT0000-mdc-ffff88811c656000@0@lo:12/10 lens 576/1152 e 0 to 1 dl 1765002269 ref 2 fl Rpc:XQr/602/ffffffff rc 0/-1 job:'touch.0' uid:0 gid:0 projid:0
-Lustre: 7396:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765002169/real 1765002169]  req@ffff888151070000 x1850738756725632/t0(0) o36->lustre-MDT0000-mdc-ffff88811c656000@0@lo:13/10 lens 504/624 e 0 to 1 dl 1765002269 ref 2 fl Rpc:XQr/202/ffffffff rc 0/-1 job:'mv.0' uid:0 gid:0 projid:4294967295
-Lustre: lustre-MDT0000-mdc-ffff88811c656000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: mdt00_003: service thread pid 3228 was inactive for 204.843 seconds. Watchdog stack traces are limited to 3 per 300 seconds, skipping this one.
-Lustre: mdt_io00_002: service thread pid 2938 was inactive for 202.821 seconds. The thread might be hung, or it might only be slow and will resume later. Dumping the stack trace for debugging purposes:
-task:mdt_io00_002    state:D stack:27456 pid:2938  tgid:2938  ppid:2      flags:0x00004000
+LustreError: 2945:0:(mdd_dir.c:3534:mdd_rename()) cfs_fail_timeout id 722 sleeping for 207000ms
+Lustre: 7402:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765006085/real 1765006085]  req@ffff88814fecf6c0 x1850742929011968/t0(0) o36->lustre-MDT0000-mdc-ffff888132d00000@0@lo:13/10 lens 504/624 e 0 to 1 dl 1765006185 ref 2 fl Rpc:XQr/200/ffffffff rc 0/-1 job:'mv.0' uid:0 gid:0 projid:4294967295
+Lustre: lustre-MDT0000-mdc-ffff888132d00000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: 7402:0:(client.c:2478:ptlrpc_expire_one_request()) Skipped 1 previous similar message
+Lustre: lustre-MDT0000: Client d1a937d7-cd58-433d-94a9-afa2d3ba8f0f (at 0@lo) reconnecting
+Lustre: lustre-MDT0000-mdc-ffff888132d00000: Connection restored to 0@lo (at 0@lo)
+Lustre: mdt00_003: service thread pid 3239 was inactive for 200.170 seconds. The thread might be hung, or it might only be slow and will resume later. Dumping the stack trace for debugging purposes:
+task:mdt00_003       state:D stack:24792 pid:3239  tgid:3239  ppid:2      flags:0x00004000
 Call Trace:
  <TASK>
  __schedule+0x12aa/0x1d40
@@ -433,6 +437,31 @@ Call Trace:
  schedule_timeout+0xbb/0x160
  ? update_process_times+0x160/0x160
  __cfs_fail_timeout_set+0xed/0x1e0 [libcfs]
+ ptlrpc_main+0x6019/0x9800 [ptlrpc]
+ kthread+0x335/0x3d0
+ ? ptlrpc_start_thread+0x1e30/0x1e30 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+kill 7402
+Lustre: DEBUG MARKER: touch
+Lustre: 7395:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765006186/real 1765006186]  req@ffff8881146f2ac0 x1850742929010944/t0(0) o101->lustre-MDT0000-mdc-ffff888132d00000@0@lo:12/10 lens 576/1152 e 0 to 1 dl 1765006286 ref 2 fl Rpc:XQr/602/ffffffff rc 0/-1 job:'touch.0' uid:0 gid:0 projid:0
+Lustre: mdt_io00_002: service thread pid 2945 was inactive for 203.253 seconds. The thread might be hung, or it might only be slow and will resume later. Dumping the stack trace for debugging purposes:
+task:mdt_io00_002    state:D
+Lustre: lustre-MDT0000-mdc-ffff888132d00000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: 7395:0:(client.c:2478:ptlrpc_expire_one_request()) Skipped 1 previous similar message
+Lustre: lustre-MDT0000: Client d1a937d7-cd58-433d-94a9-afa2d3ba8f0f (at 0@lo) reconnecting
+ stack:27456 pid:2945  tgid:2945  ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0xbb/0x160
+ ? update_process_times+0x160/0x160
+ __cfs_fail_timeout_set+0xed/0x1e0 [libcfs]
+Lustre: lustre-MDT0000-mdc-ffff888132d00000: Connection restored to 0@lo (at 0@lo)
  mdd_rename+0x2b1/0x4140 [mdd]
  mdt_reint_rename+0x3f56/0x6650 [mdt]
  ? mdt_reconstruct_generic+0x90/0x90 [mdt]
@@ -440,7 +469,6 @@ Call Trace:
  mdt_reint_internal+0x9d7/0x11a0 [mdt]
  mdt_reint+0x115/0x270 [mdt]
  tgt_request_handle+0x2116/0x3d10 [ptlrpc]
-Lustre: lustre-MDT0000: Client 73f4a10d-e037-4228-9f91-223fa350ca1e (at 0@lo) reconnecting
  ptlrpc_main+0x61a8/0x9800 [ptlrpc]
  kthread+0x335/0x3d0
  ? ptlrpc_start_thread+0x1e30/0x1e30 [ptlrpc]
@@ -449,11 +477,109 @@ Lustre: lustre-MDT0000: Client 73f4a10d-e037-4228-9f91-223fa350ca1e (at 0@lo) re
  ? kthread_unuse_mm+0x130/0x130
  ret_from_fork_asm+0x11/0x20
  </TASK>
-Lustre: lustre-MDT0000-mdc-ffff88811c656000: Connection restored to 0@lo (at 0@lo)
-LustreError: 2938:0:(mdd_dir.c:3534:mdd_rename()) cfs_fail_timeout id 722 awake
-Lustre: mdt_io00_002: service thread pid 2938 completed after 207.032s. This likely indicates the system was overloaded (too many service threads, or not enough hardware resources).
-LustreError: 3228:0:(service.c:2537:ptlrpc_server_handle_request()) cfs_fail_timeout id 50a awake
-Lustre: mdt00_003: service thread pid 3228 completed after 210.014s. This likely indicates the system was overloaded (too many service threads, or not enough hardware resources).
+LustreError: 2945:0:(mdd_dir.c:3534:mdd_rename()) cfs_fail_timeout id 722 awake
+Lustre: mdt_io00_002: service thread pid 2945 completed after 207.024s. This likely indicates the system was overloaded (too many service threads, or not enough hardware resources).
+LustreError: 3239:0:(service.c:2537:ptlrpc_server_handle_request()) cfs_fail_timeout id 50a awake
+Lustre: mdt00_003: service thread pid 3239 completed after 210.110s. This likely indicates the system was overloaded (too many service threads, or not enough hardware resources).
+Lustre: 7395:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765006288/real 1765006288]  req@ffff8881146f2ac0 x1850742929010944/t0(0) o101->lustre-MDT0000-mdc-ffff888132d00000@0@lo:12/10 lens 576/1152 e 0 to 1 dl 1765006388 ref 2 fl Rpc:XQr/602/ffffffff rc 0/-1 job:'touch.0' uid:0 gid:0 projid:0
+Lustre: lustre-MDT0000-mdc-ffff888132d00000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: lustre-MDT0000: Client d1a937d7-cd58-433d-94a9-afa2d3ba8f0f (at 0@lo) reconnecting
+Lustre: lustre-MDT0000-mdc-ffff888132d00000: Connection restored to 0@lo (at 0@lo)
+/workspace/lustre-release/lustre/tests/test-framework.sh: line 6932:  7402 Killed                     mv $DIR/$tdir/d1/file1 $DIR/$tdir/d1/file2
+at_max=600
+at_max=600
+[  310.682273] Lustre: mdt00_003: service thread pid 3239 was inactive for 200.170 seconds. The thread might be hung, or it might only be slow and will resume later. Dumping the stack trace for debugging purposes:
+[  315.802236] Lustre: mdt_io00_002: service thread pid 2945 was inactive for 203.253 seconds. The thread might be hung, or it might only be slow and will resume later. Dumping the stack trace for debugging purposes:
+PASS 422 (308s)
+
+== sanity test 423: statfs should return a right data ==== 07:33:11 (1765006391)
+Lustre: DEBUG MARKER: == sanity test 423: statfs should return a right data ==== 07:33:11 (1765006391)
+PASS 423 (2s)
+
+== sanity test 424: simulate ENOMEM in ptl_send_rpc bulk reply ME attach ========================================================== 07:33:13 (1765006393)
+Lustre: DEBUG MARKER: == sanity test 424: simulate ENOMEM in ptl_send_rpc bulk reply ME attach ========================================================== 07:33:13 (1765006393)
+fail_loc=0x80000522
+Lustre: *** cfs_fail_loc=522, val=0***
+LustreError: 1201:0:(niobuf.c:1044:ptl_send_rpc()) LNetMEAttach failed: -12
+1+0 records in
+1+0 records out
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0143554 s, 146 MB/s
+PASS 424 (0s)
+
+== sanity test 425: lock count should not exceed lru size ========================================================== 07:33:13 (1765006393)
+Lustre: DEBUG MARKER: == sanity test 425: lock count should not exceed lru size ========================================================== 07:33:13 (1765006393)
+ldlm.namespaces.**.lru_size=0->100
+ldlm.namespaces.**.lru_max_age=600000->3900s
+PASS 425 (6s)
+== sanity test complete, duration 356 sec ================ 07:33:19 (1765006399)
+Lustre: DEBUG MARKER: == sanity test complete, duration 356 sec ================ 07:33:19 (1765006399)
+=== sanity: start cleanup 07:33:19 (1765006399) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 07:33:19 (1765006399) ===
+skip cleanup
+=== sanity: finish cleanup 07:33:19 (1765006399) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 07:33:19 (1765006399) ===
+debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
+sanity returned 0
+Finished at Sat Dec  6 07:33:19 UTC 2025 in 360s
+/workspace/lustre-release/lustre/tests/auster: completed with rc 0
+/workspace/lustre-release/lustre/tests/test-framework.sh: line 6803: cd: HOME not set
+cat: /etc/system-release: No such file or directory
+mgs: 
+MGS_OS_ID=debian
+MGS_OS_VERSION_CODE=0
+MGS_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+mds1: 
+MDS1_OS_ID=debian
+MDS1_OS_VERSION_CODE=0
+MDS1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+ost1: 
+OST1_OS_VERSION_CODE=0
+OST1_OS_ID=debian
+OST1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+client: 
+CLIENT_OS_ID_LIKE= debian
+CLIENT_OS_ID=debian
+CLIENT_OS_VERSION_CODE=0
+Stopping clients: lustre-bot-kvm /mnt/lustre (opts:-f)
+Stopping client lustre-bot-kvm /mnt/lustre opts:-f
+Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+LustreError: 8415:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 8415:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+Lustre: Unmounted lustre-client
+Lustre: Skipped 1 previous similar message
+Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
+Stopping /mnt/lustre-mds1 (opts:-f) on lustre-bot-kvm
+Lustre: server umount lustre-MDT0000 complete
+Stopping /mnt/lustre-ost1 (opts:-f) on lustre-bot-kvm
+LustreError: 3378:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765006411 with bad export cookie 18167707409679520145
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+LustreError: 8497:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 8497:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+Lustre: server umount lustre-OST0000 complete
+Stopping /mnt/lustre-ost2 (opts:-f) on lustre-bot-kvm
+LustreError: 8551:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 8551:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+Lustre: server umount lustre-OST0001 complete
+LNet: 8825:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8825:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+Key type .llcrypt unregistered
+Key type ._llcrypt unregistered
+modules unloaded.
+
+========= PASSED sanity-quick in 462s
+
+Passed: sanity-quick
+Failed: 
+Kernel version: 6.12.57-ktest
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=b09ce31a34334c0d85b3d072decd5fa2\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 
 </pre>
 </body>

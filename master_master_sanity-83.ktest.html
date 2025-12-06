@@ -1,8 +1,8 @@
 <html lang="en">
 <body>
 <pre>
-time="2025-12-06T06:19:08Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=76695cf864fb4d35a7ddf4405d370e5f;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=8a4b854623c04fabb33642758034c400;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+time="2025-12-06T07:25:35Z" level=warning msg="The input device is not a TTY. The --tty and --interactive flags might not work properly"
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=4b829b37def4438bb7640783ceafe2d9;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=f55dc62e9d8f484fb1f3e748f57bf7e7;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -107,8 +107,7 @@ Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
-arg[2] = -omount.lustre (2910) used greatest stack depth: 24216 bytes left
-
+arg[2] = -o
 arg[3] = rw
 arg[4] = lustre-wbcfs
 arg[5] = /mnt/lustre-mds1
@@ -116,6 +115,7 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-mds1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-mds1, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,param=mgsnode=10.0.2.15@tcp,svname=lustre-MDT0000,device=lustre-wbcfs
+mount.lustre (2910) used greatest stack depth: 24216 bytes left
 Started wbcfs-target
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Start ost1: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost1
@@ -130,7 +130,8 @@ Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-arg[0] = /sbin/mount.lustre
+arg[0] = /sbin/mount.lustremount.lustre (3054) used greatest stack depth: 23736 bytes left
+
 arg[1] = -v
 arg[2] = -o
 arg[3] = rw
@@ -140,7 +141,6 @@ source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-ost1
 options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-ost1, flags=0x1000000 options=osd=osd-wbcfs,mgsnode=10.0.2.15@tcp,virgin,update,svname=lustre-OST0000,device=lustre-wbcfs
-mount.lustre (3055) used greatest stack depth: 23656 bytes left
 Started wbcfs-target
 fstrim: /mnt/lustre-ost1: the discard operation is not supported
 Start ost2: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost2
@@ -164,21 +164,20 @@ mounting device lustre-wbcfs at /mnt/lustre-ost2, flags=0x1000000 options=osd=os
 Started wbcfs-target
 fstrim: /mnt/lustre-ost2: the discard operation is not supported
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: lustre-MDT0000: local client e03319a6-369d-4566-923b-a4520dca1172 w/o recovery
-Lustre: client wants to enable acl, but mdt not!
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: Mounted lustre-client
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client 275f2718-422c-4398-bd72-94e67ae45cbc w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888125d2c000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888125d2c000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810ac76000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810ac76000.idle_timeout=debug
 setting jobstats to procname_uid
 Setting lustre.sys.jobid_var from disable to procname_uid
 Waiting 90s for 'procname_uid'
-Updated after 5s: want 'procname_uid' got 'procname_uid'
 disable quota as required
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 mdt.lustre-MDT0000.identity_upcall=NONE
@@ -207,15 +206,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Sat Dec  6 06:20:16 UTC 2025
+Started at Sat Dec  6 07:26:53 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/062016
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/062016
-Logging to shared log directory: /tmp/test_logs/2025-12-06/062016
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/072651
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-06/072651
+Logging to shared log directory: /tmp/test_logs/2025-12-06/072651
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.95
@@ -226,8 +225,8 @@ OSS: 2.16.61.95
 Lustre: DEBUG MARKER: OSS: 2.16.61.95
 running: sanity ONLY=251b 252 253 254 255a 255b 255c 256 257 258a 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Sat Dec  6 06:20:18 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 06:20:18 UTC 2025
+-----============= acceptance-small: sanity ============----- Sat Dec  6 07:26:57 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Sat Dec 6 07:26:57 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -261,8 +260,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 06:20:18 (1765002018) ===
-Lustre: DEBUG MARKER: === sanity: start setup 06:20:18 (1765002018) ===
+=== sanity: start setup 07:26:58 (1765006018) ===
+Lustre: DEBUG MARKER: === sanity: start setup 07:26:58 (1765006018) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -270,19 +269,16 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888125d2c000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888125d2c000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810ac76000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810ac76000.idle_timeout=debug
 disable quota as required
-Lustre: 5231:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 06:20:20 (1765002020) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 06:20:20 (1765002020) ===
+Lustre: 5206:0:(mgs_llog.c:1346:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 07:27:00 (1765006020) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 07:27:00 (1765006020) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4371]
-LustreError: 5365:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
-LustreError: 5365:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff888125d2c000: ptlrpc_queue_wait failed: rc = -95
-LustreError: 5365:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+ [touch] [/mnt/lustre/d0_runas_test/f4346]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
@@ -293,46 +289,46 @@ resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 
-== sanity test 251b: short read restore offset correctly ========================================================== 06:20:21 (1765002021)
-Lustre: DEBUG MARKER: == sanity test 251b: short read restore offset correctly ========================================================== 06:20:21 (1765002021)
+== sanity test 251b: short read restore offset correctly ========================================================== 07:27:03 (1765006023)
+Lustre: DEBUG MARKER: == sanity test 251b: short read restore offset correctly ========================================================== 07:27:03 (1765006023)
 4+0 records in
 4+0 records out
-4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00277305 s, 1.5 MB/s
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00428376 s, 956 kB/s
 fail_loc=0x1431
 fail_val=5
-LustreError: 6269:0:(file.c:2479:do_file_read_iter()) cfs_fail_timeout id 1431 sleeping for 5000ms
-LustreError: 6269:0:(file.c:2479:do_file_read_iter()) cfs_fail_timeout id 1431 awake
+LustreError: 6245:0:(file.c:2479:do_file_read_iter()) cfs_fail_timeout id 1431 sleeping for 5000ms
+LustreError: 6245:0:(file.c:2479:do_file_read_iter()) cfs_fail_timeout id 1431 awake
 PASS 251b (6s)
 
-== sanity test 252: check lr_reader tool ================= 06:20:27 (1765002027)
-Lustre: DEBUG MARKER: == sanity test 252: check lr_reader tool ================= 06:20:27 (1765002027)
+== sanity test 252: check lr_reader tool ================= 07:27:09 (1765006029)
+Lustre: DEBUG MARKER: == sanity test 252: check lr_reader tool ================= 07:27:09 (1765006029)
 
  SKIP: sanity test_252 ldiskfs only test
 Lustre: DEBUG MARKER: SKIP: sanity test_252 ldiskfs only test
 SKIP 252 (0s)
 
-== sanity test 253: Check object allocation limit ======== 06:20:27 (1765002027)
-Lustre: DEBUG MARKER: == sanity test 253: Check object allocation limit ======== 06:20:27 (1765002027)
+== sanity test 253: Check object allocation limit ======== 07:27:09 (1765006029)
+Lustre: DEBUG MARKER: == sanity test 253: Check object allocation limit ======== 07:27:09 (1765006029)
 fallocate on wbcfs doesn't consume space
 fallocate not supported
 
  SKIP: sanity test_253 need >= 2.13.57 and ldiskfs for fallocate
 Lustre: DEBUG MARKER: SKIP: sanity test_253 need >= 2.13.57 and ldiskfs for fallocate
-SKIP 253 (0s)
+SKIP 253 (1s)
 
-== sanity test 254: Check changelog size ================= 06:20:27 (1765002027)
-Lustre: DEBUG MARKER: == sanity test 254: Check changelog size ================= 06:20:27 (1765002027)
+== sanity test 254: Check changelog size ================= 07:27:10 (1765006030)
+Lustre: DEBUG MARKER: == sanity test 254: Check changelog size ================= 07:27:10 (1765006030)
 error: get_param: param_path 'mdd/wbcfs-target/changelog_size': No such file or directory
 
  SKIP: sanity test_254 MDS does not support changelog_size
 Lustre: DEBUG MARKER: SKIP: sanity test_254 MDS does not support changelog_size
 SKIP 254 (0s)
 
-== sanity test 255a: check 'lfs ladvise -a willread' ===== 06:20:27 (1765002027)
-Lustre: DEBUG MARKER: == sanity test 255a: check 'lfs ladvise -a willread' ===== 06:20:27 (1765002027)
+== sanity test 255a: check 'lfs ladvise -a willread' ===== 07:27:10 (1765006030)
+Lustre: DEBUG MARKER: == sanity test 255a: check 'lfs ladvise -a willread' ===== 07:27:10 (1765006030)
 100+0 records in
 100+0 records out
-104857600 bytes (105 MB, 100 MiB) copied, 1.9124 s, 54.8 MB/s
+104857600 bytes (105 MB, 100 MiB) copied, 2.71297 s, 38.7 MB/s
 ladvise: range [2, 1] is invalid
 Provide servers with advice about access patterns for a file.
 usage: ladvise [--advice|-a ADVICE] [--start|-s START[kMGT]]
@@ -363,36 +359,35 @@ usage: ladvise [--advice|-a ADVICE] [--start|-s START[kMGT]]
 Synchronous ladvise should wait
 fail_val=8
 fail_loc=0x237
-LustreError: 6688:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
-LustreError: 6688:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
+LustreError: 3061:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
+LustreError: 3061:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
+LustreError: 3060:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
 Asynchronous ladvise shouldn't wait
-LustreError: 6688:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
-LustreError: 6688:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
-llite.lustre-ffff888125d2c000.hybrid_io=0
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
+llite.lustre-ffff88810ac76000.hybrid_io=0
 Iter 1/10: reading without willread hint
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 2 previous similar messages
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
-bash (6774): drop_caches: 3
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
+LustreError: 3060:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
+LustreError: 3060:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
+bash (6750): drop_caches: 3
 pread(...4096, 88096768) got: -1, No such file or directory
 Iter 1/10: uncached speed: 
 (standard_in) 2: syntax error
 pread(...4096, 88096768) got: -1, No such file or directory
 Iter 1/10: OSS cache speed: 
 (standard_in) 2: syntax error
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
 LustreError: 3061:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
-bash (6802): drop_caches: 3
-LustreError: 3061:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
-LustreError: 3063:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
-LustreError: 3063:0:(ldlm_request.c:476:ldlm_cli_enqueue_local()) ### delayed lvb init failed (rc -2) ns: filter-lustre-OST0001_UUID lock: ffff88811a939b80/0x6b95146face7784b lrc: 2/0,0 mode: --/PR res: [0x280000400:0x3:0x0].0x0 rrc: 2 type: EXT [0->0] (req 0->0) gid 0 flags: 0x40000000000000 nid: local remote: 0x0 expref: -99 pid: 3063 timeout: 0 lvb_type: 0
-LustreError: 3063:0:(ldlm_request.c:476:ldlm_cli_enqueue_local()) Skipped 1 previous similar message
+LustreError: 3061:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 3 previous similar messages
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 2 previous similar messages
+bash (6779): drop_caches: 3
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 sleeping for 8000ms
+LustreError: 3062:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 1 previous similar message
+LustreError: 6747:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) cfs_fail_timeout id 237 awake
+LustreError: 3062:0:(ldlm_request.c:476:ldlm_cli_enqueue_local()) ### delayed lvb init failed (rc -2) ns: filter-lustre-OST0000_UUID lock: ffff88810e0a3180/0x4b0fcf4adfe17c91 lrc: 2/0,0 mode: --/PR res: [0x240000400:0x3:0x0].0x0 rrc: 2 type: EXT [0->0] (req 0->0) gid 0 flags: 0x40000000000000 nid: local remote: 0x0 expref: -99 pid: 3062 timeout: 0 lvb_type: 0
+LustreError: 6747:0:(ofd_dev.c:2348:ofd_ladvise_hdl()) Skipped 2 previous similar messages
+LustreError: 3062:0:(ldlm_request.c:476:ldlm_cli_enqueue_local()) Skipped 1 previous similar message
 lfs ladvise: cannot give advice: Input/output error (5)
 ladvise: cannot give advice 'willread' to file '/mnt/lustre/f255a.sanity': Input/output error
  sanity test_255a: @@@@@@ FAIL: ladvise failed 
@@ -405,14 +400,14 @@ Lustre: DEBUG MARKER: sanity test_255a: @@@@@@ FAIL: ladvise failed
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:26935:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/062016/sanity.test_255a.*.1765002071.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/072651/sanity.test_255a.*.1765006067.log
 Dumping logs only on local client.
 fail_loc=0
-FAIL 255a (45s)
+FAIL 255a (39s)
 
-== sanity test 255b: check 'lfs ladvise -a dontneed' ===== 06:21:12 (1765002072)
-Lustre: DEBUG MARKER: == sanity test 255b: check 'lfs ladvise -a dontneed' ===== 06:21:12 (1765002072)
-LustreError: 3061:0:(ldlm_request.c:476:ldlm_cli_enqueue_local()) ### delayed lvb init failed (rc -2) ns: filter-lustre-OST0000_UUID lock: ffff888119092940/0x6b95146face7795c lrc: 2/0,0 mode: --/PR res: [0x240000400:0x4:0x0].0x0 rrc: 2 type: EXT [0->0] (req 0->0) gid 0 flags: 0x40000000000000 nid: local remote: 0x0 expref: -99 pid: 3061 timeout: 0 lvb_type: 0
+== sanity test 255b: check 'lfs ladvise -a dontneed' ===== 07:27:49 (1765006069)
+Lustre: DEBUG MARKER: == sanity test 255b: check 'lfs ladvise -a dontneed' ===== 07:27:49 (1765006069)
+LustreError: 3062:0:(ldlm_request.c:476:ldlm_cli_enqueue_local()) ### delayed lvb init failed (rc -2) ns: filter-lustre-OST0000_UUID lock: ffff88810e0a3440/0x4b0fcf4adfe17da2 lrc: 2/0,0 mode: --/PR res: [0x240000400:0x4:0x0].0x0 rrc: 2 type: EXT [0->0] (req 0->0) gid 0 flags: 0x40000000000000 nid: local remote: 0x0 expref: -99 pid: 3062 timeout: 0 lvb_type: 0
 lfs ladvise: cannot give advice: Operation not supported (95)
 ladvise: cannot give advice 'dontneed' to file '/mnt/lustre/f255b.sanity': Operation not supported
 dd: failed to open '/mnt/lustre/f255b.sanity': No such file or directory
@@ -425,16 +420,15 @@ Lustre: DEBUG MARKER: sanity test_255b: @@@@@@ FAIL: dd to /mnt/lustre/f255b.san
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:27006:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/062016/sanity.test_255b.*.1765002072.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/072651/sanity.test_255b.*.1765006070.log
 Dumping logs only on local client.
-FAIL 255b (0s)
+FAIL 255b (1s)
 
-== sanity test 255c: suite of ladvise lockahead tests ==== 06:21:12 (1765002072)
-Lustre: DEBUG MARKER: == sanity test 255c: suite of ladvise lockahead tests ==== 06:21:12 (1765002072)
+== sanity test 255c: suite of ladvise lockahead tests ==== 07:27:50 (1765006070)
+Lustre: DEBUG MARKER: == sanity test 255c: suite of ladvise lockahead tests ==== 07:27:50 (1765006070)
 error: list_param: param_path 'osc/wbcfs-target-osc-[-0-9a-f]*': No such file or directory
 error: list_param: listing 'osc/wbcfs-target-osc-[-0-9a-f]*': No such file or directory
-lfs (7040) used greatest stack depth: 23504 bytes left
-Starting test test10 at 1765002073
+Starting test test10 at 1765006070
 lockahead_test: lockahead_test.c:118: test10: assertion 'rc == sizeof(buf)' failed: write failed for '/mnt/lustre/d255c.sanity/f255c.sanity': No such file or directory
  sanity test_255c: @@@@@@ FAIL: Ladvise test10 failed, 255 
 Lustre: DEBUG MARKER: sanity test_255c: @@@@@@ FAIL: Ladvise test10 failed, 255
@@ -445,34 +439,34 @@ Lustre: DEBUG MARKER: sanity test_255c: @@@@@@ FAIL: Ladvise test10 failed, 255
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:27093:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/062016/sanity.test_255c.*.1765002073.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/072651/sanity.test_255c.*.1765006070.log
 Dumping logs only on local client.
-FAIL 255c (1s)
+FAIL 255c (0s)
 
-== sanity test 256: Check llog delete for empty and not full state ========================================================== 06:21:13 (1765002073)
-Lustre: DEBUG MARKER: == sanity test 256: Check llog delete for empty and not full state ========================================================== 06:21:13 (1765002073)
+== sanity test 256: Check llog delete for empty and not full state ========================================================== 07:27:51 (1765006071)
+Lustre: DEBUG MARKER: == sanity test 256: Check llog delete for empty and not full state ========================================================== 07:27:51 (1765006071)
 
  SKIP: sanity test_256 ldiskfs only test
 Lustre: DEBUG MARKER: SKIP: sanity test_256 ldiskfs only test
 SKIP 256 (0s)
 
-== sanity test 257: xattr locks are not lost ============= 06:21:13 (1765002073)
-Lustre: DEBUG MARKER: == sanity test 257: xattr locks are not lost ============= 06:21:13 (1765002073)
+== sanity test 257: xattr locks are not lost ============= 07:27:51 (1765006071)
+Lustre: DEBUG MARKER: == sanity test 257: xattr locks are not lost ============= 07:27:51 (1765006071)
   File: /mnt/lustre/d257.sanity
   Size: 40        	Blocks: 0          IO Block: 1048576 directory
 Device: 1273,181606	Inode: 144115205272502283  Links: 2
 Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
-Access: 2025-12-06 06:21:13.000000000 +0000
-Modify: 2025-12-06 06:21:13.000000000 +0000
-Change: 2025-12-06 06:21:13.000000000 +0000
- Birth: 2025-12-06 06:21:13.000000000 +0000
+Access: 2025-12-06 07:27:51.000000000 +0000
+Modify: 2025-12-06 07:27:51.000000000 +0000
+Change: 2025-12-06 07:27:51.000000000 +0000
+ Birth: 2025-12-06 07:27:51.000000000 +0000
 fail_val=0
 fail_loc=0x80000161
 Lustre: *** cfs_fail_loc=161, val=0***
-LustreError: lustre-MDT0000-mdc-ffff888125d2c000: operation ldlm_enqueue to node 0@lo failed: rc = -14
+LustreError: lustre-MDT0000-mdc-ffff88810ac76000: operation ldlm_enqueue to node 0@lo failed: rc = -14
 Stopping /mnt/lustre-mds1 (opts:) on lustre-bot-kvm
 Lustre: Failing over lustre-MDT0000
-LustreError: 7272:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
+LustreError: 7250:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
 Lustre: server umount lustre-MDT0000 complete
 Start mds1: mount -t lustre -v lustre-wbcfs /mnt/lustre-mds1
 Lustre is using wbcfs as backend
@@ -488,10 +482,13 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: Skipped 1 previous similar message
+Lustre: lustre-MDT0000-lwp-OST0000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: Skipped 1 previous similar message
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: Skipped 1 previous similar message
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
 Lustre: Skipped 1 previous similar message
+mount.lustre (7320) used greatest stack depth: 23488 bytes left
 arg[0] = /sbin/mount.lustre
 arg[1] = -v
 arg[2] = -o
@@ -515,20 +512,18 @@ Lustre: DEBUG MARKER: sanity test_257: @@@@@@ FAIL: test_257 failed with 1
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:27173:main()
-Dumping lctl log to /tmp/test_logs/2025-12-06/062016/sanity.test_257.*.1765002074.log
+Dumping lctl log to /tmp/test_logs/2025-12-06/072651/sanity.test_257.*.1765006073.log
 Dumping logs only on local client.
 test_257 returned 1
-FAIL 257 (1s)
+FAIL 257 (2s)
 
-== sanity test 258a: verify i_mutex security behavior when suid attributes is set ========================================================== 06:21:14 (1765002074)
-Lustre: DEBUG MARKER: == sanity test 258a: verify i_mutex security behavior when suid attributes is set ========================================================== 06:21:14 (1765002074)
+== sanity test 258a: verify i_mutex security behavior when suid attributes is set ========================================================== 07:27:53 (1765006073)
+Lustre: DEBUG MARKER: == sanity test 258a: verify i_mutex security behavior when suid attributes is set ========================================================== 07:27:53 (1765006073)
 fail_loc=0x141c
-LustreError: lustre-MDT0000-mdc-ffff888125d2c000: operation ldlm_enqueue to node 0@lo failed: rc = -107
-Lustre: lustre-MDT0000-mdc-ffff888125d2c000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: lustre-MDT0000-lwp-OST0000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: Skipped 1 previous similar message
-Lustre: lustre-MDT0000-lwp-OST0001: Connection restored to 0@lo (at 0@lo)
-Lustre: lustre-OST0000-osc-ffff888125d2c000: disconnect after 23s idle
+LustreError: lustre-MDT0000-mdc-ffff88810ac76000: operation ldlm_enqueue to node 0@lo failed: rc = -107
+Lustre: lustre-MDT0000-mdc-ffff88810ac76000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: lustre-MDT0000-lwp-OST0000: Connection restored to 0@lo (at 0@lo)
+Lustre: lustre-OST0000-osc-ffff88810ac76000: disconnect after 23s idle
 
 </pre>
 </body>
