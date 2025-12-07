@@ -1,0 +1,20 @@
+<html lang="en">
+<body>
+<pre>
+LU-18657 pcc: invalidate instead of truncate inode mapping
+
+When releasing the PCC inode the current code releases the pages
+related to both the pcc inode and original inode. It is possible
+additional references exist for these inode so we are not
+allowed to flush all the pages. Instead use the function
+invalidate_mapping_pages() that only handles pages that can be
+cleaned up.
+
+Fixes: 9e37963fa0 ("LU-10499 sec: support of PCC-RO for encrypted files")
+Test-Parameters: trivial testlist=sanity-pcc
+Change-Id: If979b19d68004221909450641de461b92818d243
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+
+</pre>
+</body>
+</html>
