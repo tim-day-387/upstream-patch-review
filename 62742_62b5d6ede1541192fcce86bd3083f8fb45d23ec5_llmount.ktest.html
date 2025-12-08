@@ -1,0 +1,886 @@
+<html lang="en">
+<body>
+<pre>
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=d9ec7c8c1d444b278f3ebc96819a3c6c;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=b13d0126abef44cda96b93577ea839fc;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+Key type ._llcrypt registered
+Key type .llcrypt registered
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.16.61_57_g62b5d6e
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2953) used greatest stack depth: 26304 bytes left
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2914) used greatest stack depth: 24216 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+Lustre: lustre-OST0000: new disk, initializing
+Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
+Lustre: Skipped 1 previous similar message
+Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+mount.lustre (3055) used greatest stack depth: 24032 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client c44bc8d1-49ed-49c7-b071-0f17853ec147 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: lustre-OST0000-osc-ffff88811aa9e000: disconnect after 24s idle
+Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+LustreError: 3747:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
+Lustre: server umount lustre-OST0000 complete
+Lustre: server umount lustre-MDT0000 complete
+Lustre: server umount lustre-OST0001 complete
+LustreError: 3069:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765153918 with bad export cookie 12276716188926489877
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+LustreError: 3785:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 3785:0:(obd_class.h:479:obd_check_dev()) Skipped 9 previous similar messages
+Lustre: Unmounted lustre-client
+INFO: task pool_workqueue_:3 blocked for more than 10 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:pool_workqueue_ state:D stack:29712 pid:3     tgid:3     ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ wait_for_completion_state+0x1a/0x40
+ __wait_rcu_gp+0x22f/0x250
+ synchronize_rcu_normal+0x151/0x190
+ ? rcu_read_lock_any_held+0x70/0x70
+ ? trace_rcu_sr_normal+0x150/0x150
+ ? lockdep_unlock+0x230/0x230
+ ? rcu_gp_is_expedited+0x43/0x70
+ ? synchronize_rcu+0x30/0x1e0
+ lockdep_unregister_key+0x385/0x420
+ pwq_release_workfn+0x572/0x690
+ kthread_worker_fn+0x35c/0x6e0
+ ? rcu_free_pool+0x60/0x60
+ kthread+0x335/0x3d0
+ ? __kthread_init_worker+0x1a0/0x1a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+1 lock held by khugepaged/105:
+ #0: ffffffff8363c6c8 (lock#3){....}-{3:3}, at: __lru_add_drain_all+0x60/0x440
+2 locks held by systemd-udevd/377:
+2 locks held by kworker/u64:4/513:
+ #0: ffff888100081948 ((wq_completion)events_unbound){....}-{0:0}, at: process_scheduled_works+0x780/0x1070
+ #1: ffffc90001b6fd58 ((work_completion)(&sub_info->work)){....}-{0:0}, at: process_scheduled_works+0x7a0/0x1070
+1 lock held by ptlrpcd_00_12/1197:
+3 locks held by ptlrpcd_00_15/1200:
+6 locks held by ldlm_cn00_003/3069:
+4 locks held by umount/3785:
+1 lock held by modprobe/3858:
+ #0: ffff8881169a8140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
+
+=============================================
+
+Lustre: 1199:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765153918/real 1765153918]  req@ffff88814334aac0 x1850897923606656/t0(0) o103->MGC10.0.2.15@tcp@0@lo:17/18 lens 328/224 e 0 to 1 dl 1765153934 ref 1 fl Rpc:XQr/200/ffffffff rc 0/-1 job:'ldlm_bl.0' uid:0 gid:0 projid:4294967295
+rcu: INFO: rcu_sched self-detected stall on CPU
+rcu: 	10-....: (822 ticks this GP) idle=f104/1/0x4000000000000000 softirq=3376/3376 fqs=354
+rcu: 	(t=2100 jiffies g=5965 q=1728 ncpus=16)
+Sending NMI from CPU 10 to CPUs 5:
+NMI backtrace for cpu 5
+CPU: 5 UID: 0 PID: 1200 Comm: ptlrpcd_00_15 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:vprintk_emit+0x2de/0x550
+Code: d8 57 83 31 f6 31 d2 31 c9 41 b8 01 00 00 00 45 31 c9 41 56 e8 d3 db fe ff 48 83 c4 08 0f b6 05 d8 74 2c 03 3c 01 75 0b f3 90 <80> 3d cb 74 2c 03 00 75 f5 48 c7 c7 40 d8 57 83 4c 89 f6 e8 8a ed
+RSP: 0018:ffffc900019cf740 EFLAGS: 00000002
+RAX: 0000000000000001 RBX: 0000000000000246 RCX: ffff88813154c988
+RDX: 000000001dd2382c RSI: 00000000ff3ba8a8 RDI: ffffffff842c1b38
+RBP: 0000000000000000 R08: ffffffff842c1b3f R09: 1ffffffff0858367
+R10: dffffc0000000000 R11: fffffbfff0858368 R12: ffffffffa0238940
+R13: 00000000ffffffff R14: ffffffff812304a0 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffff8882a2e80000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00005648857cd498 CR3: 000000010762c000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ _printk+0x5d/0x80
+ cfs_print_to_console+0x9d/0xc0 [libcfs]
+ libcfs_debug_msg+0x17b4/0x22b0 [libcfs]
+ ptlrpc_set_import_discon+0x42f/0x7f0 [ptlrpc]
+ ptlrpc_request_handle_notconn+0x213/0x480 [ptlrpc]
+ after_reply+0x11fe/0x2370 [ptlrpc]
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ptlrpc_check_set+0x2c41/0x4ea0 [ptlrpc]
+ ptlrpcd+0x9c9/0x1870 [ptlrpc]
+ ? wait_woken+0x100/0x100
+ kthread+0x335/0x3d0
+ ? ptlrpcd_start+0x5d0/0x5d0 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+INFO: NMI handler (nmi_cpu_backtrace_handler) took too long to run: 16.481 msecs
+CPU: 10 UID: 0 PID: 1197 Comm: ptlrpcd_00_12 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:queued_spin_lock_slowpath+0x52/0x850
+Code: 48 bd 00 00 00 00 00 fc ff df 89 74 24 20 66 90 49 89 df 49 c1 ef 03 4c 8d 74 24 24 41 bc 01 00 00 00 eb 06 89 44 24 24 f3 90 <48> 89 df be 04 00 00 00 e8 11 0c f7 fe 41 0f b6 04 2f 84 c0 75 35
+RSP: 0018:ffffc9000199fa78 EFLAGS: 00000202
+RAX: 0000000000000001 RBX: ffff888127e5c360 RCX: ffffffff827f58cf
+RDX: 0000000000000000 RSI: 0000000000000004 RDI: ffff888127e5c360
+RBP: dffffc0000000000 R08: ffff888127e5c363 R09: 1ffff11024fcb86c
+R10: dffffc0000000000 R11: ffffed1024fcb86d R12: 0000000000000001
+R13: 1ffff11024fcb86e R14: ffffc9000199fa9c R15: 1ffff11024fcb86c
+FS:  0000000000000000(0000) GS:ffff8882a3100000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f50f007641c CR3: 0000000003468000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? lock_acquire+0x11d/0x2c0
+ do_raw_spin_lock+0x1e4/0x260
+ ptlrpc_send_new_req+0x517/0x1fa0 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ ? libcfs_debug_msg+0x1a7b/0x22b0 [libcfs]
+ ptlrpc_check_set+0x45c/0x4ea0 [ptlrpc]
+ ? ptlrpcd+0x606/0x1870 [ptlrpc]
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ptlrpcd+0x9c9/0x1870 [ptlrpc]
+ ? wait_woken+0x100/0x100
+ kthread+0x335/0x3d0
+ ? ptlrpcd_start+0x5d0/0x5d0 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+Sending NMI from CPU 10 to CPUs 13:
+NMI backtrace for cpu 13
+CPU: 13 UID: 0 PID: 3069 Comm: ldlm_cn00_003 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__send_to_port+0x1ed/0x290
+Code: 24 08 00 75 35 48 8d 74 24 44 4c 89 ef e8 eb 9d f3 ff 48 85 c0 75 23 48 8d 5c 24 44 4c 89 ef e8 e9 f7 f3 ff 84 c0 75 12 f3 90 <4c> 89 ef 48 89 de e8 c8 9d f3 ff 48 85 c0 74 e2 48 8b 7c 24 38 48
+RSP: 0018:ffffc9000752f4e8 EFLAGS: 00000046
+RAX: 0000000000000000 RBX: ffffc9000752f52c RCX: dffffc0000000000
+RDX: dffffc0000000000 RSI: ffffc9000752f52c RDI: ffff888106d89043
+RBP: ffffc9000752f5f0 R08: dffffc0000000000 R09: ffff8881049272a0
+R10: dffffc0000000000 R11: fffff52000ea5e90 R12: ffff888104f89400
+R13: ffff888106d89000 R14: 0000000000000010 R15: dffffc0000000000
+FS:  0000000000000000(0000) GS:ffff8882a3280000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f72c38e535c CR3: 0000000003468000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ put_chars+0x17c/0x1c0
+ ? get_chars+0x120/0x120
+ hvc_console_print+0x1db/0x450
+ ? __lock_acquire+0x6bd/0xf20
+ ? lock_acquire+0x11d/0x2c0
+ ? console_flush_all+0xb9/0x840
+ ? console_flush_all+0xb9/0x840
+ ? console_flush_all+0xb9/0x840
+ console_flush_all+0x44b/0x840
+ ? console_flush_all+0xb9/0x840
+ console_unlock+0x77/0x190
+ vprintk_emit+0x350/0x550
+ _printk+0x5d/0x80
+ cfs_vprint_to_console+0x493/0xcf0 [libcfs]
+ cfs_print_to_console+0x9d/0xc0 [libcfs]
+ libcfs_debug_msg+0x17b4/0x22b0 [libcfs]
+ ldlm_cancel_handler+0x3a1/0xdc0 [ptlrpc]
+ ptlrpc_main+0x61a8/0x9800 [ptlrpc]
+ kthread+0x335/0x3d0
+ ? ptlrpc_start_thread+0x1e30/0x1e30 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+INFO: task pool_workqueue_:3 blocked for more than 20 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:pool_workqueue_ state:D stack:29712 pid:3     tgid:3     ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ wait_for_completion_state+0x1a/0x40
+ __wait_rcu_gp+0x22f/0x250
+ synchronize_rcu_normal+0x151/0x190
+ ? rcu_read_lock_any_held+0x70/0x70
+ ? trace_rcu_sr_normal+0x150/0x150
+ ? lockdep_unlock+0x230/0x230
+ ? rcu_gp_is_expedited+0x43/0x70
+ ? synchronize_rcu+0x30/0x1e0
+ lockdep_unregister_key+0x385/0x420
+ pwq_release_workfn+0x572/0x690
+ kthread_worker_fn+0x35c/0x6e0
+ ? rcu_free_pool+0x60/0x60
+ kthread+0x335/0x3d0
+ ? __kthread_init_worker+0x1a0/0x1a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+INFO: task khugepaged:105 blocked for more than 10 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:khugepaged      state:D stack:29800 pid:105   tgid:105   ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ ? __flush_work+0x6f/0x8c0
+ __flush_work+0x758/0x8c0
+ ? __flush_work+0x6f/0x8c0
+ ? worker_enter_idle+0x420/0x420
+ __lru_add_drain_all+0x3b8/0x440
+ khugepaged+0x173/0x1150
+ ? wake_bit_function+0x210/0x210
+ kthread+0x335/0x3d0
+ ? start_stop_khugepaged+0x1d0/0x1d0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+1 lock held by khugepaged/105:
+ #0: ffffffff8363c6c8 (lock#3){....}-{3:3}, at: __lru_add_drain_all+0x60/0x440
+4 locks held by kworker/u64:3/324:
+2 locks held by systemd-udevd/377:
+2 locks held by kworker/u64:4/513:
+ #0: ffff888100081948 ((wq_completion)events_unbound){....}-{0:0}, at: process_scheduled_works+0x780/0x1070
+ #1: ffffc90001b6fd58 ((work_completion)(&sub_info->work)){....}-{0:0}, at: process_scheduled_works+0x7a0/0x1070
+1 lock held by ptlrpcd_00_12/1197:
+1 lock held by ptlrpcd_00_14/1199:
+3 locks held by ptlrpcd_00_15/1200:
+6 locks held by ldlm_cn00_003/3069:
+4 locks held by umount/3785:
+1 lock held by modprobe/3858:
+ #0: ffff8881169a8140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
+
+=============================================
+
+INFO: task pool_workqueue_:3 blocked for more than 30 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:pool_workqueue_ state:D stack:29712 pid:3     tgid:3     ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ wait_for_completion_state+0x1a/0x40
+ __wait_rcu_gp+0x22f/0x250
+ synchronize_rcu_normal+0x151/0x190
+ ? rcu_read_lock_any_held+0x70/0x70
+ ? trace_rcu_sr_normal+0x150/0x150
+ ? lockdep_unlock+0x230/0x230
+ ? rcu_gp_is_expedited+0x43/0x70
+ ? synchronize_rcu+0x30/0x1e0
+ lockdep_unregister_key+0x385/0x420
+ pwq_release_workfn+0x572/0x690
+ kthread_worker_fn+0x35c/0x6e0
+ ? rcu_free_pool+0x60/0x60
+ kthread+0x335/0x3d0
+ ? __kthread_init_worker+0x1a0/0x1a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+INFO: task khugepaged:105 blocked for more than 20 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:khugepaged      state:D stack:29800 pid:105   tgid:105   ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ ? __flush_work+0x6f/0x8c0
+ __flush_work+0x758/0x8c0
+ ? __flush_work+0x6f/0x8c0
+ ? worker_enter_idle+0x420/0x420
+ __lru_add_drain_all+0x3b8/0x440
+ khugepaged+0x173/0x1150
+ ? wake_bit_function+0x210/0x210
+ kthread+0x335/0x3d0
+ ? start_stop_khugepaged+0x1d0/0x1d0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+1 lock held by khugepaged/105:
+ #0: ffffffff8363c6c8 (lock#3){....}-{3:3}, at: __lru_add_drain_all+0x60/0x440
+4 locks held by kworker/u64:3/324:
+2 locks held by systemd-udevd/377:
+2 locks held by kworker/u64:4/513:
+ #0: ffff888100081948 ((wq_completion)events_unbound){....}-{0:0}, at: process_scheduled_works+0x780/0x1070
+ #1: ffffc90001b6fd58 ((work_completion)(&sub_info->work)){....}-{0:0}, at: process_scheduled_works+0x7a0/0x1070
+1 lock held by ptlrpcd_00_12/1197:
+1 lock held by ptlrpcd_00_14/1199:
+3 locks held by ptlrpcd_00_15/1200:
+6 locks held by ldlm_cn00_003/3069:
+4 locks held by umount/3785:
+1 lock held by modprobe/3858:
+ #0: ffff8881169a8140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
+
+=============================================
+
+INFO: task pool_workqueue_:3 blocked for more than 40 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:pool_workqueue_ state:D stack:29712 pid:3     tgid:3     ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ wait_for_completion_state+0x1a/0x40
+ __wait_rcu_gp+0x22f/0x250
+ synchronize_rcu_normal+0x151/0x190
+ ? rcu_read_lock_any_held+0x70/0x70
+ ? trace_rcu_sr_normal+0x150/0x150
+ ? lockdep_unlock+0x230/0x230
+ ? rcu_gp_is_expedited+0x43/0x70
+ ? synchronize_rcu+0x30/0x1e0
+ lockdep_unregister_key+0x385/0x420
+ pwq_release_workfn+0x572/0x690
+ kthread_worker_fn+0x35c/0x6e0
+ ? rcu_free_pool+0x60/0x60
+ kthread+0x335/0x3d0
+ ? __kthread_init_worker+0x1a0/0x1a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+INFO: task khugepaged:105 blocked for more than 30 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:khugepaged      state:D stack:29800 pid:105   tgid:105   ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ ? __flush_work+0x6f/0x8c0
+ __flush_work+0x758/0x8c0
+ ? __flush_work+0x6f/0x8c0
+ ? worker_enter_idle+0x420/0x420
+ __lru_add_drain_all+0x3b8/0x440
+ khugepaged+0x173/0x1150
+ ? wake_bit_function+0x210/0x210
+ kthread+0x335/0x3d0
+ ? start_stop_khugepaged+0x1d0/0x1d0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+1 lock held by khugepaged/105:
+ #0: ffffffff8363c6c8 (lock#3){....}-{3:3}, at: __lru_add_drain_all+0x60/0x440
+4 locks held by kworker/u64:3/324:
+2 locks held by systemd-udevd/377:
+2 locks held by kworker/u64:4/513:
+ #0: ffff888100081948 ((wq_completion)events_unbound){....}-{0:0}, at: process_scheduled_works+0x780/0x1070
+ #1: ffffc90001b6fd58 ((work_completion)(&sub_info->work)){....}-{0:0}, at: process_scheduled_works+0x7a0/0x1070
+1 lock held by ptlrpcd_00_12/1197:
+1 lock held by ptlrpcd_00_14/1199:
+3 locks held by ptlrpcd_00_15/1200:
+6 locks held by ldlm_cn00_003/3069:
+4 locks held by umount/3785:
+1 lock held by modprobe/3858:
+ #0: ffff8881169a8140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
+
+=============================================
+
+INFO: task pool_workqueue_:3 blocked for more than 51 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:pool_workqueue_ state:D stack:29712 pid:3     tgid:3     ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ wait_for_completion_state+0x1a/0x40
+ __wait_rcu_gp+0x22f/0x250
+ synchronize_rcu_normal+0x151/0x190
+ ? rcu_read_lock_any_held+0x70/0x70
+ ? trace_rcu_sr_normal+0x150/0x150
+ ? lockdep_unlock+0x230/0x230
+ ? rcu_gp_is_expedited+0x43/0x70
+ ? synchronize_rcu+0x30/0x1e0
+ lockdep_unregister_key+0x385/0x420
+ pwq_release_workfn+0x572/0x690
+ kthread_worker_fn+0x35c/0x6e0
+ ? rcu_free_pool+0x60/0x60
+ kthread+0x335/0x3d0
+ ? __kthread_init_worker+0x1a0/0x1a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+INFO: task khugepaged:105 blocked for more than 40 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:khugepaged      state:D stack:29800 pid:105   tgid:105   ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ ? __flush_work+0x6f/0x8c0
+ __flush_work+0x758/0x8c0
+ ? __flush_work+0x6f/0x8c0
+ ? worker_enter_idle+0x420/0x420
+ __lru_add_drain_all+0x3b8/0x440
+ khugepaged+0x173/0x1150
+ ? wake_bit_function+0x210/0x210
+ kthread+0x335/0x3d0
+ ? start_stop_khugepaged+0x1d0/0x1d0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+1 lock held by khugepaged/105:
+ #0: ffffffff8363c6c8 (lock#3){....}-{3:3}, at: __lru_add_drain_all+0x60/0x440
+4 locks held by kworker/u64:3/324:
+2 locks held by systemd-udevd/377:
+2 locks held by kworker/u64:4/513:
+ #0: ffff888100081948 ((wq_completion)events_unbound){....}-{0:0}, at: process_scheduled_works+0x780/0x1070
+ #1: ffffc90001b6fd58 ((work_completion)(&sub_info->work)){....}-{0:0}, at: process_scheduled_works+0x7a0/0x1070
+1 lock held by ptlrpcd_00_12/1197:
+1 lock held by ptlrpcd_00_14/1199:
+3 locks held by ptlrpcd_00_15/1200:
+6 locks held by ldlm_cn00_003/3069:
+4 locks held by umount/3785:
+1 lock held by modprobe/3858:
+ #0: ffff8881169a8140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
+
+=============================================
+
+INFO: task pool_workqueue_:3 blocked for more than 61 seconds.
+      Tainted: G           O       6.12.57-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:pool_workqueue_ state:D stack:29712 pid:3     tgid:3     ppid:2      flags:0x00004000
+Call Trace:
+ <TASK>
+ __schedule+0x12aa/0x1d40
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ wait_for_completion_state+0x1a/0x40
+ __wait_rcu_gp+0x22f/0x250
+ synchronize_rcu_normal+0x151/0x190
+ ? rcu_read_lock_any_held+0x70/0x70
+ ? trace_rcu_sr_normal+0x150/0x150
+ ? lockdep_unlock+0x230/0x230
+ ? rcu_gp_is_expedited+0x43/0x70
+ ? synchronize_rcu+0x30/0x1e0
+ lockdep_unregister_key+0x385/0x420
+ pwq_release_workfn+0x572/0x690
+ kthread_worker_fn+0x35c/0x6e0
+ ? rcu_free_pool+0x60/0x60
+ kthread+0x335/0x3d0
+ ? __kthread_init_worker+0x1a0/0x1a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+Future hung task reports are suppressed, see sysctl kernel.hung_task_warnings
+
+Showing all locks held in the system:
+1 lock held by rcu_sched/17:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+1 lock held by khugepaged/105:
+ #0: ffffffff8363c6c8 (lock#3){....}-{3:3}, at: __lru_add_drain_all+0x60/0x440
+4 locks held by kworker/u64:3/324:
+2 locks held by systemd-udevd/377:
+2 locks held by kworker/u64:4/513:
+ #0: ffff888100081948 ((wq_completion)events_unbound){....}-{0:0}, at: process_scheduled_works+0x780/0x1070
+ #1: ffffc90001b6fd58 ((work_completion)(&sub_info->work)){....}-{0:0}, at: process_scheduled_works+0x7a0/0x1070
+1 lock held by ptlrpcd_00_12/1197:
+1 lock held by ptlrpcd_00_14/1199:
+3 locks held by ptlrpcd_00_15/1200:
+6 locks held by ldlm_cn00_003/3069:
+4 locks held by umount/3785:
+1 lock held by modprobe/3858:
+ #0: ffff8881169a8140 (&type->i_mutex_dir_key#7){....}-{3:3}, at: lookup_slow+0x46/0x70
+
+=============================================
+
+rcu: INFO: rcu_sched detected stalls on CPUs/tasks:
+rcu: 	5-...0: (1 GPs behind) idle=9434/1/0x4000000000000000 softirq=3163/3163 fqs=1386
+rcu: 	10-....: (3211 ticks this GP) idle=f104/1/0x4000000000000000 softirq=3376/3376 fqs=1386
+rcu: 	13-...0: (1 GPs behind) idle=7654/1/0x4000000000000000 softirq=3433/3433 fqs=1386
+rcu: 	(detected by 8, t=8419 jiffies, g=5965, q=1729 ncpus=16)
+Sending NMI from CPU 8 to CPUs 5:
+NMI backtrace for cpu 5
+CPU: 5 UID: 0 PID: 1200 Comm: ptlrpcd_00_15 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:vprintk_emit+0x2de/0x550
+Code: d8 57 83 31 f6 31 d2 31 c9 41 b8 01 00 00 00 45 31 c9 41 56 e8 d3 db fe ff 48 83 c4 08 0f b6 05 d8 74 2c 03 3c 01 75 0b f3 90 <80> 3d cb 74 2c 03 00 75 f5 48 c7 c7 40 d8 57 83 4c 89 f6 e8 8a ed
+RSP: 0018:ffffc900019cf740 EFLAGS: 00000002
+RAX: 0000000000000001 RBX: 0000000000000246 RCX: ffff88813154c988
+RDX: 000000001dd2382c RSI: 00000000ff3ba8a8 RDI: ffffffff842c1b38
+RBP: 0000000000000000 R08: ffffffff842c1b3f R09: 1ffffffff0858367
+R10: dffffc0000000000 R11: fffffbfff0858368 R12: ffffffffa0238940
+R13: 00000000ffffffff R14: ffffffff812304a0 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffff8882a2e80000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00005648857cd498 CR3: 000000010762c000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ _printk+0x5d/0x80
+ cfs_print_to_console+0x9d/0xc0 [libcfs]
+ libcfs_debug_msg+0x17b4/0x22b0 [libcfs]
+ ptlrpc_set_import_discon+0x42f/0x7f0 [ptlrpc]
+ ptlrpc_request_handle_notconn+0x213/0x480 [ptlrpc]
+ after_reply+0x11fe/0x2370 [ptlrpc]
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ptlrpc_check_set+0x2c41/0x4ea0 [ptlrpc]
+ ptlrpcd+0x9c9/0x1870 [ptlrpc]
+ ? wait_woken+0x100/0x100
+ kthread+0x335/0x3d0
+ ? ptlrpcd_start+0x5d0/0x5d0 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+Sending NMI from CPU 8 to CPUs 10:
+NMI backtrace for cpu 10
+CPU: 10 UID: 0 PID: 1197 Comm: ptlrpcd_00_12 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:asm_sysvec_apic_timer_interrupt+0x0/0x20
+Code: c6 09 fc ff e9 81 03 00 00 90 f3 0f 1e fa 0f 01 ca fc 6a ff e8 b1 02 00 00 48 89 c4 48 89 e7 e8 26 09 fc ff e9 61 03 00 00 90 <f3> 0f 1e fa 0f 01 ca fc 6a ff e8 91 02 00 00 48 89 c4 48 89 e7 e8
+RSP: 0018:ffffc9000199fa48 EFLAGS: 00000002
+RAX: 0000000000000001 RBX: ffff888127e5c360 RCX: ffffffff827f58cf
+RDX: 0000000000000000 RSI: 0000000000000004 RDI: ffff888127e5c360
+RBP: dffffc0000000000 R08: ffff888127e5c363 R09: 1ffff11024fcb86c
+R10: dffffc0000000000 R11: ffffed1024fcb86d R12: 0000000000000001
+R13: 1ffff11024fcb86e R14: ffffc9000199fa9c R15: 1ffff11024fcb86c
+FS:  0000000000000000(0000) GS:ffff8882a3100000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f50f007641c CR3: 0000000003468000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+RIP: 0010:queued_spin_lock_slowpath+0x52/0x850
+Code: 48 bd 00 00 00 00 00 fc ff df 89 74 24 20 66 90 49 89 df 49 c1 ef 03 4c 8d 74 24 24 41 bc 01 00 00 00 eb 06 89 44 24 24 f3 90 <48> 89 df be 04 00 00 00 e8 11 0c f7 fe 41 0f b6 04 2f 84 c0 75 35
+RSP: 0018:ffffc9000199fa78 EFLAGS: 00000202
+ ? queued_spin_lock_slowpath+0x5f/0x850
+ ? lock_acquire+0x11d/0x2c0
+ do_raw_spin_lock+0x1e4/0x260
+ ptlrpc_send_new_req+0x517/0x1fa0 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ ? libcfs_debug_msg+0x1a7b/0x22b0 [libcfs]
+ ptlrpc_check_set+0x45c/0x4ea0 [ptlrpc]
+ ? ptlrpcd+0x606/0x1870 [ptlrpc]
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ptlrpcd+0x9c9/0x1870 [ptlrpc]
+ ? wait_woken+0x100/0x100
+ kthread+0x335/0x3d0
+ ? ptlrpcd_start+0x5d0/0x5d0 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+Sending NMI from CPU 8 to CPUs 13:
+NMI backtrace for cpu 13
+CPU: 13 UID: 0 PID: 3069 Comm: ldlm_cn00_003 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__send_to_port+0x1ed/0x290
+Code: 24 08 00 75 35 48 8d 74 24 44 4c 89 ef e8 eb 9d f3 ff 48 85 c0 75 23 48 8d 5c 24 44 4c 89 ef e8 e9 f7 f3 ff 84 c0 75 12 f3 90 <4c> 89 ef 48 89 de e8 c8 9d f3 ff 48 85 c0 74 e2 48 8b 7c 24 38 48
+RSP: 0018:ffffc9000752f4e8 EFLAGS: 00000046
+RAX: 0000000000000000 RBX: ffffc9000752f52c RCX: dffffc0000000000
+RDX: dffffc0000000000 RSI: ffffc9000752f52c RDI: ffff888106d89043
+RBP: ffffc9000752f5f0 R08: dffffc0000000000 R09: ffff888104804d40
+R10: dffffc0000000000 R11: fffff52000ea5e90 R12: ffff888104f89400
+R13: ffff888106d89000 R14: 0000000000000007 R15: dffffc0000000000
+FS:  0000000000000000(0000) GS:ffff8882a3280000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f72c38e535c CR3: 0000000003468000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ put_chars+0x17c/0x1c0
+ ? get_chars+0x120/0x120
+ hvc_console_print+0x1db/0x450
+ ? __lock_acquire+0x6bd/0xf20
+ ? lock_acquire+0x11d/0x2c0
+ ? console_flush_all+0xb9/0x840
+ ? console_flush_all+0xb9/0x840
+ ? console_flush_all+0xb9/0x840
+ console_flush_all+0x44b/0x840
+ ? console_flush_all+0xb9/0x840
+ console_unlock+0x77/0x190
+ vprintk_emit+0x350/0x550
+ _printk+0x5d/0x80
+ cfs_vprint_to_console+0x493/0xcf0 [libcfs]
+ cfs_print_to_console+0x9d/0xc0 [libcfs]
+ libcfs_debug_msg+0x17b4/0x22b0 [libcfs]
+ ldlm_cancel_handler+0x3a1/0xdc0 [ptlrpc]
+ ptlrpc_main+0x61a8/0x9800 [ptlrpc]
+ kthread+0x335/0x3d0
+ ? ptlrpc_start_thread+0x1e30/0x1e30 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+watchdog: BUG: soft lockup - CPU#4 stuck for 67s! [ptlrpcd_00_14:1199]
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 1199 Comm: ptlrpcd_00_14 Tainted: G           O       6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:queued_spin_lock_slowpath+0x52/0x850
+Code: 48 bd 00 00 00 00 00 fc ff df 89 74 24 20 66 90 49 89 df 49 c1 ef 03 4c 8d 74 24 24 41 bc 01 00 00 00 eb 06 89 44 24 24 f3 90 <48> 89 df be 04 00 00 00 e8 11 0c f7 fe 41 0f b6 04 2f 84 c0 75 35
+RSP: 0018:ffffc900019bfb30 EFLAGS: 00000202
+RAX: 0000000000000001 RBX: ffff888127e5c360 RCX: ffffffff827f58cf
+RDX: 0000000000000000 RSI: 0000000000000004 RDI: ffff888127e5c360
+RBP: dffffc0000000000 R08: ffff888127e5c363 R09: 1ffff11024fcb86c
+R10: dffffc0000000000 R11: ffffed1024fcb86d R12: 0000000000000001
+R13: 1ffff11024fcb86e R14: ffffc900019bfb54 R15: 1ffff11024fcb86c
+FS:  0000000000000000(0000) GS:ffff8882a2e00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055e4eb3a4a28 CR3: 00000001136f6000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? lock_acquire+0x11d/0x2c0
+ do_raw_spin_lock+0x1e4/0x260
+ ptlrpc_check_set+0x2287/0x4ea0 [ptlrpc]
+ ? ptlrpcd+0x606/0x1870 [ptlrpc]
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ptlrpcd+0x9c9/0x1870 [ptlrpc]
+ ? wait_woken+0x100/0x100
+ kthread+0x335/0x3d0
+ ? ptlrpcd_start+0x5d0/0x5d0 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+watchdog: BUG: soft lockup - CPU#6 stuck for 71s! [kworker/u64:3:324]
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 6 UID: 0 PID: 324 Comm: kworker/u64:3 Tainted: G           O L     6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE, [L]=SOFTLOCKUP
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+Workqueue: ptlrpc_pinger ptlrpc_pinger_main [ptlrpc]
+RIP: 0010:queued_spin_lock_slowpath+0x52/0x850
+Code: 48 bd 00 00 00 00 00 fc ff df 89 74 24 20 66 90 49 89 df 49 c1 ef 03 4c 8d 74 24 24 41 bc 01 00 00 00 eb 06 89 44 24 24 f3 90 <48> 89 df be 04 00 00 00 e8 11 0c f7 fe 41 0f b6 04 2f 84 c0 75 35
+RSP: 0018:ffffc9000206fad8 EFLAGS: 00000202
+RAX: 0000000000000001 RBX: ffff888127e5c360 RCX: ffffffff827f58cf
+RDX: 0000000000000000 RSI: 0000000000000004 RDI: ffff888127e5c360
+RBP: dffffc0000000000 R08: ffff888127e5c363 R09: 1ffff11024fcb86c
+R10: dffffc0000000000 R11: ffffed1024fcb86d R12: 0000000000000001
+R13: 1ffff11024fcb86e R14: ffffc9000206fafc R15: 1ffff11024fcb86c
+FS:  0000000000000000(0000) GS:ffff8882a2f00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fbe83e1d7fc CR3: 0000000003468000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? lock_acquire+0x11d/0x2c0
+ do_raw_spin_lock+0x1e4/0x260
+ ? process_scheduled_works+0x7a0/0x1070
+ ptlrpc_pinger_main+0x10f/0x1e20 [ptlrpc]
+ ? lock_acquire+0x11d/0x2c0
+ ? process_scheduled_works+0x7a0/0x1070
+ ? process_scheduled_works+0x7a0/0x1070
+ process_scheduled_works+0x81f/0x1070
+ worker_thread+0x871/0xca0
+ kthread+0x335/0x3d0
+ ? pr_cont_work+0x4a0/0x4a0
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0x34/0x60
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+watchdog: BUG: soft lockup - CPU#11 stuck for 82s! [systemd-udevd:377]
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 11 UID: 0 PID: 377 Comm: systemd-udevd Tainted: G           O L     6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE, [L]=SOFTLOCKUP
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:smp_call_function_many_cond+0x8be/0xbf0
+Code: 8b 04 24 4c 8d 24 18 49 83 c4 08 4c 89 e3 48 c1 eb 03 0f b6 04 13 84 c0 75 46 41 f7 04 24 01 00 00 00 0f 84 31 ff ff ff f3 90 <0f> b6 04 13 84 c0 75 0d 41 8b 04 24 a8 01 75 ee e9 1a ff ff ff 44
+RSP: 0018:ffffc9000231fa00 EFLAGS: 00000202
+RAX: 0000000000000011 RBX: 1ffff110545db351 RCX: 0000000000000000
+RDX: dffffc0000000000 RSI: 0000000000000008 RDI: ffffffff8396b2e8
+RBP: ffff8882a31c6480 R08: ffffffff8396b2ef R09: 1ffffffff072d65d
+R10: dffffc0000000000 R11: fffffbfff072d65e R12: ffff8882a2ed9a88
+R13: 1ffff11054638c91 R14: ffff8882a31c6488 R15: 0000000000000005
+FS:  00007f4d63aafc80(0000) GS:ffff8882a3180000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000564885869c78 CR3: 000000010762c000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? native_flush_tlb_multi+0x290/0x290
+ on_each_cpu_cond_mask+0x1a/0x20
+ kvm_flush_tlb_multi+0x181/0x1b0
+ flush_tlb_mm_range+0x2fb/0x400
+ copy_mm+0x10f7/0x1690
+ copy_process+0x103d/0x2bc0
+ ? copy_process+0x68a/0x2bc0
+ kernel_clone+0x126/0x5e0
+ __x64_sys_clone+0x122/0x150
+ do_syscall_64+0x6c/0x140
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f4d63ce0202
+Code: 89 e7 e8 71 3b f6 ff 45 31 c0 31 d2 31 f6 64 48 8b 04 25 10 00 00 00 bf 11 00 20 01 4c 8d 90 d0 02 00 00 b8 38 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 5e 89 c5 85 c0 75 31 64 48 8b 04 25 10 00 00
+RSP: 002b:00007ffda884a350 EFLAGS: 00000246 ORIG_RAX: 0000000000000038
+RAX: ffffffffffffffda RBX: 00007ffda884a350 RCX: 00007f4d63ce0202
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000001200011
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007ffda884a690
+R10: 00007f4d63aaff50 R11: 0000000000000246 R12: 0000000000000007
+R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000000
+ </TASK>
+watchdog: BUG: soft lockup - CPU#12 stuck for 82s! [umount:3785]
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 12 UID: 0 PID: 3785 Comm: umount Tainted: G           O L     6.12.57-ktest #1
+Tainted: [O]=OOT_MODULE, [L]=SOFTLOCKUP
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:queued_spin_lock_slowpath+0x52/0x850
+Code: 48 bd 00 00 00 00 00 fc ff df 89 74 24 20 66 90 49 89 df 49 c1 ef 03 4c 8d 74 24 24 41 bc 01 00 00 00 eb 06 89 44 24 24 f3 90 <48> 89 df be 04 00 00 00 e8 11 0c f7 fe 41 0f b6 04 2f 84 c0 75 35
+RSP: 0018:ffffc90008bcfaf0 EFLAGS: 00000202
+RAX: 0000000000000001 RBX: ffff888127e5c360 RCX: ffffffff827f58cf
+RDX: 0000000000000000 RSI: 0000000000000004 RDI: ffff888127e5c360
+RBP: dffffc0000000000 R08: ffff888127e5c363 R09: 1ffff11024fcb86c
+R10: dffffc0000000000 R11: ffffed1024fcb86d R12: 0000000000000001
+R13: 1ffff11024fcb86e R14: ffffc90008bcfb14 R15: 1ffff11024fcb86c
+FS:  00007f3176a29840(0000) GS:ffff8882a3200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f696522941c CR3: 0000000117567000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? lock_acquire+0x11d/0x2c0
+ do_raw_spin_lock+0x1e4/0x260
+ client_disconnect_export+0x401/0x940 [ptlrpc]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_stop_mgc+0x1bb/0x870 [obdclass]
+ lustre_common_put_super+0x14b/0x4a0 [obdclass]
+ ll_put_super+0x1182/0x1640 [lustre]
+ ? __cond_resched+0x3e/0xb0
+ ? evict_inodes+0x440/0x520
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0x100/0x170
+ resume_user_mode_work+0x3a/0x50
+ syscall_exit_to_user_mode+0x63/0xc0
+ do_syscall_64+0x78/0x140
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f3176c80217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007fff80374728 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f3176c80217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000561f1bb92220
+RBP: 00007f3176de026c R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000008 R11: 0000000000000202 R12: 0000561f1bb8de78
+R13: 0000561f1bb92220 R14: 0000561f1bb8dd70 R15: 0000561f1bb8e1b0
+ </TASK>
+LustreError: 3069:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) Skipped 1 previous similar message
+Lustre: 3069:0:(service.c:2560:ptlrpc_server_handle_request()) @@@ Request took longer than estimated (11/80s); client may timeout  req@ffff888131622ac0 x1850897923606656/t0(0) o103-><?>@<unknown>:169/0 lens 328/224 e 0 to 0 dl 1765153929 ref 1 fl Complete:/200/0 rc -107/-107 job:'ldlm_bl.0' uid:0 gid:0 projid:4294967295
+Lustre: 'ldlm_canceld' is processing requests too slowly, client may timeout. Late by 80s, missed 1 early replies (reqs waiting=0 active=0, at_estimate=91, delay=4ms)
+clocksource: Long readout interval, skipping watchdog check: cs_nsec: 88836442955 wd_nsec: 88836419842
+LustreError: 3785:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 3785:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LNet: 4101:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4101:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+Key type .llcrypt unregistered
+Key type ._llcrypt unregistered
+done
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
+
+========= FAILED llmount in 244s
+
+Passed: 
+Failed: llmount
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/llmount.ktest 33 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.12.57-ktest
+TEST FAILED
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=d9ec7c8c1d444b278f3ebc96819a3c6c\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
+</pre>
+</body>
+</html>
