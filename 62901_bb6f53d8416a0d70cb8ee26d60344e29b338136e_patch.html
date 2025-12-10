@@ -1,0 +1,23 @@
+<html lang="en">
+<body>
+<pre>
+LU-19673 osp: increase default max_rpcs_in_progress
+
+it's 4096 currently and it's possible to overflow osp llog calling
+chown in a loop - because MDS-to-OSP synchronization is throttled
+by this tunable. we also do not want to set it too high as this
+number of RPCs is pinned on MDS until OST have them committed: with
+1K RPC memory footprint this can consume hundreds MBs of RAM on MDS.
+
+add an extra check in osp to monitor llog operations. if osp llog
+has been growing only for 320+ seconds, then print a warning:
+
+Lustre: 5539:0:(osp_sync.c:401:osp_sync_llog_health_check())
+lustre-OST0000-osc-MDT0000: 2 plain llogs, was 2, check MDS-OST sync
+
+Signed-off-by: Alex Zhuravlev <bzzz@whamcloud.com>
+Change-Id: I4cd12ba489f4a865735a60cf43c8c729a83520a9
+
+</pre>
+</body>
+</html>
