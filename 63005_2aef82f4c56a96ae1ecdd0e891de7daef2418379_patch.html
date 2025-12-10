@@ -1,0 +1,48 @@
+<html lang="en">
+<body>
+<pre>
+LU-19662 pacemaker: new script to monitor LNet MR networks
+
+healthLNET-MR is a new pacemaker script to monitor Multi-Rail network.
+This script take in input the LNet network to monitor (e.g: o2ib1) and
+parse the "lnetctl net show" to extract MR NIDs and network devices.
+
+This script monitors the following:
+ - The status of LNet interface (LNet interface status and health,
+   network device status).
+ - The reachability of remote hosts via "lnetctl ping".
+
+It maintains 2 types of resource attributes:
+ - attributes per LNet interfaces: this reflects the LNet health value
+   (set to 0 if the interface is down or unhealthy).
+ - a global attribute for network: this is computed with number of
+   reachable host and the number of healthy LNet interface.
+
+pcs resource create [Resource Name] ocf:lustre:healthLNET
+network=[string required]
+dampen=[seconds 5s]
+timeout=[seconds 5s]
+range=[number 1000]
+min_health=[number 1000]
+failure_score=[number 0]
+discover=[bool true]
+host_list=[list of NIDs, space separated]
+clone
+
+where:
+ - network: LNET network to check
+ - dampen: time to wait (dampening) further changes occur
+ - timeout: ping timeout
+ - range: attribute value range
+ - min_health: Minimum LNET health value to consider an interface up
+ - failure_score: threshold on global attribute to fail the resource
+ - discover: LNet discovery for each host on resource start.
+ - host_list: remote hosts to ping
+
+Test-Parameters: trivial
+Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
+Change-Id: I3ef2b76584298e046e569c3cd4aa0e46c6a0f064
+
+</pre>
+</body>
+</html>
