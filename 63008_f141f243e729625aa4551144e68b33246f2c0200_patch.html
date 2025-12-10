@@ -1,0 +1,27 @@
+<html lang="en">
+<body>
+<pre>
+LU-12668 ec: create a setting to disable redundancy checks for ec
+
+When creating EC protected striping we enforce that there must be
+enough unique OSTs to provide the required redundancy
+or else the attempts will fail with ENOSPC.
+
+This is inconventient in tests as there may be many situations
+where we simply do not have enough OSTs for all the tests.
+
+Add a setting on the MDT to disable this check:
+
+lctl set_param lod.*.mdt_ec_no_redundancy=1
+
+When this is set, an EC stripe allocation that would ordinarily
+fail to to lack of enough unique OSTs will now be allowed to
+complete.  It will however print a scary message to the console
+to inform that you that this is dangerous.
+
+Signed-off-by: Ronnie Sahlberg <rsahlberg@whamcloud.com>
+Change-Id: I73e4f10b21fed8d086e8b2bf7b9b9e5521e0d885
+
+</pre>
+</body>
+</html>
