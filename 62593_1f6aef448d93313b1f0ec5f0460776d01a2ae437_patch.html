@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-8229 ssk: support removing keys from keyring via lgss_sk
+
+This patch improves usability and key handling with lgss_sk and the
+kernel's keyring by allowing removing a key from the keyring via its
+key file through lgss_sk. This is useful because it is not possible
+to distinguish keys by using keyctl where only the "key name" format
+is shown. The corresponding key file might have a different name where
+users would need to consult "lgss_sk -r" to understand whether it is
+the correct key to remove.
+
+Using "lgss_sk -r" may also not always possible due to insufficient
+permissions to compare the output of "lgss_sk -r" to identify the
+keys.
+
+This patch adds a new argument to lgss_sk: "-R/--remove". The remove
+option takes a keyfile and compares its payload to find all matching
+keys in the keyring. Each key is then revoked and unlinked from the
+keyring.
+
+Sanity-sec test_104 was added to test this feature.
+
+Test-Parameters: trivial
+Test-Parameters: testgroup=review-dne-selinux-ssk-part-1
+Test-Parameters: testgroup=review-dne-selinux-ssk-part-2
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: Ic043a611599160a8230ea9f48ba11b7f92feb5b0
+
+</pre>
+</body>
+</html>
