@@ -1,0 +1,18 @@
+<html lang="en">
+<body>
+<pre>
+LU-19693 efalnd: Fix object pools double destroy on create fail
+
+If we fail creating an object  pool on device init, we call the destroy
+pool handler to cleanup any allocated object that succeeded prior to the
+failure. After cleanup completed we call dev destroy which again calls
+the destroy pool handler which tries to use already freed memory. Fix
+this by setting the object array to NULL.
+
+Test-Parameters: trivial
+Change-Id: I858339d579e09918aab19fc0d662730a28ac24b8
+Signed-off-by: Yonatan Nachum <ynachum@amazon.com>
+
+</pre>
+</body>
+</html>
