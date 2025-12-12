@@ -1,0 +1,46 @@
+<html lang="en">
+<body>
+<pre>
+LU-12188 utils: introduce parity library API
+
+Update liblustreapi library to support parity. Add the first level
+of testing for this new API to ensure it behaves properly. The
+major complexity is that the layout expects the extents to flow
+together across componenets. That doesn't work with parity which
+can be added to a existing file at a later date. Consider the case
+
+----------------------------
+|  I/O comp 1 |  EC comp 2 |
+----------------------------
+0         1MB | 0         1MB
+
+The normal expectation is that the second component would start
+with 1MB and end with some larger number. In the above case the end
+of I/O component 1 does not equal the start of EC component 2. This
+is considered an error in the library layout API. The problem is
+more apparent when adding EC components to an already existing file's
+layout. Update the code to skip over EC components when encountered.
+
+The changes are:
+
+1) Addition of cstripe, dstripe, and a layout fid to the internal
+   component structure that is not visible to user. Both cstripe
+   and dstripe are used to setup the parity format k:m. The layout
+   FID is used for the case of adding a component to an already
+   existing layout. The new components exist in their own layout
+   that is sent to the kernel and that data is unaware of the
+   external layout with the I/O data we are attemtping to parity
+   check.
+
+2) The addition of llapi_layout_non_io_comp_add() which is really
+   llapi_layout_add_first_comp() used for mirror creation. This
+   function doesn't attempt to setup extents by default which
+   avoids conflicting with already exist data components.
+
+Test-Parameters: testlist=sanity-ec ostcount=10
+Change-Id: I24b80882de6fc183e9c228f40d501ee308fe389f
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+
+</pre>
+</body>
+</html>
