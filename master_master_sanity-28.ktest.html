@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=d6216fee0ffe4be186dc6e9a5e1a3494;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=32c5da6d63c14c1cb7512da33a09a1a4;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=6e740fbd0f404c5fb8132ffefc2d908a;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=be64896c315242d58161795338048679;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 1 PID: 1024 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 1 UID: 0 PID: 1024 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90000bb7710 EFLAGS: 00010246
-RAX: 9dc5221b582fc900 RBX: ffff888105414000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881592a3750
-RBP: ffff88810bdbc9e0 R08: ffff8881592a3753 R09: 1ffff1102b2546ea
-R10: dffffc0000000000 R11: ffffed102b2546eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff8881054149c8 R15: ffffffff82e1aca0
-FS:  00007f0819c58340(0000) GS:ffff8881d502a000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000555cbcfce7a0 CR3: 000000010c4cc000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f0819518779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007ffe4a72e948 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 00005638964b2890 RCX: 00007f0819518779
-RDX: 0000000000000000 RSI: 00005638964b12a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f08195f85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 00005638964b12a0
-R13: 0000000000000000 R14: 00005638964b2850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,17 +24,18 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2705) used greatest stack depth: 23816 bytes left
+mount.lustre (2706) used greatest stack depth: 24216 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+mount.lustre (2865) used greatest stack depth: 24080 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client ea20c51c-c0eb-48aa-8330-a7596b3916d9 w/o recovery
+Lustre: lustre-MDT0000: local client 01d7dee5-0f98-4324-8bb9-5e2eab4a0386 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -126,15 +62,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:20 UTC 2025
+Started at Fri Dec 12 04:32:40 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035519
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035519
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035519
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043240
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043240
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043240
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -145,8 +81,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=44d 44e 44f 44g 45 46 48a 48b 48c 48d 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:22 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:22 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:41 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:41 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -180,8 +116,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:23 (1765511723) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:23 (1765511723) ===
+=== sanity: start setup 04:32:42 (1765513962) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:32:42 (1765513962) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -189,120 +125,142 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888148ac6000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888148ac6000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888108388000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888108388000.idle_timeout=debug
 disable quota as required
-Lustre: 5033:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:25 (1765511725) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:25 (1765511725) ===
+Lustre: 5042:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:32:43 (1765513963) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:32:43 (1765513963) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4173]
+ [touch] [/mnt/lustre/d0_runas_test/f4183]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 44d: if write at position fails (EFBIG), so should do append ========================================================== 03:55:26 (1765511726)
-Lustre: DEBUG MARKER: == sanity test 44d: if write at position fails (EFBIG), so should do append ========================================================== 03:55:26 (1765511726)
+== sanity test 44d: if write at position fails (EFBIG), so should do append ========================================================== 04:32:44 (1765513964)
+Lustre: DEBUG MARKER: == sanity test 44d: if write at position fails (EFBIG), so should do append ========================================================== 04:32:44 (1765513964)
 1+0 records in
 1+0 records out
-1 byte copied, 0.00355549 s, 0.3 kB/s
+1 byte copied, 0.00245101 s, 0.4 kB/s
 1+0 records in
 1+0 records out
-1 byte copied, 0.00410779 s, 0.2 kB/s
-PASS 44d (1s)
+1 byte copied, 0.00291462 s, 0.3 kB/s
+PASS 44d (0s)
 
-== sanity test 44e: write and read maximal stripes ======= 03:55:27 (1765511727)
-Lustre: DEBUG MARKER: == sanity test 44e: write and read maximal stripes ======= 03:55:27 (1765511727)
-dd (5593) used greatest stack depth: 23744 bytes left
+== sanity test 44e: write and read maximal stripes ======= 04:32:44 (1765513964)
+Lustre: DEBUG MARKER: == sanity test 44e: write and read maximal stripes ======= 04:32:44 (1765513964)
+lfs (5592) used greatest stack depth: 23896 bytes left
+dd (5636) used greatest stack depth: 23848 bytes left
 1+0 records in
 1+0 records out
-2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.00786077 s, 267 MB/s
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0274005 s, 76.5 MB/s
 1+0 records in
 1+0 records out
-2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0742853 s, 28.2 MB/s
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.129288 s, 16.2 MB/s
 1+0 records in
 1+0 records out
-4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.0244289 s, 172 MB/s
+4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.0218544 s, 192 MB/s
 1+0 records in
 1+0 records out
-4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.0935901 s, 44.8 MB/s
-PASS 44e (10s)
+4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.0744329 s, 56.4 MB/s
+PASS 44e (11s)
 
-== sanity test 44f: Check fiemap for sparse files ======== 03:55:37 (1765511737)
-Lustre: DEBUG MARKER: == sanity test 44f: Check fiemap for sparse files ======== 03:55:37 (1765511737)
+== sanity test 44f: Check fiemap for sparse files ======== 04:32:55 (1765513975)
+Lustre: DEBUG MARKER: == sanity test 44f: Check fiemap for sparse files ======== 04:32:55 (1765513975)
 ==================================================================
-BUG: KASAN: slab-out-of-bounds in lov_object_fiemap+0x2bb5/0x4800 [lov]
-Read of size 56 at addr ffff88814b81b020 by task multiop/7359
+BUG: KASAN: slab-use-after-free in lov_object_fiemap+0x2b51/0x4810 [lov]
+Write of size 4 at addr ffff88810d12580c by task multiop/7369
 
-CPU: 1 UID: 0 PID: 7359 Comm: multiop Tainted: G        W  O        6.15.0-ktest #1 NONE 
-Tainted: [W]=WARN, [O]=OOT_MODULE
+CPU: 0 UID: 0 PID: 7369 Comm: multiop Tainted: G           O       6.14.0-ktest #1
+Tainted: [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
 Call Trace:
  <TASK>
- dump_stack_lvl+0x8a/0xd0
+ dump_stack_lvl+0x8c/0xd0
  print_report+0xd0/0x2e0
- ? lov_object_fiemap+0x2bb5/0x4800 [lov]
+ ? lov_object_fiemap+0x2b51/0x4810 [lov]
  kasan_report+0xa3/0xe0
- ? lov_object_fiemap+0x2bb5/0x4800 [lov]
- kasan_check_range+0x2ab/0x2c0
- ? lov_object_fiemap+0x2bb5/0x4800 [lov]
- __asan_memcpy+0x29/0x70
- lov_object_fiemap+0x2bb5/0x4800 [lov]
- ? libcfs_debug_msg+0x1acb/0x2300 [libcfs]
+ ? lov_object_fiemap+0x2b51/0x4810 [lov]
+ lov_object_fiemap+0x2b51/0x4810 [lov]
  cl_object_fiemap+0x16a/0x2c0 [obdclass]
- ll_fiemap+0xad8/0x1620 [lustre]
- __x64_sys_ioctl+0x922/0x13a0
+ ll_fiemap+0xada/0x1620 [lustre]
+ __x64_sys_ioctl+0x9f8/0x1590
  ? switch_fpu_return+0xd4/0x140
  do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f8d0691a8db
+RIP: 0033:0x7fc8a267e8db
 Code: 00 48 89 44 24 18 31 c0 48 8d 44 24 60 c7 04 24 10 00 00 00 48 89 44 24 08 48 8d 44 24 20 48 89 44 24 10 b8 10 00 00 00 0f 05 <89> c2 3d 00 f0 ff ff 77 1c 48 8b 44 24 18 64 48 2b 04 25 28 00 00
-RSP: 002b:00007ffec2efaaf0 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 00007ffec2efafd8 RCX: 00007f8d0691a8db
-RDX: 0000556a5c2f12a0 RSI: 00000000c020660b RDI: 0000000000000003
-RBP: 00007ffec2efab70 R08: 00007f8d069f5ac0 R09: 0000000000000001
+RSP: 002b:00007fff20399690 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00007fff20399b78 RCX: 00007fc8a267e8db
+RDX: 0000564ff98b22a0 RSI: 00000000c020660b RDI: 0000000000000003
+RBP: 00007fff20399710 R08: 00007fc8a2759ac0 R09: 0000000000000001
 R10: 000000000000000a R11: 0000000000000246 R12: 0000000000000000
-R13: 00007ffec2efaff8 R14: 00007f8d06bfe000 R15: 0000556a2af76a80
+R13: 00007fff20399b98 R14: 00007fc8a2960000 R15: 0000564fbe9eaa80
  </TASK>
 
-Allocated by task 7359:
+Allocated by task 6925:
  kasan_save_track+0x2f/0x70
  __kasan_kmalloc+0x72/0x80
- __kmalloc_noprof+0x179/0x350
- lov_object_fiemap+0x4fe/0x4800 [lov]
- cl_object_fiemap+0x16a/0x2c0 [obdclass]
- ll_fiemap+0xad8/0x1620 [lustre]
- __x64_sys_ioctl+0x922/0x13a0
+ kmem_cache_free+0x149/0x440
+ path_openat+0x2594/0x2680
+ do_filp_open+0x16f/0x320
+ do_sys_openat2+0x8a/0xe0
+ __x64_sys_openat+0xf9/0x120
  do_syscall_64+0x6c/0x140
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
 
-The buggy address belongs to the object at ffff88814b81b000
+Freed by task 24:
+ kasan_save_track+0x2f/0x70
+ kasan_save_free_info+0x46/0x50
+ __kasan_slab_free+0x37/0x50
+ kfree+0x17a/0x460
+ slab_free_after_rcu_debug+0x70/0x270
+ rcu_do_batch+0x5f1/0x1010
+ rcu_core+0x266/0x4e0
+ handle_softirqs+0x189/0x4e0
+ run_ksoftirqd+0x21/0x30
+ smpboot_thread_fn+0x412/0x600
+ kthread+0x666/0x7c0
+ ret_from_fork+0x34/0x60
+ ret_from_fork_asm+0x11/0x20
+
+Last potentially related work creation:
+ kasan_save_stack+0x2f/0x50
+ kasan_record_aux_stack+0x99/0xa0
+ call_rcu+0x87/0x6f0
+ path_openat+0x2594/0x2680
+ do_filp_open+0x16f/0x320
+ do_sys_openat2+0x8a/0xe0
+ __x64_sys_openat+0xf9/0x120
+ do_syscall_64+0x6c/0x140
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+
+The buggy address belongs to the object at ffff88810d125800
  which belongs to the cache kmalloc-32 of size 32
-The buggy address is located 0 bytes to the right of
- allocated 32-byte region [ffff88814b81b000, ffff88814b81b020)
+The buggy address is located 12 bytes inside of
+ freed 32-byte region [ffff88810d125800, ffff88810d125820)
 
 The buggy address belongs to the physical page:
-page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x14b81b
-flags: 0x8000000000000000(zone=2)
+page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x10d125
+anon flags: 0x8000000000000000(zone=2)
 page_type: f5(slab)
-raw: 8000000000000000 ffff888100042780 dead000000000100 dead000000000122
-raw: 0000000000000000 0000000080400040 00000000f5000000 ffff88814a7fa800
+raw: 8000000000000000 ffff888100042780 ffffea00043c4200 dead000000000003
+raw: 0000000000000000 0000000080400040 00000000f5000000 ffff88810a44d000
 page dumped because: kasan: bad access detected
 
 Memory state around the buggy address:
- ffff88814b81af00: fa fb fb fb fb fb fb fb fb fb fb fb fb fb fc fc
- ffff88814b81af80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
->ffff88814b81b000: 00 00 00 00 fc fc fc fc 00 00 00 00 fc fc fc fc
-                               ^
- ffff88814b81b080: fa fb fb fb fc fc fc fc fa fb fb fb fc fc fc fc
- ffff88814b81b100: fa fb fb fb fc fc fc fc fa fb fb fb fc fc fc fc
+ ffff88810d125700: fa fb fb fb fc fc fc fc fa fb fb fb fc fc fc fc
+ ffff88810d125780: fa fb fb fb fc fc fc fc 00 00 00 00 fc fc fc fc
+>ffff88810d125800: fa fb fb fb fc fc fc fc fa fb fb fb fc fc fc fc
+                      ^
+ ffff88810d125880: fa fb fb fb fc fc fc fc fa fb fb fb fc fc fc fc
+ ffff88810d125900: fa fb fb fb fc fc fc fc fa fb fb fb fc fc fc fc
 ==================================================================
 Disabling lock debugging due to kernel taint
-Kernel error detected: [  100.929771] BUG: KASAN: slab-out-of-bounds in lov_object_fiemap+0x2bb5/0x4800 [lov]
+Kernel error detected: [   87.981449] BUG: KASAN: slab-use-after-free in lov_object_fiemap+0x2b51/0x4810 [lov]
  sanity test_44f: @@@@@@ FAIL: Error in dmesg detected 
 Lustre: DEBUG MARKER: sanity test_44f: @@@@@@ FAIL: Error in dmesg detected
   Trace dump:
@@ -311,77 +269,84 @@ Lustre: DEBUG MARKER: sanity test_44f: @@@@@@ FAIL: Error in dmesg detected
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:6138:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/035519/sanity.test_44f.*.1765511754.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/043240/sanity.test_44f.*.1765513993.log
 Dumping logs only on local client.
- slab kmalloc-32 start ffff888115de4880 pointer offset 8 size 32
+ slab kmalloc-32 start ffff88810a827540 pointer offset 8 size 32
 ------------[ cut here ]------------
-list_del corruption. next->prev should be ffff88810e3b4548, but was 0000000000000001. (next=ffff888115de4888)
-WARNING: CPU: 0 PID: 7451 at lib/list_debug.c:67 __list_del_entry_valid_or_report+0x182/0x1a0
+list_del corruption. next->prev should be ffff88810a827308, but was 0000000000000001. (next=ffff88810a827548)
+WARNING: CPU: 0 PID: 7461 at lib/list_debug.c:67 __list_del_entry_valid_or_report+0x182/0x1a0
 Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 0 UID: 0 PID: 7451 Comm: lctl Tainted: G    B   W  O        6.15.0-ktest #1 NONE 
-Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+CPU: 0 UID: 0 PID: 7461 Comm: lctl Tainted: G    B      O       6.14.0-ktest #1
+Tainted: [B]=BAD_PAGE, [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
 RIP: 0010:__list_del_entry_valid_or_report+0x182/0x1a0
-Code: e8 b3 2a 92 ff 43 80 3c 2c 00 74 08 4c 89 ff e8 f4 d7 a2 ff 49 8b 56 08 48 c7 c7 80 d8 d8 82 48 89 de 4c 89 f1 e8 4e 2a 28 ff <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f c3 b0 01 eb f2 cc cc cc cc
-RSP: 0018:ffffc9000c267c98 EFLAGS: 00010246
-RAX: dd80c90664763c00 RBX: ffff88810e3b4548 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159223750
-RBP: 1ffff11021c768a9 R08: ffff888159223753 R09: 1ffff1102b2446ea
-R10: dffffc0000000000 R11: ffffed102b2446eb R12: 1ffff11022bbc912
-R13: dffffc0000000000 R14: ffff888115de4888 R15: ffff888115de4890
-FS:  00007f30a636e980(0000) GS:ffff8881d4faa000(0000) knlGS:0000000000000000
+Code: e8 a3 be 93 ff 43 80 3c 2c 00 74 08 4c 89 ff e8 34 e6 a3 ff 49 8b 56 08 48 c7 c7 40 bf d8 82 48 89 de 4c 89 f1 e8 2e a1 2a ff <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f c3 b0 01 eb f2 cc cc cc cc
+RSP: 0018:ffffc9000c7dfc98 EFLAGS: 00010246
+RAX: 8d8cc193f46ebe00 RBX: ffff88810a827308 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159228d90
+RBP: 1ffff11021504e61 R08: ffff888159228d93 R09: 1ffff1102b2451b2
+R10: dffffc0000000000 R11: ffffed102b2451b3 R12: 1ffff11021504eaa
+R13: dffffc0000000000 R14: ffff88810a827548 R15: ffff88810a827550
+FS:  00007f06a1e1e980(0000) GS:ffff888159200000(0000) knlGS:0000000000000000
 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f30a6490270 CR3: 000000015580f000 CR4: 0000000000750eb0
+CR2: 00007f06a1f40270 CR3: 0000000149f29000 CR4: 0000000000750eb0
 PKRU: 55555554
 Call Trace:
  <TASK>
- cfs_tracefile_dump_all_pages+0x244/0x900 [libcfs]
+ ? __warn+0x134/0x330
+ ? __list_del_entry_valid_or_report+0x182/0x1a0
+ ? __list_del_entry_valid_or_report+0x182/0x1a0
+ ? report_bug+0x2e0/0x4d0
+ ? handle_bug+0x5e/0x90
+ ? exc_invalid_op+0x1a/0x50
+ ? asm_exc_invalid_op+0x1a/0x20
+ ? __list_del_entry_valid_or_report+0x182/0x1a0
+ ? __list_del_entry_valid_or_report+0x182/0x1a0
+ cfs_tracefile_dump_all_pages+0x245/0x900 [libcfs]
  cfs_trace_dump_debug_buffer_usrstr+0x64/0x90 [libcfs]
- lnet_debugfs_write+0xa3/0x110 [libcfs]
+ lnet_debugfs_write+0xa4/0x110 [libcfs]
  full_proxy_write+0x139/0x1d0
- vfs_write+0x256/0xb50
- ? lock_release+0x42/0x320
- __x64_sys_write+0xfa/0x190
+ vfs_write+0x257/0xb50
+ ? do_user_addr_fault+0x307/0xbc0
+ __x64_sys_write+0xfb/0x190
  do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f30a6438687
+RIP: 0033:0x7f06a1ee8687
 Code: 48 89 fa 4c 89 df e8 58 b3 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
-RSP: 002b:00007ffc02fef3e0 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007f30a636e980 RCX: 00007f30a6438687
-RDX: 000000000000001e RSI: 00007ffc02fef4e0 RDI: 0000000000000003
-RBP: 00007ffc02fef450 R08: 0000000000000000 R09: 0000000000000000
+RSP: 002b:00007fffcd7bd730 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f06a1e1e980 RCX: 00007f06a1ee8687
+RDX: 000000000000001e RSI: 00007fffcd7bd830 RDI: 0000000000000003
+RBP: 00007fffcd7bd7a0 R08: 0000000000000000 R09: 0000000000000000
 R10: 0000000000000000 R11: 0000000000000202 R12: 0000000000000000
-R13: 00007ffc02ff0780 R14: 00007f30a6799000 R15: 000055f49ef45580
+R13: 00007fffcd7bead0 R14: 00007f06a2247000 R15: 00005645f9891580
  </TASK>
 ---[ end trace 0000000000000000 ]---
-LNetError: 7451:0:(libcfs/libcfs/tracefile.c:923:cfs_tracefile_dump_all_pages()) ASSERTION(tage->page != NULL) failed
+LNetError: 7461:0:(libcfs/libcfs/tracefile.c:923:cfs_tracefile_dump_all_pages()) ASSERTION(tage->page != NULL) failed
 Kernel panic - not syncing: Lustre debug assertion failure
-CPU: 0 UID: 0 PID: 7451 Comm: lctl Tainted: G    B   W  O        6.15.0-ktest #1 NONE 
+CPU: 0 UID: 0 PID: 7461 Comm: lctl Tainted: G    B   W  O       6.14.0-ktest #1
 Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
 Call Trace:
  <TASK>
  panic+0x17c/0x440
  cfs_trace_assertion_failed+0xdd/0x130 [libcfs]
- cfs_tracefile_dump_all_pages+0x867/0x900 [libcfs]
+ cfs_tracefile_dump_all_pages+0x869/0x900 [libcfs]
  cfs_trace_dump_debug_buffer_usrstr+0x64/0x90 [libcfs]
- lnet_debugfs_write+0xa3/0x110 [libcfs]
+ lnet_debugfs_write+0xa4/0x110 [libcfs]
  full_proxy_write+0x139/0x1d0
- vfs_write+0x256/0xb50
- ? lock_release+0x42/0x320
- __x64_sys_write+0xfa/0x190
+ vfs_write+0x257/0xb50
+ ? do_user_addr_fault+0x307/0xbc0
+ __x64_sys_write+0xfb/0x190
  do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f30a6438687
+RIP: 0033:0x7f06a1ee8687
 Code: 48 89 fa 4c 89 df e8 58 b3 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
-RSP: 002b:00007ffc02fef3e0 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007f30a636e980 RCX: 00007f30a6438687
-RDX: 000000000000001e RSI: 00007ffc02fef4e0 RDI: 0000000000000003
-RBP: 00007ffc02fef450 R08: 0000000000000000 R09: 0000000000000000
+RSP: 002b:00007fffcd7bd730 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f06a1e1e980 RCX: 00007f06a1ee8687
+RDX: 000000000000001e RSI: 00007fffcd7bd830 RDI: 0000000000000003
+RBP: 00007fffcd7bd7a0 R08: 0000000000000000 R09: 0000000000000000
 R10: 0000000000000000 R11: 0000000000000202 R12: 0000000000000000
-R13: 00007ffc02ff0780 R14: 00007f30a6799000 R15: 000055f49ef45580
+R13: 00007fffcd7bead0 R14: 00007f06a2247000 R15: 00005645f9891580
  </TASK>
 Kernel Offset: disabled
 ---[ end Kernel panic - not syncing: Lustre debug assertion failure ]---

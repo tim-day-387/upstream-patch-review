@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=ab886b99d7354677bcaa6751ec1ff1aa;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=6fe606be3c35425a801932459f7e7293;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=6c94d100ca6b4ed7a3729fcac42c6e74;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=98c22799ef854ad3bc9eb03f2e25677f;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 1 PID: 1026 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 1 UID: 0 PID: 1026 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90000bc7710 EFLAGS: 00010246
-RAX: cf7fbbcecafe1b00 RBX: ffff888105b30000 RCX: dffffc0000000000
-RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffc90000bc75a8
-RBP: ffff88810ce311e0 R08: ffffc90000bc75af R09: 1ffff92000178eb5
-R10: dffffc0000000000 R11: fffff52000178eb6 R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff888105b309c8 R15: ffffffff82e1aca0
-FS:  00007f146fe56340(0000) GS:ffff8881d502a000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f146f77dd40 CR3: 000000010d356000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f146f718779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007fff1ca08158 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 000055a69b579890 RCX: 00007f146f718779
-RDX: 0000000000000000 RSI: 000055a69b5782a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f146f7f85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 000055a69b5782a0
-R13: 0000000000000000 R14: 000055a69b579850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,19 +24,18 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2706) used greatest stack depth: 24168 bytes left
+mount.lustre (2707) used greatest stack depth: 23568 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-mount.lustre (2863) used greatest stack depth: 23496 bytes left
+mount.lustre (2990) used greatest stack depth: 23504 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
-Lustre: Skipped 1 previous similar message
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 87107796-244a-4c3f-97dc-6cc4a83d67d1 w/o recovery
+Lustre: lustre-MDT0000: local client 2a768055-6afe-4331-a81f-ad3c9fe286ef w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -128,15 +62,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:18 UTC 2025
+Started at Fri Dec 12 04:32:41 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035518
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035518
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035518
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043241
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043241
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043241
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -147,8 +81,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=27L 27M 27N 27O 27P 27Q 27R 27T 27U 27V 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:19 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:19 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:43 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:43 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -182,8 +116,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:20 (1765511720) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:20 (1765511720) ===
+=== sanity: start setup 04:32:43 (1765513963) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:32:43 (1765513963) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -191,23 +125,23 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888109b1e000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888109b1e000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88811dbac000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88811dbac000.idle_timeout=debug
 disable quota as required
-Lustre: 5029:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:22 (1765511722) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:22 (1765511722) ===
+Lustre: 5031:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:32:45 (1765513965) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:32:45 (1765513965) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4169]
+ [touch] [/mnt/lustre/d0_runas_test/f4171]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 27L: lfs pool_list gives correct pool name ========================================================== 03:55:23 (1765511723)
-Lustre: DEBUG MARKER: == sanity test 27L: lfs pool_list gives correct pool name ========================================================== 03:55:23 (1765511723)
+== sanity test 27L: lfs pool_list gives correct pool name ========================================================== 04:32:46 (1765513966)
+Lustre: DEBUG MARKER: == sanity test 27L: lfs pool_list gives correct pool name ========================================================== 04:32:46 (1765513966)
 Creating new pool test_27L
 Pool lustre.test_27L created
 lustre.test_27L
@@ -216,14 +150,13 @@ lustre.test_27L
 Pool lustre.test_27L destroyed
 PASS 27L (3s)
 
-== sanity test 27M: test O_APPEND striping =============== 03:55:26 (1765511726)
-Lustre: DEBUG MARKER: == sanity test 27M: test O_APPEND striping =============== 03:55:26 (1765511726)
+== sanity test 27M: test O_APPEND striping =============== 04:32:49 (1765513969)
+Lustre: DEBUG MARKER: == sanity test 27M: test O_APPEND striping =============== 04:32:49 (1765513969)
 error: set_param: setting /sys/fs/lustre/mdd/lustre-MDT0000/append_pool=LOV_MAXPOOLNAME*: Invalid argument
 error: set_param: setting 'mdd/*/append_pool'='LOV_MAXPOOLNAME*': Invalid argument
 mdd.lustre-MDT0000.append_stripe_count=1
 mdd.lustre-MDT0000.append_stripe_count=0
 mdd.lustre-MDT0000.append_stripe_count=2
-touch (5667) used greatest stack depth: 23472 bytes left
 mdd.lustre-MDT0000.append_stripe_count=-1
 mdd.lustre-MDT0000.append_stripe_count=1
 Creating new pool test_27M
@@ -241,103 +174,110 @@ OST lustre-OST0001_UUID removed from pool lustre.test_27M
 Pool lustre.test_27M destroyed
 mdd.lustre-MDT0000.append_stripe_count=0
 mdd.lustre-MDT0000.append_pool=none
-PASS 27M (14s)
+PASS 27M (18s)
 
-== sanity test 27N: lctl pool_list on separate MGS gives correct pool name ========================================================== 03:55:40 (1765511740)
-Lustre: DEBUG MARKER: == sanity test 27N: lctl pool_list on separate MGS gives correct pool name ========================================================== 03:55:40 (1765511740)
+== sanity test 27N: lctl pool_list on separate MGS gives correct pool name ========================================================== 04:33:07 (1765513987)
+Lustre: DEBUG MARKER: == sanity test 27N: lctl pool_list on separate MGS gives correct pool name ========================================================== 04:33:07 (1765513987)
 
  SKIP: sanity test_27N needs separate MGS/MDT
 Lustre: DEBUG MARKER: SKIP: sanity test_27N needs separate MGS/MDT
-SKIP 27N (0s)
+SKIP 27N (1s)
 
-== sanity test 27O: basic ops on foreign file of symlink type ========================================================== 03:55:40 (1765511740)
-Lustre: DEBUG MARKER: == sanity test 27O: basic ops on foreign file of symlink type ========================================================== 03:55:40 (1765511740)
-llite.lustre-ffff888109b1e000.foreign_symlink_enable=1
+== sanity test 27O: basic ops on foreign file of symlink type ========================================================== 04:33:08 (1765513988)
+Lustre: DEBUG MARKER: == sanity test 27O: basic ops on foreign file of symlink type ========================================================== 04:33:08 (1765513988)
+llite.lustre-ffff88811dbac000.foreign_symlink_enable=1
 lfm_magic:         0x0BD70BD0
 lfm_type:          0x0000DA05 (symlink)
 lfm_flags:          0x0000DA05
-lfm_value:     '66943cd1-93f9-4135-a503-4d1ba254747d/9e75e1dd-c59d-44a3-954e-c6c5af1f1834'
+lfm_value:     'c14272b9-a454-44ea-9545-26dd30e2aca5/7aa10f3f-8a15-4ed6-9a6b-9fefe3daa245'
 lfs setstripe: unable to open '/mnt/lustre/d27O.sanity/f27O.sanity': No such file or directory (2)
 cat: /mnt/lustre/d27O.sanity/f27O.sanity: No such file or directory
 /workspace/lustre-release/lustre/tests/sanity.sh: line 3368: /mnt/lustre/d27O.sanity/f27O.sanity: No such file or directory
 rm: cannot remove '/mnt/lustre/d27O.sanity/f27O.sanity.new': Operation not permitted
-llite.lustre-ffff888109b1e000.foreign_symlink_prefix=/tmp/
+llite.lustre-ffff88811dbac000.foreign_symlink_prefix=/tmp/
 /mnt/lustre/d27O.sanity/f27O.sanity.new has type link OK
-/mnt/lustre/d27O.sanity/f27O.sanity.new links to /tmp/66943cd1-93f9-4135-a503-4d1ba254747d/9e75e1dd-c59d-44a3-954e-c6c5af1f1834 OK
+/mnt/lustre/d27O.sanity/f27O.sanity.new links to /tmp/c14272b9-a454-44ea-9545-26dd30e2aca5/7aa10f3f-8a15-4ed6-9a6b-9fefe3daa245 OK
 FOOFOO
-lfm_value:     '66943cd1-93f9-4135-a503-4d1ba254747d/9e75e1dd-c59d-44a3-954e-c6c5af1f1834'
+lfm_value:     'c14272b9-a454-44ea-9545-26dd30e2aca5/7aa10f3f-8a15-4ed6-9a6b-9fefe3daa245'
 
 rm: cannot remove '/mnt/lustre/d27O.sanity/f27O.sanity': Operation not permitted
-llite.lustre-ffff888109b1e000.foreign_symlink_enable=0
+llite.lustre-ffff88811dbac000.foreign_symlink_enable=0
 lfs unlink_foreign: unable to open '/mnt/lustre/d27O.sanity/*': No such file or directory (2)
 error: unlink_foreign: unlink foreign entry '/mnt/lustre/d27O.sanity/*' failed
 PASS 27O (1s)
 
-== sanity test 27P: basic ops on foreign dir of foreign_symlink type ========================================================== 03:55:41 (1765511741)
-Lustre: DEBUG MARKER: == sanity test 27P: basic ops on foreign dir of foreign_symlink type ========================================================== 03:55:41 (1765511741)
-llite.lustre-ffff888109b1e000.foreign_symlink_enable=1
+== sanity test 27P: basic ops on foreign dir of foreign_symlink type ========================================================== 04:33:09 (1765513989)
+Lustre: DEBUG MARKER: == sanity test 27P: basic ops on foreign dir of foreign_symlink type ========================================================== 04:33:09 (1765513989)
+llite.lustre-ffff88811dbac000.foreign_symlink_enable=1
 lfm_magic:         0x0CD50CD0
 lfm_length:          73
 lfm_type:          0x0000DA05 (symlink)
 lfm_flags:          0x0000DA05
-lfm_value:     'ed6fbdb2-9c57-45dc-93cc-46ff4a99c678/c541a302-3f21-4291-b260-7becca8a3fa0'
+lfm_value:     '14009e35-bfdb-4afb-b892-fd12060a9d51/7a883115-c06f-4b65-9e76-8052400110a7'
 
 lfm_magic:         0x0CD50CD0
 lfm_type:          0x0000DA05 (symlink)
 lfm_flags:          0x0000DA05
-lfm_value:     'ed6fbdb2-9c57-45dc-93cc-46ff4a99c678/c541a302-3f21-4291-b260-7becca8a3fa0'
+lfm_value:     '14009e35-bfdb-4afb-b892-fd12060a9d51/7a883115-c06f-4b65-9e76-8052400110a7'
 touch: cannot touch '/mnt/lustre/d27P.sanity/d27P.sanity/f27P.sanity': No such file or directory
 ------------[ cut here ]------------
-WARNING: CPU: 1 PID: 6216 at fs/inode.c:1227 lock_two_nondirectories+0xc0/0x110
+WARNING: CPU: 3 PID: 6218 at fs/inode.c:1275 lock_two_nondirectories+0xc0/0x110
 Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 1 UID: 0 PID: 6216 Comm: mv Tainted: G        W  O        6.15.0-ktest #1 NONE 
-Tainted: [W]=WARN, [O]=OOT_MODULE
+CPU: 3 UID: 0 PID: 6218 Comm: mv Tainted: G           O       6.14.0-ktest #1
+Tainted: [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
 RIP: 0010:lock_two_nondirectories+0xc0/0x110
-Code: c0 49 39 de 0f 94 c1 08 c1 74 06 5b 41 5e 41 5f c3 49 81 c7 d0 00 00 00 4c 89 ff be 04 00 00 00 5b 41 5e 41 5f e9 90 12 a0 ff <0f> 0b 48 85 db 75 85 eb a6 0f 0b eb a2 44 89 f1 80 e1 07 fe c1 38
-RSP: 0018:ffffc9000aae7ca0 EFLAGS: 00010246
-RAX: 0000000000004000 RBX: 0000000000000000 RCX: ffff888110fd9dc0
-RDX: dffffc0000000000 RSI: 0000000000000000 RDI: ffff88814949ac00
-RBP: ffff8881066a3e01 R08: ffff888110f24f6b R09: 1ffff110221e49ed
-R10: dffffc0000000000 R11: ffffed10221e49ee R12: ffff888110fd9de0
-R13: ffff888110fd9dc0 R14: ffff88814949ac00 R15: dffffc0000000000
-FS:  00007f7f99ffb840(0000) GS:ffff8881d502a000(0000) knlGS:0000000000000000
+Code: c0 49 39 de 0f 94 c1 08 c1 74 06 5b 41 5e 41 5f c3 49 81 c7 d0 00 00 00 4c 89 ff be 04 00 00 00 5b 41 5e 41 5f e9 40 3c a1 ff <0f> 0b 48 85 db 75 85 eb a6 0f 0b eb a2 44 89 f1 80 e1 07 fe c1 38
+RSP: 0018:ffffc9000ad6fc70 EFLAGS: 00010246
+RAX: 0000000000004000 RBX: 0000000000000000 RCX: ffff88811424ba40
+RDX: dffffc0000000000 RSI: 0000000000000000 RDI: ffff888115d73a40
+RBP: ffff88810a80a501 R08: ffff888115d659b3 R09: 1ffff11022bacb36
+R10: dffffc0000000000 R11: ffffed1022bacb37 R12: ffff88811424ba60
+R13: ffff88811424ba40 R14: ffff888115d73a40 R15: dffffc0000000000
+FS:  00007f5395e22840(0000) GS:ffff888159380000(0000) knlGS:0000000000000000
 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f7f9a10e480 CR3: 00000001160e4000 CR4: 0000000000750eb0
+CR2: 00007f5395f35480 CR3: 000000014a19c000 CR4: 0000000000750eb0
 PKRU: 55555554
 Call Trace:
  <TASK>
- vfs_rename+0x656/0xd50
- do_renameat2+0x57b/0x8f0
+ ? __warn+0x134/0x330
+ ? lock_two_nondirectories+0xc0/0x110
+ ? lock_two_nondirectories+0xc0/0x110
+ ? report_bug+0x2e0/0x4d0
+ ? handle_bug+0x5e/0x90
+ ? exc_invalid_op+0x1a/0x50
+ ? asm_exc_invalid_op+0x1a/0x20
+ ? lock_two_nondirectories+0xc0/0x110
+ vfs_rename+0x657/0xd50
+ do_renameat2+0x5bf/0x950
  __x64_sys_renameat2+0xce/0xe0
  do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f7f9a10e48f
+RIP: 0033:0x7f5395f3548f
 Code: 44 00 00 48 8b 15 69 79 18 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 49 89 ca 45 85 c0 74 30 b8 3c 01 00 00 0f 05 <48> 3d 00 f0 ff ff 77 29 89 c2 83 f8 ff 75 14 48 8b 15 33 79 18 00
-RSP: 002b:00007ffe66715fd8 EFLAGS: 00000202 ORIG_RAX: 000000000000013c
-RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007f7f9a10e48f
-RDX: 00000000ffffff9c RSI: 00007ffe667176c4 RDI: 00000000ffffff9c
+RSP: 002b:00007ffe62091c58 EFLAGS: 00000202 ORIG_RAX: 000000000000013c
+RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007f5395f3548f
+RDX: 00000000ffffff9c RSI: 00007ffe620946c4 RDI: 00000000ffffff9c
 RBP: 0000000000000001 R08: 0000000000000001 R09: 0000000000000000
-R10: 00007ffe667176e8 R11: 0000000000000202 R12: 00007ffe667176e8
-R13: 00007ffe667176c4 R14: 00000000ffffff9c R15: 00000000ffffff9c
+R10: 00007ffe620946e8 R11: 0000000000000202 R12: 00007ffe620946e8
+R13: 00007ffe620946c4 R14: 00000000ffffff9c R15: 00000000ffffff9c
  </TASK>
 ---[ end trace 0000000000000000 ]---
 rmdir: failed to remove '/mnt/lustre/d27P.sanity/d27P.sanity.new': Not a directory
-llite.lustre-ffff888109b1e000.foreign_symlink_prefix=/tmp/
+llite.lustre-ffff88811dbac000.foreign_symlink_prefix=/tmp/
 /mnt/lustre/d27P.sanity/d27P.sanity.new has type link OK
-/mnt/lustre/d27P.sanity/d27P.sanity.new links to /tmp/ed6fbdb2-9c57-45dc-93cc-46ff4a99c678/c541a302-3f21-4291-b260-7becca8a3fa0 OK
+/mnt/lustre/d27P.sanity/d27P.sanity.new links to /tmp/14009e35-bfdb-4afb-b892-fd12060a9d51/7a883115-c06f-4b65-9e76-8052400110a7 OK
 FOOFOO
-lfm_value:     'ed6fbdb2-9c57-45dc-93cc-46ff4a99c678/c541a302-3f21-4291-b260-7becca8a3fa0'
+lfm_value:     '14009e35-bfdb-4afb-b892-fd12060a9d51/7a883115-c06f-4b65-9e76-8052400110a7'
 
 rmdir: failed to remove '/mnt/lustre/d27P.sanity/d27P.sanity': Not a directory
-llite.lustre-ffff888109b1e000.foreign_symlink_enable=0
+llite.lustre-ffff88811dbac000.foreign_symlink_enable=0
 lfs unlink_foreign: unable to open '/mnt/lustre/d27P.sanity/*': No such file or directory (2)
 error: unlink_foreign: unlink foreign entry '/mnt/lustre/d27P.sanity/*' failed
-PASS 27P (1s)
+PASS 27P (2s)
 
-== sanity test 27Q: llapi_file_get_stripe() works on symlinks ========================================================== 03:55:42 (1765511742)
-Lustre: DEBUG MARKER: == sanity test 27Q: llapi_file_get_stripe() works on symlinks ========================================================== 03:55:42 (1765511742)
+== sanity test 27Q: llapi_file_get_stripe() works on symlinks ========================================================== 04:33:11 (1765513991)
+Lustre: DEBUG MARKER: == sanity test 27Q: llapi_file_get_stripe() works on symlinks ========================================================== 04:33:11 (1765513991)
 lmm_magic: v1
 stripe_count: 1
 stripe_size: 4194304
@@ -351,27 +291,27 @@ Lustre: DEBUG MARKER: sanity test_27Q: @@@@@@ FAIL: /mnt/lustre/d27Q.sanity-2/f2
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:3552:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_27Q.*.1765511743.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/043241/sanity.test_27Q.*.1765513991.log
 Dumping logs only on local client.
 FAIL 27Q (1s)
 
-== sanity test 27R: test max_stripecount limitation when stripe count is set to -1 ========================================================== 03:55:43 (1765511743)
-Lustre: DEBUG MARKER: == sanity test 27R: test max_stripecount limitation when stripe count is set to -1 ========================================================== 03:55:43 (1765511743)
+== sanity test 27R: test max_stripecount limitation when stripe count is set to -1 ========================================================== 04:33:12 (1765513992)
+Lustre: DEBUG MARKER: == sanity test 27R: test max_stripecount limitation when stripe count is set to -1 ========================================================== 04:33:12 (1765513992)
 error: set_param: setting /sys/fs/lustre/lod/lustre-MDT0000-mdtlov/max_stripecount=-1: Numerical result out of range
 error: set_param: setting 'lod/*/max_stripecount'='-1': Numerical result out of range
 lod.lustre-MDT0000-mdtlov.max_stripecount=1
 lod.lustre-MDT0000-mdtlov.max_stripecount=0
 PASS 27R (1s)
 
-== sanity test 27T: no eio on close on partial write due to enosp ========================================================== 03:55:44 (1765511744)
-Lustre: DEBUG MARKER: == sanity test 27T: no eio on close on partial write due to enosp ========================================================== 03:55:44 (1765511744)
+== sanity test 27T: no eio on close on partial write due to enosp ========================================================== 04:33:13 (1765513993)
+Lustre: DEBUG MARKER: == sanity test 27T: no eio on close on partial write due to enosp ========================================================== 04:33:13 (1765513993)
 
  SKIP: sanity test_27T need ost1 and client on different nodes
 Lustre: DEBUG MARKER: SKIP: sanity test_27T need ost1 and client on different nodes
 SKIP 27T (0s)
 
-== sanity test 27U: append pool and stripe count work with composite default layout ========================================================== 03:55:45 (1765511745)
-Lustre: DEBUG MARKER: == sanity test 27U: append pool and stripe count work with composite default layout ========================================================== 03:55:45 (1765511745)
+== sanity test 27U: append pool and stripe count work with composite default layout ========================================================== 04:33:13 (1765513993)
+Lustre: DEBUG MARKER: == sanity test 27U: append pool and stripe count work with composite default layout ========================================================== 04:33:13 (1765513993)
 mdd.lustre-MDT0000.append_stripe_count=1
 Creating new pool test_27U-append
 Pool lustre.test_27U-append created
@@ -388,10 +328,10 @@ lmm_stripe_count:  1
 lmm_stripe_size:   4194304
 lmm_pattern:       raid0
 lmm_layout_gen:    0
-lmm_stripe_offset: 1
+lmm_stripe_offset: 0
 lmm_pool:          test_27U-normal
 	obdidx		 objid		 objid		 group
-	     1	           146	         0x92	   0x280000400
+	     0	           142	         0x8e	   0x240000400
 
 mdd.lustre-MDT0000.append_pool=test_27U-append
 /mnt/lustre/d27U.sanity/f27U.sanity.2
@@ -399,10 +339,10 @@ lmm_stripe_count:  1
 lmm_stripe_size:   4194304
 lmm_pattern:       raid0
 lmm_layout_gen:    0
-lmm_stripe_offset: 1
+lmm_stripe_offset: 0
 lmm_pool:          test_27U-append
 	obdidx		 objid		 objid		 group
-	     1	           147	         0x93	   0x280000400
+	     0	           143	         0x8f	   0x240000400
 
 mdd.lustre-MDT0000.append_stripe_count=2
 /mnt/lustre/d27U.sanity/f27U.sanity.3
@@ -413,8 +353,8 @@ lmm_layout_gen:    0
 lmm_stripe_offset: 0
 lmm_pool:          test_27U-append
 	obdidx		 objid		 objid		 group
-	     0	           142	         0x8e	   0x240000400
-	     1	           148	         0x94	   0x280000400
+	     0	           144	         0x90	   0x240000400
+	     1	           146	         0x92	   0x280000400
 
 Destroy the created pools: test_27U-append,test_27U-normal
 lustre.test_27U-append
@@ -427,10 +367,10 @@ OST lustre-OST0001_UUID removed from pool lustre.test_27U-normal
 Pool lustre.test_27U-normal destroyed
 mdd.lustre-MDT0000.append_stripe_count=0
 mdd.lustre-MDT0000.append_pool=none
-PASS 27U (20s)
+PASS 27U (18s)
 
-== sanity test 27V: creating widely striped file races with deactivating OST ========================================================== 03:56:04 (1765511764)
-Lustre: DEBUG MARKER: == sanity test 27V: creating widely striped file races with deactivating OST ========================================================== 03:56:04 (1765511764)
+== sanity test 27V: creating widely striped file races with deactivating OST ========================================================== 04:33:31 (1765514011)
+Lustre: DEBUG MARKER: == sanity test 27V: creating widely striped file races with deactivating OST ========================================================== 04:33:31 (1765514011)
 
  SKIP: sanity test_27V needs >= 4 OSTs
 Lustre: DEBUG MARKER: SKIP: sanity test_27V needs >= 4 OSTs
@@ -440,37 +380,37 @@ resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 46 sec ================= 03:56:06 (1765511766)
-Lustre: DEBUG MARKER: == sanity test complete, duration 46 sec ================= 03:56:06 (1765511766)
+== sanity test complete, duration 50 sec ================= 04:33:33 (1765514013)
+Lustre: DEBUG MARKER: == sanity test complete, duration 50 sec ================= 04:33:33 (1765514013)
 sanity: FAIL: test_27Q /mnt/lustre/d27Q.sanity-2/f27Q.sanity: rc = 2
-=== sanity: start cleanup 03:56:06 (1765511766) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 03:56:06 (1765511766) ===
+=== sanity: start cleanup 04:33:33 (1765514013) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 04:33:33 (1765514013) ===
 skip cleanup
-=== sanity: finish cleanup 03:56:06 (1765511766) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 03:56:06 (1765511766) ===
+=== sanity: finish cleanup 04:33:33 (1765514013) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 04:33:33 (1765514013) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 1
-Finished at Fri Dec 12 03:56:06 UTC 2025 in 48s
+Finished at Fri Dec 12 04:33:34 UTC 2025 in 53s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 8448:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888109b1e000: inode [0x200000401:0xa0:0x0] mdc close failed: rc = -108
-Lustre: 1046:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xa3:0x0]/ may get corrupted (rc -108)
+LustreError: 8452:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88811dbac000: inode [0x200000401:0xa0:0x0] mdc close failed: rc = -108
+Lustre: 1048:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xa3:0x0]/ may get corrupted (rc -108)
 Lustre: 1047:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xa1:0x0]/ may get corrupted (rc -108)
-Lustre: 1046:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0x9a:0x0]/ may get corrupted (rc -108)
-Lustre: 1047:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xa2:0x0]/ may get corrupted (rc -108)
-LustreError: 8448:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+Lustre: 1048:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xa2:0x0]/ may get corrupted (rc -108)
+Lustre: 1047:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0x9a:0x0]/ may get corrupted (rc -108)
+LustreError: 8452:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2714:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511778 with bad export cookie 4505299030066632634
+LustreError: 2712:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765514025 with bad export cookie 12820078899213568225
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 8531:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 8531:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+LustreError: 8538:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 8538:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 8572:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 8572:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 8579:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 8579:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 8835:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 8835:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 8843:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8843:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
@@ -478,16 +418,18 @@ done
 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= FAILED sanity-quick in 157s
+========= FAILED sanity-quick in 151s
 
 Passed: 
 Failed: sanity-quick
 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
 Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-16.ktest 38 from: return ${#tests_failed[@]}, exiting
-Kernel version: 6.15.0-ktest
+Kernel version: 6.14.0-ktest
 TEST FAILED
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=ab886b99d7354677bcaa6751ec1ff1aa\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=6c94d100ca6b4ed7a3729fcac42c6e74\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 </pre>
 </body>
 </html>

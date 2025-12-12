@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=6f0a80c01ae941948292ebe50be6418a;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=cf27ed03d15a4f339217a5ff67db342d;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=7a5a18065fb24080b703dd376a558dfe;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=c5a4ab89553d4c13b5e5f9d0e514edd9;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,91 +16,33 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 0 PID: 1028 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 0 UID: 0 PID: 1028 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90000bc7710 EFLAGS: 00010246
-RAX: 5de4a82c3eafa200 RBX: ffff888105702000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159223750
-RBP: ffff88810508a9e0 R08: ffff888159223753 R09: 1ffff1102b2446ea
-R10: dffffc0000000000 R11: ffffed102b2446eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff8881057029c8 R15: ffffffff82e1aca0
-FS:  00007f3620a4b340(0000) GS:ffff8881d4faa000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007ffcca6aef38 CR3: 0000000108a2b000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? sysvec_apic_timer_interrupt+0xe/0x80
- ? asm_sysvec_apic_timer_interrupt+0x1a/0x20
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f3620318779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007fff865b9008 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 000055d84215a890 RCX: 00007f3620318779
-RDX: 0000000000000000 RSI: 000055d8421592a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f36203f85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 000055d8421592a0
-R13: 0000000000000000 R14: 000055d84215a850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
 Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2760) used greatest stack depth: 26288 bytes left
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2708) used greatest stack depth: 24216 bytes left
+mount.lustre (2707) used greatest stack depth: 24144 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-mount.lustre (2866) used greatest stack depth: 23496 bytes left
+mount.lustre (2866) used greatest stack depth: 24080 bytes left
+Lustre: lustre-OST0001: new disk, initializing
+Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
+Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 6e8fa2e6-9d6e-4370-afc0-4451f96538be w/o recovery
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
+Lustre: lustre-MDT0000: local client e9aaed04-c462-4a5f-a42d-a2675c45e98f w/o recovery
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
 Lustre: client wants to enable acl, but mdt not!
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
@@ -126,15 +68,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:17 UTC 2025
+Started at Fri Dec 12 04:32:30 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035516
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035516
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035516
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043229
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043229
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043229
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -145,8 +87,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=27Cj 27D 27E 27F 27G 27H 27I 27Ia 27J 27K 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:18 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:18 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:31 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:31 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -180,8 +122,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:19 (1765511719) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:19 (1765511719) ===
+=== sanity: start setup 04:32:31 (1765513951) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:32:31 (1765513951) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -189,23 +131,24 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88810c470000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88810c470000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff8881098d0000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff8881098d0000.idle_timeout=debug
 disable quota as required
-Lustre: 5040:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:20 (1765511720) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:20 (1765511720) ===
+Lustre: 5037:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:32:32 (1765513952) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:32:32 (1765513952) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4180]
+ [touch] [/mnt/lustre/d0_runas_test/f4177]
+rm (5174) used greatest stack depth: 23992 bytes left
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 27Cj: overstriping with -C for max values in multiple of targets ========================================================== 03:55:21 (1765511721)
-Lustre: DEBUG MARKER: == sanity test 27Cj: overstriping with -C for max values in multiple of targets ========================================================== 03:55:21 (1765511721)
+== sanity test 27Cj: overstriping with -C for max values in multiple of targets ========================================================== 04:32:32 (1765513952)
+Lustre: DEBUG MARKER: == sanity test 27Cj: overstriping with -C for max values in multiple of targets ========================================================== 04:32:32 (1765513952)
 setstripe -C -33 should fail
 lfs setstripe setstripe: invalid stripe count '-33'
 Create a file with specified striping/composite layout, or
@@ -227,71 +170,68 @@ Usage: setstripe   [--component-add|--component-del|--delete|-d]
 		[--stripe-size|-S STRIPE_SIZE]
 		FILENAME|DIRECTORY
 
-PASS 27Cj (0s)
+PASS 27Cj (1s)
 
-== sanity test 27D: validate llapi_layout API ============ 03:55:21 (1765511721)
-Lustre: DEBUG MARKER: == sanity test 27D: validate llapi_layout API ============ 03:55:21 (1765511721)
+== sanity test 27D: validate llapi_layout API ============ 04:32:33 (1765513953)
+Lustre: DEBUG MARKER: == sanity test 27D: validate llapi_layout API ============ 04:32:33 (1765513953)
 Creating new pool testpool
 Pool lustre.testpool created
 Adding targets to pool
 OST lustre-OST0000_UUID added to pool lustre.testpool
 OST lustre-OST0001_UUID added to pool lustre.testpool
- test0 @1765511724: Read/write layout attributes then create a file ............ pass
- test1 @1765511724: Read test0 file by path and verify attributes .............. pass
- test2 @1765511724: Read test0 file by FD and verify attributes ................ pass
- test3 @1765511724: Read test0 file by FID and verify attributes ............... pass
- test4 @1765511724: Verify compatibility with 'lfs setstripe' .................. pass
- test5 @1765511724: llapi_layout_get_by_path ENOENT handling ................... pass
- test6 @1765511724: llapi_layout_get_by_fd EBADF handling ...................... pass
- test7 @1765511724: llapi_layout_get_by_path EACCES handling ................... pass
- test8 @1765511724: llapi_layout_get_by_path ENODATA handling .................. pass
- test9 @1765511724: verify llapi_layout_pattern_set() return values ............ pass
- test10 @1765511724: stripe_count error handling ............................... pass
- test11 @1765511724: stripe_size error handling ................................ pass
- test12 @1765511724: pool_name error handling .................................. pass
- test13 @1765511724: ost_index error handling .................................. pass
- test14 @1765511724: llapi_layout_file_create error handling ................... pass
- test15 @1765511724: Can't change striping attributes of existing file ......... pass
- test16 @1765511724: Default stripe attributes are applied as expected ......... pass
- test17 @1765511724: LLAPI_LAYOUT_WIDE is honored .............................. pass
- test18 @1765511724: Setting pool with fsname.pool notation .................... pass
- test19 @1765511724: Maximum length pool name is NULL-terminated ............... pass
- test20 @1765511724: LLAPI_LAYOUT_DEFAULT is honored ........................... pass
- test21 @1765511724: llapi_layout_file_create fails for non-Lustre file ........ pass
- test22 @1765511724: llapi_layout_file_create applied mode correctly ........... pass
- test23 @1765511724: llapi_layout_get_by_path fails for non-Lustre file ........ pass
- test24 @1765511724: LAYOUT_GET_EXPECTED works with existing file .............. pass
- test25 @1765511724: LAYOUT_GET_EXPECTED works with directory .................. pass
- test26 @1765511724: LAYOUT_GET_EXPECTED partially specified parent ............ pass
- test27 @1765511724: LAYOUT_GET_EXPECTED with non existing file ................ pass
- test28 @1765511724: LLAPI_LAYOUT_WIDE returned as expected .................... pass
- test29 @1765511724: set ost index to non-zero stripe number ................... pass
- test30 @1765511724: create composite file, traverse components ................ pass
- test31 @1765511724: add/delete component to/from existing file ................ pass
- test32 @1765511724: Test overstriping with layout_file_create ................. pass
- test33 @1765511724: Test overstriping with llapi_file_open .................... pass
- test34 @1765511724: create simple valid & invalid self extending layouts ...... pass
- test35 @1765511724: create a file with layout different from default .......... pass
+ test0 @1765513956: Read/write layout attributes then create a file ............ pass
+ test1 @1765513956: Read test0 file by path and verify attributes .............. pass
+ test2 @1765513956: Read test0 file by FD and verify attributes ................ pass
+ test3 @1765513956: Read test0 file by FID and verify attributes ............... pass
+ test4 @1765513956: Verify compatibility with 'lfs setstripe' .................. pass
+ test5 @1765513956: llapi_layout_get_by_path ENOENT handling ................... pass
+ test6 @1765513956: llapi_layout_get_by_fd EBADF handling ...................... pass
+ test7 @1765513956: llapi_layout_get_by_path EACCES handling ................... pass
+ test8 @1765513956: llapi_layout_get_by_path ENODATA handling .................. pass
+ test9 @1765513956: verify llapi_layout_pattern_set() return values ............ pass
+ test10 @1765513956: stripe_count error handling ............................... pass
+ test11 @1765513956: stripe_size error handling ................................ pass
+ test12 @1765513956: pool_name error handling .................................. pass
+ test13 @1765513956: ost_index error handling .................................. pass
+ test14 @1765513956: llapi_layout_file_create error handling ................... pass
+ test15 @1765513956: Can't change striping attributes of existing file ......... pass
+ test16 @1765513956: Default stripe attributes are applied as expected ......... pass
+ test17 @1765513956: LLAPI_LAYOUT_WIDE is honored .............................. pass
+ test18 @1765513956: Setting pool with fsname.pool notation .................... pass
+ test19 @1765513956: Maximum length pool name is NULL-terminated ............... pass
+ test20 @1765513956: LLAPI_LAYOUT_DEFAULT is honored ........................... pass
+ test21 @1765513956: llapi_layout_file_create fails for non-Lustre file ........ pass
+ test22 @1765513956: llapi_layout_file_create applied mode correctly ........... pass
+ test23 @1765513956: llapi_layout_get_by_path fails for non-Lustre file ........ pass
+ test24 @1765513956: LAYOUT_GET_EXPECTED works with existing file .............. pass
+ test25 @1765513956: LAYOUT_GET_EXPECTED works with directory .................. pass
+ test26 @1765513956: LAYOUT_GET_EXPECTED partially specified parent ............ pass
+ test27 @1765513956: LAYOUT_GET_EXPECTED with non existing file ................ pass
+ test28 @1765513956: LLAPI_LAYOUT_WIDE returned as expected .................... pass
+ test29 @1765513956: set ost index to non-zero stripe number ................... pass
+ test30 @1765513956: create composite file, traverse components ................ pass
+ test31 @1765513956: add/delete component to/from existing file ................ pass
+ test32 @1765513956: Test overstriping with layout_file_create ................. pass
+ test33 @1765513956: Test overstriping with llapi_file_open .................... pass
+ test34 @1765513956: create simple valid & invalid self extending layouts ...... pass
+ test35 @1765513956: create a file with layout different from default .......... pass
 Destroy the created pools: testpool
 lustre.testpool
 OST lustre-OST0000_UUID removed from pool lustre.testpool
 OST lustre-OST0001_UUID removed from pool lustre.testpool
 Pool lustre.testpool destroyed
-PASS 27D (9s)
+PASS 27D (7s)
 
-== sanity test 27E: check that default extended attribute size properly increases ========================================================== 03:55:30 (1765511730)
-Lustre: DEBUG MARKER: == sanity test 27E: check that default extended attribute size properly increases ========================================================== 03:55:30 (1765511730)
--rw-r--r-- 1 root root 0 Dec 12 03:55 /mnt/lustre/f27E.sanity-1
+== sanity test 27E: check that default extended attribute size properly increases ========================================================== 04:32:40 (1765513960)
+Lustre: DEBUG MARKER: == sanity test 27E: check that default extended attribute size properly increases ========================================================== 04:32:40 (1765513960)
+-rw-r--r-- 1 root root 0 Dec 12 04:32 /mnt/lustre/f27E.sanity-1
 PASS 27E (1s)
 
-== sanity test 27F: Client resend delayed layout creation with non-zero size ========================================================== 03:55:31 (1765511731)
-Lustre: DEBUG MARKER: == sanity test 27F: Client resend delayed layout creation with non-zero size ========================================================== 03:55:31 (1765511731)
+== sanity test 27F: Client resend delayed layout creation with non-zero size ========================================================== 04:32:41 (1765513961)
+Lustre: DEBUG MARKER: == sanity test 27F: Client resend delayed layout creation with non-zero size ========================================================== 04:32:41 (1765513961)
 Stopping /mnt/lustre-ost1 (opts:) on lustre-bot-kvm
 Lustre: Failing over lustre-OST0000
-LustreError: lustre-OST0000-osc-MDT0000: operation ost_statfs to node 0@lo failed: rc = -107
-Lustre: lustre-OST0000-osc-MDT0000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: lustre-OST0000: Not available for connect from 0@lo (stopping)
-LustreError: 5961:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 5956:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
 Lustre: server umount lustre-OST0000 complete
 Stopping /mnt/lustre-ost2 (opts:) on lustre-bot-kvm
 Lustre: Failing over lustre-OST0001
@@ -306,13 +246,13 @@ svname -> lustre:OST0000
 OSD_WBC_MGS_NID=10.0.2.15@tcp
 params -> mgsnode=10.0.2.15@tcp
 LustreError: Server lustre-OST0000 requested index 0, but that index is already in use. Use --writeconf to force
-LustreError: 2723:0:(mgs_handler.c:567:mgs_target_reg()) Failed to write lustre-OST0000 log (-98)
+LustreError: 2724:0:(mgs_handler.c:567:mgs_target_reg()) Failed to write lustre-OST0000 log (-98)
 LustreError: lustre-OST0000: the MGS refuses to allow this server to start: rc = -98. Please see messages on the MGS.
-LustreError: 6078:0:(tgt_mount.c:2479:server_fill_super()) Unable to start targets: -98
-LustreError: 6078:0:(tgt_mount.c:1973:server_put_super()) no obd lustre-OST0000
-LustreError: 6078:0:(tgt_mount.c:117:server_deregister_mount()) lustre-OST0000 not registered
+LustreError: 6073:0:(tgt_mount.c:2479:server_fill_super()) Unable to start targets: -98
+LustreError: 6073:0:(tgt_mount.c:1973:server_put_super()) no obd lustre-OST0000
+LustreError: 6073:0:(tgt_mount.c:117:server_deregister_mount()) lustre-OST0000 not registered
 Lustre: server umount lustre-OST0000 complete
-LustreError: 6078:0:(super25.c:199:lustre_fill_super()) llite: Unable to mount <unknown>: rc = -98
+LustreError: 6073:0:(super25.c:199:lustre_fill_super()) llite: Unable to mount <unknown>: rc = -98
 mount.lustre: mount -t lustre lustre-wbcfs at /mnt/lustre-ost1 failed: Address already in use retries left: 0
 mount.lustre: mount lustre-wbcfs at /mnt/lustre-ost1 failed: Address already in use
 The target service's index is already in use. (lustre-wbcfs)
@@ -336,13 +276,14 @@ Lustre: DEBUG MARKER: sanity test_27F: @@@@@@ FAIL: ost1 failed to start
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:2813:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/035516/sanity.test_27F.*.1765511734.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/043229/sanity.test_27F.*.1765513961.log
 Dumping logs only on local client.
-Lustre: 3060:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765511734/real 1765511734]  req@ffff8881492c2f80 x1851273162954368/t0(0) o5->lustre-OST0001-osc-MDT0000@0@lo:28/4 lens 432/432 e 0 to 1 dl 1765511750 ref 2 fl Rpc:XQr/200/ffffffff rc 0/-1 job:'osp-pre-1-0.0' uid:0 gid:0 projid:4294967295
-Lustre: lustre-OST0001-osc-MDT0000: Connection to lustre-OST0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: 3060:0:(client.c:2478:ptlrpc_expire_one_request()) Skipped 1 previous similar message
-Lustre: 1049:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765511755/real 1765511755]  req@ffff888149a2d0c0 x1851273162958592/t0(0) o400->lustre-OST0001-osc-ffff88810c470000@0@lo:28/4 lens 224/224 e 0 to 1 dl 1765511771 ref 1 fl Rpc:XNQr/200/ffffffff rc 0/-1 job:'kworker.0' uid:0 gid:0 projid:4294967295
-Lustre: lustre-OST0001-osc-ffff88810c470000: Connection to lustre-OST0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: 3054:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765513961/real 1765513961]  req@ffff888149ca76c0 x1851275510714880/t0(0) o5->lustre-OST0000-osc-MDT0000@0@lo:28/4 lens 432/432 e 0 to 1 dl 1765513977 ref 2 fl Rpc:XQr/200/ffffffff rc 0/-1 job:'osp-pre-0-0.0' uid:0 gid:0 projid:4294967295
+Lustre: lustre-OST0000-osc-MDT0000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: 1046:0:(client.c:2478:ptlrpc_expire_one_request()) @@@ Request sent has timed out for slow reply: [sent 1765513982/real 1765513982]  req@ffff88814a2ccc00 x1851275510719360/t0(0) o400->lustre-OST0001-osc-ffff8881098d0000@0@lo:28/4 lens 224/224 e 0 to 1 dl 1765513998 ref 1 fl Rpc:XNQr/200/ffffffff rc 0/-1 job:'kworker.0' uid:0 gid:0 projid:4294967295
+Lustre: lustre-OST0000-osc-ffff8881098d0000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: 1046:0:(client.c:2478:ptlrpc_expire_one_request()) Skipped 3 previous similar messages
+Lustre: Skipped 1 previous similar message
 </pre>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=132ca8be567f46b781dd99c2462d146a;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=e2a2cfc069bb4c21a24f7c1d19a74b4a;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=83da5684ae76406a89e44afa8dda7582;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=193cd7d0da6c45e8bffcfa82d64363aa;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 0 PID: 1025 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 0 UID: 0 PID: 1025 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90002637710 EFLAGS: 00010246
-RAX: 203442bdf14f0a00 RBX: ffff888105bfe000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159223750
-RBP: ffff88810fdfede0 R08: ffff888159223753 R09: 1ffff1102b2446ea
-R10: dffffc0000000000 R11: ffffed102b2446eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff888105bfe9c8 R15: ffffffff82e1aca0
-FS:  00007fa1ac687340(0000) GS:ffff8881d4faa000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 000055a4b3ff67a0 CR3: 000000010c959000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7fa1abf18779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007fff55fb89c8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 0000557977e76890 RCX: 00007fa1abf18779
-RDX: 0000000000000000 RSI: 0000557977e752a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007fa1abff85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000557977e752a0
-R13: 0000000000000000 R14: 0000557977e76850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,19 +24,19 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2705) used greatest stack depth: 23016 bytes left
+mount.lustre (2707) used greatest stack depth: 23680 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
-Lustre: lustre-OST0000: new disk, initializing
-Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
+Lustre: lustre-OST0001: new disk, initializing
 Lustre: Skipped 1 previous similar message
-Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
-Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
-Lustre: lustre-MDT0000: local client 065656a8-ccab-4f95-9e15-e47b7401d144 w/o recovery
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
+Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
+Lustre: Skipped 2 previous similar messages
+Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
+Lustre: Skipped 1 previous similar message
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client f6c75d9a-31fa-4667-a460-bc227afa0a28 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -128,15 +63,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:22 UTC 2025
+Started at Fri Dec 12 04:32:59 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035521
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035521
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035521
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043257
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043257
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043257
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -147,8 +82,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=74a 74b 74c 76a 76b 77a 77b 77c 77d 77f 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:24 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:24 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:33:03 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:33:03 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -182,8 +117,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:26 (1765511726) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:26 (1765511726) ===
+=== sanity: start setup 04:33:05 (1765513985) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:33:05 (1765513985) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -191,232 +126,229 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888109a62000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888109a62000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810dec4000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810dec4000.idle_timeout=debug
 disable quota as required
-Lustre: 5029:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:29 (1765511729) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:29 (1765511729) ===
+Lustre: 5025:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:33:11 (1765513991) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:33:11 (1765513991) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4169]
+ [touch] [/mnt/lustre/d0_runas_test/f4165]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 74a: ldlm_enqueue freed-export error path, ls (shouldn't LBUG) ========================================================== 03:55:31 (1765511731)
-Lustre: DEBUG MARKER: == sanity test 74a: ldlm_enqueue freed-export error path, ls (shouldn't LBUG) ========================================================== 03:55:31 (1765511731)
+== sanity test 74a: ldlm_enqueue freed-export error path, ls (shouldn't LBUG) ========================================================== 04:33:14 (1765513994)
+Lustre: DEBUG MARKER: == sanity test 74a: ldlm_enqueue freed-export error path, ls (shouldn't LBUG) ========================================================== 04:33:14 (1765513994)
 fail_loc=0x8000030e
 Lustre: *** cfs_fail_loc=30e, val=0***
-LustreError: 2727:0:(ldlm_lockd.c:1452:ldlm_handle_enqueue()) ### lock on destroyed export 00000000bc450c51 ns: mdt-lustre-MDT0000_UUID lock: ffff88814b834dc0/0xf64346d800dfb473 lrc: 3/0,0 mode: PR/PR res: [0x200000007:0x1:0x0].0x0 bits 0x13/0x0 rrc: 2 type: IBT gid 0 flags: 0x50200000000000 nid: 0@lo remote: 0xf64346d800dfb465 expref: 7 pid: 2727 timeout: 0 lvb_type: 0
-LustreError: lustre-MDT0000-mdc-ffff888109a62000: operation ldlm_enqueue to node 0@lo failed: rc = -107
-Lustre: lustre-MDT0000-mdc-ffff888109a62000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: lustre-MDT0000: Client 065656a8-ccab-4f95-9e15-e47b7401d144 (at 0@lo) reconnecting
-Lustre: lustre-MDT0000-mdc-ffff888109a62000: Connection restored to 0@lo (at 0@lo)
+LustreError: 2728:0:(ldlm_lockd.c:1452:ldlm_handle_enqueue()) ### lock on destroyed export 00000000d6f3cff2 ns: mdt-lustre-MDT0000_UUID lock: ffff888149d89340/0x6aa55b57f61adb95 lrc: 3/0,0 mode: PR/PR res: [0x200000007:0x1:0x0].0x0 bits 0x13/0x0 rrc: 2 type: IBT gid 0 flags: 0x50200000000000 nid: 0@lo remote: 0x6aa55b57f61adb87 expref: 7 pid: 2728 timeout: 0 lvb_type: 0
+LustreError: lustre-MDT0000-mdc-ffff88810dec4000: operation ldlm_enqueue to node 0@lo failed: rc = -107
+Lustre: lustre-MDT0000-mdc-ffff88810dec4000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: lustre-MDT0000: Client f6c75d9a-31fa-4667-a460-bc227afa0a28 (at 0@lo) reconnecting
+Lustre: lustre-MDT0000-mdc-ffff88810dec4000: Connection restored to 0@lo (at 0@lo)
 /mnt/lustre/f74a
 fail_loc=0
 PASS 74a (0s)
 
-== sanity test 74b: ldlm_enqueue freed-export error path, touch (shouldn't LBUG) ========================================================== 03:55:31 (1765511731)
-Lustre: DEBUG MARKER: == sanity test 74b: ldlm_enqueue freed-export error path, touch (shouldn't LBUG) ========================================================== 03:55:31 (1765511731)
+== sanity test 74b: ldlm_enqueue freed-export error path, touch (shouldn't LBUG) ========================================================== 04:33:14 (1765513994)
+Lustre: DEBUG MARKER: == sanity test 74b: ldlm_enqueue freed-export error path, touch (shouldn't LBUG) ========================================================== 04:33:14 (1765513994)
 fail_loc=0x8000030e
-Lustre: *** cfs_fail_loc=30e, val=0***
-LustreError: 2727:0:(ldlm_lockd.c:1452:ldlm_handle_enqueue()) ### lock on destroyed export 00000000bc450c51 ns: mdt-lustre-MDT0000_UUID lock: ffff88814b835b80/0xf64346d800dfb4ea lrc: 3/0,0 mode: PR/PR res: [0x200000007:0x1:0x0].0x0 bits 0x13/0x0 rrc: 2 type: IBT gid 0 flags: 0x50200000000000 nid: 0@lo remote: 0xf64346d800dfb4dc expref: 6 pid: 2727 timeout: 0 lvb_type: 0
-LustreError: lustre-MDT0000-mdc-ffff888109a62000: operation ldlm_enqueue to node 0@lo failed: rc = -107
-Lustre: lustre-MDT0000-mdc-ffff888109a62000: Connection to lustre-MDT0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: lustre-MDT0000: Client 065656a8-ccab-4f95-9e15-e47b7401d144 (at 0@lo) reconnecting
-Lustre: lustre-MDT0000-mdc-ffff888109a62000: Connection restored to 0@lo (at 0@lo)
 fail_loc=0
 PASS 74b (1s)
 
-== sanity test 74c: ldlm_lock_create error path, (shouldn't LBUG) ========================================================== 03:55:32 (1765511732)
-Lustre: DEBUG MARKER: == sanity test 74c: ldlm_lock_create error path, (shouldn't LBUG) ========================================================== 03:55:32 (1765511732)
+== sanity test 74c: ldlm_lock_create error path, (shouldn't LBUG) ========================================================== 04:33:15 (1765513995)
+Lustre: DEBUG MARKER: == sanity test 74c: ldlm_lock_create error path, (shouldn't LBUG) ========================================================== 04:33:15 (1765513995)
 fail_loc=0x319
 Lustre: *** cfs_fail_loc=319, val=0***
 touch: cannot touch '/mnt/lustre/f74c.sanity': No such file or directory
 fail_loc=0
 PASS 74c (0s)
 
-== sanity test 76a: confirm clients recycle inodes properly ============================================================== 03:55:32 (1765511732)
-Lustre: DEBUG MARKER: == sanity test 76a: confirm clients recycle inodes properly ============================================================== 03:55:32 (1765511732)
+== sanity test 76a: confirm clients recycle inodes properly ============================================================== 04:33:15 (1765513995)
+Lustre: DEBUG MARKER: == sanity test 76a: confirm clients recycle inodes properly ============================================================== 04:33:15 (1765513995)
 before slab objects: 1
-created: 512, after slab objects: 2
-PASS 76a (24s)
+touch (5939) used greatest stack depth: 23576 bytes left
+rm (5940) used greatest stack depth: 23544 bytes left
+created: 512, after slab objects: 3
+PASS 76a (13s)
 
-== sanity test 76b: confirm clients recycle directory inodes properly ============================================================== 03:55:56 (1765511756)
-Lustre: DEBUG MARKER: == sanity test 76b: confirm clients recycle directory inodes properly ============================================================== 03:55:56 (1765511756)
+== sanity test 76b: confirm clients recycle directory inodes properly ============================================================== 04:33:28 (1765514008)
+Lustre: DEBUG MARKER: == sanity test 76b: confirm clients recycle directory inodes properly ============================================================== 04:33:28 (1765514008)
 slab objects before: 1, after: 1
 PASS 76b (9s)
 
-== sanity test 77a: normal checksum read/write operation ========================================================== 03:56:05 (1765511765)
-Lustre: DEBUG MARKER: == sanity test 77a: normal checksum read/write operation ========================================================== 03:56:05 (1765511765)
+== sanity test 77a: normal checksum read/write operation ========================================================== 04:33:37 (1765514017)
+Lustre: DEBUG MARKER: == sanity test 77a: normal checksum read/write operation ========================================================== 04:33:37 (1765514017)
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.0220253 s, 381 MB/s
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.0224513 s, 374 MB/s
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.165005 s, 50.8 MB/s
-PASS 77a (1s)
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.157556 s, 53.2 MB/s
+PASS 77a (0s)
 
-== sanity test 77b: checksum error on client write, read ========================================================== 03:56:06 (1765511766)
-Lustre: DEBUG MARKER: == sanity test 77b: checksum error on client write, read ========================================================== 03:56:06 (1765511766)
+== sanity test 77b: checksum error on client write, read ========================================================== 04:33:37 (1765514017)
+Lustre: DEBUG MARKER: == sanity test 77b: checksum error on client write, read ========================================================== 04:33:37 (1765514017)
 fail_loc=0x80000409
 Lustre: *** cfs_fail_loc=409, val=0***
-LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x406:0x0] object 0x240000400:260 extent [0-4194303]: client csum 846bd143, server csum 846bd142
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed on the client after we checksummed it - likely false positive due to mmap IO (bug 11742): from 0@lo inode [0x200000401:0x406:0x0] object 0x240000400:260 extent [0-4194303], original client csum 846bd143 (type 2), server csum 846bd142 (type 2), client csum now 846bd142
-LustreError: 1044:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814a3c50c0 x1851273167552768/t0(0) o4->lustre-OST0001-osc-ffff888109a62000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765511782 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'dd.0' uid:0 gid:0 projid:0
+LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x406:0x0] object 0x280000400:260 extent [0-4194303]: client csum 44e8d645, server csum 44e8d644
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed on the client after we checksummed it - likely false positive due to mmap IO (bug 11742): from 0@lo inode [0x200000401:0x406:0x0] object 0x280000400:260 extent [0-4194303], original client csum 44e8d645 (type 2), server csum 44e8d644 (type 2), client csum now 44e8d644
+LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814b590980 x1851275525795712/t0(0) o4->lustre-OST0001-osc-ffff88810dec4000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765514034 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'dd.0' uid:0 gid:0 projid:0
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.158675 s, 52.9 MB/s
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.167984 s, 49.9 MB/s
 fail_loc=0
 set checksum type to adler, rc = 0
 Lustre: DEBUG MARKER: set checksum type to adler, rc = 0
 fail_loc=0x80000408
 Lustre: *** cfs_fail_loc=408, val=0***
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x406:0x0] object 0x240000400:260 extent [0-4095], client daf4064a/daf4064a, server ba950768, cksum_type 2
-LustreError: 1043:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814a3c2f80 x1851273167554176/t0(0) o3->lustre-OST0001-osc-ffff888109a62000@0@lo:6/4 lens 488/4536 e 0 to 0 dl 1765511783 ref 2 fl Interpret:RMQU/600/0 rc 4096/4096 job:'cmp.0' uid:0 gid:0 projid:0
-LustreError: lustre-OST0001: BAD READ CHECKSUM: should have changed on the client or in transit: from 0@lo inode [0x200000401:0x406:0x0] object 0x240000400:260 extent [0-4095], client returned csum daf4064a (type 2), server csum ba950768 (type 2)
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x406:0x0] object 0x280000400:260 extent [0-4095], client bacb1489/bacb1489, server db90149b, cksum_type 2
+LustreError: 1047:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814b842ac0 x1851275525797120/t0(0) o3->lustre-OST0001-osc-ffff88810dec4000@0@lo:6/4 lens 488/4536 e 0 to 0 dl 1765514035 ref 2 fl Interpret:RMQU/600/0 rc 4096/4096 job:'cmp.0' uid:0 gid:0 projid:0
+LustreError: lustre-OST0001: BAD READ CHECKSUM: should have changed on the client or in transit: from 0@lo inode [0x200000401:0x406:0x0] object 0x280000400:260 extent [0-4095], client returned csum bacb1489 (type 2), server csum db90149b (type 2)
 fail_loc=0
 set checksum type to adler, rc = 0
 Lustre: DEBUG MARKER: set checksum type to adler, rc = 0
-PASS 77b (3s)
+PASS 77b (4s)
 
-== sanity test 77c: checksum error on client read with debug ========================================================== 03:56:09 (1765511769)
-Lustre: DEBUG MARKER: == sanity test 77c: checksum error on client read with debug ========================================================== 03:56:09 (1765511769)
+== sanity test 77c: checksum error on client read with debug ========================================================== 04:33:41 (1765514021)
+Lustre: DEBUG MARKER: == sanity test 77c: checksum error on client read with debug ========================================================== 04:33:41 (1765514021)
 debug_path=/tmp/lustre-log
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.173411 s, 48.4 MB/s
-osc.lustre-OST0000-osc-ffff888109a62000.checksum_dump=1
-osc.lustre-OST0001-osc-ffff888109a62000.checksum_dump=1
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.144453 s, 58.1 MB/s
+osc.lustre-OST0000-osc-ffff88810dec4000.checksum_dump=1
+osc.lustre-OST0001-osc-ffff88810dec4000.checksum_dump=1
 obdfilter.lustre-OST0000.checksum_dump=1
 obdfilter.lustre-OST0001.checksum_dump=1
 fail_loc=0x80000408
 Lustre: *** cfs_fail_loc=408, val=0***
-Lustre: 1044:0:(osc_request.c:2002:dump_all_bulk_pages()) /tmp/lustre-log-checksum_dump-osc-[0x200000401:0x407:0x0]:[0-1048575]-814f1a9a-8c111bb8: dumping checksum data
-LustreError: dumping log to /tmp/lustre-log.1765511769.1044
-LustreError: lustre-OST0000-osc-ffff888109a62000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x407:0x0] object 0x280000400:260 extent [0-1048575], client 814f1a9a/814f1a9a, server 8c111bb8, cksum_type 2
-LustreError: 1044:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff888110c5bdc0 x1851273167559808/t0(0) o3->lustre-OST0000-osc-ffff888109a62000@0@lo:6/4 lens 488/440 e 0 to 0 dl 1765511785 ref 2 fl Interpret:RMQU/600/0 rc 1048576/1048576 job:'dd.0' uid:0 gid:0 projid:0
-Lustre: 2873:0:(tgt_handler.c:1961:dump_all_bulk_pages()) dumping checksum data to /tmp/lustre-log-checksum_dump-ost-[0x200000401:0x407:0x0]:[0-1048575]-814f1a9a-8c111bb8
-LustreError: dumping log to /tmp/lustre-log.1765511770.2873
-LustreError: lustre-OST0000: BAD READ CHECKSUM: should have changed on the client or in transit: from 0@lo inode [0x200000401:0x407:0x0] object 0x280000400:260 extent [0-1048575], client returned csum 814f1a9a (type 2), server csum 8c111bb8 (type 2)
+Lustre: 1047:0:(osc_request.c:2002:dump_all_bulk_pages()) /tmp/lustre-log-checksum_dump-osc-[0x200000401:0x407:0x0]:[0-1048575]-20f4a524-328aa536: dumping checksum data
+LustreError: dumping log to /tmp/lustre-log.1765514021.1047
+LustreError: lustre-OST0000-osc-ffff88810dec4000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x407:0x0] object 0x240000400:260 extent [0-1048575], client 20f4a524/20f4a524, server 328aa536, cksum_type 2
+LustreError: 1047:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814a485580 x1851275525802752/t0(0) o3->lustre-OST0000-osc-ffff88810dec4000@0@lo:6/4 lens 488/440 e 0 to 0 dl 1765514037 ref 2 fl Interpret:RMQU/600/0 rc 1048576/1048576 job:'dd.0' uid:0 gid:0 projid:0
+Lustre: 8349:0:(tgt_handler.c:1961:dump_all_bulk_pages()) dumping checksum data to /tmp/lustre-log-checksum_dump-ost-[0x200000401:0x407:0x0]:[0-1048575]-20f4a524-328aa536
+LustreError: dumping log to /tmp/lustre-log.1765514022.8349
+LustreError: lustre-OST0000: BAD READ CHECKSUM: should have changed on the client or in transit: from 0@lo inode [0x200000401:0x407:0x0] object 0x240000400:260 extent [0-1048575], client returned csum 20f4a524 (type 2), server csum 328aa536 (type 2)
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 1.2351 s, 6.8 MB/s
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 1.24452 s, 6.7 MB/s
 fail_loc=0
-osc.lustre-OST0000-osc-ffff888109a62000.checksum_dump=0
-osc.lustre-OST0001-osc-ffff888109a62000.checksum_dump=0
+osc.lustre-OST0000-osc-ffff88810dec4000.checksum_dump=0
+osc.lustre-OST0001-osc-ffff88810dec4000.checksum_dump=0
 obdfilter.lustre-OST0000.checksum_dump=0
 obdfilter.lustre-OST0001.checksum_dump=0
 PASS 77c (4s)
 
-== sanity test 77d: checksum error on OST direct write, read ========================================================== 03:56:13 (1765511773)
-Lustre: DEBUG MARKER: == sanity test 77d: checksum error on OST direct write, read ========================================================== 03:56:13 (1765511773)
+== sanity test 77d: checksum error on OST direct write, read ========================================================== 04:33:45 (1765514025)
+Lustre: DEBUG MARKER: == sanity test 77d: checksum error on OST direct write, read ========================================================== 04:33:45 (1765514025)
 fail_loc=0x80000409
 Lustre: *** cfs_fail_loc=409, val=0***
-LustreError: lustre-OST0000: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x409:0x0] object 0x280000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
-LustreError: lustre-OST0000-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed on the client after we checksummed it - likely false positive due to mmap IO (bug 11742): from 0@lo inode [0x200000401:0x409:0x0] object 0x280000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b99f
-LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814a6e1300 x1851273167561600/t0(0) o4->lustre-OST0000-osc-ffff888109a62000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765511789 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'directio.0' uid:0 gid:0 projid:0
+LustreError: lustre-OST0000: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x409:0x0] object 0x240000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: lustre-OST0000-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed on the client after we checksummed it - likely false positive due to mmap IO (bug 11742): from 0@lo inode [0x200000401:0x409:0x0] object 0x240000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b99f
+LustreError: 1048:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff888128f53440 x1851275525804800/t0(0) o4->lustre-OST0000-osc-ffff88810dec4000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765514041 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'directio.0' uid:0 gid:0 projid:2217407168
 directio on /mnt/lustre/f77d.sanity for 8x1048576 bytes
 PASS
 fail_loc=0
 fail_loc=0x80000408
-LustreError: lustre-OST0000-osc-ffff888109a62000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x409:0x0] object 0x280000400:261 extent [0-4194303], client a379b80f/a379b80f, server 7d33b99f, cksum_type 2
-LustreError: lustre-OST0000: BAD READ CHECKSUM: should have changed on the client or in transit: from 0@lo inode [0x200000401:0x409:0x0] object 0x280000400:261 extent [0-4194303], client returned csum a379b80f (type 2), server csum 7d33b99f (type 2)
+LustreError: lustre-OST0000-osc-ffff88810dec4000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x409:0x0] object 0x240000400:261 extent [0-4194303], client a379b80f/a379b80f, server 7d33b99f, cksum_type 2
+LustreError: lustre-OST0000: BAD READ CHECKSUM: should have changed on the client or in transit: from 0@lo inode [0x200000401:0x409:0x0] object 0x240000400:261 extent [0-4194303], client returned csum a379b80f (type 2), server csum 7d33b99f (type 2)
 directio on /mnt/lustre/f77d.sanity for 8x1048576 bytes
 PASS
 fail_loc=0
 PASS 77d (2s)
 
-== sanity test 77f: repeat checksum error on write (expect error) ========================================================== 03:56:15 (1765511775)
-Lustre: DEBUG MARKER: == sanity test 77f: repeat checksum error on write (expect error) ========================================================== 03:56:15 (1765511775)
+== sanity test 77f: repeat checksum error on write (expect error) ========================================================== 04:33:47 (1765514027)
+Lustre: DEBUG MARKER: == sanity test 77f: repeat checksum error on write (expect error) ========================================================== 04:33:47 (1765514027)
 set checksum type to adler, rc = 0
 Lustre: DEBUG MARKER: set checksum type to adler, rc = 0
 fail_loc=0x409
-LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
-LustreError: Skipped 1 previous similar message
-LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [4194304-8388607]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
+LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
 LustreError: Skipped 3 previous similar messages
 Lustre: *** cfs_fail_loc=409, val=0***
 Lustre: Skipped 11 previous similar messages
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
-LustreError: Skipped 2 previous similar messages
-LustreError: 1046:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814a964740 x1851273167566208/t0(0) o4->lustre-OST0001-osc-ffff888109a62000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765511794 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'ptlrpcd_01_00.0' uid:0 gid:0 projid:0
-LustreError: 1046:0:(osc_request.c:2416:osc_brw_redo_request()) Skipped 5 previous similar messages
-LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [4194304-8388607]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
 LustreError: Skipped 3 previous similar messages
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [4194304-8388607], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
-LustreError: Skipped 3 previous similar messages
-Lustre: *** cfs_fail_loc=409, val=0***
-Lustre: Skipped 11 previous similar messages
-LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814aa097c0 x1851273167568000/t0(0) o4->lustre-OST0001-osc-ffff888109a62000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765511806 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'ptlrpcd_01_01.0' uid:0 gid:0 projid:0
+LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814936e880 x1851275525809152/t0(0) o4->lustre-OST0001-osc-ffff88810dec4000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765514046 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'ptlrpcd_00_01.0' uid:0 gid:0 projid:16811403
 LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) Skipped 5 previous similar messages
-LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [4194304-8388607]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [4194304-8388607]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: Skipped 4 previous similar messages
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
 LustreError: Skipped 3 previous similar messages
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [4194304-8388607], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
-LustreError: Skipped 3 previous similar messages
-Lustre: lustre-OST0000-osc-ffff888109a62000: disconnect after 25s idle
 Lustre: *** cfs_fail_loc=409, val=0***
 Lustre: Skipped 11 previous similar messages
-LustreError: 1046:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88814aa0cc00 x1851273167570048/t0(0) o4->lustre-OST0001-osc-ffff888109a62000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765511827 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'ptlrpcd_01_00.0' uid:0 gid:0 projid:0
+LustreError: 1046:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff88810e688000 x1851275525810432/t0(0) o4->lustre-OST0001-osc-ffff88810dec4000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765514058 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'ptlrpcd_00_00.0' uid:0 gid:0 projid:16811403
 LustreError: 1046:0:(osc_request.c:2416:osc_brw_redo_request()) Skipped 5 previous similar messages
-LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
-LustreError: Skipped 6 previous similar messages
-LustreError: lustre-OST0001-osc-ffff888109a62000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x240000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
+LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
+LustreError: Skipped 2 previous similar messages
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
+LustreError: Skipped 3 previous similar messages
+Lustre: lustre-OST0000-osc-ffff88810dec4000: disconnect after 26s idle
+Lustre: *** cfs_fail_loc=409, val=0***
+Lustre: Skipped 11 previous similar messages
+LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff888149099300 x1851275525812992/t0(0) o4->lustre-OST0001-osc-ffff88810dec4000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765514080 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'ptlrpcd_00_01.0' uid:0 gid:0 projid:16811403
+LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) Skipped 5 previous similar messages
+LustreError: lustre-OST0001: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303]: client csum 7d33b9a0, server csum 7d33b99f
 LustreError: Skipped 5 previous similar messages
-LustreError: 1046:0:(osc_request.c:2573:brw_interpret()) lustre-OST0001-osc-ffff888109a62000: too many resent retries for object: 9663677440:261: rc = -11
+LustreError: lustre-OST0001-osc-ffff88810dec4000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x40a:0x0] object 0x280000400:261 extent [0-4194303], original client csum 7d33b9a0 (type 2), server csum 7d33b99f (type 2), client csum now 7d33b9a0
+LustreError: Skipped 5 previous similar messages
+LustreError: 1045:0:(osc_request.c:2573:brw_interpret()) lustre-OST0001-osc-ffff88810dec4000: too many resent retries for object: 10737419264:261: rc = -11
 directio on /mnt/lustre/f77f.sanity for 8x1048576 bytes
 Write error Input/output error (rc = -1, len = 8388608)
 fail_loc=0
 set checksum type to adler, rc = 0
 Lustre: DEBUG MARKER: set checksum type to adler, rc = 0
-PASS 77f (55s)
+PASS 77f (56s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 107 sec ================ 03:57:11 (1765511831)
-Lustre: DEBUG MARKER: == sanity test complete, duration 107 sec ================ 03:57:11 (1765511831)
-=== sanity: start cleanup 03:57:11 (1765511831) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 03:57:11 (1765511831) ===
+== sanity test complete, duration 101 sec ================ 04:34:44 (1765514084)
+Lustre: DEBUG MARKER: == sanity test complete, duration 101 sec ================ 04:34:44 (1765514084)
+=== sanity: start cleanup 04:34:44 (1765514084) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 04:34:44 (1765514084) ===
 skip cleanup
-=== sanity: finish cleanup 03:57:11 (1765511831) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 03:57:11 (1765511831) ===
+=== sanity: finish cleanup 04:34:44 (1765514084) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 04:34:44 (1765514084) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 0
-Finished at Fri Dec 12 03:57:11 UTC 2025 in 110s
+Finished at Fri Dec 12 04:34:44 UTC 2025 in 107s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 9948:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 9946:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 3226:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511843 with bad export cookie 17745104850311425654
+LustreError: 2714:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765514095 with bad export cookie 7684648772526855576
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 10031:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 10031:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+LustreError: 10029:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 10029:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 10073:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 10073:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 10070:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 10070:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 10348:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 10348:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 10334:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 10334:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
 
-========= PASSED sanity-quick in 216s
+========= PASSED sanity-quick in 219s
 
 Passed: sanity-quick
 Failed: 
-Kernel version: 6.15.0-ktest
+Kernel version: 6.14.0-ktest
 TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=132ca8be567f46b781dd99c2462d146a\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=83da5684ae76406a89e44afa8dda7582\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 </pre>
 </body>
 </html>

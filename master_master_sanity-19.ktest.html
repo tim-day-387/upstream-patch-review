@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=3f358749fbba4035a93ae88343c1844d;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=cf684ec5015b4d8e999fa88092962227;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=c2662bb2f6784498b66482fcef685a4f;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=e6be2693ab034cb39fa54fd238944b1f;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 3 PID: 1024 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 3 UID: 0 PID: 1024 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90000b97710 EFLAGS: 00010246
-RAX: 1935ef549b8d0200 RBX: ffff888105b6a000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881593a3750
-RBP: ffff8881040301e0 R08: ffff8881593a3753 R09: 1ffff1102b2746ea
-R10: dffffc0000000000 R11: ffffed102b2746eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff888105b6a9c8 R15: ffffffff82e1aca0
-FS:  00007fafba43b340(0000) GS:ffff8881d512a000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007fafb9d7dd40 CR3: 00000001037a5000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7fafb9d18779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007ffc05deaa98 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 0000555857ae4890 RCX: 00007fafb9d18779
-RDX: 0000000000000000 RSI: 0000555857ae32a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007fafb9df85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000555857ae32a0
-R13: 0000000000000000 R14: 0000555857ae4850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,17 +24,20 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2704) used greatest stack depth: 23560 bytes left
+mount.lustre (2707) used greatest stack depth: 24216 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+mount.lustre (2862) used greatest stack depth: 23584 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 34a42682-fd9f-45fe-a6d5-faaef3eaa8f0 w/o recovery
+Lustre: lustre-MDT0000: local client db9d8d3d-fc7e-4e91-93e2-97e92581225a w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -126,15 +64,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:36 UTC 2025
+Started at Fri Dec 12 04:33:00 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035535
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035535
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035535
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043258
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043258
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043258
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -145,8 +83,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=31m 31n 31o 31p 31q 31r 32a 32b 32c 32d 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:41 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:41 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:33:05 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:33:05 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -180,8 +118,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:42 (1765511742) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:42 (1765511742) ===
+=== sanity: start setup 04:33:09 (1765513989) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:33:09 (1765513989) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -189,259 +127,256 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888103c20000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888103c20000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff8881490aa000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff8881490aa000.idle_timeout=debug
 disable quota as required
-Lustre: 5026:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:45 (1765511745) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:45 (1765511745) ===
+Lustre: 5027:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:33:13 (1765513993) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:33:13 (1765513993) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4166]
+ [touch] [/mnt/lustre/d0_runas_test/f4168]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
+Lustre: lustre-OST0001-osc-ffff8881490aa000: disconnect after 25s idle
 
-== sanity test 31m: link to file: the same, non-existing, dir ========================================================== 03:55:46 (1765511746)
-Lustre: DEBUG MARKER: == sanity test 31m: link to file: the same, non-existing, dir ========================================================== 03:55:46 (1765511746)
-touch (5380) used greatest stack depth: 23504 bytes left
-touch (5382) used greatest stack depth: 23408 bytes left
+== sanity test 31m: link to file: the same, non-existing, dir ========================================================== 04:33:14 (1765513994)
+Lustre: DEBUG MARKER: == sanity test 31m: link to file: the same, non-existing, dir ========================================================== 04:33:14 (1765513994)
+Lustre: lustre-OST0001: local client db9d8d3d-fc7e-4e91-93e2-97e92581225a w/o recovery
+Lustre: Skipped 2 previous similar messages
+touch (5377) used greatest stack depth: 23480 bytes left
 link: cannot create link '/mnt/lustre/d31m2/exist' to '/mnt/lustre/d31m/s': File exists
 link: cannot create link '/mnt/lustre/d31m2' to '/mnt/lustre/d31m/s': File exists
 link: cannot create link '/mnt/lustre/d31m/s' to '/mnt/lustre/d31m2': File exists
 link: cannot create link '/mnt/lustre/d31m2/foo' to '/mnt/lustre/d31m/not-exist': No such file or directory
 link: cannot create link '/mnt/lustre/d31m2/s' to '/mnt/lustre/d31m/not-exist': No such file or directory
-PASS 31m (0s)
+PASS 31m (1s)
 
-== sanity test 31n: check link count of unlinked file ==== 03:55:46 (1765511746)
-Lustre: DEBUG MARKER: == sanity test 31n: check link count of unlinked file ==== 03:55:46 (1765511746)
-PASS 31n (1s)
+== sanity test 31n: check link count of unlinked file ==== 04:33:15 (1765513995)
+Lustre: DEBUG MARKER: == sanity test 31n: check link count of unlinked file ==== 04:33:15 (1765513995)
+PASS 31n (0s)
 
-== sanity test 31o: duplicate hard links with same filename ========================================================== 03:55:47 (1765511747)
-Lustre: DEBUG MARKER: == sanity test 31o: duplicate hard links with same filename ========================================================== 03:55:47 (1765511747)
-5590: link /mnt/lustre/d31o.sanity/f31o.sanity.1_1g98Pk to /mnt/lustre/d31o.sanity/f31o.sanity.1 succeeded
-5614: link /mnt/lustre/d31o.sanity/f31o.sanity.2_beuSe5 to /mnt/lustre/d31o.sanity/f31o.sanity.2 succeeded
-5655: link /mnt/lustre/d31o.sanity/f31o.sanity.3_fXyxes to /mnt/lustre/d31o.sanity/f31o.sanity.3 succeeded
-5679: link /mnt/lustre/d31o.sanity/f31o.sanity.4_fgIU6I to /mnt/lustre/d31o.sanity/f31o.sanity.4 succeeded
-5705: link /mnt/lustre/d31o.sanity/f31o.sanity.5_4iDa7C to /mnt/lustre/d31o.sanity/f31o.sanity.5 succeeded
-5734: link /mnt/lustre/d31o.sanity/f31o.sanity.6_5PLW9l to /mnt/lustre/d31o.sanity/f31o.sanity.6 succeeded
-5763: link /mnt/lustre/d31o.sanity/f31o.sanity.7_gpSOn5 to /mnt/lustre/d31o.sanity/f31o.sanity.7 succeeded
-5804: link /mnt/lustre/d31o.sanity/f31o.sanity.8_Jb4tTy to /mnt/lustre/d31o.sanity/f31o.sanity.8 succeeded
-5826: link /mnt/lustre/d31o.sanity/f31o.sanity.9_cJAYuY to /mnt/lustre/d31o.sanity/f31o.sanity.9 succeeded
-5853: link /mnt/lustre/d31o.sanity/f31o.sanity.10_n5qrzB to /mnt/lustre/d31o.sanity/f31o.sanity.10 succeeded
-5883: link /mnt/lustre/d31o.sanity/f31o.sanity.11_GYgJsV to /mnt/lustre/d31o.sanity/f31o.sanity.11 succeeded
-5912: link /mnt/lustre/d31o.sanity/f31o.sanity.12_8K2SxO to /mnt/lustre/d31o.sanity/f31o.sanity.12 succeeded
-5943: link /mnt/lustre/d31o.sanity/f31o.sanity.13_igJiYf to /mnt/lustre/d31o.sanity/f31o.sanity.13 succeeded
-5970: link /mnt/lustre/d31o.sanity/f31o.sanity.14_ZZyyQ7 to /mnt/lustre/d31o.sanity/f31o.sanity.14 succeeded
-6000: link /mnt/lustre/d31o.sanity/f31o.sanity.15_yX7oRq to /mnt/lustre/d31o.sanity/f31o.sanity.15 succeeded
-6036: link /mnt/lustre/d31o.sanity/f31o.sanity.16_hEO2tz to /mnt/lustre/d31o.sanity/f31o.sanity.16 succeeded
-6069: link /mnt/lustre/d31o.sanity/f31o.sanity.17_wSSEtd to /mnt/lustre/d31o.sanity/f31o.sanity.17 succeeded
-6095: link /mnt/lustre/d31o.sanity/f31o.sanity.18_oNxVLl to /mnt/lustre/d31o.sanity/f31o.sanity.18 succeeded
-6123: link /mnt/lustre/d31o.sanity/f31o.sanity.19_wlLAsx to /mnt/lustre/d31o.sanity/f31o.sanity.19 succeeded
-6147: link /mnt/lustre/d31o.sanity/f31o.sanity.20_I1nth2 to /mnt/lustre/d31o.sanity/f31o.sanity.20 succeeded
-6176: link /mnt/lustre/d31o.sanity/f31o.sanity.21_en54KP to /mnt/lustre/d31o.sanity/f31o.sanity.21 succeeded
-6203: link /mnt/lustre/d31o.sanity/f31o.sanity.22_GeGoBS to /mnt/lustre/d31o.sanity/f31o.sanity.22 succeeded
-6243: link /mnt/lustre/d31o.sanity/f31o.sanity.23_q737rZ to /mnt/lustre/d31o.sanity/f31o.sanity.23 succeeded
-6264: link /mnt/lustre/d31o.sanity/f31o.sanity.24_mpZUi8 to /mnt/lustre/d31o.sanity/f31o.sanity.24 succeeded
-6301: link /mnt/lustre/d31o.sanity/f31o.sanity.25_hfrpix to /mnt/lustre/d31o.sanity/f31o.sanity.25 succeeded
-6320: link /mnt/lustre/d31o.sanity/f31o.sanity.26_PL7aOC to /mnt/lustre/d31o.sanity/f31o.sanity.26 succeeded
-6353: link /mnt/lustre/d31o.sanity/f31o.sanity.27_Bdksu3 to /mnt/lustre/d31o.sanity/f31o.sanity.27 succeeded
-6380: link /mnt/lustre/d31o.sanity/f31o.sanity.28_En40T0 to /mnt/lustre/d31o.sanity/f31o.sanity.28 succeeded
-6407: link /mnt/lustre/d31o.sanity/f31o.sanity.29_6zrlBx to /mnt/lustre/d31o.sanity/f31o.sanity.29 succeeded
-6437: link /mnt/lustre/d31o.sanity/f31o.sanity.30_Itedf1 to /mnt/lustre/d31o.sanity/f31o.sanity.30 succeeded
-6473: link /mnt/lustre/d31o.sanity/f31o.sanity.31_ars8f5 to /mnt/lustre/d31o.sanity/f31o.sanity.31 succeeded
-6496: link /mnt/lustre/d31o.sanity/f31o.sanity.32_wnI3iD to /mnt/lustre/d31o.sanity/f31o.sanity.32 succeeded
-6526: link /mnt/lustre/d31o.sanity/f31o.sanity.33_BABj2L to /mnt/lustre/d31o.sanity/f31o.sanity.33 succeeded
-6563: link /mnt/lustre/d31o.sanity/f31o.sanity.34_SkE9Qv to /mnt/lustre/d31o.sanity/f31o.sanity.34 succeeded
-6585: link /mnt/lustre/d31o.sanity/f31o.sanity.35_1lhORD to /mnt/lustre/d31o.sanity/f31o.sanity.35 succeeded
-6612: link /mnt/lustre/d31o.sanity/f31o.sanity.36_Kr4Evq to /mnt/lustre/d31o.sanity/f31o.sanity.36 succeeded
-6645: link /mnt/lustre/d31o.sanity/f31o.sanity.37_bD5tQn to /mnt/lustre/d31o.sanity/f31o.sanity.37 succeeded
-6674: link /mnt/lustre/d31o.sanity/f31o.sanity.38_8nGG8b to /mnt/lustre/d31o.sanity/f31o.sanity.38 succeeded
-6703: link /mnt/lustre/d31o.sanity/f31o.sanity.39_AYAotH to /mnt/lustre/d31o.sanity/f31o.sanity.39 succeeded
-6741: link /mnt/lustre/d31o.sanity/f31o.sanity.40_136jJr to /mnt/lustre/d31o.sanity/f31o.sanity.40 succeeded
-6760: link /mnt/lustre/d31o.sanity/f31o.sanity.41_Y4EN6N to /mnt/lustre/d31o.sanity/f31o.sanity.41 succeeded
-6802: link /mnt/lustre/d31o.sanity/f31o.sanity.42_RLosJJ to /mnt/lustre/d31o.sanity/f31o.sanity.42 succeeded
-6823: link /mnt/lustre/d31o.sanity/f31o.sanity.43_7AQdji to /mnt/lustre/d31o.sanity/f31o.sanity.43 succeeded
-6849: link /mnt/lustre/d31o.sanity/f31o.sanity.44_bb8Jy7 to /mnt/lustre/d31o.sanity/f31o.sanity.44 succeeded
-6877: link /mnt/lustre/d31o.sanity/f31o.sanity.45_SRQa47 to /mnt/lustre/d31o.sanity/f31o.sanity.45 succeeded
-6905: link /mnt/lustre/d31o.sanity/f31o.sanity.46_mqYIKw to /mnt/lustre/d31o.sanity/f31o.sanity.46 succeeded
-6935: link /mnt/lustre/d31o.sanity/f31o.sanity.47_dBIx7H to /mnt/lustre/d31o.sanity/f31o.sanity.47 succeeded
-6968: link /mnt/lustre/d31o.sanity/f31o.sanity.48_x0qAyp to /mnt/lustre/d31o.sanity/f31o.sanity.48 succeeded
-7002: link /mnt/lustre/d31o.sanity/f31o.sanity.49_h0g1Y4 to /mnt/lustre/d31o.sanity/f31o.sanity.49 succeeded
-7023: link /mnt/lustre/d31o.sanity/f31o.sanity.50_eM7HQ6 to /mnt/lustre/d31o.sanity/f31o.sanity.50 succeeded
-7050: link /mnt/lustre/d31o.sanity/f31o.sanity.51_E4IgD3 to /mnt/lustre/d31o.sanity/f31o.sanity.51 succeeded
-7080: link /mnt/lustre/d31o.sanity/f31o.sanity.52_qfDFG1 to /mnt/lustre/d31o.sanity/f31o.sanity.52 succeeded
-7111: link /mnt/lustre/d31o.sanity/f31o.sanity.53_1BrSe5 to /mnt/lustre/d31o.sanity/f31o.sanity.53 succeeded
-7142: link /mnt/lustre/d31o.sanity/f31o.sanity.54_Yev4bG to /mnt/lustre/d31o.sanity/f31o.sanity.54 succeeded
-7169: link /mnt/lustre/d31o.sanity/f31o.sanity.55_F9iw6G to /mnt/lustre/d31o.sanity/f31o.sanity.55 succeeded
-7196: link /mnt/lustre/d31o.sanity/f31o.sanity.56_i74jDp to /mnt/lustre/d31o.sanity/f31o.sanity.56 succeeded
-7233: link /mnt/lustre/d31o.sanity/f31o.sanity.57_YaoyvD to /mnt/lustre/d31o.sanity/f31o.sanity.57 succeeded
-7253: link /mnt/lustre/d31o.sanity/f31o.sanity.58_f6Jp71 to /mnt/lustre/d31o.sanity/f31o.sanity.58 succeeded
-7288: link /mnt/lustre/d31o.sanity/f31o.sanity.59_H6s7IY to /mnt/lustre/d31o.sanity/f31o.sanity.59 succeeded
-7317: link /mnt/lustre/d31o.sanity/f31o.sanity.60_5DxsSY to /mnt/lustre/d31o.sanity/f31o.sanity.60 succeeded
-7342: link /mnt/lustre/d31o.sanity/f31o.sanity.61_j2V2Wb to /mnt/lustre/d31o.sanity/f31o.sanity.61 succeeded
-7376: link /mnt/lustre/d31o.sanity/f31o.sanity.62_7HRkAr to /mnt/lustre/d31o.sanity/f31o.sanity.62 succeeded
-7406: link /mnt/lustre/d31o.sanity/f31o.sanity.63_IFJJbG to /mnt/lustre/d31o.sanity/f31o.sanity.63 succeeded
-7428: link /mnt/lustre/d31o.sanity/f31o.sanity.64_3g0Bnd to /mnt/lustre/d31o.sanity/f31o.sanity.64 succeeded
-7467: link /mnt/lustre/d31o.sanity/f31o.sanity.65_2J0ear to /mnt/lustre/d31o.sanity/f31o.sanity.65 succeeded
-7493: link /mnt/lustre/d31o.sanity/f31o.sanity.66_pGZ13y to /mnt/lustre/d31o.sanity/f31o.sanity.66 succeeded
-7520: link /mnt/lustre/d31o.sanity/f31o.sanity.67_zN9lxf to /mnt/lustre/d31o.sanity/f31o.sanity.67 succeeded
-7546: link /mnt/lustre/d31o.sanity/f31o.sanity.68_QZIMbK to /mnt/lustre/d31o.sanity/f31o.sanity.68 succeeded
-7581: link /mnt/lustre/d31o.sanity/f31o.sanity.69_1Xicyh to /mnt/lustre/d31o.sanity/f31o.sanity.69 succeeded
-7615: link /mnt/lustre/d31o.sanity/f31o.sanity.70_nmpwV3 to /mnt/lustre/d31o.sanity/f31o.sanity.70 succeeded
-7632: link /mnt/lustre/d31o.sanity/f31o.sanity.71_HxKCrG to /mnt/lustre/d31o.sanity/f31o.sanity.71 succeeded
-7660: link /mnt/lustre/d31o.sanity/f31o.sanity.72_fe4hpi to /mnt/lustre/d31o.sanity/f31o.sanity.72 succeeded
-7692: link /mnt/lustre/d31o.sanity/f31o.sanity.73_XOeIZ2 to /mnt/lustre/d31o.sanity/f31o.sanity.73 succeeded
-7723: link /mnt/lustre/d31o.sanity/f31o.sanity.74_1GA0qs to /mnt/lustre/d31o.sanity/f31o.sanity.74 succeeded
-7747: link /mnt/lustre/d31o.sanity/f31o.sanity.75_iQdtxD to /mnt/lustre/d31o.sanity/f31o.sanity.75 succeeded
-7781: link /mnt/lustre/d31o.sanity/f31o.sanity.76_eUP8MS to /mnt/lustre/d31o.sanity/f31o.sanity.76 succeeded
-7805: link /mnt/lustre/d31o.sanity/f31o.sanity.77_zjm9jf to /mnt/lustre/d31o.sanity/f31o.sanity.77 succeeded
-7836: link /mnt/lustre/d31o.sanity/f31o.sanity.78_uGpf37 to /mnt/lustre/d31o.sanity/f31o.sanity.78 succeeded
-7863: link /mnt/lustre/d31o.sanity/f31o.sanity.79_QBTIwX to /mnt/lustre/d31o.sanity/f31o.sanity.79 succeeded
-7905: link /mnt/lustre/d31o.sanity/f31o.sanity.80_PwXEPI to /mnt/lustre/d31o.sanity/f31o.sanity.80 succeeded
-7921: link /mnt/lustre/d31o.sanity/f31o.sanity.81_crKaEm to /mnt/lustre/d31o.sanity/f31o.sanity.81 succeeded
-7962: link /mnt/lustre/d31o.sanity/f31o.sanity.82_j4yW6Q to /mnt/lustre/d31o.sanity/f31o.sanity.82 succeeded
-7982: link /mnt/lustre/d31o.sanity/f31o.sanity.83_tJX8sp to /mnt/lustre/d31o.sanity/f31o.sanity.83 succeeded
-8012: link /mnt/lustre/d31o.sanity/f31o.sanity.84_F9y3rR to /mnt/lustre/d31o.sanity/f31o.sanity.84 succeeded
-8039: link /mnt/lustre/d31o.sanity/f31o.sanity.85_kTotnA to /mnt/lustre/d31o.sanity/f31o.sanity.85 succeeded
-8067: link /mnt/lustre/d31o.sanity/f31o.sanity.86_iFv4kf to /mnt/lustre/d31o.sanity/f31o.sanity.86 succeeded
-8097: link /mnt/lustre/d31o.sanity/f31o.sanity.87_nPjrQx to /mnt/lustre/d31o.sanity/f31o.sanity.87 succeeded
-8125: link /mnt/lustre/d31o.sanity/f31o.sanity.88_Lco6R0 to /mnt/lustre/d31o.sanity/f31o.sanity.88 succeeded
-8159: link /mnt/lustre/d31o.sanity/f31o.sanity.89_guRkIm to /mnt/lustre/d31o.sanity/f31o.sanity.89 succeeded
-8184: link /mnt/lustre/d31o.sanity/f31o.sanity.90_J1nnav to /mnt/lustre/d31o.sanity/f31o.sanity.90 succeeded
-8213: link /mnt/lustre/d31o.sanity/f31o.sanity.91_LtueX7 to /mnt/lustre/d31o.sanity/f31o.sanity.91 succeeded
-8242: link /mnt/lustre/d31o.sanity/f31o.sanity.92_gQM3t5 to /mnt/lustre/d31o.sanity/f31o.sanity.92 succeeded
-8270: link /mnt/lustre/d31o.sanity/f31o.sanity.93_6xFjmJ to /mnt/lustre/d31o.sanity/f31o.sanity.93 succeeded
-8300: link /mnt/lustre/d31o.sanity/f31o.sanity.94_IhiDwX to /mnt/lustre/d31o.sanity/f31o.sanity.94 succeeded
-8328: link /mnt/lustre/d31o.sanity/f31o.sanity.95_p1lirY to /mnt/lustre/d31o.sanity/f31o.sanity.95 succeeded
-8357: link /mnt/lustre/d31o.sanity/f31o.sanity.96_7yr4D1 to /mnt/lustre/d31o.sanity/f31o.sanity.96 succeeded
-8387: link /mnt/lustre/d31o.sanity/f31o.sanity.97_7MX1VD to /mnt/lustre/d31o.sanity/f31o.sanity.97 succeeded
-8415: link /mnt/lustre/d31o.sanity/f31o.sanity.98_lIjfOx to /mnt/lustre/d31o.sanity/f31o.sanity.98 succeeded
-8447: link /mnt/lustre/d31o.sanity/f31o.sanity.99_GS4XOM to /mnt/lustre/d31o.sanity/f31o.sanity.99 succeeded
-8474: link /mnt/lustre/d31o.sanity/f31o.sanity.100_Dswcjw to /mnt/lustre/d31o.sanity/f31o.sanity.100 succeeded
-PASS 31o (14s)
+== sanity test 31o: duplicate hard links with same filename ========================================================== 04:33:15 (1765513995)
+Lustre: DEBUG MARKER: == sanity test 31o: duplicate hard links with same filename ========================================================== 04:33:15 (1765513995)
+5597: link /mnt/lustre/d31o.sanity/f31o.sanity.1_J8T8yl to /mnt/lustre/d31o.sanity/f31o.sanity.1 succeeded
+5619: link /mnt/lustre/d31o.sanity/f31o.sanity.2_SoDKjo to /mnt/lustre/d31o.sanity/f31o.sanity.2 succeeded
+5645: link /mnt/lustre/d31o.sanity/f31o.sanity.3_MpVhWX to /mnt/lustre/d31o.sanity/f31o.sanity.3 succeeded
+5674: link /mnt/lustre/d31o.sanity/f31o.sanity.4_YmrKzO to /mnt/lustre/d31o.sanity/f31o.sanity.4 succeeded
+5709: link /mnt/lustre/d31o.sanity/f31o.sanity.5_UNRl2M to /mnt/lustre/d31o.sanity/f31o.sanity.5 succeeded
+5747: link /mnt/lustre/d31o.sanity/f31o.sanity.6_IRmKTg to /mnt/lustre/d31o.sanity/f31o.sanity.6 succeeded
+5766: link /mnt/lustre/d31o.sanity/f31o.sanity.7_uykS5T to /mnt/lustre/d31o.sanity/f31o.sanity.7 succeeded
+5798: link /mnt/lustre/d31o.sanity/f31o.sanity.8_7l8410 to /mnt/lustre/d31o.sanity/f31o.sanity.8 succeeded
+5830: link /mnt/lustre/d31o.sanity/f31o.sanity.9_esPQsn to /mnt/lustre/d31o.sanity/f31o.sanity.9 succeeded
+5851: link /mnt/lustre/d31o.sanity/f31o.sanity.10_a4Lcib to /mnt/lustre/d31o.sanity/f31o.sanity.10 succeeded
+5891: link /mnt/lustre/d31o.sanity/f31o.sanity.11_7ejXhK to /mnt/lustre/d31o.sanity/f31o.sanity.11 succeeded
+5911: link /mnt/lustre/d31o.sanity/f31o.sanity.12_Ec4syl to /mnt/lustre/d31o.sanity/f31o.sanity.12 succeeded
+5952: link /mnt/lustre/d31o.sanity/f31o.sanity.13_TrRJo0 to /mnt/lustre/d31o.sanity/f31o.sanity.13 succeeded
+5972: link /mnt/lustre/d31o.sanity/f31o.sanity.14_0qP1M8 to /mnt/lustre/d31o.sanity/f31o.sanity.14 succeeded
+5999: link /mnt/lustre/d31o.sanity/f31o.sanity.15_9UcqwT to /mnt/lustre/d31o.sanity/f31o.sanity.15 succeeded
+6028: link /mnt/lustre/d31o.sanity/f31o.sanity.16_pr7B1f to /mnt/lustre/d31o.sanity/f31o.sanity.16 succeeded
+6057: link /mnt/lustre/d31o.sanity/f31o.sanity.17_48WKxB to /mnt/lustre/d31o.sanity/f31o.sanity.17 succeeded
+6086: link /mnt/lustre/d31o.sanity/f31o.sanity.18_6e11Rl to /mnt/lustre/d31o.sanity/f31o.sanity.18 succeeded
+6116: link /mnt/lustre/d31o.sanity/f31o.sanity.19_6tFd5P to /mnt/lustre/d31o.sanity/f31o.sanity.19 succeeded
+6148: link /mnt/lustre/d31o.sanity/f31o.sanity.20_9Lr0VS to /mnt/lustre/d31o.sanity/f31o.sanity.20 succeeded
+6175: link /mnt/lustre/d31o.sanity/f31o.sanity.21_qXHdqF to /mnt/lustre/d31o.sanity/f31o.sanity.21 succeeded
+6214: link /mnt/lustre/d31o.sanity/f31o.sanity.22_ViwJUJ to /mnt/lustre/d31o.sanity/f31o.sanity.22 succeeded
+6235: link /mnt/lustre/d31o.sanity/f31o.sanity.23_7BY86o to /mnt/lustre/d31o.sanity/f31o.sanity.23 succeeded
+6263: link /mnt/lustre/d31o.sanity/f31o.sanity.24_AT6nsY to /mnt/lustre/d31o.sanity/f31o.sanity.24 succeeded
+6292: link /mnt/lustre/d31o.sanity/f31o.sanity.25_AKAIkR to /mnt/lustre/d31o.sanity/f31o.sanity.25 succeeded
+6324: link /mnt/lustre/d31o.sanity/f31o.sanity.26_BDYsEU to /mnt/lustre/d31o.sanity/f31o.sanity.26 succeeded
+6351: link /mnt/lustre/d31o.sanity/f31o.sanity.27_Ehwymb to /mnt/lustre/d31o.sanity/f31o.sanity.27 succeeded
+6383: link /mnt/lustre/d31o.sanity/f31o.sanity.28_fiFmWA to /mnt/lustre/d31o.sanity/f31o.sanity.28 succeeded
+6412: link /mnt/lustre/d31o.sanity/f31o.sanity.29_UCzC56 to /mnt/lustre/d31o.sanity/f31o.sanity.29 succeeded
+6438: link /mnt/lustre/d31o.sanity/f31o.sanity.30_jAUYFx to /mnt/lustre/d31o.sanity/f31o.sanity.30 succeeded
+6466: link /mnt/lustre/d31o.sanity/f31o.sanity.31_a0RDHC to /mnt/lustre/d31o.sanity/f31o.sanity.31 succeeded
+6498: link /mnt/lustre/d31o.sanity/f31o.sanity.32_L17UG0 to /mnt/lustre/d31o.sanity/f31o.sanity.32 succeeded
+6529: link /mnt/lustre/d31o.sanity/f31o.sanity.33_P2mUuP to /mnt/lustre/d31o.sanity/f31o.sanity.33 succeeded
+6554: link /mnt/lustre/d31o.sanity/f31o.sanity.34_xm8DZZ to /mnt/lustre/d31o.sanity/f31o.sanity.34 succeeded
+6583: link /mnt/lustre/d31o.sanity/f31o.sanity.35_QqTCgw to /mnt/lustre/d31o.sanity/f31o.sanity.35 succeeded
+6614: link /mnt/lustre/d31o.sanity/f31o.sanity.36_rmkzcE to /mnt/lustre/d31o.sanity/f31o.sanity.36 succeeded
+6644: link /mnt/lustre/d31o.sanity/f31o.sanity.37_osGiKx to /mnt/lustre/d31o.sanity/f31o.sanity.37 succeeded
+6672: link /mnt/lustre/d31o.sanity/f31o.sanity.38_SeOuza to /mnt/lustre/d31o.sanity/f31o.sanity.38 succeeded
+6709: link /mnt/lustre/d31o.sanity/f31o.sanity.39_8b4Pgn to /mnt/lustre/d31o.sanity/f31o.sanity.39 succeeded
+6742: link /mnt/lustre/d31o.sanity/f31o.sanity.40_oM3HT1 to /mnt/lustre/d31o.sanity/f31o.sanity.40 succeeded
+6759: link /mnt/lustre/d31o.sanity/f31o.sanity.41_yHHKV6 to /mnt/lustre/d31o.sanity/f31o.sanity.41 succeeded
+6791: link /mnt/lustre/d31o.sanity/f31o.sanity.42_W5sHbB to /mnt/lustre/d31o.sanity/f31o.sanity.42 succeeded
+6817: link /mnt/lustre/d31o.sanity/f31o.sanity.43_1wDx2P to /mnt/lustre/d31o.sanity/f31o.sanity.43 succeeded
+6849: link /mnt/lustre/d31o.sanity/f31o.sanity.44_OFsz6S to /mnt/lustre/d31o.sanity/f31o.sanity.44 succeeded
+6885: link /mnt/lustre/d31o.sanity/f31o.sanity.45_vjHN8K to /mnt/lustre/d31o.sanity/f31o.sanity.45 succeeded
+6904: link /mnt/lustre/d31o.sanity/f31o.sanity.46_CX7ZsG to /mnt/lustre/d31o.sanity/f31o.sanity.46 succeeded
+6937: link /mnt/lustre/d31o.sanity/f31o.sanity.47_SZ5T9W to /mnt/lustre/d31o.sanity/f31o.sanity.47 succeeded
+6969: link /mnt/lustre/d31o.sanity/f31o.sanity.48_iRHjYC to /mnt/lustre/d31o.sanity/f31o.sanity.48 succeeded
+6991: link /mnt/lustre/d31o.sanity/f31o.sanity.49_dydeM4 to /mnt/lustre/d31o.sanity/f31o.sanity.49 succeeded
+7021: link /mnt/lustre/d31o.sanity/f31o.sanity.50_ak2vIr to /mnt/lustre/d31o.sanity/f31o.sanity.50 succeeded
+7053: link /mnt/lustre/d31o.sanity/f31o.sanity.51_nfmpXZ to /mnt/lustre/d31o.sanity/f31o.sanity.51 succeeded
+7080: link /mnt/lustre/d31o.sanity/f31o.sanity.52_8enmua to /mnt/lustre/d31o.sanity/f31o.sanity.52 succeeded
+7109: link /mnt/lustre/d31o.sanity/f31o.sanity.53_wXSjpi to /mnt/lustre/d31o.sanity/f31o.sanity.53 succeeded
+7136: link /mnt/lustre/d31o.sanity/f31o.sanity.54_ea2pJI to /mnt/lustre/d31o.sanity/f31o.sanity.54 succeeded
+7167: link /mnt/lustre/d31o.sanity/f31o.sanity.55_oFuAIU to /mnt/lustre/d31o.sanity/f31o.sanity.55 succeeded
+7198: link /mnt/lustre/d31o.sanity/f31o.sanity.56_qAzA0w to /mnt/lustre/d31o.sanity/f31o.sanity.56 succeeded
+7229: link /mnt/lustre/d31o.sanity/f31o.sanity.57_B8UlUV to /mnt/lustre/d31o.sanity/f31o.sanity.57 succeeded
+7261: link /mnt/lustre/d31o.sanity/f31o.sanity.58_8kcchW to /mnt/lustre/d31o.sanity/f31o.sanity.58 succeeded
+7283: link /mnt/lustre/d31o.sanity/f31o.sanity.59_1X9ZIO to /mnt/lustre/d31o.sanity/f31o.sanity.59 succeeded
+7315: link /mnt/lustre/d31o.sanity/f31o.sanity.60_9C0y7U to /mnt/lustre/d31o.sanity/f31o.sanity.60 succeeded
+7344: link /mnt/lustre/d31o.sanity/f31o.sanity.61_p8Mzjb to /mnt/lustre/d31o.sanity/f31o.sanity.61 succeeded
+7370: link /mnt/lustre/d31o.sanity/f31o.sanity.62_4UrljJ to /mnt/lustre/d31o.sanity/f31o.sanity.62 succeeded
+7400: link /mnt/lustre/d31o.sanity/f31o.sanity.63_Y4GYJe to /mnt/lustre/d31o.sanity/f31o.sanity.63 succeeded
+7429: link /mnt/lustre/d31o.sanity/f31o.sanity.64_779GYf to /mnt/lustre/d31o.sanity/f31o.sanity.64 succeeded
+7465: link /mnt/lustre/d31o.sanity/f31o.sanity.65_FdCMfa to /mnt/lustre/d31o.sanity/f31o.sanity.65 succeeded
+7489: link /mnt/lustre/d31o.sanity/f31o.sanity.66_5xmYJp to /mnt/lustre/d31o.sanity/f31o.sanity.66 succeeded
+7515: link /mnt/lustre/d31o.sanity/f31o.sanity.67_Zhbn1H to /mnt/lustre/d31o.sanity/f31o.sanity.67 succeeded
+7545: link /mnt/lustre/d31o.sanity/f31o.sanity.68_V8QT5c to /mnt/lustre/d31o.sanity/f31o.sanity.68 succeeded
+7574: link /mnt/lustre/d31o.sanity/f31o.sanity.69_xMp6sz to /mnt/lustre/d31o.sanity/f31o.sanity.69 succeeded
+7602: link /mnt/lustre/d31o.sanity/f31o.sanity.70_qUkmt7 to /mnt/lustre/d31o.sanity/f31o.sanity.70 succeeded
+7631: link /mnt/lustre/d31o.sanity/f31o.sanity.71_C5ZXj5 to /mnt/lustre/d31o.sanity/f31o.sanity.71 succeeded
+7661: link /mnt/lustre/d31o.sanity/f31o.sanity.72_Az1n2O to /mnt/lustre/d31o.sanity/f31o.sanity.72 succeeded
+7689: link /mnt/lustre/d31o.sanity/f31o.sanity.73_G3L5cF to /mnt/lustre/d31o.sanity/f31o.sanity.73 succeeded
+7729: link /mnt/lustre/d31o.sanity/f31o.sanity.74_UZD2TC to /mnt/lustre/d31o.sanity/f31o.sanity.74 succeeded
+7756: link /mnt/lustre/d31o.sanity/f31o.sanity.75_RpkCGq to /mnt/lustre/d31o.sanity/f31o.sanity.75 succeeded
+7787: link /mnt/lustre/d31o.sanity/f31o.sanity.76_tIQjI7 to /mnt/lustre/d31o.sanity/f31o.sanity.76 succeeded
+7805: link /mnt/lustre/d31o.sanity/f31o.sanity.77_PpVyiX to /mnt/lustre/d31o.sanity/f31o.sanity.77 succeeded
+7837: link /mnt/lustre/d31o.sanity/f31o.sanity.78_7TtNiG to /mnt/lustre/d31o.sanity/f31o.sanity.78 succeeded
+7870: link /mnt/lustre/d31o.sanity/f31o.sanity.79_Av2ZYx to /mnt/lustre/d31o.sanity/f31o.sanity.79 succeeded
+7892: link /mnt/lustre/d31o.sanity/f31o.sanity.80_Umb31X to /mnt/lustre/d31o.sanity/f31o.sanity.80 succeeded
+7921: link /mnt/lustre/d31o.sanity/f31o.sanity.81_XvQmLI to /mnt/lustre/d31o.sanity/f31o.sanity.81 succeeded
+7957: link /mnt/lustre/d31o.sanity/f31o.sanity.82_L0Okq7 to /mnt/lustre/d31o.sanity/f31o.sanity.82 succeeded
+7979: link /mnt/lustre/d31o.sanity/f31o.sanity.83_qLsvd8 to /mnt/lustre/d31o.sanity/f31o.sanity.83 succeeded
+8008: link /mnt/lustre/d31o.sanity/f31o.sanity.84_L8t9PS to /mnt/lustre/d31o.sanity/f31o.sanity.84 succeeded
+8040: link /mnt/lustre/d31o.sanity/f31o.sanity.85_cdWUOn to /mnt/lustre/d31o.sanity/f31o.sanity.85 succeeded
+8067: link /mnt/lustre/d31o.sanity/f31o.sanity.86_w8JeCW to /mnt/lustre/d31o.sanity/f31o.sanity.86 succeeded
+8095: link /mnt/lustre/d31o.sanity/f31o.sanity.87_3c4Vch to /mnt/lustre/d31o.sanity/f31o.sanity.87 succeeded
+8133: link /mnt/lustre/d31o.sanity/f31o.sanity.88_vkbFTh to /mnt/lustre/d31o.sanity/f31o.sanity.88 succeeded
+8153: link /mnt/lustre/d31o.sanity/f31o.sanity.89_79escw to /mnt/lustre/d31o.sanity/f31o.sanity.89 succeeded
+8193: link /mnt/lustre/d31o.sanity/f31o.sanity.90_wpLq7J to /mnt/lustre/d31o.sanity/f31o.sanity.90 succeeded
+8214: link /mnt/lustre/d31o.sanity/f31o.sanity.91_jGWOcZ to /mnt/lustre/d31o.sanity/f31o.sanity.91 succeeded
+8241: link /mnt/lustre/d31o.sanity/f31o.sanity.92_R23eV6 to /mnt/lustre/d31o.sanity/f31o.sanity.92 succeeded
+8269: link /mnt/lustre/d31o.sanity/f31o.sanity.93_eb8WQQ to /mnt/lustre/d31o.sanity/f31o.sanity.93 succeeded
+8298: link /mnt/lustre/d31o.sanity/f31o.sanity.94_HnDODI to /mnt/lustre/d31o.sanity/f31o.sanity.94 succeeded
+8339: link /mnt/lustre/d31o.sanity/f31o.sanity.95_OKPG0r to /mnt/lustre/d31o.sanity/f31o.sanity.95 succeeded
+8363: link /mnt/lustre/d31o.sanity/f31o.sanity.96_mcJez1 to /mnt/lustre/d31o.sanity/f31o.sanity.96 succeeded
+8392: link /mnt/lustre/d31o.sanity/f31o.sanity.97_YOQnhU to /mnt/lustre/d31o.sanity/f31o.sanity.97 succeeded
+8417: link /mnt/lustre/d31o.sanity/f31o.sanity.98_1GvxSt to /mnt/lustre/d31o.sanity/f31o.sanity.98 succeeded
+8444: link /mnt/lustre/d31o.sanity/f31o.sanity.99_t01B5n to /mnt/lustre/d31o.sanity/f31o.sanity.99 succeeded
+8485: link /mnt/lustre/d31o.sanity/f31o.sanity.100_nGx1h2 to /mnt/lustre/d31o.sanity/f31o.sanity.100 succeeded
+PASS 31o (11s)
 
-== sanity test 31p: remove of open striped directory ===== 03:56:01 (1765511761)
-Lustre: DEBUG MARKER: == sanity test 31p: remove of open striped directory ===== 03:56:01 (1765511761)
+== sanity test 31p: remove of open striped directory ===== 04:33:26 (1765514006)
+Lustre: DEBUG MARKER: == sanity test 31p: remove of open striped directory ===== 04:33:26 (1765514006)
 
  SKIP: sanity test_31p needs >= 2 MDTs
 Lustre: DEBUG MARKER: SKIP: sanity test_31p needs >= 2 MDTs
 SKIP 31p (0s)
 
-== sanity test 31q: create striped directory on specific MDTs ========================================================== 03:56:01 (1765511761)
-Lustre: DEBUG MARKER: == sanity test 31q: create striped directory on specific MDTs ========================================================== 03:56:01 (1765511761)
+== sanity test 31q: create striped directory on specific MDTs ========================================================== 04:33:26 (1765514006)
+Lustre: DEBUG MARKER: == sanity test 31q: create striped directory on specific MDTs ========================================================== 04:33:26 (1765514006)
 
  SKIP: sanity test_31q needs >= 3 MDTs
 Lustre: DEBUG MARKER: SKIP: sanity test_31q needs >= 3 MDTs
 SKIP 31q (0s)
 
-== sanity test 31r: open-rename(replace) race ============ 03:56:01 (1765511761)
-Lustre: DEBUG MARKER: == sanity test 31r: open-rename(replace) race ============ 03:56:01 (1765511761)
+== sanity test 31r: open-rename(replace) race ============ 04:33:26 (1765514006)
+Lustre: DEBUG MARKER: == sanity test 31r: open-rename(replace) race ============ 04:33:26 (1765514006)
 fail_loc=0x1419
 fail_val=3
-PASS 31r (2s)
+PASS 31r (1s)
 
-== sanity test 32a: stat d32a/ext2-mountpoint/.. =============================================================================== 03:56:03 (1765511763)
-Lustre: DEBUG MARKER: == sanity test 32a: stat d32a/ext2-mountpoint/.. =============================================================================== 03:56:03 (1765511763)
+== sanity test 32a: stat d32a/ext2-mountpoint/.. =============================================================================== 04:33:27 (1765514007)
+Lustre: DEBUG MARKER: == sanity test 32a: stat d32a/ext2-mountpoint/.. =============================================================================== 04:33:27 (1765514007)
 == more mountpoints and symlinks =================
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): mounted filesystem 6228f4e7-407b-42a8-851f-e58134727a28 r/w with ordered data mode. Quota mode: none.
 /mnt/lustre/d32a.sanity/ext2-mountpoint/.. has type dir OK
-EXT4-fs (loop0): unmounting filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade.
-LustreError: 8809:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
-LustreError: 8809:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff888103c20000: ptlrpc_queue_wait failed: rc = -95
-LustreError: 8809:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
-PASS 32a (0s)
+EXT4-fs (loop0): unmounting filesystem 6228f4e7-407b-42a8-851f-e58134727a28.
+losetup: /dev/loop0: detach failed: No such device or address
+PASS 32a (1s)
 
-== sanity test 32b: open d32b/ext2-mountpoint/.. =============================================================================== 03:56:03 (1765511763)
-Lustre: DEBUG MARKER: == sanity test 32b: open d32b/ext2-mountpoint/.. =============================================================================== 03:56:03 (1765511763)
+== sanity test 32b: open d32b/ext2-mountpoint/.. =============================================================================== 04:33:28 (1765514008)
+Lustre: DEBUG MARKER: == sanity test 32b: open d32b/ext2-mountpoint/.. =============================================================================== 04:33:28 (1765514008)
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): mounted filesystem 6228f4e7-407b-42a8-851f-e58134727a28 r/w with ordered data mode. Quota mode: none.
 total 1
-drwxr-xr-x 3 root root   60 Dec 12 03:56 .
-drwxr-xr-x 7 root root  160 Dec 12 03:56 ..
-drwxr-xr-x 3 root root 1024 Dec 12 03:55 ext2-mountpoint
-EXT4-fs (loop0): unmounting filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade.
+drwxr-xr-x 3 root root   60 Dec 12 04:33 .
+drwxr-xr-x 7 root root  160 Dec 12 04:33 ..
+drwxr-xr-x 3 root root 1024 Dec 12 04:33 ext2-mountpoint
+EXT4-fs (loop0): unmounting filesystem 6228f4e7-407b-42a8-851f-e58134727a28.
 losetup: /dev/loop0: detach failed: No such device or address
 PASS 32b (0s)
 
-== sanity test 32c: stat d32c/ext2-mountpoint/../d2/test_dir =================================================================== 03:56:03 (1765511763)
-Lustre: DEBUG MARKER: == sanity test 32c: stat d32c/ext2-mountpoint/../d2/test_dir =================================================================== 03:56:03 (1765511763)
+== sanity test 32c: stat d32c/ext2-mountpoint/../d2/test_dir =================================================================== 04:33:28 (1765514008)
+Lustre: DEBUG MARKER: == sanity test 32c: stat d32c/ext2-mountpoint/../d2/test_dir =================================================================== 04:33:28 (1765514008)
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): mounted filesystem 6228f4e7-407b-42a8-851f-e58134727a28 r/w with ordered data mode. Quota mode: none.
 /mnt/lustre/d32c.sanity/ext2-mountpoint/../d2/test_dir has type dir OK
-EXT4-fs (loop0): unmounting filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade.
+EXT4-fs (loop0): unmounting filesystem 6228f4e7-407b-42a8-851f-e58134727a28.
 losetup: /dev/loop0: detach failed: No such device or address
-LustreError: 9061:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
-LustreError: 9061:0:(osc_quota.c:196:osc_quotactl()) Skipped 1 previous similar message
-LustreError: 9061:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff888103c20000: ptlrpc_queue_wait failed: rc = -95
-LustreError: 9061:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
-PASS 32c (1s)
+LustreError: 9057:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 9057:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff8881490aa000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 9057:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+PASS 32c (0s)
 
-== sanity test 32d: open d32d/ext2-mountpoint/../d2/test_dir ========================================================== 03:56:04 (1765511764)
-Lustre: DEBUG MARKER: == sanity test 32d: open d32d/ext2-mountpoint/../d2/test_dir ========================================================== 03:56:04 (1765511764)
+== sanity test 32d: open d32d/ext2-mountpoint/../d2/test_dir ========================================================== 04:33:28 (1765514008)
+Lustre: DEBUG MARKER: == sanity test 32d: open d32d/ext2-mountpoint/../d2/test_dir ========================================================== 04:33:28 (1765514008)
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): mounted filesystem 6228f4e7-407b-42a8-851f-e58134727a28 r/w with ordered data mode. Quota mode: none.
 total 0
-drwxr-xr-x 2 root root 40 Dec 12 03:56 .
-drwxr-xr-x 3 root root 60 Dec 12 03:56 ..
-EXT4-fs (loop0): unmounting filesystem c60efcf5-3e0b-4cc3-8cd6-529ac1db8ade.
+drwxr-xr-x 2 root root 40 Dec 12 04:33 .
+drwxr-xr-x 3 root root 60 Dec 12 04:33 ..
+EXT4-fs (loop0): unmounting filesystem 6228f4e7-407b-42a8-851f-e58134727a28.
 losetup: /dev/loop0: detach failed: No such device or address
-PASS 32d (0s)
+PASS 32d (1s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 25 sec ================= 03:56:06 (1765511766)
-Lustre: DEBUG MARKER: == sanity test complete, duration 25 sec ================= 03:56:06 (1765511766)
-=== sanity: start cleanup 03:56:07 (1765511767) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 03:56:07 (1765511767) ===
+== sanity test complete, duration 25 sec ================= 04:33:31 (1765514011)
+Lustre: DEBUG MARKER: == sanity test complete, duration 25 sec ================= 04:33:31 (1765514011)
+=== sanity: start cleanup 04:33:31 (1765514011) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 04:33:31 (1765514011) ===
 skip cleanup
-=== sanity: finish cleanup 03:56:07 (1765511767) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 03:56:07 (1765511767) ===
+=== sanity: finish cleanup 04:33:31 (1765514011) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 04:33:31 (1765514011) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 0
-Finished at Fri Dec 12 03:56:07 UTC 2025 in 32s
+Finished at Fri Dec 12 04:33:31 UTC 2025 in 33s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 10585:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888103c20000: inode [0x200000401:0x8:0x0] mdc close failed: rc = -108
-LustreError: 10585:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 10570:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff8881490aa000: inode [0x200000401:0x8:0x0] mdc close failed: rc = -108
+LustreError: 10570:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 6666:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511778 with bad export cookie 1594788112116259801
+LustreError: 7306:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765514023 with bad export cookie 5009499232021529173
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 10668:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 10668:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+LustreError: 10654:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 10654:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 10709:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 10709:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 10695:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 10695:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 10973:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 10973:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 10958:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 10958:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= FAILED sanity-quick in 154s
+========= PASSED sanity-quick in 147s
 
-Passed: 
-Failed: sanity-quick
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
-Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-19.ktest 38 from: return ${#tests_failed[@]}, exiting
-Kernel version: 6.15.0-ktest
-TEST FAILED
+Passed: sanity-quick
+Failed: 
+Kernel version: 6.14.0-ktest
+TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=3f358749fbba4035a93ae88343c1844d\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=c2662bb2f6784498b66482fcef685a4f\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 </pre>
 </body>
 </html>

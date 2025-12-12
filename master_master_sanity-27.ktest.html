@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=265718510d3346d3838fb1441a44d03c;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=cf9c8a5bb0024b57875e09fde3b5c134;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=d7de9a74e70c4d87a20c16b6bbbcf310;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=2058db449afd43399fbc2880e374e0f4;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 3 PID: 1025 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 3 UID: 0 PID: 1025 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc900021c7710 EFLAGS: 00010246
-RAX: 09467cdafd535000 RBX: ffff888105bb6000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881593a3750
-RBP: ffff8881084981e0 R08: ffff8881593a3753 R09: 1ffff1102b2746ea
-R10: dffffc0000000000 R11: ffffed102b2746eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff888105bb69c8 R15: ffffffff82e1aca0
-FS:  00007f4a4acb6340(0000) GS:ffff8881d512a000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000557c768f37a0 CR3: 0000000113132000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f4a4a518779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007ffe76532f48 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 00005608f7241890 RCX: 00007f4a4a518779
-RDX: 0000000000000000 RSI: 00005608f72402a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f4a4a5f85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 00005608f72402a0
-R13: 0000000000000000 R14: 00005608f7241850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,20 +24,20 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2707) used greatest stack depth: 24216 bytes left
+mount.lustre (2707) used greatest stack depth: 24176 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-mount.lustre (2865) used greatest stack depth: 24056 bytes left
+mount.lustre (2866) used greatest stack depth: 24000 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
 Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 6c79a9ca-b1ad-4210-bca0-a6bf2fa9e0bc w/o recovery
+Lustre: lustre-MDT0000: local client 2a759918-70eb-40a5-a922-9c03e76ec6d9 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -129,15 +64,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:31 UTC 2025
+Started at Fri Dec 12 04:32:53 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035530
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035530
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035530
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043251
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043251
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043251
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -148,8 +83,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=42d 42e 43A 43a 43b 43c 44A 44a 44b 44c 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:34 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:34 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:57 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:57 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -183,8 +118,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:36 (1765511736) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:36 (1765511736) ===
+=== sanity: start setup 04:33:00 (1765513980) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:33:00 (1765513980) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -192,26 +127,23 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888116e14000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888116e14000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810f2a2000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810f2a2000.idle_timeout=debug
 disable quota as required
-Lustre: 5033:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:39 (1765511739) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:39 (1765511739) ===
+Lustre: 5031:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:33:03 (1765513983) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:33:03 (1765513983) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4173]
-LustreError: 5168:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
-LustreError: 5168:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff888116e14000: ptlrpc_queue_wait failed: rc = -95
-LustreError: 5168:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+ [touch] [/mnt/lustre/d0_runas_test/f4171]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 42d: test complete truncate of file with cached dirty data ========================================================== 03:55:40 (1765511740)
-Lustre: DEBUG MARKER: == sanity test 42d: test complete truncate of file with cached dirty data ========================================================== 03:55:40 (1765511740)
+== sanity test 42d: test complete truncate of file with cached dirty data ========================================================== 04:33:05 (1765513985)
+Lustre: DEBUG MARKER: == sanity test 42d: test complete truncate of file with cached dirty data ========================================================== 04:33:05 (1765513985)
 debug=+cache
 vm.dirty_writeback_centisecs = 0
 vm.dirty_writeback_centisecs = 0
@@ -219,8 +151,7 @@ vm.dirty_ratio = 50
 vm.dirty_background_ratio = 25
 100+0 records in
 100+0 records out
-102400 bytes (102 kB, 100 KiB) copied, 0.0238489 s, 4.3 MB/s
-truncate (5495) used greatest stack depth: 24032 bytes left
+102400 bytes (102 kB, 100 KiB) copied, 0.0232885 s, 4.4 MB/s
 vm.dirty_writeback_centisecs = 500
 vm.dirty_background_ratio = 10
 vm.dirty_ratio = 20
@@ -232,28 +163,28 @@ lustre-OST0001_UUID      1707800           0     1707800   0%  /mnt/lustre[OST:1
 filesystem_summary:      3415600           0     3415600   0%  /mnt/lustre
 
 pass grant check: client:16781312 server:16781312
-PASS 42d (2s)
+PASS 42d (1s)
 
-== sanity test 42e: verify sub-RPC writes are not done synchronously ========================================================== 03:55:42 (1765511742)
-Lustre: DEBUG MARKER: == sanity test 42e: verify sub-RPC writes are not done synchronously ========================================================== 03:55:42 (1765511742)
-total: 1000 open/close in 3.55 seconds: 281.84 ops/second
-total: 834 open/close in 3.10 seconds: 269.43 ops/second
-lfs (5765) used greatest stack depth: 23616 bytes left
+== sanity test 42e: verify sub-RPC writes are not done synchronously ========================================================== 04:33:07 (1765513987)
+Lustre: DEBUG MARKER: == sanity test 42e: verify sub-RPC writes are not done synchronously ========================================================== 04:33:07 (1765513987)
+lfs (5652) used greatest stack depth: 23896 bytes left
+total: 1000 open/close in 4.23 seconds: 236.14 ops/second
+total: 834 open/close in 3.48 seconds: 239.73 ops/second
 1+0 records in
 1+0 records out
-437256192 bytes (437 MB, 417 MiB) copied, 3.5836 s, 122 MB/s
-dd (5767) used greatest stack depth: 23528 bytes left
-osc.lustre-OST0000-osc-ffff888116e14000.cur_dirty_bytes=0
-osc.lustre-OST0000-osc-ffff888116e14000.cur_grant_bytes=444704768
-dd (5856) used greatest stack depth: 23512 bytes left
-Lustre: lustre-OST0001-osc-ffff888116e14000: disconnect after 25s idle
-osc.lustre-OST0000-osc-ffff888116e14000.cur_dirty_bytes=144703488
-osc.lustre-OST0000-osc-ffff888116e14000.cur_grant_bytes=300909568
-osc.lustre-OST0000-osc-ffff888116e14000.rpc_stats=0
-osc.lustre-OST0000-osc-ffff888116e14000.rpc_stats=
-snapshot_time:            1765511777.509982048 secs.nsecs
-start_time:               1765511774.064541457 secs.nsecs
-elapsed_time:             3.445440591 secs.nsecs
+437256192 bytes (437 MB, 417 MiB) copied, 3.37109 s, 130 MB/s
+dd (5764) used greatest stack depth: 23528 bytes left
+osc.lustre-OST0000-osc-ffff88810f2a2000.cur_dirty_bytes=0
+osc.lustre-OST0000-osc-ffff88810f2a2000.cur_grant_bytes=445754368
+dd (5773) used greatest stack depth: 23512 bytes left
+Lustre: lustre-OST0001-osc-ffff88810f2a2000: disconnect after 24s idle
+osc.lustre-OST0000-osc-ffff88810f2a2000.cur_dirty_bytes=150994944
+osc.lustre-OST0000-osc-ffff88810f2a2000.cur_grant_bytes=294611968
+osc.lustre-OST0000-osc-ffff88810f2a2000.rpc_stats=0
+osc.lustre-OST0000-osc-ffff88810f2a2000.rpc_stats=
+snapshot_time:            1765514022.433999893 secs.nsecs
+start_time:               1765514019.503692316 secs.nsecs
+elapsed_time:             2.930307577 secs.nsecs
 read RPCs in flight:  0
 write RPCs in flight: 0
 DIO RPCs in flight: 0
@@ -266,28 +197,28 @@ pages per rpc         rpcs   % cum % |       rpcs   % cum %
 2:		         0   0   0   |          0   0   0
 4:		         0   0   0   |          0   0   0
 8:		         0   0   0   |          0   0   0
-16:		         0   0   0   |         83  37  37
-32:		         0   0   0   |          0   0  37
-64:		         0   0   0   |          0   0  37
-128:		         0   0   0   |          0   0  37
-256:		         0   0   0   |        138  62 100
+16:		         0   0   0   |         83  36  36
+32:		         0   0   0   |          0   0  36
+64:		         0   0   0   |          0   0  36
+128:		         0   0   0   |          0   0  36
+256:		         0   0   0   |        144  63 100
 
 			read			write
 rpcs in flight        rpcs   % cum % |       rpcs   % cum %
 1:		         0   0   0   |          7   3   3
-2:		         0   0   0   |         21   9  12
-3:		         0   0   0   |         35  15  28
-4:		         0   0   0   |         25  11  39
-5:		         0   0   0   |         26  11  51
-6:		         0   0   0   |         36  16  67
-7:		         0   0   0   |         20   9  76
-8:		         0   0   0   |         25  11  88
-9:		         0   0   0   |         25  11  99
-10:		         0   0   0   |          1   0 100
+2:		         0   0   0   |         26  11  14
+3:		         0   0   0   |         23  10  24
+4:		         0   0   0   |         25  11  35
+5:		         0   0   0   |         29  12  48
+6:		         0   0   0   |         34  14  63
+7:		         0   0   0   |         26  11  74
+8:		         0   0   0   |         34  14  89
+9:		         0   0   0   |         21   9  99
+10:		         0   0   0   |          2   0 100
 
 			read			write
 offset                rpcs   % cum % |       rpcs   % cum %
-0:		         0   0   0   |        221 100 100
+0:		         0   0   0   |        227 100 100
 
 			read			write
 RPC latency (us)       count   % cum % |       count   % cum %
@@ -300,15 +231,15 @@ RPC latency (us)       count   % cum % |       count   % cum %
 32:		         0   0   0   |          0   0   0
 64:		         0   0   0   |          0   0   0
 128:		         0   0   0   |          0   0   0
-256:		         0   0   0   |          0   0   0
-512:		         0   0   0   |          1   0   0
-1024:		         0   0   0   |         17   7   8
-2048:		         0   0   0   |         35  15  23
-4096:		         0   0   0   |         62  28  52
-8192:		         0   0   0   |         70  31  83
-16384:		         0   0   0   |         34  15  99
-32768:		         0   0   0   |          4   1 100
-65536:		         0   0   0   |          0   0 100
+256:		         0   0   0   |          1   0   0
+512:		         0   0   0   |          5   2   2
+1024:		         0   0   0   |         32  14  16
+2048:		         0   0   0   |         30  13  29
+4096:		         0   0   0   |         59  25  55
+8192:		         0   0   0   |         53  23  79
+16384:		         0   0   0   |         37  16  95
+32768:		         0   0   0   |          9   3  99
+65536:		         0   0   0   |          3   1 100
 131072:		         0   0   0   |          0   0 100
 262144:		         0   0   0   |          0   0 100
 524288:		         0   0   0   |          0   0 100
@@ -323,72 +254,71 @@ RPC latency (us)       count   % cum % |       count   % cum %
 268435456:		         0   0   0   |          0   0 100
 536870912:		         0   0   0   |          0   0 100
 1073741824:		         0   0   0   |          0   0 100
-LustreError: 7296:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
-LustreError: 7296:0:(osc_quota.c:196:osc_quotactl()) Skipped 1 previous similar message
-Lustre: lustre-OST0001: local client 6c79a9ca-b1ad-4210-bca0-a6bf2fa9e0bc w/o recovery
+LustreError: 7295:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+Lustre: lustre-OST0001: local client 2a759918-70eb-40a5-a922-9c03e76ec6d9 w/o recovery
 Lustre: Skipped 2 previous similar messages
-LustreError: 7296:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff888116e14000: ptlrpc_queue_wait failed: rc = -95
-LustreError: 7296:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+LustreError: 7295:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff88810f2a2000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 7295:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
 checking grant......UUID                   1K-blocks        Used   Available Use%  Mounted on
 lustre-MDT0000_UUID      1707800           0     1707800   0%  /mnt/lustre[MDT:0] 
-lustre-OST0000_UUID      1707800           0     1705488   0%  /mnt/lustre[OST:0] 
+lustre-OST0000_UUID      1707800           0     1703440   0%  /mnt/lustre[OST:0] 
 lustre-OST0001_UUID      1707800           0     1707800   0%  /mnt/lustre[OST:1] 
 
-filesystem_summary:      3415600           0     3413288   0%  /mnt/lustre
+filesystem_summary:      3415600           0     3411240   0%  /mnt/lustre
 
-pass grant check: client:447923200 server:447923200
+pass grant check: client:449557504 server:449557504
 PASS 42e (41s)
 
-== sanity test 43A: execution of file opened for write should return -ETXTBSY ========================================================== 03:56:23 (1765511783)
-Lustre: DEBUG MARKER: == sanity test 43A: execution of file opened for write should return -ETXTBSY ========================================================== 03:56:23 (1765511783)
+== sanity test 43A: execution of file opened for write should return -ETXTBSY ========================================================== 04:33:48 (1765514028)
+Lustre: DEBUG MARKER: == sanity test 43A: execution of file opened for write should return -ETXTBSY ========================================================== 04:33:48 (1765514028)
 /workspace/lustre-release/lustre/tests/sanity.sh: line 5916: /mnt/lustre/d43A.sanity/f43A.sanity: Text file busy
 PASS 43A (1s)
 
-== sanity test 43a: open(RDWR) of file being executed should return -ETXTBSY ========================================================== 03:56:24 (1765511784)
-Lustre: DEBUG MARKER: == sanity test 43a: open(RDWR) of file being executed should return -ETXTBSY ========================================================== 03:56:24 (1765511784)
+== sanity test 43a: open(RDWR) of file being executed should return -ETXTBSY ========================================================== 04:33:49 (1765514029)
+Lustre: DEBUG MARKER: == sanity test 43a: open(RDWR) of file being executed should return -ETXTBSY ========================================================== 04:33:49 (1765514029)
 open(O_RDWR|O_CREAT): Text file busy
 PASS 43a (1s)
 
-== sanity test 43b: truncate of file being executed should return -ETXTBSY ========================================================== 03:56:25 (1765511785)
-Lustre: DEBUG MARKER: == sanity test 43b: truncate of file being executed should return -ETXTBSY ========================================================== 03:56:25 (1765511785)
+== sanity test 43b: truncate of file being executed should return -ETXTBSY ========================================================== 04:33:50 (1765514030)
+Lustre: DEBUG MARKER: == sanity test 43b: truncate of file being executed should return -ETXTBSY ========================================================== 04:33:50 (1765514030)
 truncate: cannot truncate '/mnt/lustre/d43b.sanity/sleep' to length 0: Text file busy
 PASS 43b (1s)
 
-== sanity test 43c: md5sum of copy into lustre =========== 03:56:26 (1765511786)
-Lustre: DEBUG MARKER: == sanity test 43c: md5sum of copy into lustre =========== 03:56:26 (1765511786)
+== sanity test 43c: md5sum of copy into lustre =========== 04:33:51 (1765514031)
+Lustre: DEBUG MARKER: == sanity test 43c: md5sum of copy into lustre =========== 04:33:51 (1765514031)
 bash: OK
-PASS 43c (1s)
+PASS 43c (0s)
 
-== sanity test 44A: zero length read from a sparse stripe ========================================================== 03:56:27 (1765511787)
-Lustre: DEBUG MARKER: == sanity test 44A: zero length read from a sparse stripe ========================================================== 03:56:27 (1765511787)
+== sanity test 44A: zero length read from a sparse stripe ========================================================== 04:33:51 (1765514031)
+Lustre: DEBUG MARKER: == sanity test 44A: zero length read from a sparse stripe ========================================================== 04:33:51 (1765514031)
 1+0 records in
 1+0 records out
-4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00120658 s, 3.4 MB/s
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00166109 s, 2.5 MB/s
 1+0 records in
 1+0 records out
-4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00197428 s, 2.1 MB/s
-PASS 44A (0s)
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.0032208 s, 1.3 MB/s
+PASS 44A (1s)
 
-== sanity test 44a: test sparse pwrite ========================================================================================= 03:56:27 (1765511787)
-Lustre: DEBUG MARKER: == sanity test 44a: test sparse pwrite ========================================================================================= 03:56:27 (1765511787)
+== sanity test 44a: test sparse pwrite ========================================================================================= 04:33:52 (1765514032)
+Lustre: DEBUG MARKER: == sanity test 44a: test sparse pwrite ========================================================================================= 04:33:52 (1765514032)
 --------writing /mnt/lustre/d44a-8388608 at 8388608
 --------writing /mnt/lustre/d44a-10485760 at 10485760
 --------writing /mnt/lustre/d44a-12582911 at 12582911
 PASS 44a (1s)
 
-== sanity test 44b: write one byte at offset 0xfffffffe000 ========================================================== 03:56:28 (1765511788)
-Lustre: DEBUG MARKER: == sanity test 44b: write one byte at offset 0xfffffffe000 ========================================================== 03:56:28 (1765511788)
+== sanity test 44b: write one byte at offset 0xfffffffe000 ========================================================== 04:33:53 (1765514033)
+Lustre: DEBUG MARKER: == sanity test 44b: write one byte at offset 0xfffffffe000 ========================================================== 04:33:53 (1765514033)
 1+0 records in
 1+0 records out
-1 byte copied, 0.00299151 s, 0.3 kB/s
+1 byte copied, 0.00352941 s, 0.3 kB/s
 /mnt/lustre/f44b.sanity has size 17592186036225 OK
 PASS 44b (0s)
 
-== sanity test 44c: write 1 byte at max_object_bytes - 1 offset ========================================================== 03:56:28 (1765511788)
-Lustre: DEBUG MARKER: == sanity test 44c: write 1 byte at max_object_bytes - 1 offset ========================================================== 03:56:28 (1765511788)
+== sanity test 44c: write 1 byte at max_object_bytes - 1 offset ========================================================== 04:33:53 (1765514033)
+Lustre: DEBUG MARKER: == sanity test 44c: write 1 byte at max_object_bytes - 1 offset ========================================================== 04:33:53 (1765514033)
 1+0 records in
 1+0 records out
-1 byte copied, 0.00278732 s, 0.4 kB/s
+1 byte copied, 0.00257607 s, 0.4 kB/s
 /mnt/lustre/f44c.sanity has size 9223372036854775807 OK
 PASS 44c (0s)
 resend_count is set to 4 4
@@ -396,49 +326,47 @@ resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 56 sec ================= 03:56:30 (1765511790)
-Lustre: DEBUG MARKER: == sanity test complete, duration 56 sec ================= 03:56:30 (1765511790)
-=== sanity: start cleanup 03:56:30 (1765511790) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 03:56:30 (1765511790) ===
+== sanity test complete, duration 57 sec ================= 04:33:54 (1765514034)
+Lustre: DEBUG MARKER: == sanity test complete, duration 57 sec ================= 04:33:54 (1765514034)
+=== sanity: start cleanup 04:33:54 (1765514034) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 04:33:54 (1765514034) ===
 skip cleanup
-=== sanity: finish cleanup 03:56:30 (1765511790) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 03:56:30 (1765511790) ===
+=== sanity: finish cleanup 04:33:55 (1765514035) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 04:33:55 (1765514035) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 0
-Finished at Fri Dec 12 03:56:30 UTC 2025 in 60s
+Finished at Fri Dec 12 04:33:55 UTC 2025 in 64s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 9485:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888116e14000: inode [0x200000401:0x733:0x0] mdc close failed: rc = -108
-LustreError: 9485:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 9481:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88810f2a2000: inode [0x200000401:0x733:0x0] mdc close failed: rc = -108
+LustreError: 9481:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2712:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511818 with bad export cookie 9492892774101328935
+LustreError: 2716:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765514063 with bad export cookie 16870373811588354477
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 9569:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 9569:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+LustreError: 9567:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 9567:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 9610:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 9610:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 9608:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 9608:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 9874:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 9874:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 9871:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 9871:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= FAILED sanity-quick in 194s
+========= PASSED sanity-quick in 194s
 
-Passed: 
-Failed: sanity-quick
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
-Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-27.ktest 38 from: return ${#tests_failed[@]}, exiting
-Kernel version: 6.15.0-ktest
-TEST FAILED
+Passed: sanity-quick
+Failed: 
+Kernel version: 6.14.0-ktest
+TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=265718510d3346d3838fb1441a44d03c\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=d7de9a74e70c4d87a20c16b6bbbcf310\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 </pre>
 </body>
 </html>

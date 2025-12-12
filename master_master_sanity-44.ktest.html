@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=87bfa8a7e3254fd4a3068da4ad29e06f;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=83c9e39a9630473b843160a0ca7ceea7;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=42eb569893294e719e0dff2b5fdf5ea3;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=33cf93a645a940829758ea9dbeef1ede;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 3 PID: 1026 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 3 UID: 0 PID: 1026 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90000c07710 EFLAGS: 00010246
-RAX: 6ec45b0a88b41f00 RBX: ffff88810584a000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881593a3750
-RBP: ffff888105647de0 R08: ffff8881593a3753 R09: 1ffff1102b2746ea
-R10: dffffc0000000000 R11: ffffed102b2746eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff88810584a9c8 R15: ffffffff82e1aca0
-FS:  00007f85444ad340(0000) GS:ffff8881d512a000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000556da56de7a0 CR3: 000000010c64b000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f8543d18779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007fffc979d148 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 000055e44c8b4890 RCX: 00007f8543d18779
-RDX: 0000000000000000 RSI: 000055e44c8b32a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f8543df85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 000055e44c8b32a0
-R13: 0000000000000000 R14: 000055e44c8b4850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,20 +24,17 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2707) used greatest stack depth: 23560 bytes left
+mount.lustre (2706) used greatest stack depth: 24064 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-Lustre: lustre-OST0001: new disk, initializing
-Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
-Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 7ce0fae7-862e-4dff-aede-21d14d3bae59 w/o recovery
+Lustre: lustre-MDT0000: local client 04bc8536-a5a2-4c20-8f85-a64d64bf28d6 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -129,15 +61,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:31 UTC 2025
+Started at Fri Dec 12 04:32:39 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035530
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035530
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035530
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043238
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043238
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043238
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -148,8 +80,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=65p 65q 65r 66 69 70a 71 72a 72b 73 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:34 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:34 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:40 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:40 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -183,8 +115,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:36 (1765511736) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:36 (1765511736) ===
+=== sanity: start setup 04:32:40 (1765513960) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:32:40 (1765513960) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -192,39 +124,41 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff8881056e6000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff8881056e6000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888101298000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888101298000.idle_timeout=debug
 disable quota as required
-Lustre: 5030:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:39 (1765511739) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:39 (1765511739) ===
+Lustre: 5037:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:32:41 (1765513961) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:32:41 (1765513961) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4170]
+ [touch] [/mnt/lustre/d0_runas_test/f4177]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 65p: setstripe with yaml file and huge number ========================================================== 03:55:41 (1765511741)
-Lustre: DEBUG MARKER: == sanity test 65p: setstripe with yaml file and huge number ========================================================== 03:55:41 (1765511741)
+== sanity test 65p: setstripe with yaml file and huge number ========================================================== 04:32:42 (1765513962)
+Lustre: DEBUG MARKER: == sanity test 65p: setstripe with yaml file and huge number ========================================================== 04:32:42 (1765513962)
+mkdir (5646) used greatest stack depth: 23800 bytes left
+lfs (5655) used greatest stack depth: 23640 bytes left
 PASS 65p (1s)
 
-== sanity test 65q: setstripe with >=8E offset should fail ========================================================== 03:55:42 (1765511742)
-Lustre: DEBUG MARKER: == sanity test 65q: setstripe with >=8E offset should fail ========================================================== 03:55:42 (1765511742)
+== sanity test 65q: setstripe with >=8E offset should fail ========================================================== 04:32:43 (1765513963)
+Lustre: DEBUG MARKER: == sanity test 65q: setstripe with >=8E offset should fail ========================================================== 04:32:43 (1765513963)
 lfs setstripe: lfs setstripe: cannot set default composite layout for '/mnt/lustre/d65q.sanity/src_dir': Invalid argument (22)
 PASS 65q (0s)
 
-== sanity test 65r: prevent all-zero offsets ============= 03:55:43 (1765511743)
-Lustre: DEBUG MARKER: == sanity test 65r: prevent all-zero offsets ============= 03:55:43 (1765511743)
-PASS 65r (0s)
+== sanity test 65r: prevent all-zero offsets ============= 04:32:43 (1765513963)
+Lustre: DEBUG MARKER: == sanity test 65r: prevent all-zero offsets ============= 04:32:43 (1765513963)
+PASS 65r (1s)
 
-== sanity test 66: update inode blocks count on client ========================================================================= 03:55:43 (1765511743)
-Lustre: DEBUG MARKER: == sanity test 66: update inode blocks count on client ========================================================================= 03:55:43 (1765511743)
+== sanity test 66: update inode blocks count on client ========================================================================= 04:32:44 (1765513964)
+Lustre: DEBUG MARKER: == sanity test 66: update inode blocks count on client ========================================================================= 04:32:44 (1765513964)
 8+0 records in
 8+0 records out
-8192 bytes (8.2 kB, 8.0 KiB) copied, 0.00385108 s, 2.1 MB/s
+8192 bytes (8.2 kB, 8.0 KiB) copied, 0.0116032 s, 706 kB/s
 error: set_param: param_path 'osd*/*OS*/force_sync': No such file or directory
 error: set_param: setting 'osd*/*OS*/force_sync'='1': No such file or directory
 error: set_param: param_path 'osd*/*OS*/force_sync': No such file or directory
@@ -238,12 +172,12 @@ Lustre: DEBUG MARKER: sanity test_66: @@@@@@ FAIL: /mnt/lustre/f66 blocks 0 < 8
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:11771:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/035530/sanity.test_66.*.1765511744.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/043238/sanity.test_66.*.1765513965.log
 Dumping logs only on local client.
 FAIL 66 (1s)
 
-== sanity test 69: verify oa2dentry return -ENOENT doesn't LBUG ================================================================ 03:55:44 (1765511744)
-Lustre: DEBUG MARKER: == sanity test 69: verify oa2dentry return -ENOENT doesn't LBUG ================================================================ 03:55:44 (1765511744)
+== sanity test 69: verify oa2dentry return -ENOENT doesn't LBUG ================================================================ 04:32:45 (1765513965)
+Lustre: DEBUG MARKER: == sanity test 69: verify oa2dentry return -ENOENT doesn't LBUG ================================================================ 04:32:45 (1765513965)
 directio on /mnt/lustre/f69.sanity.2 for 1x4194304 bytes
 PASS
 fail_loc=0x217
@@ -259,19 +193,19 @@ fail_loc=0x217
 directio on /mnt/lustre/f69.sanity for 1x4194304 bytes
 Read error: No such file or directory rc = -1
 fail_loc=0
-PASS 69 (2s)
+PASS 69 (1s)
 
-== sanity test 70a: verify health_check, health_write don't explode (on OST) ========================================================== 03:55:46 (1765511746)
-Lustre: DEBUG MARKER: == sanity test 70a: verify health_check, health_write don't explode (on OST) ========================================================== 03:55:46 (1765511746)
+== sanity test 70a: verify health_check, health_write don't explode (on OST) ========================================================== 04:32:46 (1765513966)
+Lustre: DEBUG MARKER: == sanity test 70a: verify health_check, health_write don't explode (on OST) ========================================================== 04:32:46 (1765513966)
 enable_health_write=off
 enable_health_write=0
 enable_health_write=on
 enable_health_write=1
 enable_health_write=0
-PASS 70a (0s)
+PASS 70a (1s)
 
-== sanity test 71: Running dbench on lustre (don't segment fault) ============================================================== 03:55:46 (1765511746)
-Lustre: DEBUG MARKER: == sanity test 71: Running dbench on lustre (don't segment fault) ============================================================== 03:55:46 (1765511746)
+== sanity test 71: Running dbench on lustre (don't segment fault) ============================================================== 04:32:47 (1765513967)
+Lustre: DEBUG MARKER: == sanity test 71: Running dbench on lustre (don't segment fault) ============================================================== 04:32:47 (1765513967)
 looking for dbench program
 /usr/bin/dbench
 found dbench client file /usr/share/dbench/client.txt
@@ -281,402 +215,433 @@ copying required dbench files to chroot directory /mnt/lustre/d71.sanity
 lib/x86_64-linux-gnu/libpopt.so.0
 lib/x86_64-linux-gnu/libc.so.6
 lib64/ld-linux-x86-64.so.2
-running 'dbench 2' in /mnt/lustre/d71.sanity at Fri Dec 12 03:55:47 UTC 2025
-waiting for dbench pid 6506
+running 'dbench 2' in /mnt/lustre/d71.sanity at Fri Dec 12 04:32:48 UTC 2025
+waiting for dbench pid 6514
 dbench version 4.00 - Copyright Andrew Tridgell 1999-2004
 
 Running for 600 seconds with load 'client.txt' and minimum warmup 120 secs
 failed to create barrier semaphore 
-0 of 2 processes prepared for launch   0 sec
+1 of 2 processes prepared for launch   0 sec
 2 of 2 processes prepared for launch   0 sec
 releasing clients
-   2       217    16.76 MB/sec  warmup   1 sec  latency 67.235 ms
-   2       457    15.96 MB/sec  warmup   2 sec  latency 36.081 ms
-   2       792    14.30 MB/sec  warmup   3 sec  latency 27.044 ms
-   2       981    10.94 MB/sec  warmup   4 sec  latency 41.398 ms
-   2      1180     9.21 MB/sec  warmup   5 sec  latency 58.837 ms
-   2      1482     8.67 MB/sec  warmup   6 sec  latency 37.568 ms
-   2      1778     7.50 MB/sec  warmup   7 sec  latency 46.406 ms
-   2      2265     6.74 MB/sec  warmup   8 sec  latency 20.027 ms
-   2      2911     7.36 MB/sec  warmup   9 sec  latency 17.717 ms
-   2      3704     7.75 MB/sec  warmup  10 sec  latency 18.269 ms
-   2      4139     7.28 MB/sec  warmup  11 sec  latency 17.763 ms
-   2      4633     7.00 MB/sec  warmup  12 sec  latency 19.066 ms
-   2      5258     6.97 MB/sec  warmup  13 sec  latency 9.030 ms
-   2      5904     6.71 MB/sec  warmup  14 sec  latency 10.076 ms
-   2      6680     7.08 MB/sec  warmup  15 sec  latency 149.566 ms
-   2      7457     7.37 MB/sec  warmup  16 sec  latency 12.645 ms
-   2      7929     7.02 MB/sec  warmup  17 sec  latency 15.942 ms
-   2      8491     7.03 MB/sec  warmup  18 sec  latency 11.858 ms
-   2      8985     6.80 MB/sec  warmup  19 sec  latency 9.946 ms
-   2      9559     6.66 MB/sec  warmup  20 sec  latency 11.775 ms
-   2     10555     7.15 MB/sec  warmup  21 sec  latency 13.101 ms
-   2     11096     7.11 MB/sec  warmup  22 sec  latency 12.067 ms
-   2     11600     6.88 MB/sec  warmup  23 sec  latency 17.172 ms
-   2     12198     6.95 MB/sec  warmup  24 sec  latency 16.214 ms
-   2     12739     6.71 MB/sec  warmup  25 sec  latency 11.447 ms
-   2     13594     6.96 MB/sec  warmup  26 sec  latency 11.590 ms
-   2     14512     7.20 MB/sec  warmup  27 sec  latency 10.556 ms
-   2     15028     6.99 MB/sec  warmup  28 sec  latency 20.304 ms
-   2     15683     7.07 MB/sec  warmup  29 sec  latency 10.197 ms
-   2     16237     6.87 MB/sec  warmup  30 sec  latency 9.194 ms
-   2     17157     7.09 MB/sec  warmup  31 sec  latency 8.651 ms
-   2     18128     7.28 MB/sec  warmup  32 sec  latency 12.380 ms
-   2     18776     7.15 MB/sec  warmup  33 sec  latency 21.032 ms
-   2     19496     7.17 MB/sec  warmup  34 sec  latency 14.764 ms
-   2     20289     7.09 MB/sec  warmup  35 sec  latency 7.783 ms
-   2     21522     7.49 MB/sec  warmup  36 sec  latency 15.222 ms
-   2     22249     7.38 MB/sec  warmup  37 sec  latency 10.606 ms
-   2     23085     7.42 MB/sec  warmup  38 sec  latency 7.546 ms
-   2     23829     7.35 MB/sec  warmup  39 sec  latency 8.053 ms
-   2     25073     7.70 MB/sec  warmup  40 sec  latency 13.518 ms
-   2     25711     7.58 MB/sec  warmup  41 sec  latency 20.647 ms
-   2     26355     7.61 MB/sec  warmup  42 sec  latency 16.156 ms
-   2     26984     7.47 MB/sec  warmup  43 sec  latency 13.516 ms
-   2     28014     7.65 MB/sec  warmup  44 sec  latency 8.314 ms
-   2     28822     7.73 MB/sec  warmup  45 sec  latency 14.671 ms
-   2     29346     7.60 MB/sec  warmup  46 sec  latency 11.294 ms
-   2     29946     7.62 MB/sec  warmup  47 sec  latency 14.912 ms
-   2     30512     7.48 MB/sec  warmup  48 sec  latency 10.354 ms
-   2     31386     7.61 MB/sec  warmup  49 sec  latency 8.461 ms
-   2     32284     7.71 MB/sec  warmup  50 sec  latency 11.621 ms
-   2     32916     7.60 MB/sec  warmup  51 sec  latency 14.990 ms
-   2     33623     7.63 MB/sec  warmup  52 sec  latency 10.235 ms
-   2     34386     7.56 MB/sec  warmup  53 sec  latency 7.926 ms
-   2     35698     7.83 MB/sec  warmup  54 sec  latency 7.091 ms
-   2     36404     7.74 MB/sec  warmup  55 sec  latency 10.563 ms
-   2     37219     7.77 MB/sec  warmup  56 sec  latency 8.568 ms
-   2     38031     7.71 MB/sec  warmup  57 sec  latency 8.911 ms
-   2     39280     7.96 MB/sec  warmup  58 sec  latency 8.154 ms
-   2     39950     7.86 MB/sec  warmup  59 sec  latency 12.879 ms
-   2     40699     7.88 MB/sec  warmup  60 sec  latency 8.891 ms
-   2     41434     7.81 MB/sec  warmup  61 sec  latency 9.772 ms
-   2     42694     8.03 MB/sec  warmup  62 sec  latency 9.028 ms
-   2     43392     7.96 MB/sec  warmup  63 sec  latency 11.662 ms
-   2     44238     7.99 MB/sec  warmup  64 sec  latency 11.826 ms
-   2     45042     7.93 MB/sec  warmup  65 sec  latency 7.151 ms
-   2     46405     8.16 MB/sec  warmup  66 sec  latency 11.295 ms
-   2     47095     8.07 MB/sec  warmup  67 sec  latency 15.931 ms
-   2     47920     8.08 MB/sec  warmup  68 sec  latency 8.696 ms
-   2     48760     8.06 MB/sec  warmup  69 sec  latency 7.322 ms
-   2     49990     8.24 MB/sec  warmup  70 sec  latency 9.809 ms
-   2     50714     8.17 MB/sec  warmup  71 sec  latency 19.887 ms
-   2     51540     8.17 MB/sec  warmup  72 sec  latency 6.975 ms
-   2     52688     8.25 MB/sec  warmup  73 sec  latency 9.988 ms
-   2     53779     8.32 MB/sec  warmup  74 sec  latency 10.974 ms
-   2     54665     8.34 MB/sec  warmup  75 sec  latency 9.387 ms
-   2     55506     8.27 MB/sec  warmup  76 sec  latency 7.166 ms
-   2     56883     8.45 MB/sec  warmup  77 sec  latency 6.750 ms
-   2     57644     8.40 MB/sec  warmup  78 sec  latency 8.884 ms
-   2     58476     8.41 MB/sec  warmup  79 sec  latency 13.465 ms
-   2     59292     8.36 MB/sec  warmup  80 sec  latency 7.607 ms
-   2     60532     8.52 MB/sec  warmup  81 sec  latency 12.309 ms
-   2     61209     8.45 MB/sec  warmup  82 sec  latency 14.845 ms
-   2     61980     8.46 MB/sec  warmup  83 sec  latency 10.116 ms
-   2     62827     8.42 MB/sec  warmup  84 sec  latency 8.779 ms
-   2     64169     8.59 MB/sec  warmup  85 sec  latency 7.268 ms
-   2     65002     8.54 MB/sec  warmup  86 sec  latency 12.590 ms
-   2     65942     8.52 MB/sec  warmup  87 sec  latency 10.355 ms
-   2     67340     8.66 MB/sec  warmup  88 sec  latency 7.349 ms
-   2     68276     8.65 MB/sec  warmup  89 sec  latency 8.859 ms
-   2     69178     8.66 MB/sec  warmup  90 sec  latency 8.827 ms
-   2     70359     8.71 MB/sec  warmup  91 sec  latency 12.083 ms
-   2     71525     8.77 MB/sec  warmup  92 sec  latency 12.198 ms
-   2     72455     8.78 MB/sec  warmup  93 sec  latency 8.365 ms
-   2     73372     8.73 MB/sec  warmup  94 sec  latency 8.477 ms
-   2     74796     8.89 MB/sec  warmup  95 sec  latency 9.578 ms
-   2     75640     8.84 MB/sec  warmup  96 sec  latency 9.521 ms
-   2     76636     8.83 MB/sec  warmup  97 sec  latency 6.451 ms
-   2     78102     8.98 MB/sec  warmup  98 sec  latency 11.136 ms
-   2     78962     8.94 MB/sec  warmup  99 sec  latency 7.951 ms
-   2     79870     8.94 MB/sec  warmup 100 sec  latency 10.553 ms
-   2     81054     8.99 MB/sec  warmup 101 sec  latency 10.956 ms
-   2     82202     9.03 MB/sec  warmup 102 sec  latency 8.862 ms
-   2     83122     9.05 MB/sec  warmup 103 sec  latency 12.237 ms
-   2     84074     9.00 MB/sec  warmup 104 sec  latency 8.434 ms
-   2     85513     9.14 MB/sec  warmup 105 sec  latency 10.636 ms
-   2     86367     9.09 MB/sec  warmup 106 sec  latency 12.906 ms
-   2     87331     9.08 MB/sec  warmup 107 sec  latency 10.349 ms
-   2     88806     9.21 MB/sec  warmup 108 sec  latency 8.585 ms
-   2     89719     9.18 MB/sec  warmup 109 sec  latency 7.234 ms
-   2     90685     9.17 MB/sec  warmup 110 sec  latency 8.079 ms
-   2     92114     9.28 MB/sec  warmup 111 sec  latency 8.700 ms
-   2     93098     9.26 MB/sec  warmup 112 sec  latency 10.075 ms
-   2     94057     9.26 MB/sec  warmup 113 sec  latency 8.346 ms
-   2     95413     9.33 MB/sec  warmup 114 sec  latency 8.666 ms
-   2     96552     9.35 MB/sec  warmup 115 sec  latency 11.257 ms
-   2     97506     9.35 MB/sec  warmup 116 sec  latency 9.134 ms
-   2     98599     9.36 MB/sec  warmup 117 sec  latency 6.607 ms
-   2     99958     9.43 MB/sec  warmup 118 sec  latency 10.272 ms
-   2    100904     9.44 MB/sec  warmup 119 sec  latency 10.485 ms
-   2    103269    22.79 MB/sec  execute   1 sec  latency 8.782 ms
-   2    104132    13.67 MB/sec  execute   2 sec  latency 15.117 ms
-   2    105170    11.93 MB/sec  execute   3 sec  latency 7.501 ms
-   2    106600    14.89 MB/sec  execute   4 sec  latency 9.121 ms
-   2    107461    12.83 MB/sec  execute   5 sec  latency 11.072 ms
-   2    108405    12.07 MB/sec  execute   6 sec  latency 8.545 ms
-   2    109823    13.16 MB/sec  execute   7 sec  latency 11.973 ms
-   2    110819    12.58 MB/sec  execute   8 sec  latency 12.200 ms
-   2    111791    12.25 MB/sec  execute   9 sec  latency 8.289 ms
-   2    113187    12.67 MB/sec  execute  10 sec  latency 6.894 ms
-   2    114352    12.62 MB/sec  execute  11 sec  latency 7.978 ms
-   2    115351    12.38 MB/sec  execute  12 sec  latency 11.298 ms
-   2    116701    12.68 MB/sec  execute  13 sec  latency 11.220 ms
-   2    117845    12.63 MB/sec  execute  14 sec  latency 8.131 ms
-   2    118830    12.44 MB/sec  execute  15 sec  latency 8.943 ms
-   2    120135    12.61 MB/sec  execute  16 sec  latency 8.204 ms
-   2    121292    12.62 MB/sec  execute  17 sec  latency 8.203 ms
-   2    122303    12.49 MB/sec  execute  18 sec  latency 9.663 ms
-   2    123503    12.52 MB/sec  execute  19 sec  latency 10.750 ms
-   2    124815    12.64 MB/sec  execute  20 sec  latency 9.154 ms
-   2    125838    12.52 MB/sec  execute  21 sec  latency 9.291 ms
-   2    127028    12.55 MB/sec  execute  22 sec  latency 7.878 ms
-   2    128341    12.65 MB/sec  execute  23 sec  latency 9.387 ms
-   2    129319    12.55 MB/sec  execute  24 sec  latency 8.237 ms
-   2    130528    12.52 MB/sec  execute  25 sec  latency 8.921 ms
-   2    131851    12.66 MB/sec  execute  26 sec  latency 11.637 ms
-   2    132832    12.57 MB/sec  execute  27 sec  latency 10.115 ms
-   2    133867    12.32 MB/sec  execute  28 sec  latency 10.350 ms
-   2    135306    12.66 MB/sec  execute  29 sec  latency 8.379 ms
-   2    136276    12.58 MB/sec  execute  30 sec  latency 8.744 ms
-   2    137275    12.33 MB/sec  execute  31 sec  latency 7.453 ms
-   2    138792    12.67 MB/sec  execute  32 sec  latency 9.305 ms
-   2    139872    12.60 MB/sec  execute  33 sec  latency 8.362 ms
-   2    141046    12.49 MB/sec  execute  34 sec  latency 6.318 ms
-   2    142551    12.69 MB/sec  execute  35 sec  latency 8.637 ms
-   2    143575    12.62 MB/sec  execute  36 sec  latency 13.726 ms
-   2    144982    12.69 MB/sec  execute  37 sec  latency 8.542 ms
-   2    146179    12.70 MB/sec  execute  38 sec  latency 8.605 ms
-   2    147176    12.63 MB/sec  execute  39 sec  latency 7.416 ms
-   2    148312    12.64 MB/sec  execute  40 sec  latency 12.371 ms
-   2    149649    12.69 MB/sec  execute  41 sec  latency 10.603 ms
-   2    150721    12.64 MB/sec  execute  42 sec  latency 10.205 ms
-   2    152005    12.68 MB/sec  execute  43 sec  latency 6.146 ms
-   2    153272    12.70 MB/sec  execute  44 sec  latency 9.175 ms
-   2    154278    12.65 MB/sec  execute  45 sec  latency 25.839 ms
-   2    155780    12.73 MB/sec  execute  46 sec  latency 10.153 ms
-   2    156997    12.73 MB/sec  execute  47 sec  latency 7.768 ms
-   2    158107    12.66 MB/sec  execute  48 sec  latency 7.662 ms
-   2    159761    12.90 MB/sec  execute  49 sec  latency 7.145 ms
-   2    160822    12.78 MB/sec  execute  50 sec  latency 6.958 ms
-   2    161882    12.68 MB/sec  execute  51 sec  latency 9.602 ms
-   2    163493    12.93 MB/sec  execute  52 sec  latency 7.240 ms
-   2    164579    12.89 MB/sec  execute  53 sec  latency 7.266 ms
-   2    165639    12.73 MB/sec  execute  54 sec  latency 9.891 ms
-   2    167175    12.93 MB/sec  execute  55 sec  latency 7.230 ms
-   2    168308    12.89 MB/sec  execute  56 sec  latency 6.120 ms
-   2    169607    12.88 MB/sec  execute  57 sec  latency 11.026 ms
-   2    170999    12.94 MB/sec  execute  58 sec  latency 6.870 ms
-   2    172107    12.89 MB/sec  execute  59 sec  latency 10.022 ms
-   2    173840    13.08 MB/sec  execute  60 sec  latency 4.866 ms
-   2    174910    12.98 MB/sec  execute  61 sec  latency 10.650 ms
-   2    176031    12.90 MB/sec  execute  62 sec  latency 7.751 ms
-   2    177684    13.10 MB/sec  execute  63 sec  latency 8.599 ms
-   2    178796    13.07 MB/sec  execute  64 sec  latency 8.964 ms
-   2    179973    12.96 MB/sec  execute  65 sec  latency 5.813 ms
-   2    181613    13.10 MB/sec  execute  66 sec  latency 11.069 ms
-   2    182727    13.06 MB/sec  execute  67 sec  latency 7.651 ms
-   2    184384    13.19 MB/sec  execute  68 sec  latency 5.794 ms
-   2    185470    13.12 MB/sec  execute  69 sec  latency 10.833 ms
-   2    186658    13.06 MB/sec  execute  70 sec  latency 11.302 ms
-   2    188312    13.25 MB/sec  execute  71 sec  latency 8.310 ms
-   2    189368    13.17 MB/sec  execute  72 sec  latency 8.335 ms
-   2    190631    13.14 MB/sec  execute  73 sec  latency 5.243 ms
-   2    192199    13.23 MB/sec  execute  74 sec  latency 8.269 ms
-   2    193300    13.20 MB/sec  execute  75 sec  latency 9.475 ms
-   2    194888    13.26 MB/sec  execute  76 sec  latency 5.742 ms
-   2    196049    13.23 MB/sec  execute  77 sec  latency 7.236 ms
-   2    197101    13.18 MB/sec  execute  78 sec  latency 9.565 ms
-   2    198757    13.33 MB/sec  execute  79 sec  latency 6.896 ms
-   2    199783    13.25 MB/sec  execute  80 sec  latency 8.214 ms
-   2    200930    13.19 MB/sec  execute  81 sec  latency 8.218 ms
-   2    202552    13.34 MB/sec  execute  82 sec  latency 6.845 ms
-   2    203681    13.30 MB/sec  execute  83 sec  latency 7.870 ms
-   2    205034    13.30 MB/sec  execute  84 sec  latency 7.135 ms
-   2    206494    13.33 MB/sec  execute  85 sec  latency 8.878 ms
-   2    207658    13.29 MB/sec  execute  86 sec  latency 6.317 ms
-   2    209372    13.42 MB/sec  execute  87 sec  latency 10.603 ms
-   2    210434    13.34 MB/sec  execute  88 sec  latency 7.587 ms
-   2    211657    13.31 MB/sec  execute  89 sec  latency 8.330 ms
-   2    213250    13.43 MB/sec  execute  90 sec  latency 9.528 ms
-   2    214392    13.39 MB/sec  execute  91 sec  latency 7.831 ms
-   2    215636    13.36 MB/sec  execute  92 sec  latency 6.850 ms
-   2    217152    13.41 MB/sec  execute  93 sec  latency 10.628 ms
-   2    218288    13.38 MB/sec  execute  94 sec  latency 7.345 ms
-   2    220004    13.49 MB/sec  execute  95 sec  latency 7.151 ms
-   2    221112    13.43 MB/sec  execute  96 sec  latency 6.458 ms
-   2    222315    13.39 MB/sec  execute  97 sec  latency 8.266 ms
-   2    223933    13.50 MB/sec  execute  98 sec  latency 7.981 ms
-   2    225018    13.47 MB/sec  execute  99 sec  latency 8.405 ms
-   2    226100    13.39 MB/sec  execute 100 sec  latency 8.662 ms
-   2    227675    13.48 MB/sec  execute 101 sec  latency 9.192 ms
-   2    228789    13.45 MB/sec  execute 102 sec  latency 7.711 ms
-   2    230334    13.49 MB/sec  execute 103 sec  latency 6.731 ms
-   2    231490    13.47 MB/sec  execute 104 sec  latency 8.697 ms
-   2    232637    13.44 MB/sec  execute 105 sec  latency 7.976 ms
-   2    234354    13.55 MB/sec  execute 106 sec  latency 11.577 ms
-   2    235429    13.49 MB/sec  execute 107 sec  latency 11.928 ms
-   2    236646    13.46 MB/sec  execute 108 sec  latency 7.260 ms
-   2    238247    13.54 MB/sec  execute 109 sec  latency 9.094 ms
-   2    239390    13.52 MB/sec  execute 110 sec  latency 8.056 ms
-   2    240929    13.55 MB/sec  execute 111 sec  latency 7.118 ms
-   2    242175    13.54 MB/sec  execute 112 sec  latency 7.969 ms
-   2    243347    13.50 MB/sec  execute 113 sec  latency 8.199 ms
-   2    245011    13.62 MB/sec  execute 114 sec  latency 7.364 ms
-   2    246112    13.57 MB/sec  execute 115 sec  latency 15.177 ms
-   2    247323    13.52 MB/sec  execute 116 sec  latency 5.622 ms
-   2    248934    13.60 MB/sec  execute 117 sec  latency 8.896 ms
-   2    250081    13.57 MB/sec  execute 118 sec  latency 8.395 ms
-   2    251704    13.61 MB/sec  execute 119 sec  latency 7.135 ms
-   2    252806    13.59 MB/sec  execute 120 sec  latency 8.402 ms
-   2    253903    13.56 MB/sec  execute 121 sec  latency 7.775 ms
-   2    255578    13.65 MB/sec  execute 122 sec  latency 5.513 ms
-   2    256666    13.59 MB/sec  execute 123 sec  latency 6.508 ms
-   2    257914    13.57 MB/sec  execute 124 sec  latency 8.876 ms
-   2    259585    13.65 MB/sec  execute 125 sec  latency 8.373 ms
-   2    260755    13.62 MB/sec  execute 126 sec  latency 7.265 ms
-   2    262501    13.71 MB/sec  execute 127 sec  latency 5.318 ms
-   2    263617    13.66 MB/sec  execute 128 sec  latency 9.086 ms
-   2    264829    13.63 MB/sec  execute 129 sec  latency 7.637 ms
-   2    266463    13.71 MB/sec  execute 130 sec  latency 6.030 ms
-   2    267630    13.68 MB/sec  execute 131 sec  latency 9.409 ms
-   2    268977    13.69 MB/sec  execute 132 sec  latency 7.600 ms
-   2    270349    13.69 MB/sec  execute 133 sec  latency 8.221 ms
-   2    271481    13.67 MB/sec  execute 134 sec  latency 7.620 ms
-   2    273231    13.75 MB/sec  execute 135 sec  latency 6.273 ms
-   2    274339    13.70 MB/sec  execute 136 sec  latency 7.517 ms
-   2    275530    13.67 MB/sec  execute 137 sec  latency 8.874 ms
-   2    277123    13.75 MB/sec  execute 138 sec  latency 7.811 ms
-   2    278274    13.72 MB/sec  execute 139 sec  latency 9.240 ms
-   2    279625    13.73 MB/sec  execute 140 sec  latency 6.792 ms
-   2    281021    13.73 MB/sec  execute 141 sec  latency 6.003 ms
-   2    282112    13.70 MB/sec  execute 142 sec  latency 7.475 ms
-   2    283815    13.78 MB/sec  execute 143 sec  latency 6.039 ms
-   2    284898    13.73 MB/sec  execute 144 sec  latency 9.099 ms
-   2    286133    13.70 MB/sec  execute 145 sec  latency 8.126 ms
-   2    287723    13.78 MB/sec  execute 146 sec  latency 8.937 ms
-   2    288838    13.75 MB/sec  execute 147 sec  latency 7.312 ms
-   2    290218    13.75 MB/sec  execute 148 sec  latency 7.391 ms
-   2    291555    13.76 MB/sec  execute 149 sec  latency 9.990 ms
-   2    292676    13.74 MB/sec  execute 150 sec  latency 13.617 ms
-   2    294252    13.77 MB/sec  execute 151 sec  latency 8.488 ms
-   2    295363    13.75 MB/sec  execute 152 sec  latency 6.378 ms
-   2    296559    13.72 MB/sec  execute 153 sec  latency 9.895 ms
-   2    298200    13.80 MB/sec  execute 154 sec  latency 6.995 ms
-   2    299176    13.75 MB/sec  execute 155 sec  latency 7.078 ms
-   2    300359    13.72 MB/sec  execute 156 sec  latency 6.043 ms
-   2    301981    13.79 MB/sec  execute 157 sec  latency 9.926 ms
-   2    303108    13.77 MB/sec  execute 158 sec  latency 6.216 ms
-   2    304533    13.77 MB/sec  execute 159 sec  latency 5.382 ms
-   2    305944    13.78 MB/sec  execute 160 sec  latency 7.672 ms
-   2    307079    13.75 MB/sec  execute 161 sec  latency 5.797 ms
-   2    308778    13.82 MB/sec  execute 162 sec  latency 8.333 ms
-   2    309859    13.78 MB/sec  execute 163 sec  latency 7.642 ms
-   2    311089    13.76 MB/sec  execute 164 sec  latency 6.662 ms
-   2    312730    13.81 MB/sec  execute 165 sec  latency 6.548 ms
-   2    313864    13.79 MB/sec  execute 166 sec  latency 8.641 ms
-   2    315408    13.81 MB/sec  execute 167 sec  latency 9.493 ms
-   2    316641    13.80 MB/sec  execute 168 sec  latency 6.486 ms
-   2    317734    13.78 MB/sec  execute 169 sec  latency 9.431 ms
-   2    319447    13.85 MB/sec  execute 170 sec  latency 6.909 ms
-   2    320485    13.80 MB/sec  execute 171 sec  latency 7.324 ms
-   2    321616    13.78 MB/sec  execute 172 sec  latency 8.202 ms
-   2    323157    13.84 MB/sec  execute 173 sec  latency 9.884 ms
-   2    324260    13.82 MB/sec  execute 174 sec  latency 9.480 ms
-   2    325565    13.81 MB/sec  execute 175 sec  latency 5.607 ms
-   2    327067    13.82 MB/sec  execute 176 sec  latency 6.923 ms
-   2    328140    13.80 MB/sec  execute 177 sec  latency 7.591 ms
-   2    329847    13.86 MB/sec  execute 178 sec  latency 6.626 ms
-   2    330967    13.82 MB/sec  execute 179 sec  latency 5.045 ms
-   2    332200    13.80 MB/sec  execute 180 sec  latency 6.699 ms
-   2    333851    13.86 MB/sec  execute 181 sec  latency 6.134 ms
-   2    335019    13.84 MB/sec  execute 182 sec  latency 9.996 ms
-   2    336438    13.85 MB/sec  execute 183 sec  latency 10.124 ms
-   2    337873    13.85 MB/sec  execute 184 sec  latency 4.503 ms
-   2    339049    13.83 MB/sec  execute 185 sec  latency 6.726 ms
-   2    340780    13.90 MB/sec  execute 186 sec  latency 7.621 ms
-   2    341950    13.88 MB/sec  execute 187 sec  latency 5.882 ms
-   2    343123    13.84 MB/sec  execute 188 sec  latency 5.861 ms
-   2    344726    13.88 MB/sec  execute 189 sec  latency 5.501 ms
-   2    345856    13.86 MB/sec  execute 190 sec  latency 5.988 ms
-   2    347575    13.92 MB/sec  execute 191 sec  latency 6.261 ms
-   2    348691    13.88 MB/sec  execute 192 sec  latency 7.689 ms
-   2    349964    13.86 MB/sec  execute 193 sec  latency 6.283 ms
-   2    351537    13.92 MB/sec  execute 194 sec  latency 9.036 ms
-   2    352690    13.90 MB/sec  execute 195 sec  latency 6.410 ms
-   2    354003    13.90 MB/sec  execute 196 sec  latency 6.812 ms
-   2    355364    13.90 MB/sec  execute 197 sec  latency 8.235 ms
-   2    356427    13.88 MB/sec  execute 198 sec  latency 6.904 ms
-   2    357978    13.90 MB/sec  execute 199 sec  latency 5.975 ms
-   2    359198    13.89 MB/sec  execute 200 sec  latency 7.837 ms
-   2    360394    13.87 MB/sec  execute 201 sec  latency 6.438 ms
-   2    362093    13.93 MB/sec  execute 202 sec  latency 5.195 ms
-   2    363245    13.91 MB/sec  execute 203 sec  latency 6.549 ms
-   2    364564    13.91 MB/sec  execute 204 sec  latency 7.672 ms
-   2    366086    13.92 MB/sec  execute 205 sec  latency 5.611 ms
-   2    367313    13.90 MB/sec  execute 206 sec  latency 8.008 ms
-   2    369050    13.95 MB/sec  execute 207 sec  latency 5.377 ms
-   2    370230    13.94 MB/sec  execute 208 sec  latency 4.979 ms
-   2    371454    13.91 MB/sec  execute 209 sec  latency 7.362 ms
-   2    373106    13.95 MB/sec  execute 210 sec  latency 6.261 ms
-   2    374271    13.93 MB/sec  execute 211 sec  latency 8.565 ms
-   2    376006    13.98 MB/sec  execute 212 sec  latency 5.776 ms
-   2    377170    13.95 MB/sec  execute 213 sec  latency 4.744 ms
-   2    378436    13.93 MB/sec  execute 214 sec  latency 5.953 ms
-   2    380129    13.98 MB/sec  execute 215 sec  latency 4.510 ms
-   2    381287    13.97 MB/sec  execute 216 sec  latency 7.857 ms
-   2    382911    13.99 MB/sec  execute 217 sec  latency 6.432 ms
-   2    384099    13.97 MB/sec  execute 218 sec  latency 5.960 ms
-   2    385316    13.95 MB/sec  execute 219 sec  latency 5.764 ms
-   2    387029    14.01 MB/sec  execute 220 sec  latency 5.213 ms
-   2    388208    13.99 MB/sec  execute 221 sec  latency 8.692 ms
-   2    389607    14.00 MB/sec  execute 222 sec  latency 6.340 ms
-   2    391065    14.00 MB/sec  execute 223 sec  latency 4.980 ms
-   2    392279    13.98 MB/sec  execute 224 sec  latency 7.304 ms
-   2    394051    14.04 MB/sec  execute 225 sec  latency 4.269 ms
-   2    395249    14.02 MB/sec  execute 226 sec  latency 6.802 ms
-   2    396683    14.03 MB/sec  execute 227 sec  latency 5.337 ms
-   2    398169    14.03 MB/sec  execute 228 sec  latency 5.629 ms
-   2    399372    14.01 MB/sec  execute 229 sec  latency 6.901 ms
-   2    401140    14.06 MB/sec  execute 230 sec  latency 4.122 ms
-   2    402353    14.05 MB/sec  execute 231 sec  latency 6.650 ms
-   2    403789    14.05 MB/sec  execute 232 sec  latency 5.743 ms
-   2    405244    14.05 MB/sec  execute 233 sec  latency 5.340 ms
-   2    406419    14.04 MB/sec  execute 234 sec  latency 6.965 ms
-   2    408162    14.09 MB/sec  execute 235 sec  latency 4.871 ms
-   2    409230    14.05 MB/sec  execute 236 sec  latency 6.343 ms
-   2    410546    14.04 MB/sec  execute 237 sec  latency 4.755 ms
-   2    412194    14.08 MB/sec  execute 238 sec  latency 5.252 ms
-   2    413359    14.06 MB/sec  execute 239 sec  latency 8.014 ms
-   2    415109    14.11 MB/sec  execute 240 sec  latency 5.480 ms
-   2    416204    14.08 MB/sec  execute 241 sec  latency 9.522 ms
-   2    417452    14.06 MB/sec  execute 242 sec  latency 8.649 ms
-   2    419092    14.10 MB/sec  execute 243 sec  latency 5.934 ms
-   2    420263    14.09 MB/sec  execute 244 sec  latency 5.869 ms
-   2    421927    14.10 MB/sec  execute 245 sec  latency 6.709 ms
-   2    423145    14.09 MB/sec  execute 246 sec  latency 7.358 ms
-   2    424436    14.08 MB/sec  execute 247 sec  latency 6.579 ms
-   2    426129    14.13 MB/sec  execute 248 sec  latency 4.544 ms
-   2    427359    14.11 MB/sec  execute 249 sec  latency 4.853 ms
-   2    428946    14.13 MB/sec  execute 250 sec  latency 8.415 ms
-   2    430175    14.12 MB/sec  execute 251 sec  latency 7.033 ms
-   2    431387    14.10 MB/sec  execute 252 sec  latency 7.351 ms
-   2    433109    14.15 MB/sec  execute 253 sec  latency 6.137 ms
-   2    434326    14.13 MB/sec  execute 254 sec  latency 6.328 ms
-   2    435750    14.14 MB/sec  execute 255 sec  latency 7.052 ms
-   2    437210    14.14 MB/sec  execute 256 sec  latency 5.397 ms
-   2    438424    14.12 MB/sec  execute 257 sec  latency 8.034 ms
-   2    440164    14.17 MB/sec  execute 258 sec  latency 5.948 ms
-   2    441374    14.16 MB/sec  execute 259 sec  latency 6.095 ms
-   2    442787    14.16 MB/sec  execute 260 sec  latency 7.670 ms
-   2    444275    14.16 MB/sec  execute 261 sec  latency 6.590 ms
-   2    445476    14.14 MB/sec  execute 262 sec  latency 6.519 ms
-   2    447241    14.19 MB/sec  execute 263 sec  latency 4.530 ms
-   2    448422    14.18 MB/sec  execute 264 sec  latency 6.968 ms
-   2    449864    14.18 MB/sec  execute 265 sec  latency 6.202 ms
-   2    451324    14.18 MB/sec  execute 266 sec  latency 5.902 ms
-   2    452517    14.16 MB/sec  execute 267 sec  latency 7.289 ms
-   2    454275    14.21 MB/sec  execute 268 sec  latency 5.792 ms
+   2       145    12.33 MB/sec  warmup   1 sec  latency 74.749 ms
+   2       230     8.84 MB/sec  warmup   2 sec  latency 422.262 ms
+   2       389     9.08 MB/sec  warmup   3 sec  latency 56.592 ms
+   2       539     9.36 MB/sec  warmup   4 sec  latency 50.927 ms
+   2       736     8.43 MB/sec  warmup   5 sec  latency 68.773 ms
+   2       878     7.15 MB/sec  warmup   6 sec  latency 84.396 ms
+   2      1030     6.41 MB/sec  warmup   7 sec  latency 54.294 ms
+   2      1173     5.71 MB/sec  warmup   8 sec  latency 50.712 ms
+   2      1340     5.42 MB/sec  warmup   9 sec  latency 59.256 ms
+   2      1534     5.18 MB/sec  warmup  10 sec  latency 66.649 ms
+   2      1741     4.74 MB/sec  warmup  11 sec  latency 53.820 ms
+   2      1950     4.38 MB/sec  warmup  12 sec  latency 59.419 ms
+   2      2153     4.08 MB/sec  warmup  13 sec  latency 43.782 ms
+   2      2377     3.97 MB/sec  warmup  14 sec  latency 45.390 ms
+   2      2691     4.04 MB/sec  warmup  15 sec  latency 41.831 ms
+   2      3087     4.20 MB/sec  warmup  16 sec  latency 46.189 ms
+   2      3380     4.20 MB/sec  warmup  17 sec  latency 61.927 ms
+   2      3627     4.26 MB/sec  warmup  18 sec  latency 73.317 ms
+   2      3743     4.11 MB/sec  warmup  19 sec  latency 73.385 ms
+   2      3929     3.99 MB/sec  warmup  20 sec  latency 58.229 ms
+   2      4140     3.80 MB/sec  warmup  21 sec  latency 47.833 ms
+   2      4349     3.66 MB/sec  warmup  22 sec  latency 62.595 ms
+   2      4540     3.54 MB/sec  warmup  23 sec  latency 65.277 ms
+   2      4708     3.49 MB/sec  warmup  24 sec  latency 57.818 ms
+   2      4961     3.59 MB/sec  warmup  25 sec  latency 67.467 ms
+   2      5261     3.47 MB/sec  warmup  26 sec  latency 38.325 ms
+   2      5637     3.37 MB/sec  warmup  27 sec  latency 19.065 ms
+   2      6036     3.38 MB/sec  warmup  28 sec  latency 25.467 ms
+   2      6675     3.64 MB/sec  warmup  29 sec  latency 36.540 ms
+   2      7362     3.91 MB/sec  warmup  30 sec  latency 17.202 ms
+   2      7785     3.82 MB/sec  warmup  31 sec  latency 15.487 ms
+   2      8197     3.81 MB/sec  warmup  32 sec  latency 14.719 ms
+   2      8712     3.89 MB/sec  warmup  33 sec  latency 24.353 ms
+   2      9226     3.80 MB/sec  warmup  34 sec  latency 12.164 ms
+   2      9940     4.04 MB/sec  warmup  35 sec  latency 15.158 ms
+   2     10811     4.29 MB/sec  warmup  36 sec  latency 17.431 ms
+   2     11273     4.22 MB/sec  warmup  37 sec  latency 13.048 ms
+   2     11773     4.21 MB/sec  warmup  38 sec  latency 20.195 ms
+   2     12397     4.27 MB/sec  warmup  39 sec  latency 11.760 ms
+   2     12923     4.22 MB/sec  warmup  40 sec  latency 12.407 ms
+   2     13579     4.39 MB/sec  warmup  41 sec  latency 14.900 ms
+   2     14327     4.56 MB/sec  warmup  42 sec  latency 13.205 ms
+   2     14768     4.52 MB/sec  warmup  43 sec  latency 11.384 ms
+   2     15266     4.50 MB/sec  warmup  44 sec  latency 17.145 ms
+   2     15823     4.55 MB/sec  warmup  45 sec  latency 14.492 ms
+   2     16386     4.48 MB/sec  warmup  46 sec  latency 10.207 ms
+   2     17193     4.67 MB/sec  warmup  47 sec  latency 10.337 ms
+   2     18031     4.83 MB/sec  warmup  48 sec  latency 12.095 ms
+   2     18510     4.76 MB/sec  warmup  49 sec  latency 18.691 ms
+   2     19119     4.81 MB/sec  warmup  50 sec  latency 13.755 ms
+   2     19766     4.78 MB/sec  warmup  51 sec  latency 10.571 ms
+   2     20478     4.84 MB/sec  warmup  52 sec  latency 17.798 ms
+   2     21565     5.10 MB/sec  warmup  53 sec  latency 10.516 ms
+   2     22189     5.04 MB/sec  warmup  54 sec  latency 11.698 ms
+   2     22915     5.11 MB/sec  warmup  55 sec  latency 14.067 ms
+   2     23641     5.07 MB/sec  warmup  56 sec  latency 8.967 ms
+   2     24914     5.37 MB/sec  warmup  57 sec  latency 8.637 ms
+   2     25624     5.34 MB/sec  warmup  58 sec  latency 14.827 ms
+   2     26393     5.41 MB/sec  warmup  59 sec  latency 8.925 ms
+   2     27185     5.36 MB/sec  warmup  60 sec  latency 11.466 ms
+   2     28455     5.64 MB/sec  warmup  61 sec  latency 7.830 ms
+   2     29175     5.61 MB/sec  warmup  62 sec  latency 8.191 ms
+   2     29906     5.67 MB/sec  warmup  63 sec  latency 11.762 ms
+   2     30608     5.61 MB/sec  warmup  64 sec  latency 8.796 ms
+   2     31765     5.81 MB/sec  warmup  65 sec  latency 13.888 ms
+   2     32519     5.84 MB/sec  warmup  66 sec  latency 11.343 ms
+   2     33208     5.82 MB/sec  warmup  67 sec  latency 13.395 ms
+   2     34018     5.83 MB/sec  warmup  68 sec  latency 9.454 ms
+   2     35093     5.98 MB/sec  warmup  69 sec  latency 9.131 ms
+   2     36010     6.05 MB/sec  warmup  70 sec  latency 13.850 ms
+   2     36693     6.03 MB/sec  warmup  71 sec  latency 10.906 ms
+   2     37430     6.04 MB/sec  warmup  72 sec  latency 7.951 ms
+   2     38381     6.13 MB/sec  warmup  73 sec  latency 10.532 ms
+   2     39400     6.24 MB/sec  warmup  74 sec  latency 9.721 ms
+   2     40105     6.20 MB/sec  warmup  75 sec  latency 15.960 ms
+   2     40882     6.22 MB/sec  warmup  76 sec  latency 8.371 ms
+   2     41610     6.20 MB/sec  warmup  77 sec  latency 12.650 ms
+   2     42805     6.39 MB/sec  warmup  78 sec  latency 10.342 ms
+   2     43449     6.35 MB/sec  warmup  79 sec  latency 11.173 ms
+   2     44163     6.38 MB/sec  warmup  80 sec  latency 10.221 ms
+   2     44859     6.33 MB/sec  warmup  81 sec  latency 9.424 ms
+   2     46043     6.49 MB/sec  warmup  82 sec  latency 8.715 ms
+   2     46703     6.49 MB/sec  warmup  83 sec  latency 17.048 ms
+   2     47405     6.46 MB/sec  warmup  84 sec  latency 10.834 ms
+   2     48157     6.46 MB/sec  warmup  85 sec  latency 9.233 ms
+   2     49255     6.56 MB/sec  warmup  86 sec  latency 14.126 ms
+   2     50222     6.63 MB/sec  warmup  87 sec  latency 9.367 ms
+   2     50907     6.60 MB/sec  warmup  88 sec  latency 14.767 ms
+   2     51738     6.60 MB/sec  warmup  89 sec  latency 8.183 ms
+   2     52935     6.71 MB/sec  warmup  90 sec  latency 7.013 ms
+   2     53804     6.76 MB/sec  warmup  91 sec  latency 8.860 ms
+   2     54483     6.73 MB/sec  warmup  92 sec  latency 10.555 ms
+   2     55291     6.73 MB/sec  warmup  93 sec  latency 9.067 ms
+   2     56449     6.82 MB/sec  warmup  94 sec  latency 9.893 ms
+   2     57292     6.87 MB/sec  warmup  95 sec  latency 8.598 ms
+   2     58009     6.85 MB/sec  warmup  96 sec  latency 10.573 ms
+   2     58798     6.85 MB/sec  warmup  97 sec  latency 8.704 ms
+   2     59986     6.94 MB/sec  warmup  98 sec  latency 56.463 ms
+   2     60980     6.98 MB/sec  warmup  99 sec  latency 9.444 ms
+   2     61872     7.01 MB/sec  warmup 100 sec  latency 14.405 ms
+   2     62763     6.99 MB/sec  warmup 101 sec  latency 7.787 ms
+   2     64140     7.15 MB/sec  warmup 102 sec  latency 12.448 ms
+   2     64939     7.12 MB/sec  warmup 103 sec  latency 11.203 ms
+   2     65849     7.12 MB/sec  warmup 104 sec  latency 9.336 ms
+   2     67081     7.20 MB/sec  warmup 105 sec  latency 9.677 ms
+   2     68043     7.24 MB/sec  warmup 106 sec  latency 10.897 ms
+   2     68903     7.27 MB/sec  warmup 107 sec  latency 11.815 ms
+   2     69723     7.23 MB/sec  warmup 108 sec  latency 9.848 ms
+   2     71020     7.37 MB/sec  warmup 109 sec  latency 7.004 ms
+   2     71768     7.33 MB/sec  warmup 110 sec  latency 11.162 ms
+   2     72614     7.35 MB/sec  warmup 111 sec  latency 10.910 ms
+   2     73508     7.34 MB/sec  warmup 112 sec  latency 7.608 ms
+   2     74851     7.47 MB/sec  warmup 113 sec  latency 8.472 ms
+   2     75671     7.44 MB/sec  warmup 114 sec  latency 9.510 ms
+   2     76551     7.44 MB/sec  warmup 115 sec  latency 8.524 ms
+   2     77870     7.53 MB/sec  warmup 116 sec  latency 8.360 ms
+   2     78833     7.55 MB/sec  warmup 117 sec  latency 9.866 ms
+   2     79763     7.57 MB/sec  warmup 118 sec  latency 9.928 ms
+   2     80686     7.55 MB/sec  warmup 119 sec  latency 7.610 ms
+   2     82885     4.27 MB/sec  execute   1 sec  latency 8.358 ms
+   2     83798     5.77 MB/sec  execute   2 sec  latency 12.481 ms
+   2     85237    11.72 MB/sec  execute   3 sec  latency 7.192 ms
+   2     86101     9.95 MB/sec  execute   4 sec  latency 9.931 ms
+   2     87023     9.81 MB/sec  execute   5 sec  latency 8.592 ms
+   2     88398    10.85 MB/sec  execute   6 sec  latency 7.671 ms
+   2     89431    10.99 MB/sec  execute   7 sec  latency 9.768 ms
+   2     90378    10.87 MB/sec  execute   8 sec  latency 8.138 ms
+   2     91403    10.62 MB/sec  execute   9 sec  latency 8.269 ms
+   2     92752    11.47 MB/sec  execute  10 sec  latency 9.463 ms
+   2     93695    11.35 MB/sec  execute  11 sec  latency 9.920 ms
+   2     94633    10.72 MB/sec  execute  12 sec  latency 7.115 ms
+   2     96040    11.72 MB/sec  execute  13 sec  latency 7.965 ms
+   2     96929    11.21 MB/sec  execute  14 sec  latency 8.500 ms
+   2     97820    10.94 MB/sec  execute  15 sec  latency 10.829 ms
+   2     99119    11.34 MB/sec  execute  16 sec  latency 8.104 ms
+   2    100078    11.28 MB/sec  execute  17 sec  latency 7.314 ms
+   2    100984    11.21 MB/sec  execute  18 sec  latency 9.389 ms
+   2    102038    11.07 MB/sec  execute  19 sec  latency 9.157 ms
+   2    103392    11.47 MB/sec  execute  20 sec  latency 7.866 ms
+   2    104351    11.41 MB/sec  execute  21 sec  latency 8.898 ms
+   2    105273    11.06 MB/sec  execute  22 sec  latency 7.499 ms
+   2    106693    11.61 MB/sec  execute  23 sec  latency 13.133 ms
+   2    107526    11.32 MB/sec  execute  24 sec  latency 15.262 ms
+   2    108447    11.15 MB/sec  execute  25 sec  latency 8.266 ms
+   2    109822    11.41 MB/sec  execute  26 sec  latency 8.715 ms
+   2    110776    11.36 MB/sec  execute  27 sec  latency 9.432 ms
+   2    111691    11.30 MB/sec  execute  28 sec  latency 9.439 ms
+   2    112766    11.31 MB/sec  execute  29 sec  latency 8.697 ms
+   2    114006    11.47 MB/sec  execute  30 sec  latency 11.048 ms
+   2    114881    11.34 MB/sec  execute  31 sec  latency 11.953 ms
+   2    115911    11.19 MB/sec  execute  32 sec  latency 13.938 ms
+   2    117372    11.57 MB/sec  execute  33 sec  latency 9.560 ms
+   2    118300    11.37 MB/sec  execute  34 sec  latency 10.056 ms
+   2    119328    11.27 MB/sec  execute  35 sec  latency 7.536 ms
+   2    120816    11.64 MB/sec  execute  36 sec  latency 12.792 ms
+   2    121728    11.48 MB/sec  execute  37 sec  latency 10.003 ms
+   2    122759    11.37 MB/sec  execute  38 sec  latency 7.593 ms
+   2    124257    11.69 MB/sec  execute  39 sec  latency 10.565 ms
+   2    125159    11.52 MB/sec  execute  40 sec  latency 6.743 ms
+   2    126210    11.47 MB/sec  execute  41 sec  latency 11.647 ms
+   2    127837    11.77 MB/sec  execute  42 sec  latency 6.654 ms
+   2    128787    11.65 MB/sec  execute  43 sec  latency 7.990 ms
+   2    129806    11.56 MB/sec  execute  44 sec  latency 9.482 ms
+   2    131320    11.83 MB/sec  execute  45 sec  latency 8.547 ms
+   2    132230    11.67 MB/sec  execute  46 sec  latency 10.433 ms
+   2    133154    11.62 MB/sec  execute  47 sec  latency 11.201 ms
+   2    134769    11.88 MB/sec  execute  48 sec  latency 8.725 ms
+   2    135763    11.74 MB/sec  execute  49 sec  latency 6.618 ms
+   2    136815    11.69 MB/sec  execute  50 sec  latency 7.986 ms
+   2    138412    11.94 MB/sec  execute  51 sec  latency 7.062 ms
+   2    139377    11.81 MB/sec  execute  52 sec  latency 8.936 ms
+   2    140504    11.76 MB/sec  execute  53 sec  latency 8.435 ms
+   2    142128    12.03 MB/sec  execute  54 sec  latency 7.655 ms
+   2    143138    11.90 MB/sec  execute  55 sec  latency 7.476 ms
+   2    144293    11.86 MB/sec  execute  56 sec  latency 8.635 ms
+   2    145832    12.08 MB/sec  execute  57 sec  latency 7.942 ms
+   2    146880    12.04 MB/sec  execute  58 sec  latency 10.558 ms
+   2    147933    11.93 MB/sec  execute  59 sec  latency 8.836 ms
+   2    149439    12.11 MB/sec  execute  60 sec  latency 11.478 ms
+   2    150487    12.08 MB/sec  execute  61 sec  latency 8.467 ms
+   2    151623    11.98 MB/sec  execute  62 sec  latency 5.091 ms
+   2    153149    12.14 MB/sec  execute  63 sec  latency 9.914 ms
+   2    154213    12.11 MB/sec  execute  64 sec  latency 10.055 ms
+   2    155502    12.15 MB/sec  execute  65 sec  latency 5.626 ms
+   2    156839    12.18 MB/sec  execute  66 sec  latency 6.912 ms
+   2    157835    12.15 MB/sec  execute  67 sec  latency 11.399 ms
+   2    159333    12.21 MB/sec  execute  68 sec  latency 8.751 ms
+   2    160411    12.20 MB/sec  execute  69 sec  latency 9.497 ms
+   2    161391    12.17 MB/sec  execute  70 sec  latency 9.854 ms
+   2    162626    12.20 MB/sec  execute  71 sec  latency 7.475 ms
+   2    163915    12.23 MB/sec  execute  72 sec  latency 9.308 ms
+   2    164973    12.19 MB/sec  execute  73 sec  latency 8.743 ms
+   2    166476    12.27 MB/sec  execute  74 sec  latency 7.337 ms
+   2    167626    12.26 MB/sec  execute  75 sec  latency 8.222 ms
+   2    168582    12.22 MB/sec  execute  76 sec  latency 9.344 ms
+   2    170108    12.30 MB/sec  execute  77 sec  latency 6.380 ms
+   2    171170    12.27 MB/sec  execute  78 sec  latency 8.365 ms
+   2    172237    12.24 MB/sec  execute  79 sec  latency 9.473 ms
+   2    173817    12.39 MB/sec  execute  80 sec  latency 7.882 ms
+   2    174820    12.30 MB/sec  execute  81 sec  latency 13.546 ms
+   2    175928    12.26 MB/sec  execute  82 sec  latency 7.650 ms
+   2    177540    12.41 MB/sec  execute  83 sec  latency 9.074 ms
+   2    178577    12.34 MB/sec  execute  84 sec  latency 8.959 ms
+   2    179722    12.31 MB/sec  execute  85 sec  latency 6.959 ms
+   2    181247    12.45 MB/sec  execute  86 sec  latency 7.208 ms
+   2    182261    12.39 MB/sec  execute  87 sec  latency 9.065 ms
+   2    183302    12.33 MB/sec  execute  88 sec  latency 6.696 ms
+   2    184799    12.46 MB/sec  execute  89 sec  latency 8.713 ms
+   2    185800    12.41 MB/sec  execute  90 sec  latency 9.954 ms
+   2    186928    12.35 MB/sec  execute  91 sec  latency 4.917 ms
+   2    188532    12.47 MB/sec  execute  92 sec  latency 6.976 ms
+   2    189666    12.45 MB/sec  execute  93 sec  latency 9.168 ms
+   2    191097    12.48 MB/sec  execute  94 sec  latency 9.378 ms
+   2    192378    12.49 MB/sec  execute  95 sec  latency 7.600 ms
+   2    193487    12.46 MB/sec  execute  96 sec  latency 9.085 ms
+   2    195151    12.58 MB/sec  execute  97 sec  latency 6.834 ms
+   2    196223    12.53 MB/sec  execute  98 sec  latency 10.421 ms
+   2    197409    12.50 MB/sec  execute  99 sec  latency 9.843 ms
+   2    199014    12.62 MB/sec  execute 100 sec  latency 8.251 ms
+   2    200140    12.59 MB/sec  execute 101 sec  latency 8.429 ms
+   2    201242    12.53 MB/sec  execute 102 sec  latency 9.975 ms
+   2    202839    12.62 MB/sec  execute 103 sec  latency 5.954 ms
+   2    203915    12.60 MB/sec  execute 104 sec  latency 12.967 ms
+   2    205394    12.64 MB/sec  execute 105 sec  latency 6.184 ms
+   2    206586    12.64 MB/sec  execute 106 sec  latency 7.544 ms
+   2    207681    12.61 MB/sec  execute 107 sec  latency 6.802 ms
+   2    209331    12.72 MB/sec  execute 108 sec  latency 6.636 ms
+   2    210401    12.67 MB/sec  execute 109 sec  latency 9.507 ms
+   2    211554    12.63 MB/sec  execute 110 sec  latency 9.101 ms
+   2    213170    12.74 MB/sec  execute 111 sec  latency 6.610 ms
+   2    214248    12.72 MB/sec  execute 112 sec  latency 9.124 ms
+   2    215342    12.65 MB/sec  execute 113 sec  latency 5.535 ms
+   2    216912    12.75 MB/sec  execute 114 sec  latency 7.724 ms
+   2    218016    12.73 MB/sec  execute 115 sec  latency 7.087 ms
+   2    219395    12.74 MB/sec  execute 116 sec  latency 6.671 ms
+   2    220776    12.76 MB/sec  execute 117 sec  latency 6.317 ms
+   2    221877    12.73 MB/sec  execute 118 sec  latency 7.714 ms
+   2    223474    12.83 MB/sec  execute 119 sec  latency 8.218 ms
+   2    224523    12.77 MB/sec  execute 120 sec  latency 7.803 ms
+   2    225703    12.74 MB/sec  execute 121 sec  latency 6.560 ms
+   2    227369    12.85 MB/sec  execute 122 sec  latency 6.434 ms
+   2    228307    12.78 MB/sec  execute 123 sec  latency 10.090 ms
+   2    229423    12.76 MB/sec  execute 124 sec  latency 6.705 ms
+   2    230986    12.85 MB/sec  execute 125 sec  latency 10.673 ms
+   2    232084    12.83 MB/sec  execute 126 sec  latency 8.230 ms
+   2    233213    12.77 MB/sec  execute 127 sec  latency 8.248 ms
+   2    234722    12.85 MB/sec  execute 128 sec  latency 10.676 ms
+   2    235828    12.83 MB/sec  execute 129 sec  latency 8.069 ms
+   2    237157    12.84 MB/sec  execute 130 sec  latency 11.977 ms
+   2    238505    12.85 MB/sec  execute 131 sec  latency 9.539 ms
+   2    239658    12.83 MB/sec  execute 132 sec  latency 9.777 ms
+   2    241322    12.92 MB/sec  execute 133 sec  latency 10.041 ms
+   2    242370    12.87 MB/sec  execute 134 sec  latency 6.483 ms
+   2    243404    12.83 MB/sec  execute 135 sec  latency 12.105 ms
+   2    244997    12.93 MB/sec  execute 136 sec  latency 6.568 ms
+   2    246059    12.87 MB/sec  execute 137 sec  latency 6.851 ms
+   2    247238    12.85 MB/sec  execute 138 sec  latency 9.818 ms
+   2    248838    12.93 MB/sec  execute 139 sec  latency 8.607 ms
+   2    249944    12.91 MB/sec  execute 140 sec  latency 7.731 ms
+   2    251327    12.93 MB/sec  execute 141 sec  latency 6.232 ms
+   2    252718    12.93 MB/sec  execute 142 sec  latency 6.174 ms
+   2    253860    12.91 MB/sec  execute 143 sec  latency 9.899 ms
+   2    255530    12.99 MB/sec  execute 144 sec  latency 5.217 ms
+   2    256607    12.95 MB/sec  execute 145 sec  latency 8.660 ms
+   2    257800    12.93 MB/sec  execute 146 sec  latency 7.982 ms
+   2    259371    13.01 MB/sec  execute 147 sec  latency 10.386 ms
+   2    260439    12.99 MB/sec  execute 148 sec  latency 7.437 ms
+   2    261563    12.94 MB/sec  execute 149 sec  latency 7.153 ms
+   2    263150    13.00 MB/sec  execute 150 sec  latency 8.913 ms
+   2    264271    12.99 MB/sec  execute 151 sec  latency 8.391 ms
+   2    265860    13.02 MB/sec  execute 152 sec  latency 6.052 ms
+   2    267025    13.01 MB/sec  execute 153 sec  latency 6.190 ms
+   2    268192    12.99 MB/sec  execute 154 sec  latency 9.784 ms
+   2    269837    13.07 MB/sec  execute 155 sec  latency 5.461 ms
+   2    270841    13.02 MB/sec  execute 156 sec  latency 7.658 ms
+   2    272021    13.00 MB/sec  execute 157 sec  latency 8.400 ms
+   2    273606    13.07 MB/sec  execute 158 sec  latency 9.579 ms
+   2    274711    13.05 MB/sec  execute 159 sec  latency 14.035 ms
+   2    276048    13.06 MB/sec  execute 160 sec  latency 6.372 ms
+   2    277426    13.07 MB/sec  execute 161 sec  latency 12.257 ms
+   2    278516    13.05 MB/sec  execute 162 sec  latency 8.183 ms
+   2    280202    13.12 MB/sec  execute 163 sec  latency 6.304 ms
+   2    281219    13.07 MB/sec  execute 164 sec  latency 10.494 ms
+   2    282323    13.05 MB/sec  execute 165 sec  latency 6.290 ms
+   2    283939    13.12 MB/sec  execute 166 sec  latency 7.671 ms
+   2    284965    13.08 MB/sec  execute 167 sec  latency 11.280 ms
+   2    286102    13.06 MB/sec  execute 168 sec  latency 9.958 ms
+   2    287684    13.12 MB/sec  execute 169 sec  latency 8.884 ms
+   2    288785    13.11 MB/sec  execute 170 sec  latency 7.442 ms
+   2    289908    13.06 MB/sec  execute 171 sec  latency 10.189 ms
+   2    291458    13.12 MB/sec  execute 172 sec  latency 8.002 ms
+   2    292469    13.10 MB/sec  execute 173 sec  latency 9.607 ms
+   2    293826    13.11 MB/sec  execute 174 sec  latency 8.040 ms
+   2    295159    13.11 MB/sec  execute 175 sec  latency 7.082 ms
+   2    296192    13.10 MB/sec  execute 176 sec  latency 7.901 ms
+   2    297710    13.12 MB/sec  execute 177 sec  latency 8.842 ms
+   2    298871    13.11 MB/sec  execute 178 sec  latency 9.385 ms
+   2    299986    13.09 MB/sec  execute 179 sec  latency 7.281 ms
+   2    301661    13.16 MB/sec  execute 180 sec  latency 7.178 ms
+   2    302710    13.12 MB/sec  execute 181 sec  latency 6.966 ms
+   2    303885    13.10 MB/sec  execute 182 sec  latency 8.772 ms
+   2    305485    13.16 MB/sec  execute 183 sec  latency 9.056 ms
+   2    306576    13.15 MB/sec  execute 184 sec  latency 8.361 ms
+   2    307654    13.11 MB/sec  execute 185 sec  latency 6.889 ms
+   2    309191    13.16 MB/sec  execute 186 sec  latency 7.762 ms
+   2    310196    13.14 MB/sec  execute 187 sec  latency 7.127 ms
+   2    311275    13.12 MB/sec  execute 188 sec  latency 7.261 ms
+   2    312739    13.15 MB/sec  execute 189 sec  latency 6.879 ms
+   2    313885    13.14 MB/sec  execute 190 sec  latency 10.557 ms
+   2    315490    13.17 MB/sec  execute 191 sec  latency 5.993 ms
+   2    316678    13.15 MB/sec  execute 192 sec  latency 6.115 ms
+   2    317866    13.14 MB/sec  execute 193 sec  latency 9.107 ms
+   2    319549    13.20 MB/sec  execute 194 sec  latency 6.979 ms
+   2    320699    13.19 MB/sec  execute 195 sec  latency 6.435 ms
+   2    321867    13.16 MB/sec  execute 196 sec  latency 6.379 ms
+   2    323467    13.20 MB/sec  execute 197 sec  latency 6.642 ms
+   2    324554    13.19 MB/sec  execute 198 sec  latency 6.441 ms
+   2    326146    13.21 MB/sec  execute 199 sec  latency 4.666 ms
+   2    327297    13.20 MB/sec  execute 200 sec  latency 9.338 ms
+   2    328479    13.18 MB/sec  execute 201 sec  latency 5.666 ms
+   2    330130    13.25 MB/sec  execute 202 sec  latency 6.839 ms
+   2    331185    13.21 MB/sec  execute 203 sec  latency 8.742 ms
+   2    332370    13.20 MB/sec  execute 204 sec  latency 9.019 ms
+   2    333954    13.24 MB/sec  execute 205 sec  latency 5.661 ms
+   2    335051    13.23 MB/sec  execute 206 sec  latency 7.090 ms
+   2    336437    13.24 MB/sec  execute 207 sec  latency 5.834 ms
+   2    337809    13.24 MB/sec  execute 208 sec  latency 8.212 ms
+   2    338956    13.23 MB/sec  execute 209 sec  latency 7.178 ms
+   2    340604    13.28 MB/sec  execute 210 sec  latency 5.668 ms
+   2    341677    13.25 MB/sec  execute 211 sec  latency 5.930 ms
+   2    342866    13.23 MB/sec  execute 212 sec  latency 10.010 ms
+   2    344457    13.29 MB/sec  execute 213 sec  latency 4.791 ms
+   2    345615    13.27 MB/sec  execute 214 sec  latency 8.062 ms
+   2    346977    13.28 MB/sec  execute 215 sec  latency 10.329 ms
+   2    348363    13.28 MB/sec  execute 216 sec  latency 6.390 ms
+   2    349466    13.27 MB/sec  execute 217 sec  latency 8.595 ms
+   2    351188    13.32 MB/sec  execute 218 sec  latency 6.257 ms
+   2    352292    13.29 MB/sec  execute 219 sec  latency 10.052 ms
+   2    353492    13.27 MB/sec  execute 220 sec  latency 7.102 ms
+   2    355071    13.32 MB/sec  execute 221 sec  latency 7.641 ms
+   2    356166    13.31 MB/sec  execute 222 sec  latency 11.218 ms
+   2    357305    13.28 MB/sec  execute 223 sec  latency 6.250 ms
+   2    358886    13.32 MB/sec  execute 224 sec  latency 8.966 ms
+   2    359940    13.30 MB/sec  execute 225 sec  latency 6.972 ms
+   2    361227    13.31 MB/sec  execute 226 sec  latency 5.905 ms
+   2    362592    13.31 MB/sec  execute 227 sec  latency 8.779 ms
+   2    363759    13.30 MB/sec  execute 228 sec  latency 10.362 ms
+   2    365452    13.35 MB/sec  execute 229 sec  latency 7.569 ms
+   2    366544    13.32 MB/sec  execute 230 sec  latency 7.529 ms
+   2    367753    13.30 MB/sec  execute 231 sec  latency 7.203 ms
+   2    369379    13.35 MB/sec  execute 232 sec  latency 7.245 ms
+   2    370525    13.34 MB/sec  execute 233 sec  latency 6.749 ms
+   2    371972    13.35 MB/sec  execute 234 sec  latency 7.763 ms
+   2    373315    13.35 MB/sec  execute 235 sec  latency 8.260 ms
+   2    374455    13.33 MB/sec  execute 236 sec  latency 8.141 ms
+   2    376091    13.38 MB/sec  execute 237 sec  latency 5.385 ms
+   2    377162    13.35 MB/sec  execute 238 sec  latency 9.914 ms
+   2    378371    13.34 MB/sec  execute 239 sec  latency 7.597 ms
+   2    379983    13.38 MB/sec  execute 240 sec  latency 5.101 ms
+   2    381133    13.37 MB/sec  execute 241 sec  latency 6.129 ms
+   2    382511    13.38 MB/sec  execute 242 sec  latency 6.729 ms
+   2    383906    13.38 MB/sec  execute 243 sec  latency 6.096 ms
+   2    385046    13.37 MB/sec  execute 244 sec  latency 7.466 ms
+   2    386702    13.41 MB/sec  execute 245 sec  latency 8.494 ms
+   2    387750    13.38 MB/sec  execute 246 sec  latency 7.101 ms
+   2    388889    13.36 MB/sec  execute 247 sec  latency 8.924 ms
+   2    390558    13.42 MB/sec  execute 248 sec  latency 6.583 ms
+   2    391672    13.40 MB/sec  execute 249 sec  latency 8.636 ms
+   2    392806    13.37 MB/sec  execute 250 sec  latency 5.760 ms
+   2    394348    13.41 MB/sec  execute 251 sec  latency 5.977 ms
+   2    395451    13.40 MB/sec  execute 252 sec  latency 6.168 ms
+   2    396783    13.40 MB/sec  execute 253 sec  latency 6.936 ms
+   2    398100    13.40 MB/sec  execute 254 sec  latency 7.048 ms
+   2    399161    13.39 MB/sec  execute 255 sec  latency 7.469 ms
+   2    400868    13.43 MB/sec  execute 256 sec  latency 6.068 ms
+   2    401911    13.41 MB/sec  execute 257 sec  latency 7.604 ms
+   2    403066    13.39 MB/sec  execute 258 sec  latency 7.506 ms
+   2    404739    13.44 MB/sec  execute 259 sec  latency 7.841 ms
+   2    405856    13.42 MB/sec  execute 260 sec  latency 7.833 ms
+   2    406995    13.39 MB/sec  execute 261 sec  latency 5.111 ms
+   2    408599    13.43 MB/sec  execute 262 sec  latency 5.295 ms
+   2    409699    13.42 MB/sec  execute 263 sec  latency 8.494 ms
+   2    411130    13.43 MB/sec  execute 264 sec  latency 5.550 ms
+   2    412325    13.42 MB/sec  execute 265 sec  latency 8.383 ms
+   2    413379    13.41 MB/sec  execute 266 sec  latency 9.663 ms
+   2    415077    13.45 MB/sec  execute 267 sec  latency 6.401 ms
+   2    416142    13.43 MB/sec  execute 268 sec  latency 6.574 ms
+   2    417376    13.41 MB/sec  execute 269 sec  latency 7.629 ms
+   2    418983    13.46 MB/sec  execute 270 sec  latency 6.689 ms
+   2    420114    13.44 MB/sec  execute 271 sec  latency 7.131 ms
+   2    421362    13.44 MB/sec  execute 272 sec  latency 8.985 ms
+   2    422838    13.45 MB/sec  execute 273 sec  latency 6.200 ms
+   2    423957    13.44 MB/sec  execute 274 sec  latency 6.086 ms
+   2    425631    13.48 MB/sec  execute 275 sec  latency 4.922 ms
+   2    426691    13.45 MB/sec  execute 276 sec  latency 7.882 ms
+   2    427867    13.43 MB/sec  execute 277 sec  latency 7.008 ms
+   2    429518    13.48 MB/sec  execute 278 sec  latency 6.915 ms
+   2    430631    13.47 MB/sec  execute 279 sec  latency 11.476 ms
+   2    431787    13.44 MB/sec  execute 280 sec  latency 5.373 ms
+   2    433315    13.47 MB/sec  execute 281 sec  latency 5.833 ms
+   2    434445    13.46 MB/sec  execute 282 sec  latency 6.045 ms
+   2    435941    13.47 MB/sec  execute 283 sec  latency 7.356 ms
+   2    437191    13.47 MB/sec  execute 284 sec  latency 6.110 ms
+   2    438310    13.46 MB/sec  execute 285 sec  latency 7.210 ms
+   2    439963    13.49 MB/sec  execute 286 sec  latency 5.525 ms
+   2    441010    13.47 MB/sec  execute 287 sec  latency 6.979 ms
+   2    442230    13.46 MB/sec  execute 288 sec  latency 7.195 ms
+   2    443836    13.50 MB/sec  execute 289 sec  latency 5.770 ms
+   2    444981    13.49 MB/sec  execute 290 sec  latency 8.419 ms
+   2    446379    13.49 MB/sec  execute 291 sec  latency 5.499 ms
+   2    447774    13.49 MB/sec  execute 292 sec  latency 7.539 ms
+   2    448936    13.48 MB/sec  execute 293 sec  latency 5.671 ms
+   2    450618    13.52 MB/sec  execute 294 sec  latency 6.675 ms
+   2    451695    13.50 MB/sec  execute 295 sec  latency 5.157 ms
+   2    452901    13.48 MB/sec  execute 296 sec  latency 7.302 ms
+   2    454525    13.52 MB/sec  execute 297 sec  latency 6.585 ms
+   2    455677    13.51 MB/sec  execute 298 sec  latency 8.344 ms
+   2    457225    13.52 MB/sec  execute 299 sec  latency 7.234 ms
 </pre>
 </body>
 </html>

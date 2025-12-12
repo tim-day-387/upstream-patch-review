@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=221e7c9ccdab43e38757f469a10d10b0;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=1f9d508e9b4a4e3e97700a602b96389f;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=e0b5afcb7ee843c7a8c150fc4105023c;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=bd9f4ed626204b15b37e0183cb9415c6;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,71 +16,6 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
-------------[ cut here ]------------
-RTNL: assertion failed at include/net/netdev_lock.h (56)
-WARNING: CPU: 0 PID: 1025 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
-Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 0 UID: 0 PID: 1025 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-RIP: 0010:__linkwatch_sync_dev+0x226/0x280
-Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
-RSP: 0018:ffffc90002337710 EFLAGS: 00010246
-RAX: a7b83a51e7d89b00 RBX: ffff888105c2a000 RCX: 0000000000000027
-RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159223750
-RBP: ffff88810cbb4de0 R08: ffff888159223753 R09: 1ffff1102b2446ea
-R10: dffffc0000000000 R11: ffffed102b2446eb R12: dffffc0000000000
-R13: dffffc0000000000 R14: ffff888105c2a9c8 R15: ffffffff82e1aca0
-FS:  00007f4669ec6340(0000) GS:ffff8881d4faa000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 000055c81d41edc8 CR3: 0000000108ef3000 CR4: 0000000000750eb0
-PKRU: 55555554
-Call Trace:
- <TASK>
- ? bpf_dummy_test_sleepable+0x10/0x10
- ethtool_op_get_link+0x12/0x60
- lnet_get_link_status+0x169/0x300 [lnet]
- ksocknal_startup+0x1269/0x22a0 [ksocklnd]
- ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
- lnet_startup_lndnet+0x73e/0x25e0 [lnet]
- ? _raw_spin_unlock+0x23/0x30
- ? cfs_percpt_unlock+0xed/0x210 [lnet]
- LNetNIInit+0x9cb/0x1120 [lnet]
- ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
- init_module+0x2f8/0x1000 [ptlrpc]
- do_one_initcall+0x119/0x410
- ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
- ? stack_depot_save_flags+0x41/0x830
- ? kasan_save_track+0x40/0x70
- ? kasan_save_track+0x2f/0x70
- ? __kasan_kmalloc+0x72/0x80
- ? do_init_module+0x8e/0x7c0
- ? __x64_sys_finit_module+0x3b5/0x5b0
- ? do_syscall_64+0x6c/0x140
- ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
- ? pcpu_alloc_noprof+0xadd/0xf70
- ? codetag_module_init+0x273/0x350
- ? load_module+0x3489/0x4390
- ? lock_acquire+0xe7/0x1f0
- ? __kmalloc_cache_noprof+0x34/0x270
- ? kasan_unpoison+0x48/0x70
- ? kasan_unpoison+0x48/0x70
- ? __asan_register_globals+0x59/0x70
- do_init_module+0x2ce/0x7c0
- __x64_sys_finit_module+0x3b5/0x5b0
- do_syscall_64+0x6c/0x140
- ? arch_exit_to_user_mode_prepare+0x9/0x40
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f4669718779
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
-RSP: 002b:00007ffcaa67a7e8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
-RAX: ffffffffffffffda RBX: 000055776b855890 RCX: 00007f4669718779
-RDX: 0000000000000000 RSI: 000055776b8542a0 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f46697f85c0
-R10: 0000000000000000 R11: 0000000000000246 R12: 000055776b8542a0
-R13: 0000000000000000 R14: 000055776b855850 R15: 0000000000000003
- </TASK>
----[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -89,17 +24,13 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2707) used greatest stack depth: 23560 bytes left
+mount.lustre (2707) used greatest stack depth: 23632 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
-Lustre: lustre-OST0000: new disk, initializing
-Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
-Lustre: Skipped 1 previous similar message
-Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client b34fc078-39e5-4a16-bd2f-7b721b9377d2 w/o recovery
+Lustre: lustre-MDT0000: local client 320ef2fa-0e47-42b9-85b3-07c876d39d33 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -126,15 +57,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 03:55:19 UTC 2025
+Started at Fri Dec 12 04:32:44 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035518
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035518
-Logging to shared log directory: /tmp/test_logs/2025-12-12/035518
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043243
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/043243
+Logging to shared log directory: /tmp/test_logs/2025-12-12/043243
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -145,8 +76,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=6a 6c 6e 6g 6h 6i 7a 7b 8 9 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 03:55:21 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:21 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:47 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 04:32:47 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -180,8 +111,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 03:55:22 (1765511722) ===
-Lustre: DEBUG MARKER: === sanity: start setup 03:55:22 (1765511722) ===
+=== sanity: start setup 04:32:50 (1765513970) ===
+Lustre: DEBUG MARKER: === sanity: start setup 04:32:50 (1765513970) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -189,24 +120,24 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888129c8a000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888129c8a000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888117734000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888117734000.idle_timeout=debug
 disable quota as required
-Lustre: 5031:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 03:55:24 (1765511724) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 03:55:24 (1765511724) ===
+Lustre: 5035:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 04:32:53 (1765513973) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 04:32:53 (1765513973) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4171]
+ [touch] [/mnt/lustre/d0_runas_test/f4175]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 6a: touch f6a; chmod f6a; runas -u 1000 -g 1000 chmod f6a (should return error) ============================================================ 03:55:24 (1765511724)
-Lustre: DEBUG MARKER: == sanity test 6a: touch f6a; chmod f6a; runas -u 1000 -g 1000 chmod f6a (should return error) ============================================================ 03:55:24 (1765511724)
-touch (5210) used greatest stack depth: 23472 bytes left
+== sanity test 6a: touch f6a; chmod f6a; runas -u 1000 -g 1000 chmod f6a (should return error) ============================================================ 04:32:54 (1765513974)
+Lustre: DEBUG MARKER: == sanity test 6a: touch f6a; chmod f6a; runas -u 1000 -g 1000 chmod f6a (should return error) ============================================================ 04:32:54 (1765513974)
+touch (5213) used greatest stack depth: 23576 bytes left
 /mnt/lustre/f6a.sanity has type file OK
 /mnt/lustre/f6a.sanity has perms 0666 OK
 /mnt/lustre/f6a.sanity is owned by user #0 OK
@@ -218,8 +149,8 @@ chmod: changing permissions of '/mnt/lustre/f6a.sanity': Operation not permitted
 /mnt/lustre/f6a.sanity is owned by user #0 OK
 PASS 6a (0s)
 
-== sanity test 6c: touch f6c; chown f6c; runas -u 1000 -g 1000 chown f6c (should return error) ============================================================ 03:55:24 (1765511724)
-Lustre: DEBUG MARKER: == sanity test 6c: touch f6c; chown f6c; runas -u 1000 -g 1000 chown f6c (should return error) ============================================================ 03:55:24 (1765511724)
+== sanity test 6c: touch f6c; chown f6c; runas -u 1000 -g 1000 chown f6c (should return error) ============================================================ 04:32:54 (1765513974)
+Lustre: DEBUG MARKER: == sanity test 6c: touch f6c; chown f6c; runas -u 1000 -g 1000 chown f6c (should return error) ============================================================ 04:32:54 (1765513974)
 /mnt/lustre/f6c.sanity has type file OK
 /mnt/lustre/f6c.sanity is owned by user #1000 OK
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
@@ -229,8 +160,8 @@ chown: changing ownership of '/mnt/lustre/f6c.sanity': Operation not permitted
 /mnt/lustre/f6c.sanity is owned by user #1000 OK
 PASS 6c (1s)
 
-== sanity test 6e: touch+chgrp ; runas -u 1000 -g 1000 chgrp  (should return error) ========================================================== 03:55:25 (1765511725)
-Lustre: DEBUG MARKER: == sanity test 6e: touch+chgrp ; runas -u 1000 -g 1000 chgrp (should return error) ========================================================== 03:55:25 (1765511725)
+== sanity test 6e: touch+chgrp ; runas -u 1000 -g 1000 chgrp  (should return error) ========================================================== 04:32:55 (1765513975)
+Lustre: DEBUG MARKER: == sanity test 6e: touch+chgrp ; runas -u 1000 -g 1000 chgrp (should return error) ========================================================== 04:32:55 (1765513975)
 /mnt/lustre/f6e.sanity has type file OK
 /mnt/lustre/f6e.sanity is owned by user #0 OK
 /mnt/lustre/f6e.sanity is owned by group #1000 OK
@@ -242,15 +173,15 @@ chgrp: changing group of '/mnt/lustre/f6e.sanity': Operation not permitted
 /mnt/lustre/f6e.sanity is owned by group #1000 OK
 PASS 6e (0s)
 
-== sanity test 6g: verify new dir in sgid dir inherits group ========================================================== 03:55:25 (1765511725)
-Lustre: DEBUG MARKER: == sanity test 6g: verify new dir in sgid dir inherits group ========================================================== 03:55:25 (1765511725)
+== sanity test 6g: verify new dir in sgid dir inherits group ========================================================== 04:32:55 (1765513975)
+Lustre: DEBUG MARKER: == sanity test 6g: verify new dir in sgid dir inherits group ========================================================== 04:32:55 (1765513975)
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [mkdir] [/mnt/lustre/d6g.sanity/d]
 /mnt/lustre/d6g.sanity/d/subdir is owned by group #1000 OK
 PASS 6g (1s)
 
-== sanity test 6h: runas -u 1000 -g 1000 chown RUNAS_ID.0 .../ (should return error) ========================================================== 03:55:26 (1765511726)
-Lustre: DEBUG MARKER: == sanity test 6h: runas -u 1000 -g 1000 chown RUNAS_ID.0 .../ (should return error) ========================================================== 03:55:26 (1765511726)
+== sanity test 6h: runas -u 1000 -g 1000 chown RUNAS_ID.0 .../ (should return error) ========================================================== 04:32:56 (1765513976)
+Lustre: DEBUG MARKER: == sanity test 6h: runas -u 1000 -g 1000 chown RUNAS_ID.0 .../ (should return error) ========================================================== 04:32:56 (1765513976)
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [chown] [1000:0] [/mnt/lustre/f6h.sanity]
 chown: changing ownership of '/mnt/lustre/f6h.sanity': Operation not permitted
@@ -259,87 +190,85 @@ chown: changing ownership of '/mnt/lustre/f6h.sanity': Operation not permitted
 /mnt/lustre/f6h.sanity is owned by group #1000 OK
 PASS 6h (0s)
 
-== sanity test 6i: touch+chmod+chgrp ; chgrp read-only file should succeed ========================================================== 03:55:27 (1765511727)
-Lustre: DEBUG MARKER: == sanity test 6i: touch+chmod+chgrp ; chgrp read-only file should succeed ========================================================== 03:55:27 (1765511727)
+== sanity test 6i: touch+chmod+chgrp ; chgrp read-only file should succeed ========================================================== 04:32:56 (1765513976)
+Lustre: DEBUG MARKER: == sanity test 6i: touch+chmod+chgrp ; chgrp read-only file should succeed ========================================================== 04:32:56 (1765513976)
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [chgrp] [1000] [/mnt/lustre/f6i.sanity]
+checkstat (5708) used greatest stack depth: 23544 bytes left
 /mnt/lustre/f6i.sanity has type file OK
 /mnt/lustre/f6i.sanity is owned by user #1000 OK
 /mnt/lustre/f6i.sanity is owned by group #1000 OK
-PASS 6i (0s)
+PASS 6i (1s)
 
-== sanity test 7a: mkdir .../d7; mcreate .../d7/f; chmod .../d7/f ============================================================== 03:55:27 (1765511727)
-Lustre: DEBUG MARKER: == sanity test 7a: mkdir .../d7; mcreate .../d7/f; chmod .../d7/f ============================================================== 03:55:27 (1765511727)
+== sanity test 7a: mkdir .../d7; mcreate .../d7/f; chmod .../d7/f ============================================================== 04:32:57 (1765513977)
+Lustre: DEBUG MARKER: == sanity test 7a: mkdir .../d7; mcreate .../d7/f; chmod .../d7/f ============================================================== 04:32:57 (1765513977)
 /mnt/lustre/d7a.sanity/f7a.sanity has type file OK
 /mnt/lustre/d7a.sanity/f7a.sanity has perms 0666 OK
 PASS 7a (1s)
 
-== sanity test 7b: mkdir .../d7; mcreate d7/f2; echo foo > d7/f2 =============================================================== 03:55:28 (1765511728)
-Lustre: DEBUG MARKER: == sanity test 7b: mkdir .../d7; mcreate d7/f2; echo foo > d7/f2 =============================================================== 03:55:28 (1765511728)
+== sanity test 7b: mkdir .../d7; mcreate d7/f2; echo foo > d7/f2 =============================================================== 04:32:58 (1765513978)
+Lustre: DEBUG MARKER: == sanity test 7b: mkdir .../d7; mcreate d7/f2; echo foo > d7/f2 =============================================================== 04:32:58 (1765513978)
 /mnt/lustre/d7b.sanity/f7b.sanity has type file OK
 /mnt/lustre/d7b.sanity/f7b.sanity has size 3 OK
+bash (5874) used greatest stack depth: 23416 bytes left
 PASS 7b (0s)
 
-== sanity test 8: mkdir .../d8; touch .../d8/f; chmod .../d8/f ================================================================= 03:55:28 (1765511728)
-Lustre: DEBUG MARKER: == sanity test 8: mkdir .../d8; touch .../d8/f; chmod .../d8/f ================================================================= 03:55:28 (1765511728)
+== sanity test 8: mkdir .../d8; touch .../d8/f; chmod .../d8/f ================================================================= 04:32:58 (1765513978)
+Lustre: DEBUG MARKER: == sanity test 8: mkdir .../d8; touch .../d8/f; chmod .../d8/f ================================================================= 04:32:58 (1765513978)
 /mnt/lustre/d8.sanity/f8.sanity has type file OK
 /mnt/lustre/d8.sanity/f8.sanity has perms 0666 OK
 PASS 8 (1s)
 
-== sanity test 9: mkdir .../d9 .../d9/d2 .../d9/d2/d3 ========================================================================== 03:55:29 (1765511729)
-Lustre: DEBUG MARKER: == sanity test 9: mkdir .../d9 .../d9/d2 .../d9/d2/d3 ========================================================================== 03:55:29 (1765511729)
+== sanity test 9: mkdir .../d9 .../d9/d2 .../d9/d2/d3 ========================================================================== 04:32:59 (1765513979)
+Lustre: DEBUG MARKER: == sanity test 9: mkdir .../d9 .../d9/d2 .../d9/d2/d3 ========================================================================== 04:32:59 (1765513979)
 /mnt/lustre/d9.sanity/d2/d3 has type dir OK
-PASS 9 (0s)
+PASS 9 (1s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 12 sec ================= 03:55:33 (1765511733)
-Lustre: DEBUG MARKER: == sanity test complete, duration 12 sec ================= 03:55:33 (1765511733)
-=== sanity: start cleanup 03:55:33 (1765511733) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 03:55:33 (1765511733) ===
+== sanity test complete, duration 18 sec ================= 04:33:06 (1765513986)
+Lustre: DEBUG MARKER: == sanity test complete, duration 18 sec ================= 04:33:06 (1765513986)
+=== sanity: start cleanup 04:33:07 (1765513987) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 04:33:07 (1765513987) ===
 skip cleanup
-=== sanity: finish cleanup 03:55:34 (1765511734) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 03:55:34 (1765511734) ===
+=== sanity: finish cleanup 04:33:07 (1765513987) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 04:33:07 (1765513987) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 0
-Finished at Fri Dec 12 03:55:34 UTC 2025 in 16s
+Finished at Fri Dec 12 04:33:07 UTC 2025 in 24s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-Lustre: 1043:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xe:0x0]/ may get corrupted (rc -108)
-LustreError: 7657:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+Lustre: 1048:0:(llite_lib.c:4226:ll_dirty_page_discard_warn()) lustre: dirty page discard: 10.0.2.15@tcp:/lustre/fid: [0x200000401:0xe:0x0]/ may get corrupted (rc -108)
+LustreError: 7660:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
-LustreError: 7686:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 7686:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2715:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511747 with bad export cookie 18394721655708980050
+LustreError: 2712:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765514000 with bad export cookie 4044218932813012511
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 7742:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 7742:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 7743:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 7743:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 7783:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 7783:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 7785:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 7785:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 8046:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 8046:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 8048:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8048:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= FAILED sanity-quick in 126s
+========= PASSED sanity-quick in 128s
 
-Passed: 
-Failed: sanity-quick
-Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
-Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-2.ktest 38 from: return ${#tests_failed[@]}, exiting
-Kernel version: 6.15.0-ktest
-TEST FAILED
+Passed: sanity-quick
+Failed: 
+Kernel version: 6.14.0-ktest
+TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=221e7c9ccdab43e38757f469a10d10b0\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=e0b5afcb7ee843c7a8c150fc4105023c\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
 </pre>
 </body>
 </html>
