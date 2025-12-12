@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-19298 lod: use Xarray instead of static arrays for comp entires
+
+The LOD layer implements very large static arrays to manage the
+component entries for each layout. This works well for the case
+that all the components are for block I/O that are expected to
+be aligned to each other in a specific order. In such cases the
+API works to add or delete components at the end of such layouts.
+With the upcoming introducting of parity and foreign components
+the rules change in that you can delete or add a component
+located in the middle of the layout. This would be very
+complicated when using static arrays.
+
+To make life easier for upcoming projects we move away from
+static arrays to using Xarrays. We no longer requires creating
+a whole new array and copying components over. Instead we just
+insert or delete components into the Xarray. This current
+implementation just does the change from static arrary to
+Xarray without truly introducing gaps in the Xarray. This can
+be done in follow on patches and can be used to greatly simplify
+the code. For example since "gaps" are allowed in the Xarray
+we can place components in the Xarray using the mirror id as
+apart of the index which mirrors the component ID. This removes
+the need to manage the new mirror ranges in the Xarray.
+
+Change-Id: I67020f899ad89bfa6095c4b22f7f1b07b6de3e86
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+
+</pre>
+</body>
+</html>
