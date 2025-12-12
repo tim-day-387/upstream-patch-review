@@ -1,0 +1,27 @@
+<html lang="en">
+<body>
+<pre>
+LU-19478 nodemap: clear dyn nodemaps when config is changed
+
+When persistent nodemaps are modified, synchronization to other server
+targets replaces the nodemap config. As a result, all dynamic nodemaps
+are removed as well, which is indended.
+
+However, when the MGS is co-located with another server target like
+MDS or OSS, the dynamic nodemaps are not cleared on the MGS node and
+only on the remote server targets. This results in an inconsistent
+dynamic nodemap configuration across server targets.
+
+This patch fixes this issue by explicitly clearing all dynamic
+nodemaps on the MGS node if the MGS is co-located with an MDS or OSS.
+
+The FIXME in Sanity-sec tests 72d and 72f was replaced to cover this
+use case.
+
+Test-Parameters: trivial testlist=sanity-sec
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: I6923ad469fb7031885bafd1f409e46359a9bb9ec
+
+</pre>
+</body>
+</html>
