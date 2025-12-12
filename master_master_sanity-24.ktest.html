@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=0aa2d92e05014e62930c36ac5087a0b5;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=72f4207e8a3040c6847d3aea401a6970;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=7922c8df371a47f6a287c0a578e66875;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=9efd2ee3d18747e0914a10115512c05d;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,25 +16,92 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (56)
+WARNING: CPU: 3 PID: 1026 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 1026 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc90002607710 EFLAGS: 00010246
+RAX: b986828906b99d00 RBX: ffff88810588c000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881593a3750
+RBP: ffff88810d074de0 R08: ffff8881593a3753 R09: 1ffff1102b2746ea
+R10: dffffc0000000000 R11: ffffed102b2746eb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff88810588c9c8 R15: ffffffff82e1aca0
+FS:  00007fbbcc43f340(0000) GS:ffff8881d512a000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f36bebde7fc CR3: 00000001013b9000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1269/0x22a0 [ksocklnd]
+ ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
+ lnet_startup_lndnet+0x73e/0x25e0 [lnet]
+ ? _raw_spin_unlock+0x23/0x30
+ ? cfs_percpt_unlock+0xed/0x210 [lnet]
+ LNetNIInit+0x9cb/0x1120 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
+ ? stack_depot_save_flags+0x41/0x830
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x8e/0x7c0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6c/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? pcpu_alloc_noprof+0xadd/0xf70
+ ? codetag_module_init+0x273/0x350
+ ? load_module+0x3489/0x4390
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x270
+ ? kasan_unpoison+0x48/0x70
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x2ce/0x7c0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fbbcbd18779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007ffe40a3e078 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 000055e00844e890 RCX: 00007fbbcbd18779
+RDX: 0000000000000000 RSI: 000055e00844d2a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007fbbcbdf85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 000055e00844d2a0
+R13: 0000000000000000 R14: 000055e00844e850 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
 Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2759) used greatest stack depth: 26208 bytes left
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2706) used greatest stack depth: 23600 bytes left
+mount.lustre (2707) used greatest stack depth: 23608 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+mount.lustre (2865) used greatest stack depth: 23560 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client dad74e3f-9480-49a0-b4bd-f0f6399b885d w/o recovery
+Lustre: lustre-MDT0000: local client 115b6e2a-46a4-4771-8568-c5d8848ba40d w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -61,15 +128,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 01:02:02 UTC 2025
+Started at Fri Dec 12 03:55:10 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010200
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010200
-Logging to shared log directory: /tmp/test_logs/2025-12-12/010200
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035510
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035510
+Logging to shared log directory: /tmp/test_logs/2025-12-12/035510
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -80,8 +147,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=36f 36g 36h 36i 38 39a 39b 39c 39d 39e 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 01:02:09 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 01:02:09 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:11 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:11 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -115,320 +182,251 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 01:02:13 (1765501333) ===
-Lustre: DEBUG MARKER: === sanity: start setup 01:02:13 (1765501333) ===
+=== sanity: start setup 03:55:12 (1765511712) ===
+Lustre: DEBUG MARKER: === sanity: start setup 03:55:12 (1765511712) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-Lustre: lustre-OST0000-osc-ffff88810beca000: disconnect after 25s idle
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88810beca000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88810beca000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888129908000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888129908000.idle_timeout=debug
 disable quota as required
-Lustre: 5030:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 01:02:20 (1765501340) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 01:02:20 (1765501340) ===
+Lustre: 5041:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 03:55:13 (1765511713) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 03:55:13 (1765511713) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4170]
-Lustre: lustre-OST0000: local client dad74e3f-9480-49a0-b4bd-f0f6399b885d w/o recovery
-Lustre: Skipped 2 previous similar messages
+ [touch] [/mnt/lustre/d0_runas_test/f4181]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 36f: utime on file racing with OST BRW write ==================================================================== 01:02:23 (1765501343)
-Lustre: DEBUG MARKER: == sanity test 36f: utime on file racing with OST BRW write ==================================================================== 01:02:23 (1765501343)
+== sanity test 36f: utime on file racing with OST BRW write ==================================================================== 03:55:13 (1765511713)
+Lustre: DEBUG MARKER: == sanity test 36f: utime on file racing with OST BRW write ==================================================================== 03:55:13 (1765511713)
 fail_loc=0x80000214
-Fri Dec 12 01:02:23 UTC 2025
-1765501343
-Lustre: lustre-OST0001: local client dad74e3f-9480-49a0-b4bd-f0f6399b885d w/o recovery
-LustreError: 2877:0:(tgt_handler.c:2730:tgt_brw_write()) cfs_fail_timeout id 214 sleeping for 25000ms
-INFO: task sync:5441 blocked for more than 10 seconds.
-      Tainted: G           O       6.12.57-ktest #1
+Fri Dec 12 03:55:13 UTC 2025
+1765511713
+LustreError: 2878:0:(tgt_handler.c:2730:tgt_brw_write()) cfs_fail_timeout id 214 sleeping for 25000ms
+INFO: task sync:5449 blocked for more than 10 seconds.
+      Tainted: G        W  O        6.15.0-ktest #1
 "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-task:sync            state:D stack:27400 pid:5441  tgid:5441  ppid:5409   flags:0x00004002
+task:sync            state:D stack:27456 pid:5449  tgid:5449  ppid:5417   task_flags:0x400000 flags:0x00004002
 Call Trace:
  <TASK>
- __schedule+0x12aa/0x1d40
- schedule+0xae/0x250
+ __schedule+0x1452/0x2030
+ ? schedule+0x166/0x360
+ schedule+0x166/0x360
+ ? schedule+0x99/0x360
  io_schedule+0x8e/0xe0
- folio_wait_bit_common+0x3b5/0x5b0
- ? filemap_get_folios_tag+0x30d/0x410
- ? migration_entry_wait_on_locked+0x4b0/0x4b0
- folio_wait_writeback+0xbd/0x170
- filemap_fdatawait_keep_errors+0x9a/0x160
- ? __lock_acquire+0x6bd/0xf20
- ? sync_inodes_sb+0x318/0x5b0
- ? sync_inodes_sb+0x1c0/0x5b0
- ? sync_inodes_sb+0x1c0/0x5b0
- ? do_raw_spin_unlock+0x51/0x2a0
- ? sync_inodes_sb+0x1c0/0x5b0
- sync_inodes_sb+0x335/0x5b0
- ? sync_inodes_sb+0x1c0/0x5b0
+ folio_wait_bit_common+0x382/0x560
+ ? filemap_get_folios_tag+0x30c/0x410
+ ? migration_entry_wait_on_locked+0x4a0/0x4a0
+ folio_wait_writeback+0xbd/0x180
+ filemap_fdatawait_keep_errors+0x99/0x160
+ ? sync_inodes_sb+0x1b8/0x5b0
+ ? __mutex_lock+0x25a/0x10c0
+ ? lock_acquire+0xe7/0x1f0
+ ? sync_inodes_sb+0x1bf/0x5b0
+ ? sync_inodes_sb+0x1bf/0x5b0
+ sync_inodes_sb+0x334/0x5b0
+ ? sync_inodes_sb+0x1bf/0x5b0
  iterate_supers+0xca/0x460
  ? ksys_sync+0xe0/0xe0
- ksys_sync+0x42/0xe0
+ ksys_sync+0x41/0xe0
  __x64_sys_sync+0xe/0x20
  do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f299f396707
-RSP: 002b:00007ffc0063f9b8 EFLAGS: 00000246 ORIG_RAX: 00000000000000a2
-RAX: ffffffffffffffda RBX: 00007ffc0063fb18 RCX: 00007f299f396707
-RDX: 00007f299f476501 RSI: 00007ffc00641ef0 RDI: 00007f299f431557
+RIP: 0033:0x7f82440e7707
+RSP: 002b:00007ffcd9a0b368 EFLAGS: 00000246 ORIG_RAX: 00000000000000a2
+RAX: ffffffffffffffda RBX: 00007ffcd9a0b4c8 RCX: 00007f82440e7707
+RDX: 00007f82441c7501 RSI: 00007ffcd9a0eef0 RDI: 00007f8244182557
 RBP: 0000000000000001 R08: 0000000000000000 R09: 0000000000000000
-R10: 00007f299f46fac0 R11: 0000000000000246 R12: 000055d4508850fb
-R13: 0000000000000000 R14: 0000000000000000 R15: 000055d450887b00
+R10: 00007f82441c0ac0 R11: 0000000000000246 R12: 0000560b7d02c0fb
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000560b7d02eb00
  </TASK>
-INFO: task lctl:5446 blocked for more than 10 seconds.
-      Tainted: G           O       6.12.57-ktest #1
+INFO: task lctl:5457 blocked for more than 10 seconds.
+      Tainted: G        W  O        6.15.0-ktest #1
 "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-task:lctl            state:D stack:29688 pid:5446  tgid:5445  ppid:5409   flags:0x00000002
+task:lctl            state:D stack:29792 pid:5457  tgid:5455  ppid:5417   task_flags:0x400040 flags:0x00000002
 Call Trace:
  <TASK>
- __schedule+0x12aa/0x1d40
- schedule+0xae/0x250
- schedule_timeout+0x36/0x160
+ __schedule+0x1452/0x2030
+ ? schedule+0x166/0x360
+ schedule+0x166/0x360
+ ? schedule+0x99/0x360
+ schedule_timeout+0x35/0x170
+ ? lock_acquire+0xe7/0x1f0
  ? do_raw_spin_unlock+0x51/0x2a0
- wait_for_common+0x289/0x4b0
+ wait_for_completion+0x1e4/0x450
  __ldlm_bl_to_thread+0x443/0x690 [ptlrpc]
- ldlm_bl_to_thread+0x7fc/0xb70 [ptlrpc]
- ldlm_cancel_lru+0x150/0x310 [ptlrpc]
- ? sysfs_kf_read+0x280/0x280
- lru_size_store+0x6c4/0x970 [ptlrpc]
- ? sysfs_kf_write+0xd5/0x250
- ? sysfs_kf_read+0x280/0x280
- kernfs_fop_write_iter+0x312/0x460
- vfs_write+0x7ce/0xba0
- ? kernfs_fop_read_iter+0x520/0x520
- __x64_sys_write+0xf8/0x190
+ ldlm_bl_to_thread+0x81c/0xbd0 [ptlrpc]
+ ldlm_cancel_lru+0x14f/0x310 [ptlrpc]
+ ? sysfs_kf_read+0x1d0/0x1d0
+ lru_size_store+0x6c3/0x970 [ptlrpc]
+ ? sysfs_kf_write+0x72/0x1a0
+ ? sysfs_kf_write+0xf0/0x1a0
+ ? sysfs_kf_read+0x1d0/0x1d0
+ kernfs_fop_write_iter+0x2f5/0x450
+ vfs_write+0x79d/0xb50
+ ? kernfs_fop_read_iter+0x4e0/0x4e0
+ __x64_sys_write+0xfa/0x190
  do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7ff8f11aa9ee
-RSP: 002b:00007ff8f10d3b48 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007ff8f10d46c0 RCX: 00007ff8f11aa9ee
-RDX: 0000000000000005 RSI: 00007ffc316a26c4 RDI: 0000000000000003
-RBP: 00007ff8f10d3c30 R08: 0000000000000000 R09: 0000000000000000
+RIP: 0033:0x7f2a6190b9ee
+RSP: 002b:00007f2a61033b48 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f2a610346c0 RCX: 00007f2a6190b9ee
+RDX: 0000000000000005 RSI: 00007ffc3f62e6c5 RDI: 0000000000000004
+RBP: 00007f2a61033c30 R08: 0000000000000000 R09: 0000000000000000
 R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000020
-R13: 0000000000000002 R14: 00007ffc316a11c0 R15: 00007ff8f08d4000
- </TASK>
-
-Showing all locks held in the system:
-1 lock held by ksoftirqd/3/34:
- #0: ffff8881593c5198 (&rq->__lock){....}-{2:2}, at: raw_spin_rq_lock_nested+0x12/0x20
-1 lock held by khungtaskd/39:
- #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
-1 lock held by systemd-journal/214:
-2 locks held by sync/5441:
- #0: ffff88810beca0e0 (&type->s_umount_key#51){....}-{3:3}, at: super_lock+0x177/0x200
- #1: ffff88810beca838 (&s->s_sync_lock){....}-{3:3}, at: sync_inodes_sb+0x1b9/0x5b0
-4 locks held by lctl/5446:
- #0: ffff88810aea60f8 (&f->f_pos_lock){....}-{3:3}, at: fdget_pos+0x1bf/0x270
- #1: ffff8881071d23f0 (sb_writers#4){....}-{0:0}, at: __x64_sys_write+0xf8/0x190
- #2: ffff8881094bc888 (&of->mutex#2){....}-{3:3}, at: kernfs_fop_write_iter+0x1ee/0x460
- #3: ffff88814852bd28 (kn->active#48){....}-{0:0}, at: kernfs_fop_write_iter+0x230/0x460
-
-=============================================
-
-Lustre: lustre-OST0000-osc-ffff88810beca000: disconnect after 25s idle
-Lustre: Skipped 1 previous similar message
-INFO: task sync:5441 blocked for more than 21 seconds.
-      Tainted: G           O       6.12.57-ktest #1
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-task:sync            state:D stack:27400 pid:5441  tgid:5441  ppid:5409   flags:0x00004002
-Call Trace:
- <TASK>
- __schedule+0x12aa/0x1d40
- schedule+0xae/0x250
- io_schedule+0x8e/0xe0
- folio_wait_bit_common+0x3b5/0x5b0
- ? filemap_get_folios_tag+0x30d/0x410
- ? migration_entry_wait_on_locked+0x4b0/0x4b0
- folio_wait_writeback+0xbd/0x170
- filemap_fdatawait_keep_errors+0x9a/0x160
- ? __lock_acquire+0x6bd/0xf20
- ? sync_inodes_sb+0x318/0x5b0
- ? sync_inodes_sb+0x1c0/0x5b0
- ? sync_inodes_sb+0x1c0/0x5b0
- ? do_raw_spin_unlock+0x51/0x2a0
- ? sync_inodes_sb+0x1c0/0x5b0
- sync_inodes_sb+0x335/0x5b0
- ? sync_inodes_sb+0x1c0/0x5b0
- iterate_supers+0xca/0x460
- ? ksys_sync+0xe0/0xe0
- ksys_sync+0x42/0xe0
- __x64_sys_sync+0xe/0x20
- do_syscall_64+0x6c/0x140
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f299f396707
-RSP: 002b:00007ffc0063f9b8 EFLAGS: 00000246 ORIG_RAX: 00000000000000a2
-RAX: ffffffffffffffda RBX: 00007ffc0063fb18 RCX: 00007f299f396707
-RDX: 00007f299f476501 RSI: 00007ffc00641ef0 RDI: 00007f299f431557
-RBP: 0000000000000001 R08: 0000000000000000 R09: 0000000000000000
-R10: 00007f299f46fac0 R11: 0000000000000246 R12: 000055d4508850fb
-R13: 0000000000000000 R14: 0000000000000000 R15: 000055d450887b00
- </TASK>
-INFO: task lctl:5446 blocked for more than 21 seconds.
-      Tainted: G           O       6.12.57-ktest #1
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-task:lctl            state:D stack:29688 pid:5446  tgid:5445  ppid:5409   flags:0x00000002
-Call Trace:
- <TASK>
- __schedule+0x12aa/0x1d40
- schedule+0xae/0x250
- schedule_timeout+0x36/0x160
- ? do_raw_spin_unlock+0x51/0x2a0
- wait_for_common+0x289/0x4b0
- __ldlm_bl_to_thread+0x443/0x690 [ptlrpc]
- ldlm_bl_to_thread+0x7fc/0xb70 [ptlrpc]
- ldlm_cancel_lru+0x150/0x310 [ptlrpc]
- ? sysfs_kf_read+0x280/0x280
- lru_size_store+0x6c4/0x970 [ptlrpc]
- ? sysfs_kf_write+0xd5/0x250
- ? sysfs_kf_read+0x280/0x280
- kernfs_fop_write_iter+0x312/0x460
- vfs_write+0x7ce/0xba0
- ? kernfs_fop_read_iter+0x520/0x520
- __x64_sys_write+0xf8/0x190
- do_syscall_64+0x6c/0x140
- entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7ff8f11aa9ee
-RSP: 002b:00007ff8f10d3b48 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007ff8f10d46c0 RCX: 00007ff8f11aa9ee
-RDX: 0000000000000005 RSI: 00007ffc316a26c4 RDI: 0000000000000003
-RBP: 00007ff8f10d3c30 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000020
-R13: 0000000000000002 R14: 00007ffc316a11c0 R15: 00007ff8f08d4000
+R13: 0000000000000002 R14: 00007ffc3f62c700 R15: 00007f2a60834000
  </TASK>
 
 Showing all locks held in the system:
 1 lock held by khungtaskd/39:
- #0: ffffffff8358a0c0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
-2 locks held by sync/5441:
- #0: ffff88810beca0e0 (&type->s_umount_key#51){....}-{3:3}, at: super_lock+0x177/0x200
- #1: ffff88810beca838 (&s->s_sync_lock){....}-{3:3}, at: sync_inodes_sb+0x1b9/0x5b0
-4 locks held by lctl/5446:
- #0: ffff88810aea60f8 (&f->f_pos_lock){....}-{3:3}, at: fdget_pos+0x1bf/0x270
- #1: ffff8881071d23f0 (sb_writers#4){....}-{0:0}, at: __x64_sys_write+0xf8/0x190
- #2: ffff8881094bc888 (&of->mutex#2){....}-{3:3}, at: kernfs_fop_write_iter+0x1ee/0x460
- #3: ffff88814852bd28 (kn->active#48){....}-{0:0}, at: kernfs_fop_write_iter+0x230/0x460
+ #0: ffffffff8378cea0 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x29/0xf0
+2 locks held by sync/5449:
+ #0: ffff8881299080e0 (&type->s_umount_key#45){....}-{3:3}, at: super_lock+0x176/0x200
+ #1: ffff888129908848 (&s->s_sync_lock){....}-{3:3}, at: sync_inodes_sb+0x1b8/0x5b0
+4 locks held by lctl/5457:
+ #0: ffff8881066eaef8 (&f->f_pos_lock){....}-{3:3}, at: fdget_pos+0x1c3/0x270
+ #1: ffff8881065103f0 (sb_writers#4){....}-{0:0}, at: __x64_sys_write+0xfa/0x190
+ #2: ffff888105207c88 (&of->mutex#2){....}-{3:3}, at: kernfs_fop_write_iter+0x1fa/0x450
+ #3: ffff88811004fa58 (kn->active#48){....}-{0:0}, at: kernfs_fop_write_iter+0x218/0x450
 
 =============================================
 
-LustreError: 2877:0:(tgt_handler.c:2730:tgt_brw_write()) cfs_fail_timeout id 214 awake
-Fri Dec 12 01:02:49 UTC 2025
-1765501369
-PASS 36f (27s)
+Lustre: lustre-OST0001-osc-ffff888129908000: disconnect after 25s idle
+LustreError: 2878:0:(tgt_handler.c:2730:tgt_brw_write()) cfs_fail_timeout id 214 awake
+Fri Dec 12 03:55:39 UTC 2025
+1765511739
+PASS 36f (26s)
 
-== sanity test 36g: FMD cache expiry =============================================================================== 01:02:50 (1765501370)
-Lustre: DEBUG MARKER: == sanity test 36g: FMD cache expiry =============================================================================== 01:02:50 (1765501370)
+== sanity test 36g: FMD cache expiry =============================================================================== 03:55:39 (1765511739)
+Lustre: DEBUG MARKER: == sanity test 36g: FMD cache expiry =============================================================================== 03:55:39 (1765511739)
 FMD max age: 110s
-Lustre: lustre-OST0000: local client dad74e3f-9480-49a0-b4bd-f0f6399b885d w/o recovery
+Lustre: lustre-OST0001: local client 115b6e2a-46a4-4771-8568-c5d8848ba40d w/o recovery
+Lustre: Skipped 2 previous similar messages
 FMD before: 2
-Lustre: lustre-OST0000-osc-ffff88810beca000: disconnect after 25s idle
-FMD after: 0
-PASS 36g (123s)
+Lustre: lustre-OST0001-osc-ffff888129908000: disconnect after 23s idle
+FMD after: 1
+ sanity test_36g: @@@@@@ FAIL: FMD wasn't expired by ping 
+Lustre: DEBUG MARKER: sanity test_36g: @@@@@@ FAIL: FMD wasn't expired by ping
+  Trace dump:
+  = /workspace/lustre-release/lustre/tests/test-framework.sh:7317:error()
+  = /workspace/lustre-release/lustre/tests/sanity.sh:5036:test_36g()
+  = /workspace/lustre-release/lustre/tests/test-framework.sh:7693:run_one()
+  = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
+  = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
+  = /workspace/lustre-release/lustre/tests/sanity.sh:5038:main()
+Dumping lctl log to /tmp/test_logs/2025-12-12/035510/sanity.test_36g.*.1765511862.log
+Dumping logs only on local client.
+FAIL 36g (123s)
 
-== sanity test 36h: utime on file racing with OST BRW write ==================================================================== 01:04:53 (1765501493)
-Lustre: DEBUG MARKER: == sanity test 36h: utime on file racing with OST BRW write ==================================================================== 01:04:53 (1765501493)
+== sanity test 36h: utime on file racing with OST BRW write ==================================================================== 03:57:42 (1765511862)
+Lustre: DEBUG MARKER: == sanity test 36h: utime on file racing with OST BRW write ==================================================================== 03:57:42 (1765511862)
 fail_loc=0x80000227
-Fri Dec 12 01:04:53 UTC 2025
-1765501493
-Fri Dec 12 01:04:55 UTC 2025
-1765501495
-PASS 36h (2s)
+Fri Dec 12 03:57:42 UTC 2025
+1765511862
+Fri Dec 12 03:57:43 UTC 2025
+1765511863
+PASS 36h (1s)
 
-== sanity test 36i: change mtime on striped directory ==== 01:04:55 (1765501495)
-Lustre: DEBUG MARKER: == sanity test 36i: change mtime on striped directory ==== 01:04:55 (1765501495)
+== sanity test 36i: change mtime on striped directory ==== 03:57:43 (1765511863)
+Lustre: DEBUG MARKER: == sanity test 36i: change mtime on striped directory ==== 03:57:43 (1765511863)
 
  SKIP: sanity test_36i needs >= 2 MDTs
 Lustre: DEBUG MARKER: SKIP: sanity test_36i needs >= 2 MDTs
 SKIP 36i (0s)
 
-== sanity test 38: open a regular file with O_DIRECTORY should return -ENOTDIR ============================================================= 01:04:55 (1765501495)
-Lustre: DEBUG MARKER: == sanity test 38: open a regular file with O_DIRECTORY should return -ENOTDIR ============================================================= 01:04:55 (1765501495)
-Lustre: lustre-OST0000: local client dad74e3f-9480-49a0-b4bd-f0f6399b885d w/o recovery
+== sanity test 38: open a regular file with O_DIRECTORY should return -ENOTDIR ============================================================= 03:57:43 (1765511863)
+Lustre: DEBUG MARKER: == sanity test 38: open a regular file with O_DIRECTORY should return -ENOTDIR ============================================================= 03:57:43 (1765511863)
+Lustre: lustre-OST0001: local client 115b6e2a-46a4-4771-8568-c5d8848ba40d w/o recovery
 Error in opening file "/mnt/lustre/f38.sanity"(flags=O_DIRECTORY) 20: Not a directory
 PASS 38 (1s)
 
-== sanity test 39a: mtime changed on create ============== 01:04:56 (1765501496)
-Lustre: DEBUG MARKER: == sanity test 39a: mtime changed on create ============== 01:04:56 (1765501496)
+== sanity test 39a: mtime changed on create ============== 03:57:44 (1765511864)
+Lustre: DEBUG MARKER: == sanity test 39a: mtime changed on create ============== 03:57:44 (1765511864)
+touch (5969) used greatest stack depth: 23472 bytes left
 Succeed in opening file "/mnt/lustre/f39a.sanity2"(flags=O_CREAT)
-openfile (5962) used greatest stack depth: 23512 bytes left
-PASS 39a (3s)
+PASS 39a (2s)
 
-== sanity test 39b: mtime change on open, link, unlink, rename  ================================================================ 01:04:59 (1765501499)
-Lustre: DEBUG MARKER: == sanity test 39b: mtime change on open, link, unlink, rename ================================================================ 01:04:59 (1765501499)
+== sanity test 39b: mtime change on open, link, unlink, rename  ================================================================ 03:57:46 (1765511866)
+Lustre: DEBUG MARKER: == sanity test 39b: mtime change on open, link, unlink, rename ================================================================ 03:57:46 (1765511866)
+cp (6068) used greatest stack depth: 23264 bytes left
 repeat after cancel_lru_locks
-PASS 39b (2s)
+bash (6040) used greatest stack depth: 22696 bytes left
+PASS 39b (1s)
 
-== sanity test 39c: mtime change on rename ===================================================================================== 01:05:01 (1765501501)
-Lustre: DEBUG MARKER: == sanity test 39c: mtime change on rename ===================================================================================== 01:05:01 (1765501501)
+== sanity test 39c: mtime change on rename ===================================================================================== 03:57:47 (1765511867)
+Lustre: DEBUG MARKER: == sanity test 39c: mtime change on rename ===================================================================================== 03:57:47 (1765511867)
 repeat after cancel_lru_locks
-PASS 39c (3s)
+PASS 39c (2s)
 
-== sanity test 39d: create, utime, stat ======================================================================================== 01:05:04 (1765501504)
-Lustre: DEBUG MARKER: == sanity test 39d: create, utime, stat ======================================================================================== 01:05:04 (1765501504)
+== sanity test 39d: create, utime, stat ======================================================================================== 03:57:49 (1765511869)
+Lustre: DEBUG MARKER: == sanity test 39d: create, utime, stat ======================================================================================== 03:57:49 (1765511869)
 repeat after cancel_lru_locks
-PASS 39d (0s)
+PASS 39d (1s)
 
-== sanity test 39e: create, stat, utime, stat ================================================================================== 01:05:04 (1765501504)
-Lustre: DEBUG MARKER: == sanity test 39e: create, stat, utime, stat ================================================================================== 01:05:04 (1765501504)
+== sanity test 39e: create, stat, utime, stat ================================================================================== 03:57:50 (1765511870)
+Lustre: DEBUG MARKER: == sanity test 39e: create, stat, utime, stat ================================================================================== 03:57:50 (1765511870)
 repeat after cancel_lru_locks
-PASS 39e (1s)
+PASS 39e (0s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 179 sec ================ 01:05:08 (1765501508)
-Lustre: DEBUG MARKER: == sanity test complete, duration 179 sec ================ 01:05:08 (1765501508)
-=== sanity: start cleanup 01:05:08 (1765501508) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 01:05:08 (1765501508) ===
+== sanity test complete, duration 160 sec ================ 03:57:51 (1765511871)
+Lustre: DEBUG MARKER: == sanity test complete, duration 160 sec ================ 03:57:51 (1765511871)
+sanity: FAIL: test_36g FMD wasn't expired by ping
+=== sanity: start cleanup 03:57:51 (1765511871) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 03:57:51 (1765511871) ===
 skip cleanup
-=== sanity: finish cleanup 01:05:09 (1765501509) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 01:05:09 (1765501509) ===
+=== sanity: finish cleanup 03:57:51 (1765511871) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 03:57:51 (1765511871) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
-sanity returned 0
-Finished at Fri Dec 12 01:05:09 UTC 2025 in 189s
+sanity returned 1
+Finished at Fri Dec 12 03:57:51 UTC 2025 in 161s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 7760:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88810beca000: inode [0x200000401:0xe:0x0] mdc close failed: rc = -108
-LustreError: 7760:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 7767:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888129908000: inode [0x200000401:0xe:0x0] mdc close failed: rc = -108
+LustreError: 7767:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
-LustreError: 7787:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 7787:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2712:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765501522 with bad export cookie 5881329373191905789
+LustreError: 2714:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511883 with bad export cookie 11419241645022454881
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 7841:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 7841:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 7851:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 7851:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 7882:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 7882:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 7892:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 7892:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 8146:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 8146:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 8155:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8155:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= PASSED sanity-quick in 311s
+========= FAILED sanity-quick in 265s
 
-Passed: sanity-quick
-Failed: 
-Kernel version: 6.12.57-ktest
-TEST SUCCESS
+Passed: 
+Failed: sanity-quick
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-24.ktest 38 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.15.0-ktest
+TEST FAILED
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=0aa2d92e05014e62930c36ac5087a0b5\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
-ACPI: PM: Preparing to enter system sleep state S5
-reboot: Power down
+]3008;end=7922c8df371a47f6a287c0a578e66875\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
 </pre>
 </body>
 </html>

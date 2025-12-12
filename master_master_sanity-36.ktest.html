@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=9015d62a957e4f488dce813ceefc49aa;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=f59807f09a08414e8cae5cfbaa11c2e9;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=f7913c0369c44926983169fa9f422a66;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=2f6cc723c6e5448caeedbfd6f2b4c5b5;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,34 +16,95 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (56)
+WARNING: CPU: 3 PID: 1024 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 1024 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc90000ba7710 EFLAGS: 00010246
+RAX: 3a92544dd354d000 RBX: ffff888105bec000 RCX: dffffc0000000000
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffc90000ba75a8
+RBP: ffff88810c0c51e0 R08: ffffc90000ba75af R09: 1ffff92000174eb5
+R10: dffffc0000000000 R11: fffff52000174eb6 R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff888105bec9c8 R15: ffffffff82e1aca0
+FS:  00007fd2c2a5a340(0000) GS:ffff8881d512a000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055a5803f07a0 CR3: 0000000112f8d000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1269/0x22a0 [ksocklnd]
+ ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
+ lnet_startup_lndnet+0x73e/0x25e0 [lnet]
+ ? _raw_spin_unlock+0x23/0x30
+ ? cfs_percpt_unlock+0xed/0x210 [lnet]
+ LNetNIInit+0x9cb/0x1120 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
+ ? stack_depot_save_flags+0x41/0x830
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x8e/0x7c0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6c/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? pcpu_alloc_noprof+0xadd/0xf70
+ ? codetag_module_init+0x273/0x350
+ ? load_module+0x3489/0x4390
+ ? sysvec_apic_timer_interrupt+0xe/0x80
+ ? asm_sysvec_apic_timer_interrupt+0x1a/0x20
+ ? kasan_unpoison+0x54/0x70
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x2ce/0x7c0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fd2c2318779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007ffeb895f088 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 000055ff2a79f890 RCX: 00007fd2c2318779
+RDX: 0000000000000000 RSI: 000055ff2a79e2a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007fd2c23f85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 000055ff2a79e2a0
+R13: 0000000000000000 R14: 000055ff2a79f850 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
 Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
-llog_process_th (2758) used greatest stack depth: 26304 bytes left
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2706) used greatest stack depth: 23568 bytes left
+mount.lustre (2706) used greatest stack depth: 23592 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-mount.lustre (2864) used greatest stack depth: 23456 bytes left
-Lustre: lustre-OST0001: new disk, initializing
-Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
-Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: lustre-MDT0000: local client 0df78dbe-37a4-480b-a5d6-ed421406b38e w/o recovery
+mount.lustre (2864) used greatest stack depth: 23576 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
+Lustre: lustre-MDT0000: local client 4f20222a-290e-4423-88ec-21b235fe2313 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
-Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
 Lustre: DEBUG MARKER: Using TIMEOUT=100
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 done
@@ -68,15 +129,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 01:02:06 UTC 2025
+Started at Fri Dec 12 03:55:32 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010204
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010204
-Logging to shared log directory: /tmp/test_logs/2025-12-12/010204
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035530
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035530
+Logging to shared log directory: /tmp/test_logs/2025-12-12/035530
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -87,8 +148,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=56xd 56xe 56xf 56xg 56xh 56xi 56xj 56xk 56xl 56y 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 01:02:11 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 01:02:11 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:34 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:34 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -122,61 +183,59 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 01:02:16 (1765501336) ===
-Lustre: DEBUG MARKER: === sanity: start setup 01:02:16 (1765501336) ===
+=== sanity: start setup 03:55:36 (1765511736) ===
+Lustre: DEBUG MARKER: === sanity: start setup 03:55:36 (1765511736) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-Lustre: lustre-OST0000-osc-ffff88810f1a0000: disconnect after 24s idle
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88810f1a0000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88810f1a0000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff8881063b2000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff8881063b2000.idle_timeout=debug
 disable quota as required
-Lustre: 5027:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 01:02:23 (1765501343) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 01:02:23 (1765501343) ===
+Lustre: 5029:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 03:55:39 (1765511739) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 03:55:39 (1765511739) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4167]
-Lustre: lustre-OST0000: local client 0df78dbe-37a4-480b-a5d6-ed421406b38e w/o recovery
-Lustre: Skipped 2 previous similar messages
+ [touch] [/mnt/lustre/d0_runas_test/f4169]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 56xd: check lfs_migrate --yaml and --copy support ========================================================== 01:02:26 (1765501346)
-Lustre: DEBUG MARKER: == sanity test 56xd: check lfs_migrate --yaml and --copy support ========================================================== 01:02:26 (1765501346)
-Lustre: lustre-OST0001: local client 0df78dbe-37a4-480b-a5d6-ed421406b38e w/o recovery
+== sanity test 56xd: check lfs_migrate --yaml and --copy support ========================================================== 03:55:41 (1765511741)
+Lustre: DEBUG MARKER: == sanity test 56xd: check lfs_migrate --yaml and --copy support ========================================================== 03:55:41 (1765511741)
 4+0 records in
 4+0 records out
-4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.217935 s, 19.2 MB/s
+4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.110286 s, 38.0 MB/s
 /mnt/lustre/d56xd.sanity/f56xd.sanity.mgrt: done
 /mnt/lustre/d56xd.sanity/f56xd.sanity.mgrt: done
-PASS 56xd (10s)
+PASS 56xd (4s)
 
-== sanity test 56xe: migrate a composite layout file ===== 01:02:36 (1765501356)
-Lustre: DEBUG MARKER: == sanity test 56xe: migrate a composite layout file ===== 01:02:36 (1765501356)
-Lustre: 2726:0:(mdt_recovery.c:102:mdt_req_from_lrd()) @@@ restoring transno  req@ffff8881173c2f80 x1851262253482368/t4294967379(0) o101->0df78dbe-37a4-480b-a5d6-ed421406b38e@0@lo:311/0 lens 376/816 e 0 to 0 dl 1765501371 ref 1 fl Interpret:H/602/0 rc 0/0 job:'dd.0' uid:0 gid:0 projid:0
+== sanity test 56xe: migrate a composite layout file ===== 03:55:45 (1765511745)
+Lustre: DEBUG MARKER: == sanity test 56xe: migrate a composite layout file ===== 03:55:45 (1765511745)
+Lustre: 2734:0:(mdt_recovery.c:102:mdt_req_from_lrd()) @@@ restoring transno  req@ffff888117372f80 x1851273155523072/t4294967379(0) o101->4f20222a-290e-4423-88ec-21b235fe2313@0@lo:127/0 lens 376/816 e 0 to 0 dl 1765511757 ref 1 fl Interpret:H/602/0 rc 0/0 job:'dd.0' uid:0 gid:0 projid:2
+dd (6431) used greatest stack depth: 23528 bytes left
 4+0 records in
 4+0 records out
-4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.514463 s, 8.2 MB/s
+4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.235839 s, 17.8 MB/s
 /mnt/lustre/d56xe.sanity/f56xe.sanity: done
-PASS 56xe (15s)
+PASS 56xe (6s)
 
-== sanity test 56xf: FID is not lost during migration of a composite layout file ========================================================== 01:02:51 (1765501371)
-Lustre: DEBUG MARKER: == sanity test 56xf: FID is not lost during migration of a composite layout file ========================================================== 01:02:51 (1765501371)
+== sanity test 56xf: FID is not lost during migration of a composite layout file ========================================================== 03:55:51 (1765511751)
+Lustre: DEBUG MARKER: == sanity test 56xf: FID is not lost during migration of a composite layout file ========================================================== 03:55:51 (1765511751)
 4+0 records in
 4+0 records out
-4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.323414 s, 13.0 MB/s
-PASS 56xf (3s)
+4194304 bytes (4.2 MB, 4.0 MiB) copied, 0.117155 s, 35.8 MB/s
+LustreError: 5963:0:(ofd_dev.c:1877:ofd_destroy_hdl()) lustre-OST0000: error destroying object [0x280000400:0x11:0x0]: -5
+PASS 56xf (2s)
 
-== sanity test 56xg: lfs migrate pool support ============ 01:02:54 (1765501374)
-Lustre: DEBUG MARKER: == sanity test 56xg: lfs migrate pool support ============ 01:02:54 (1765501374)
+== sanity test 56xg: lfs migrate pool support ============ 03:55:53 (1765511753)
+Lustre: DEBUG MARKER: == sanity test 56xg: lfs migrate pool support ============ 03:55:53 (1765511753)
 Creating new pool test_56xg_0
 Pool lustre.test_56xg_0 created
 Adding targets to pool
@@ -192,7 +251,6 @@ OST lustre-OST0000_UUID added to pool lustre.test_56xg_2
 OST lustre-OST0001_UUID added to pool lustre.test_56xg_2
 1. migrate f56xg.sanity on pool test_56xg_0
 2. migrate f56xg.sanity on pool test_56xg_2
-LustreError: 2868:0:(ofd_dev.c:1877:ofd_destroy_hdl()) lustre-OST0000: error destroying object [0x240000400:0x14:0x0]: -5
 3. migrate f56xg.sanity on pool test_56xg_1
 4. migrate f56xg.sanity on pool test_56xg_2 with default stripe parameters
 
@@ -207,18 +265,18 @@ lustre.test_56xg_2
 OST lustre-OST0000_UUID removed from pool lustre.test_56xg_2
 OST lustre-OST0001_UUID removed from pool lustre.test_56xg_2
 Pool lustre.test_56xg_2 destroyed
-PASS 56xg (26s)
+PASS 56xg (21s)
 
-== sanity test 56xh: lfs migrate bandwidth limitation support ========================================================== 01:03:20 (1765501400)
-Lustre: DEBUG MARKER: == sanity test 56xh: lfs migrate bandwidth limitation support ========================================================== 01:03:20 (1765501400)
+== sanity test 56xh: lfs migrate bandwidth limitation support ========================================================== 03:56:14 (1765511774)
+Lustre: DEBUG MARKER: == sanity test 56xh: lfs migrate bandwidth limitation support ========================================================== 03:56:14 (1765511774)
 25+0 records in
 25+0 records out
-26214400 bytes (26 MB, 25 MiB) copied, 0.194791 s, 135 MB/s
-25M -rw-r--r-- 1 root root 25M Dec 12 01:03 /tmp/f56xh.sanity.tmp
+26214400 bytes (26 MB, 25 MiB) copied, 0.0623158 s, 421 MB/s
+25M -rw-r--r-- 1 root root 25M Dec 12 03:56 /tmp/f56xh.sanity.tmp
 /mnt/lustre/f56xh.sanity:
 - { seconds: 0, rmbps:     0, wmbps:     0, copied: 25, total: 25, pct: 100% }
- sanity test_56xh: @@@@@@ FAIL: 'lfs migrate -W' too fast (1 < 0.95 * 25)? 
-Lustre: DEBUG MARKER: sanity test_56xh: @@@@@@ FAIL: 'lfs migrate -W' too fast (1 < 0.95 * 25)?
+ sanity test_56xh: @@@@@@ FAIL: 'lfs migrate -W' too fast (0 < 0.95 * 25)? 
+Lustre: DEBUG MARKER: sanity test_56xh: @@@@@@ FAIL: 'lfs migrate -W' too fast (0 < 0.95 * 25)?
   Trace dump:
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7317:error()
   = /workspace/lustre-release/lustre/tests/sanity.sh:9229:test_56xh()
@@ -226,12 +284,12 @@ Lustre: DEBUG MARKER: sanity test_56xh: @@@@@@ FAIL: 'lfs migrate -W' too fast (
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:9244:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010204/sanity.test_56xh.*.1765501402.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035530/sanity.test_56xh.*.1765511774.log
 Dumping logs only on local client.
-FAIL 56xh (4s)
+FAIL 56xh (1s)
 
-== sanity test 56xi: lfs migrate stats support =========== 01:03:24 (1765501404)
-Lustre: DEBUG MARKER: == sanity test 56xi: lfs migrate stats support =========== 01:03:24 (1765501404)
+== sanity test 56xi: lfs migrate stats support =========== 03:56:15 (1765511775)
+Lustre: DEBUG MARKER: == sanity test 56xi: lfs migrate stats support =========== 03:56:15 (1765511775)
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
     import yaml; yaml.safe_load('''a: b''')
@@ -242,251 +300,259 @@ ModuleNotFoundError: No module named 'yaml'
 Lustre: DEBUG MARKER: SKIP: sanity test_56xi YAML verification not installed
 SKIP 56xi (0s)
 
-== sanity test 56xj: lfs migrate -b should not cause starvation of threads on OSS ========================================================== 01:03:24 (1765501404)
-Lustre: DEBUG MARKER: == sanity test 56xj: lfs migrate -b should not cause starvation of threads on OSS ========================================================== 01:03:24 (1765501404)
+== sanity test 56xj: lfs migrate -b should not cause starvation of threads on OSS ========================================================== 03:56:15 (1765511775)
+Lustre: DEBUG MARKER: == sanity test 56xj: lfs migrate -b should not cause starvation of threads on OSS ========================================================== 03:56:15 (1765511775)
 10+0 records in
 10+0 records out
-10485760 bytes (10 MB, 10 MiB) copied, 0.656146 s, 16.0 MB/s
+10485760 bytes (10 MB, 10 MiB) copied, 0.167556 s, 62.6 MB/s
+dd (7954) used greatest stack depth: 23488 bytes left
 create 120 hard links of /mnt/lustre/f56xj.sanity
-total: 120 link in 0.43 seconds: 280.82 ops/second
+total: 120 link in 0.10 seconds: 1222.93 ops/second
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link1: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link7: cannot get group lock: Resource temporarily unavailable
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link2: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link5: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link23: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link3: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link5: cannot get group lock: Resource temporarily unavailable
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link6: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: error: lfs migrate: /mnt/lustre/d56xj.sanity/link4: cannot get group lock: Resource temporarily unavailable
-cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link11: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link7: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link9: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link3: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link10: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link19: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link4: cannot get group lock: Resource temporarily unavailable
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link8: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link18: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link15: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link13: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link12: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link17: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link14: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link31: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link34: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link35: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link16: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link29: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link63: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link45: cannot get group lock: Resource temporarily unavailable
-lfs migrate: lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link27: cannot get group lock: Resource temporarily unavailable
-cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link22: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link39: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link28: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link24: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link60: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link32: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link38: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link33: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link21: cannot get group lock: Resource temporarily unavailable
-lfs migrate: error: lfs migrate: /mnt/lustre/d56xj.sanity/link23: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link30: cannot get group lock: Resource temporarily unavailable
-cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link64: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link47: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link42: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link37: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link89: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link52: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link61: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link54: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link48: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link62: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link40: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link43: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link58: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link36: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link55: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link57: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link50: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link46: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link49: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link44: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link56: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link53: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link67: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link17: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link31: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link19: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link12: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link14: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link24: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link13: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link18: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link21: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link26: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link16: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link25: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link28: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link27: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link10: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link11: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link22: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link20: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link45: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link49: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link54: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link52: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link40: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link55: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link38: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link46: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link48: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link30: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link59: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link42: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link58: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link43: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link50: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link57: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link44: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link47: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link39: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link51: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link59: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link36: cannot get group lock: Resource temporarily unavailable
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link41: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link93: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link66: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link92: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link85: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link68: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link34: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link87: cannot get group lock: Resource temporarily unavailable
+lfs migrate: error: lfs migrate: /mnt/lustre/d56xj.sanity/link53: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link37: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link32: cannot get group lock: Resource temporarily unavailable
+cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link29: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link33: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link103: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link98: cannot get group lock: Resource temporarily unavailable
+lfs migrate: error: lfs migrate: /mnt/lustre/d56xj.sanity/link112: cannot get group lock: Resource temporarily unavailable
+cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link117: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link89: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link63: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link65: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link81: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link95: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link85: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link109: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link69: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link111: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link105: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link76: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link82: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link68: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link93: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link115: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link87: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link74: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link106: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group locklfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link90: cannot get group lock: Resource temporarily unavailable
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link86: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link88: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link77: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link103: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link118: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link100: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link108: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link79: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link102: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link97: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link84: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link92: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link78: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link107: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link99: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link104: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link116: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link110: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link113: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link61: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link70: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link71: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link75: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link73: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link95: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link97: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link77: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link78: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link101: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link88: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link76: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link96: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link91: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link90: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link65: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link99: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link80: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link96: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link101: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link60: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link91: cannot get group lock: Resource temporarily unavailable
+lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link67: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 error: lfs migrate: /mnt/lustre/d56xj.sanity/link83: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group locklfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link98: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link84: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link79: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link94: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link82: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: lfs migrate: error: lfs migrate: /mnt/lustre/d56xj.sanity/link105: cannot get group lock: Resource temporarily unavailable
-cannot get group locklfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link74: cannot get group lock: Resource temporarily unavailable
-cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link119: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link111: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link115: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link116: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link104: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link118: cannot get group lock: Resource temporarily unavailable
 lfs migrate: lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
 cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link110: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link114: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link117: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link75: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link119: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link73: cannot get group lock: Resource temporarily unavailable
 lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link112: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link108: cannot get group lock: Resource temporarily unavailable
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link109: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link113: cannot get group lock: Resource temporarily unavailable
-lfs migrate: cannot get group lock: Resource temporarily unavailable (11)
-error: lfs migrate: /mnt/lustre/d56xj.sanity/link102: cannot get group lock: Resource temporarily unavailable
-PASS 56xj (12s)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link62: cannot get group lock: Resource temporarily unavailable
+lfs migrate: lfs migrate: cannot get group lockcannot get group lock: Resource temporarily unavailable (11)
+: Resource temporarily unavailable (11)
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link64: cannot get group lock: Resource temporarily unavailable
+error: lfs migrate: /mnt/lustre/d56xj.sanity/link72: cannot get group lock: Resource temporarily unavailable
+LustreError: 8220:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 8220:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff8881063b2000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 8220:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+PASS 56xj (2s)
 
-== sanity test 56xk: lfs mirror resync bandwidth limitation support ========================================================== 01:03:36 (1765501416)
-Lustre: DEBUG MARKER: == sanity test 56xk: lfs mirror resync bandwidth limitation support ========================================================== 01:03:36 (1765501416)
+== sanity test 56xk: lfs mirror resync bandwidth limitation support ========================================================== 03:56:17 (1765511777)
+Lustre: DEBUG MARKER: == sanity test 56xk: lfs mirror resync bandwidth limitation support ========================================================== 03:56:17 (1765511777)
 5+0 records in
 5+0 records out
-5242880 bytes (5.2 MB, 5.0 MiB) copied, 0.283662 s, 18.5 MB/s
+5242880 bytes (5.2 MB, 5.0 MiB) copied, 0.080456 s, 65.2 MB/s
 1+0 records in
 1+0 records out
-4096 bytes (4.1 kB, 4.0 KiB) copied, 0.0458089 s, 89.4 kB/s
+4096 bytes (4.1 kB, 4.0 KiB) copied, 0.00556005 s, 737 kB/s
     lcme_flags:          init,stale
 - { seconds: 0, rmbps:     0, wmbps:     0, copied: 5, total: 5, pct: 100% }
- sanity test_56xk: @@@@@@ FAIL: 'lfs mirror resync -W' too fast (1 < 0.95 * 5)? 
-Lustre: DEBUG MARKER: sanity test_56xk: @@@@@@ FAIL: 'lfs mirror resync -W' too fast (1 < 0.95 * 5)?
+ sanity test_56xk: @@@@@@ FAIL: 'lfs mirror resync -W' too fast (0 < 0.95 * 5)? 
+Lustre: DEBUG MARKER: sanity test_56xk: @@@@@@ FAIL: 'lfs mirror resync -W' too fast (0 < 0.95 * 5)?
   Trace dump:
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7317:error()
   = /workspace/lustre-release/lustre/tests/sanity.sh:9345:test_56xk()
@@ -494,12 +560,12 @@ Lustre: DEBUG MARKER: sanity test_56xk: @@@@@@ FAIL: 'lfs mirror resync -W' too 
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:9353:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010204/sanity.test_56xk.*.1765501418.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035530/sanity.test_56xk.*.1765511777.log
 Dumping logs only on local client.
-FAIL 56xk (3s)
+FAIL 56xk (1s)
 
-== sanity test 56xl: lfs mirror resync stats support ===== 01:03:40 (1765501420)
-Lustre: DEBUG MARKER: == sanity test 56xl: lfs mirror resync stats support ===== 01:03:40 (1765501420)
+== sanity test 56xl: lfs mirror resync stats support ===== 03:56:18 (1765511778)
+Lustre: DEBUG MARKER: == sanity test 56xl: lfs mirror resync stats support ===== 03:56:18 (1765511778)
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
     import yaml; yaml.safe_load('''a: b''')
@@ -510,59 +576,60 @@ ModuleNotFoundError: No module named 'yaml'
 Lustre: DEBUG MARKER: SKIP: sanity test_56xl YAML verification not installed
 SKIP 56xl (0s)
 
-== sanity test 56y: lfs find -L raid0|released =========== 01:03:40 (1765501420)
-Lustre: DEBUG MARKER: == sanity test 56y: lfs find -L raid0|released =========== 01:03:40 (1765501420)
-PASS 56y (2s)
+== sanity test 56y: lfs find -L raid0|released =========== 03:56:18 (1765511778)
+Lustre: DEBUG MARKER: == sanity test 56y: lfs find -L raid0|released =========== 03:56:18 (1765511778)
+PASS 56y (0s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 95 sec ================= 01:03:46 (1765501426)
-Lustre: DEBUG MARKER: == sanity test complete, duration 95 sec ================= 01:03:46 (1765501426)
-sanity: FAIL: test_56xh 'lfs migrate -W' too fast (1 < 0.95 * 25)?
-sanity: FAIL: test_56xk 'lfs mirror resync -W' too fast (1 < 0.95 * 5)?
-=== sanity: start cleanup 01:03:46 (1765501426) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 01:03:46 (1765501426) ===
+== sanity test complete, duration 46 sec ================= 03:56:20 (1765511780)
+Lustre: DEBUG MARKER: == sanity test complete, duration 46 sec ================= 03:56:20 (1765511780)
+sanity: FAIL: test_56xh 'lfs migrate -W' too fast (0 < 0.95 * 25)?
+sanity: FAIL: test_56xk 'lfs mirror resync -W' too fast (0 < 0.95 * 5)?
+=== sanity: start cleanup 03:56:20 (1765511780) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 03:56:20 (1765511780) ===
 skip cleanup
-=== sanity: finish cleanup 01:03:46 (1765501426) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 01:03:46 (1765501426) ===
+=== sanity: finish cleanup 03:56:20 (1765511780) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 03:56:20 (1765511780) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 1
-Finished at Fri Dec 12 01:03:47 UTC 2025 in 103s
+Finished at Fri Dec 12 03:56:20 UTC 2025 in 50s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 9645:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff88810f1a0000: inode [0x200000401:0x9d:0x0] mdc close failed: rc = -108
+LustreError: 9645:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff8881063b2000: inode [0x200000401:0x9d:0x0] mdc close failed: rc = -108
 LustreError: 9645:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
-LustreError: 9674:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 9674:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+mdt00_005 (8151) used greatest stack depth: 23376 bytes left
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 6754:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765501442 with bad export cookie 6573718540516233147
+LustreError: 2715:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511807 with bad export cookie 8508733254209269879
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
 LustreError: 9728:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 9728:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 9728:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 9768:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 9768:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 9769:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 9769:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 10032:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 10032:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 10033:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 10033:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= PASSED sanity-quick in 233s
+========= FAILED sanity-quick in 189s
 
-Passed: sanity-quick
-Failed: 
-Kernel version: 6.12.57-ktest
-TEST SUCCESS
+Passed: 
+Failed: sanity-quick
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-36.ktest 38 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.15.0-ktest
+TEST FAILED
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=9015d62a957e4f488dce813ceefc49aa\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
-ACPI: PM: Preparing to enter system sleep state S5
-reboot: Power down
+]3008;end=f7913c0369c44926983169fa9f422a66\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
 </pre>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=443285f36ca94165b84138b1e345717f;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=c291921ab3d84e0fa8dd898baf06fb57;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=c65ebe9030b847f49448600363ad9e2d;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=9a32eec872e64eabb0d3ce7a56ba89a9;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,25 +16,92 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (56)
+WARNING: CPU: 1 PID: 1027 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 1 UID: 0 PID: 1027 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc90000b97710 EFLAGS: 00010246
+RAX: 108ad1dc1ef40600 RBX: ffff888105636000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881592a3750
+RBP: ffff888107d30de0 R08: ffff8881592a3753 R09: 1ffff1102b2546ea
+R10: dffffc0000000000 R11: ffffed102b2546eb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff8881056369c8 R15: ffffffff82e1aca0
+FS:  00007f6b380de340(0000) GS:ffff8881d502a000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055b03c1546b8 CR3: 0000000108860000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1269/0x22a0 [ksocklnd]
+ ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
+ lnet_startup_lndnet+0x73e/0x25e0 [lnet]
+ ? _raw_spin_unlock+0x23/0x30
+ ? cfs_percpt_unlock+0xed/0x210 [lnet]
+ LNetNIInit+0x9cb/0x1120 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
+ ? stack_depot_save_flags+0x41/0x830
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x8e/0x7c0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6c/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? pcpu_alloc_noprof+0xadd/0xf70
+ ? codetag_module_init+0x273/0x350
+ ? load_module+0x3489/0x4390
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x270
+ ? kasan_unpoison+0x48/0x70
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x2ce/0x7c0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f6b37918779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007ffef8a297e8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 000055a067e4e890 RCX: 00007f6b37918779
+RDX: 0000000000000000 RSI: 000055a067e4d2a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f6b379f85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 000055a067e4d2a0
+R13: 0000000000000000 R14: 000055a067e4e850 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
 Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2765) used greatest stack depth: 26208 bytes left
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2706) used greatest stack depth: 23520 bytes left
+mount.lustre (2708) used greatest stack depth: 24216 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+mount.lustre (2867) used greatest stack depth: 23992 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 50f31cb5-41fd-4717-ab64-39594bae2067 w/o recovery
+Lustre: lustre-MDT0000: local client 2a342172-d991-4a91-a66c-bdef263aee2f w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -61,15 +128,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 01:02:12 UTC 2025
+Started at Fri Dec 12 03:55:19 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010209
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010209
-Logging to shared log directory: /tmp/test_logs/2025-12-12/010209
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035518
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035518
+Logging to shared log directory: /tmp/test_logs/2025-12-12/035518
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -80,8 +147,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=32e 32f 32g 32h 32i 32j 32k 32l 32m 32n 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 01:02:19 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 01:02:19 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:21 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:21 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -115,36 +182,32 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 01:02:24 (1765501344) ===
-Lustre: DEBUG MARKER: === sanity: start setup 01:02:24 (1765501344) ===
+=== sanity: start setup 03:55:22 (1765511722) ===
+Lustre: DEBUG MARKER: === sanity: start setup 03:55:22 (1765511722) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-Lustre: lustre-OST0000-osc-ffff888110882000: disconnect after 26s idle
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888110882000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888110882000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810914a000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810914a000.idle_timeout=debug
 disable quota as required
-Lustre: 5028:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 01:02:31 (1765501351) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 01:02:31 (1765501351) ===
+Lustre: 5036:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 03:55:24 (1765511724) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 03:55:24 (1765511724) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4168]
-Lustre: lustre-OST0000: local client 50f31cb5-41fd-4717-ab64-39594bae2067 w/o recovery
-Lustre: Skipped 2 previous similar messages
+ [touch] [/mnt/lustre/d0_runas_test/f4176]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 32e: stat d32e/symlink->tmp/symlink->lustre-subdir ========================================================== 01:02:34 (1765501354)
-Lustre: DEBUG MARKER: == sanity test 32e: stat d32e/symlink->tmp/symlink->lustre-subdir ========================================================== 01:02:34 (1765501354)
-rm (5391) used greatest stack depth: 23512 bytes left
+== sanity test 32e: stat d32e/symlink->tmp/symlink->lustre-subdir ========================================================== 03:55:24 (1765511724)
+Lustre: DEBUG MARKER: == sanity test 32e: stat d32e/symlink->tmp/symlink->lustre-subdir ========================================================== 03:55:24 (1765511724)
 ln: failed to create symbolic link '/mnt/lustre/d32e.sanity/tmp/symlink11': Operation not supported
 ln: failed to create symbolic link '/mnt/lustre/d32e.sanity/tmp/../symlink01': Operation not supported
 Can't lstat /mnt/lustre/d32e.sanity/tmp/symlink11: No such file or directory
@@ -157,12 +220,13 @@ Lustre: DEBUG MARKER: sanity test_32e: @@@@@@ FAIL: symlink11 bad
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:4221:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010209/sanity.test_32e.*.1765501354.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_32e.*.1765511725.log
 Dumping logs only on local client.
 FAIL 32e (1s)
 
-== sanity test 32f: open d32f/symlink->tmp/symlink->lustre-subdir ========================================================== 01:02:35 (1765501355)
-Lustre: DEBUG MARKER: == sanity test 32f: open d32f/symlink->tmp/symlink->lustre-subdir ========================================================== 01:02:35 (1765501355)
+== sanity test 32f: open d32f/symlink->tmp/symlink->lustre-subdir ========================================================== 03:55:25 (1765511725)
+Lustre: DEBUG MARKER: == sanity test 32f: open d32f/symlink->tmp/symlink->lustre-subdir ========================================================== 03:55:25 (1765511725)
+rm (5495) used greatest stack depth: 23568 bytes left
 ln: failed to create symbolic link '/mnt/lustre/d32f.sanity/tmp/symlink11': Operation not supported
 ln: failed to create symbolic link '/mnt/lustre/d32f.sanity/tmp/../symlink01': Operation not supported
 ls: cannot access '/mnt/lustre/d32f.sanity/tmp/symlink11': No such file or directory
@@ -175,12 +239,12 @@ Lustre: DEBUG MARKER: sanity test_32f: @@@@@@ FAIL: symlink11 bad
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:4232:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010209/sanity.test_32f.*.1765501356.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_32f.*.1765511725.log
 Dumping logs only on local client.
-FAIL 32f (2s)
+FAIL 32f (0s)
 
-== sanity test 32g: stat d32g/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 01:02:37 (1765501357)
-Lustre: DEBUG MARKER: == sanity test 32g: stat d32g/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 01:02:37 (1765501357)
+== sanity test 32g: stat d32g/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 03:55:25 (1765511725)
+Lustre: DEBUG MARKER: == sanity test 32g: stat d32g/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 03:55:25 (1765511725)
 ln: failed to create symbolic link '/mnt/lustre/d32g.sanity/tmp/symlink12': Operation not supported
 ln: failed to create symbolic link '/mnt/lustre/d32g.sanity/tmp/../symlink02': Operation not supported
 Can't lstat /mnt/lustre/d32g.sanity/tmp/symlink12: No such file or directory
@@ -193,12 +257,12 @@ Lustre: DEBUG MARKER: sanity test_32g: @@@@@@ FAIL: symlink12 not a link
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:4245:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010209/sanity.test_32g.*.1765501358.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_32g.*.1765511726.log
 Dumping logs only on local client.
-FAIL 32g (2s)
+FAIL 32g (1s)
 
-== sanity test 32h: open d32h/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 01:02:39 (1765501359)
-Lustre: DEBUG MARKER: == sanity test 32h: open d32h/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 01:02:39 (1765501359)
+== sanity test 32h: open d32h/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 03:55:26 (1765511726)
+Lustre: DEBUG MARKER: == sanity test 32h: open d32h/symlink->tmp/symlink->lustre-subdir/2 ========================================================== 03:55:26 (1765511726)
 ln: failed to create symbolic link '/mnt/lustre/d32h.sanity/tmp/symlink12': Operation not supported
 ln: failed to create symbolic link '/mnt/lustre/d32h.sanity/tmp/../symlink02': Operation not supported
 ls: cannot access '/mnt/lustre/d32h.sanity/tmp/symlink12': No such file or directory
@@ -211,50 +275,63 @@ Lustre: DEBUG MARKER: sanity test_32h: @@@@@@ FAIL: listing symlink12
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:4257:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010209/sanity.test_32h.*.1765501360.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_32h.*.1765511726.log
 Dumping logs only on local client.
-FAIL 32h (2s)
+FAIL 32h (1s)
 
-== sanity test 32i: stat d32i/ext2-mountpoint/../test_file ===================================================================== 01:02:41 (1765501361)
-Lustre: DEBUG MARKER: == sanity test 32i: stat d32i/ext2-mountpoint/../test_file ===================================================================== 01:02:41 (1765501361)
+== sanity test 32i: stat d32i/ext2-mountpoint/../test_file ===================================================================== 03:55:27 (1765511727)
+Lustre: DEBUG MARKER: == sanity test 32i: stat d32i/ext2-mountpoint/../test_file ===================================================================== 03:55:27 (1765511727)
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd r/w with ordered data mode. Quota mode: none.
-Lustre: lustre-OST0001: local client 50f31cb5-41fd-4717-ab64-39594bae2067 w/o recovery
+EXT4-fs (loop0): mounted filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e r/w with ordered data mode. Quota mode: none.
 /mnt/lustre/d32i.sanity/ext2-mountpoint/../test_file has type file OK
-EXT4-fs (loop0): unmounting filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd.
-PASS 32i (2s)
-
-== sanity test 32j: open d32j/ext2-mountpoint/../test_file ===================================================================== 01:02:43 (1765501363)
-Lustre: DEBUG MARKER: == sanity test 32j: open d32j/ext2-mountpoint/../test_file ===================================================================== 01:02:43 (1765501363)
-loop0: detected capacity change from 0 to 16000
-EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd r/w with ordered data mode. Quota mode: none.
-EXT4-fs (loop0): unmounting filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd.
+EXT4-fs (loop0): unmounting filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e.
 losetup: /dev/loop0: detach failed: No such device or address
-PASS 32j (3s)
+LustreError: 5813:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 5813:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff88810914a000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 5813:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+PASS 32i (1s)
 
-== sanity test 32k: stat d32k/ext2-mountpoint/../d2/test_file ================================================================== 01:02:46 (1765501366)
-Lustre: DEBUG MARKER: == sanity test 32k: stat d32k/ext2-mountpoint/../d2/test_file ================================================================== 01:02:46 (1765501366)
+== sanity test 32j: open d32j/ext2-mountpoint/../test_file ===================================================================== 03:55:28 (1765511728)
+Lustre: DEBUG MARKER: == sanity test 32j: open d32j/ext2-mountpoint/../test_file ===================================================================== 03:55:28 (1765511728)
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): mounted filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): unmounting filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e.
+losetup: /dev/loop0: detach failed: No such device or address
+LustreError: 5936:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 5936:0:(osc_quota.c:196:osc_quotactl()) Skipped 1 previous similar message
+LustreError: 5936:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff88810914a000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 5936:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+PASS 32j (0s)
+
+== sanity test 32k: stat d32k/ext2-mountpoint/../d2/test_file ================================================================== 03:55:28 (1765511728)
+Lustre: DEBUG MARKER: == sanity test 32k: stat d32k/ext2-mountpoint/../d2/test_file ================================================================== 03:55:28 (1765511728)
+loop0: detected capacity change from 0 to 16000
+EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
+EXT4-fs (loop0): mounted filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e r/w with ordered data mode. Quota mode: none.
 /mnt/lustre/d32k.sanity/ext2-mountpoint/../d2/test_file has type file OK
-EXT4-fs (loop0): unmounting filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd.
+EXT4-fs (loop0): unmounting filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e.
 losetup: /dev/loop0: detach failed: No such device or address
-PASS 32k (2s)
+PASS 32k (1s)
 
-== sanity test 32l: open d32l/ext2-mountpoint/../d2/test_file ================================================================== 01:02:48 (1765501368)
-Lustre: DEBUG MARKER: == sanity test 32l: open d32l/ext2-mountpoint/../d2/test_file ================================================================== 01:02:48 (1765501368)
+== sanity test 32l: open d32l/ext2-mountpoint/../d2/test_file ================================================================== 03:55:29 (1765511729)
+Lustre: DEBUG MARKER: == sanity test 32l: open d32l/ext2-mountpoint/../d2/test_file ================================================================== 03:55:29 (1765511729)
 loop0: detected capacity change from 0 to 16000
 EXT4-fs (loop0): mounting ext2 file system using the ext4 subsystem
-EXT4-fs (loop0): mounted filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd r/w with ordered data mode. Quota mode: none.
-EXT4-fs (loop0): unmounting filesystem 5a938c17-1d7b-42e6-96f3-8f39bafee8dd.
+EXT4-fs (loop0): mounted filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e r/w with ordered data mode. Quota mode: none.
+EXT4-fs (loop0): unmounting filesystem e36a1076-b67a-4fe0-a3f2-42109d0d3b2e.
 losetup: /dev/loop0: detach failed: No such device or address
-PASS 32l (2s)
+LustreError: 6197:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 6197:0:(osc_quota.c:196:osc_quotactl()) Skipped 3 previous similar messages
+LustreError: 6197:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff88810914a000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 6197:0:(mdc_request.c:2159:mdc_quotactl()) Skipped 1 previous similar message
+LustreError: 6197:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+LustreError: 6197:0:(lmv_obd.c:4195:lmv_quotactl()) Skipped 1 previous similar message
+PASS 32l (1s)
 
-== sanity test 32m: stat d32m/symlink->tmp/symlink->lustre-root ================================================================ 01:02:51 (1765501371)
-Lustre: DEBUG MARKER: == sanity test 32m: stat d32m/symlink->tmp/symlink->lustre-root ================================================================ 01:02:51 (1765501371)
+== sanity test 32m: stat d32m/symlink->tmp/symlink->lustre-root ================================================================ 03:55:30 (1765511730)
+Lustre: DEBUG MARKER: == sanity test 32m: stat d32m/symlink->tmp/symlink->lustre-root ================================================================ 03:55:30 (1765511730)
 ln: failed to create symbolic link '/mnt/lustre/d32m/tmp/symlink11': Operation not supported
 ln: failed to create symbolic link '/mnt/lustre/d32m/tmp/../symlink01': Operation not supported
 Can't lstat /mnt/lustre/d32m/tmp/symlink11: No such file or directory
@@ -267,12 +344,12 @@ Lustre: DEBUG MARKER: sanity test_32m: @@@@@@ FAIL: symlink11 not a link
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:4332:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010209/sanity.test_32m.*.1765501371.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_32m.*.1765511730.log
 Dumping logs only on local client.
-FAIL 32m (2s)
+FAIL 32m (1s)
 
-== sanity test 32n: open d32n/symlink->tmp/symlink->lustre-root ================================================================ 01:02:53 (1765501373)
-Lustre: DEBUG MARKER: == sanity test 32n: open d32n/symlink->tmp/symlink->lustre-root ================================================================ 01:02:53 (1765501373)
+== sanity test 32n: open d32n/symlink->tmp/symlink->lustre-root ================================================================ 03:55:31 (1765511731)
+Lustre: DEBUG MARKER: == sanity test 32n: open d32n/symlink->tmp/symlink->lustre-root ================================================================ 03:55:31 (1765511731)
 ln: failed to create symbolic link '/mnt/lustre/d32n/tmp/symlink11': Operation not supported
 ln: failed to create symbolic link '/mnt/lustre/d32n/tmp/../symlink01': Operation not supported
 ls: cannot access '/mnt/lustre/d32n/tmp/symlink11': No such file or directory
@@ -285,62 +362,62 @@ Lustre: DEBUG MARKER: sanity test_32n: @@@@@@ FAIL: listing symlink11
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:4343:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010209/sanity.test_32n.*.1765501374.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035518/sanity.test_32n.*.1765511731.log
 Dumping logs only on local client.
-FAIL 32n (1s)
+FAIL 32n (0s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 41 sec ================= 01:03:01 (1765501381)
-Lustre: DEBUG MARKER: == sanity test complete, duration 41 sec ================= 01:03:01 (1765501381)
+== sanity test complete, duration 13 sec ================= 03:55:34 (1765511734)
+Lustre: DEBUG MARKER: == sanity test complete, duration 13 sec ================= 03:55:34 (1765511734)
 sanity: FAIL: test_32e symlink11 bad
 sanity: FAIL: test_32f symlink11 bad
 sanity: FAIL: test_32g symlink12 not a link
 sanity: FAIL: test_32h listing symlink12
 sanity: FAIL: test_32m symlink11 not a link
 sanity: FAIL: test_32n listing symlink11
-=== sanity: start cleanup 01:03:01 (1765501381) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 01:03:01 (1765501381) ===
+=== sanity: start cleanup 03:55:34 (1765511734) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 03:55:34 (1765511734) ===
 skip cleanup
-=== sanity: finish cleanup 01:03:02 (1765501382) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 01:03:02 (1765501382) ===
+=== sanity: finish cleanup 03:55:35 (1765511735) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 03:55:35 (1765511735) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 1
-Finished at Fri Dec 12 01:03:02 UTC 2025 in 53s
+Finished at Fri Dec 12 03:55:35 UTC 2025 in 17s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 7760:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 7768:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
-LustreError: 7791:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 7791:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2712:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765501398 with bad export cookie 10125552522073627401
+LustreError: 2713:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511748 with bad export cookie 6337701919116806842
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 7844:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 7844:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 7851:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 7851:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 7885:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 7885:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 7893:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 7893:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 8148:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 8148:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 8156:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 8156:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= PASSED sanity-quick in 189s
+========= FAILED sanity-quick in 130s
 
-Passed: sanity-quick
-Failed: 
-Kernel version: 6.12.57-ktest
-TEST SUCCESS
+Passed: 
+Failed: sanity-quick
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-20.ktest 38 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.15.0-ktest
+TEST FAILED
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=443285f36ca94165b84138b1e345717f\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
-ACPI: PM: Preparing to enter system sleep state S5
-reboot: Power down
+]3008;end=c65ebe9030b847f49448600363ad9e2d\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
 </pre>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=c9d1471cac9144f9b14190fdf3e822a2;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=392e469105cd42418b3ccc7d4b432e8a;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=d6da479eccb64ad9911e304a9601386c;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=98434894fdde4f3ba432e2127d0e55bf;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,6 +16,71 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (56)
+WARNING: CPU: 2 PID: 1026 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 2 UID: 0 PID: 1026 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc90000c0f710 EFLAGS: 00010246
+RAX: 3cf47597bf786c00 RBX: ffff888105b4c000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159323750
+RBP: ffff888106c2f5e0 R08: ffff888159323753 R09: 1ffff1102b2646ea
+R10: dffffc0000000000 R11: ffffed102b2646eb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff888105b4c9c8 R15: ffffffff82e1aca0
+FS:  00007fc508884340(0000) GS:ffff8881d50aa000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f440fcd27fc CR3: 0000000109fc7000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1269/0x22a0 [ksocklnd]
+ ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
+ lnet_startup_lndnet+0x73e/0x25e0 [lnet]
+ ? _raw_spin_unlock+0x23/0x30
+ ? cfs_percpt_unlock+0xed/0x210 [lnet]
+ LNetNIInit+0x9cb/0x1120 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? llcrypt_msg+0x1090/0x1090 [libcfs]
+ ? stack_depot_save_flags+0x41/0x830
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x8e/0x7c0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6c/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? pcpu_alloc_noprof+0xadd/0xf70
+ ? codetag_module_init+0x273/0x350
+ ? load_module+0x3489/0x4390
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x270
+ ? kasan_unpoison+0x48/0x70
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x2ce/0x7c0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc508118779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007ffc85d7aaf8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 000055dd24559890 RCX: 00007fc508118779
+RDX: 0000000000000000 RSI: 000055dd245582a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007fc5081f85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 000055dd245582a0
+R13: 0000000000000000 R14: 000055dd24559850 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -24,22 +89,24 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2706) used greatest stack depth: 23600 bytes left
+mount.lustre (2707) used greatest stack depth: 24216 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+mount.lustre (2866) used greatest stack depth: 24056 bytes left
 Lustre: lustre-OST0001: new disk, initializing
 Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
 Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
-Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 303daa20-653f-4056-8327-335dfad0628f w/o recovery
+mount.lustre (2991) used greatest stack depth: 23496 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
+Lustre: lustre-MDT0000: local client ad469312-9886-42da-95f9-037e2fa0f9a8 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -66,15 +133,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 01:02:10 UTC 2025
+Started at Fri Dec 12 03:55:03 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010208
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010208
-Logging to shared log directory: /tmp/test_logs/2025-12-12/010208
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035502
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035502
+Logging to shared log directory: /tmp/test_logs/2025-12-12/035502
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -85,8 +152,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=27r 27s 27t 27u 27v 27w 27wa 27x 27y 27z 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 01:02:18 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 01:02:18 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:04 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:04 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -120,37 +187,38 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 01:02:23 (1765501343) ===
-Lustre: DEBUG MARKER: === sanity: start setup 01:02:23 (1765501343) ===
+=== sanity: start setup 03:55:04 (1765511704) ===
+Lustre: DEBUG MARKER: === sanity: start setup 03:55:04 (1765511704) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
-Lustre: lustre-OST0000-osc-ffff888129ab8000: disconnect after 25s idle
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888129ab8000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888129ab8000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff8881491a2000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff8881491a2000.idle_timeout=debug
 disable quota as required
 Lustre: 5031:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 01:02:27 (1765501347) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 01:02:27 (1765501347) ===
+=== sanity: finish setup 03:55:05 (1765511705) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 03:55:05 (1765511705) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [touch] [/mnt/lustre/d0_runas_test/f4171]
-Lustre: lustre-OST0001: local client 303daa20-653f-4056-8327-335dfad0628f w/o recovery
-Lustre: Skipped 2 previous similar messages
+LustreError: 5169:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 5169:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff8881491a2000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 5169:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 27r: stripe file with some full OSTs (shouldn't LBUG) =========================================================== 01:02:28 (1765501348)
-Lustre: DEBUG MARKER: == sanity test 27r: stripe file with some full OSTs (shouldn't LBUG) =========================================================== 01:02:28 (1765501348)
+== sanity test 27r: stripe file with some full OSTs (shouldn't LBUG) =========================================================== 03:55:05 (1765511705)
+Lustre: DEBUG MARKER: == sanity test 27r: stripe file with some full OSTs (shouldn't LBUG) =========================================================== 03:55:05 (1765511705)
 fail_loc=0
 Waiting for MDT destroys to complete
+rm (5494) used greatest stack depth: 23424 bytes left
 OSTIDX=0 MDTIDX=0
 error: get_param: param_path 'osp/*OST*-osc-target/prealloc*': No such file or directory
 fail_val=0
@@ -158,23 +226,21 @@ fail_loc=0x215
 error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_last_id': No such file or directory
 error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_next_id': No such file or directory
 Creating to objid  on ost lustre-OST0000...
-total: 2 open/close in 0.08 seconds: 24.80 ops/second
-Lustre: *** cfs_fail_loc=215, val=0***
+total: 2 open/close in 0.01 seconds: 254.13 ops/second
 error: get_param: param_path 'osp/*OST*-osc-target/prealloc*': No such file or directory
 fail_loc=0x80000215
 Lustre: *** cfs_fail_loc=215, val=0***
 fail_loc=0
 Waiting for MDT destroys to complete
-PASS 27r (15s)
+PASS 27r (11s)
 
-== sanity test 27s: lsm_xfersize overflow (should error) (bug 10725) ========================================================== 01:02:43 (1765501363)
-Lustre: DEBUG MARKER: == sanity test 27s: lsm_xfersize overflow (should error) (bug 10725) ========================================================== 01:02:43 (1765501363)
+== sanity test 27s: lsm_xfersize overflow (should error) (bug 10725) ========================================================== 03:55:16 (1765511716)
+Lustre: DEBUG MARKER: == sanity test 27s: lsm_xfersize overflow (should error) (bug 10725) ========================================================== 03:55:16 (1765511716)
 lfs setstripe: error: stripe size '4294967296' over 4GB limit: Invalid argument (22)
-PASS 27s (1s)
+PASS 27s (0s)
 
-== sanity test 27t: check that utils parse path correctly ========================================================== 01:02:44 (1765501364)
-Lustre: DEBUG MARKER: == sanity test 27t: check that utils parse path correctly ========================================================== 01:02:44 (1765501364)
-Lustre: lustre-OST0000: local client 303daa20-653f-4056-8327-335dfad0628f w/o recovery
+== sanity test 27t: check that utils parse path correctly ========================================================== 03:55:16 (1765511716)
+Lustre: DEBUG MARKER: == sanity test 27t: check that utils parse path correctly ========================================================== 03:55:16 (1765511716)
 f27t.sanity
 lmm_stripe_count:  1
 lmm_stripe_size:   4194304
@@ -182,32 +248,30 @@ lmm_pattern:       raid0
 lmm_layout_gen:    0
 lmm_stripe_offset: 0
 	obdidx		 objid		 objid		 group
-	     0	             5	          0x5	   0x240000400
+	     0	             5	          0x5	   0x280000400
 
-PASS 27t (2s)
+PASS 27t (0s)
 
-== sanity test 27u: skip object creation on OSC w/o objects ========================================================== 01:02:46 (1765501366)
-Lustre: DEBUG MARKER: == sanity test 27u: skip object creation on OSC w/o objects ========================================================== 01:02:46 (1765501366)
+== sanity test 27u: skip object creation on OSC w/o objects ========================================================== 03:55:16 (1765511716)
+Lustre: DEBUG MARKER: == sanity test 27u: skip object creation on OSC w/o objects ========================================================== 03:55:16 (1765511716)
 fail_loc=0x139
 Lustre: *** cfs_fail_loc=139, val=0***
 Lustre: *** cfs_fail_loc=139, val=0***
-Lustre: Skipped 104 previous similar messages
-Lustre: *** cfs_fail_loc=139, val=0***
-Lustre: Skipped 261 previous similar messages
-Lustre: lustre-OST0001-osc-ffff888129ab8000: disconnect after 22s idle
-Lustre: Skipped 1 previous similar message
-Lustre: *** cfs_fail_loc=139, val=0***
-Lustre: Skipped 527 previous similar messages
-total: 1000 open/close in 6.69 seconds: 149.37 ops/second
+Lustre: Skipped 1320 previous similar messages
+total: 1000 open/close in 0.79 seconds: 1266.45 ops/second
 fail_loc=0
- - unlinked 0 (time 1765501380 ; total 0 ; last 0)
-total: 1000 unlinks in 5 seconds: 200.000000 unlinks/second
+ - unlinked 0 (time 1765511718 ; total 0 ; last 0)
+total: 1000 unlinks in 1 seconds: 1000.000000 unlinks/second
+LustreError: 6199:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 6199:0:(osc_quota.c:196:osc_quotactl()) Skipped 1 previous similar message
+LustreError: 6199:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff8881491a2000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 6199:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
 Waiting for MDT destroys to complete
-cleanup time 6
-PASS 27u (20s)
+cleanup time 2
+PASS 27u (4s)
 
-== sanity test 27v: skip object creation on slow OST ===== 01:03:06 (1765501386)
-Lustre: DEBUG MARKER: == sanity test 27v: skip object creation on slow OST ===== 01:03:06 (1765501386)
+== sanity test 27v: skip object creation on slow OST ===== 03:55:20 (1765511720)
+Lustre: DEBUG MARKER: == sanity test 27v: skip object creation on slow OST ===== 03:55:20 (1765511720)
 OSTIDX=0 MDTIDX=0
 error: get_param: param_path 'osp/*OST*-osc-target/prealloc*': No such file or directory
 fail_val=-1
@@ -215,7 +279,7 @@ fail_loc=0x215
 error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_last_id': No such file or directory
 error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_next_id': No such file or directory
 Creating to objid  on ost lustre-OST0000...
-total: 2 open/close in 0.03 seconds: 67.49 ops/second
+total: 2 open/close in 0.01 seconds: 230.20 ops/second
 error: get_param: param_path 'osp/*OST*-osc-target/prealloc*': No such file or directory
 fail_loc=0x215
 lfs mkdir: dirstripe error on '/mnt/lustre/d27v.sanity': stripe already set
@@ -227,39 +291,38 @@ fail_loc=0x215
 error: get_param: param_path 'osp/lustre-OST0001-osc-target/prealloc_last_id': No such file or directory
 error: get_param: param_path 'osp/lustre-OST0001-osc-target/prealloc_next_id': No such file or directory
 Creating to objid  on ost lustre-OST0001...
-total: 2 open/close in 0.06 seconds: 32.08 ops/second
+total: 2 open/close in 0.01 seconds: 226.24 ops/second
 error: get_param: param_path 'osp/*OST*-osc-target/prealloc*': No such file or directory
 fail_loc=0x215
-Lustre: lustre-OST0000-osc-ffff888129ab8000: disconnect after 25s idle
-Lustre: *** cfs_fail_loc=215, val=0***
-Lustre: *** cfs_fail_loc=215, val=0***
+Lustre: *** cfs_fail_loc=215, val=1***
+Lustre: *** cfs_fail_loc=215, val=1***
 Lustre: Skipped 1 previous similar message
 fail_loc=0
 Waiting for MDT destroys to complete
 Waiting 10s for ''
-Lustre: lustre-OST0000: local client 303daa20-653f-4056-8327-335dfad0628f w/o recovery
 fail_loc=0x705
-total: 32 open/close in 0.71 seconds: 45.34 ops/second
-Lustre: lustre-OST0000-osc-ffff888129ab8000: disconnect after 25s idle
+total: 32 open/close in 0.26 seconds: 123.81 ops/second
+Lustre: lustre-OST0001-osc-ffff8881491a2000: disconnect after 23s idle
+Lustre: lustre-OST0000-osc-ffff8881491a2000: disconnect after 26s idle
 fail_loc=0
 Waiting for MDT destroys to complete
-PASS 27v (68s)
+PASS 27v (63s)
 
-== sanity test 27w: check /workspace/lustre-release/lustre/utils/lfs setstripe -S and getstrip -d options ========================================================== 01:04:14 (1765501454)
-Lustre: DEBUG MARKER: == sanity test 27w: check /workspace/lustre-release/lustre/utils/lfs setstripe -S and getstrip -d options ========================================================== 01:04:14 (1765501454)
-PASS 27w (1s)
+== sanity test 27w: check /workspace/lustre-release/lustre/utils/lfs setstripe -S and getstrip -d options ========================================================== 03:56:23 (1765511783)
+Lustre: DEBUG MARKER: == sanity test 27w: check /workspace/lustre-release/lustre/utils/lfs setstripe -S and getstrip -d options ========================================================== 03:56:23 (1765511783)
+PASS 27w (0s)
 
-== sanity test 27wa: check /workspace/lustre-release/lustre/utils/lfs setstripe -c -i options ========================================================== 01:04:15 (1765501455)
-Lustre: DEBUG MARKER: == sanity test 27wa: check /workspace/lustre-release/lustre/utils/lfs setstripe -c -i options ========================================================== 01:04:15 (1765501455)
-PASS 27wa (1s)
+== sanity test 27wa: check /workspace/lustre-release/lustre/utils/lfs setstripe -c -i options ========================================================== 03:56:23 (1765511783)
+Lustre: DEBUG MARKER: == sanity test 27wa: check /workspace/lustre-release/lustre/utils/lfs setstripe -c -i options ========================================================== 03:56:23 (1765511783)
+PASS 27wa (0s)
 
-== sanity test 27x: create files while OST0 is degraded == 01:04:16 (1765501456)
-Lustre: DEBUG MARKER: == sanity test 27x: create files while OST0 is degraded == 01:04:16 (1765501456)
-total: 2 open/close in 0.06 seconds: 35.63 ops/second
-PASS 27x (12s)
+== sanity test 27x: create files while OST0 is degraded == 03:56:23 (1765511783)
+Lustre: DEBUG MARKER: == sanity test 27x: create files while OST0 is degraded == 03:56:23 (1765511783)
+total: 2 open/close in 0.01 seconds: 224.67 ops/second
+PASS 27x (10s)
 
-== sanity test 27y: create files while OST0 is degraded and the rest inactive ========================================================== 01:04:28 (1765501468)
-Lustre: DEBUG MARKER: == sanity test 27y: create files while OST0 is degraded and the rest inactive ========================================================== 01:04:28 (1765501468)
+== sanity test 27y: create files while OST0 is degraded and the rest inactive ========================================================== 03:56:34 (1765511794)
+Lustre: DEBUG MARKER: == sanity test 27y: create files while OST0 is degraded and the rest inactive ========================================================== 03:56:34 (1765511794)
 error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_last_id': No such file or directory
 error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_next_id': No such file or directory
 
@@ -267,36 +330,32 @@ error: get_param: param_path 'osp/lustre-OST0000-osc-target/prealloc_next_id': N
 Lustre: DEBUG MARKER: SKIP: sanity test_27y not enough space on OST0
 SKIP 27y (1s)
 
-== sanity test 27z: check SEQ/OID on the MDT and OST filesystems ========================================================== 01:04:29 (1765501469)
-Lustre: DEBUG MARKER: == sanity test 27z: check SEQ/OID on the MDT and OST filesystems ========================================================== 01:04:29 (1765501469)
-Lustre: lustre-OST0000: local client 303daa20-653f-4056-8327-335dfad0628f w/o recovery
+== sanity test 27z: check SEQ/OID on the MDT and OST filesystems ========================================================== 03:56:34 (1765511794)
+Lustre: DEBUG MARKER: == sanity test 27z: check SEQ/OID on the MDT and OST filesystems ========================================================== 03:56:34 (1765511794)
+Lustre: lustre-OST0000: local client ad469312-9886-42da-95f9-037e2fa0f9a8 w/o recovery
+Lustre: Skipped 2 previous similar messages
 1+0 records in
 1+0 records out
-1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.0451346 s, 23.2 MB/s
+1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.0196616 s, 53.3 MB/s
 2+0 records in
 2+0 records out
-2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0856129 s, 24.5 MB/s
+2097152 bytes (2.1 MB, 2.0 MiB) copied, 0.0338556 s, 61.9 MB/s
 check file /mnt/lustre/d27z.sanity/f27z.sanity-1
 Lustre: DEBUG MARKER: check file /mnt/lustre/d27z.sanity/f27z.sanity-1
 FID seq 0x200000401, oid 0x429 ver 0x0
 Lustre: DEBUG MARKER: FID seq 0x200000401, oid 0x429 ver 0x0
 LOV seq 0x200000401, oid 0x429, count: 1
 Lustre: DEBUG MARKER: LOV seq 0x200000401, oid 0x429, count: 1
-want: stripe:0 ost:0 oid:27/0x1b seq:0x240000400
-Lustre: DEBUG MARKER: want: stripe:0 ost:0 oid:27/0x1b seq:0x240000400
+want: stripe:0 ost:0 oid:27/0x1b seq:0x280000400
+Lustre: DEBUG MARKER: want: stripe:0 ost:0 oid:27/0x1b seq:0x280000400
 Stopping /mnt/lustre-ost1 (opts:) on lustre-bot-kvm
 Lustre: Failing over lustre-OST0000
-LustreError: lustre-OST0000-osc-MDT0000: operation ost_statfs to node 0@lo failed: rc = -107
-Lustre: lustre-OST0000-osc-MDT0000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-Lustre: lustre-OST0000: Not available for connect from 0@lo (stopping)
-LustreError: 7484:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 7486:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
 Lustre: server umount lustre-OST0000 complete
 /workspace/lustre-release/lustre/tests/test-framework.sh: line 5277: mount_wbcfs: command not found
-/mnt/lustre-ost1/O/240000400/d27/1b: error reading fid: No such file or directory
+/mnt/lustre-ost1/O/280000400/d27/1b: error reading fid: No such file or directory
 /workspace/lustre-release/lustre/tests/test-framework.sh: line 5285: unmount_wbcfs: command not found
 Start ost1: mount -t lustre -v lustre-wbcfs /mnt/lustre-ost1
-LustreError: Server lustre-OST0000 requested index 0, but that index is already in use. Use --writeconf to force
-LustreError: 2722:0:(mgs_handler.c:567:mgs_target_reg()) Failed to write lustre-OST0000 log (-98)
 Lustre is using wbcfs as backend
 OSD_WBC_TGT_TYPE=OST
 OSD_WBC_FSNAME=lustre
@@ -304,12 +363,14 @@ OSD_WBC_INDEX=0
 svname -> lustre:OST0000
 OSD_WBC_MGS_NID=10.0.2.15@tcp
 params -> mgsnode=10.0.2.15@tcp
+LustreError: Server lustre-OST0000 requested index 0, but that index is already in use. Use --writeconf to force
+LustreError: 2724:0:(mgs_handler.c:567:mgs_target_reg()) Failed to write lustre-OST0000 log (-98)
 LustreError: lustre-OST0000: the MGS refuses to allow this server to start: rc = -98. Please see messages on the MGS.
-LustreError: 7563:0:(tgt_mount.c:2479:server_fill_super()) Unable to start targets: -98
-LustreError: 7563:0:(tgt_mount.c:1973:server_put_super()) no obd lustre-OST0000
-LustreError: 7563:0:(tgt_mount.c:117:server_deregister_mount()) lustre-OST0000 not registered
+LustreError: 7565:0:(tgt_mount.c:2479:server_fill_super()) Unable to start targets: -98
+LustreError: 7565:0:(tgt_mount.c:1973:server_put_super()) no obd lustre-OST0000
+LustreError: 7565:0:(tgt_mount.c:117:server_deregister_mount()) lustre-OST0000 not registered
 Lustre: server umount lustre-OST0000 complete
-LustreError: 7563:0:(super25.c:199:lustre_fill_super()) llite: Unable to mount <unknown>: rc = -98
+LustreError: 7565:0:(super25.c:199:lustre_fill_super()) llite: Unable to mount <unknown>: rc = -98
 mount.lustre: mount -t lustre lustre-wbcfs at /mnt/lustre-ost1 failed: Address already in use retries left: 0
 mount.lustre: mount lustre-wbcfs at /mnt/lustre-ost1 failed: Address already in use
 The target service's index is already in use. (lustre-wbcfs)
@@ -324,25 +385,30 @@ options(2/4096) = rw
 checking for existing Lustre data: found
 mounting device lustre-wbcfs at /mnt/lustre-ost1, flags=0x1000000 options=osd=osd-wbcfs,mgsnode=10.0.2.15@tcp,virgin,update,svname=lustre-OST0000,device=lustre-wbcfs
 Start of -o on ost1 failed 98
-LustreError: lustre-OST0000-osc-ffff888129ab8000: operation ost_statfs to node 0@lo failed: rc = -107
-Lustre: lustre-OST0000-osc-ffff888129ab8000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
-LustreError: 2865:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 2865:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 3 previous similar messages
-LustreError: 2866:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 2865:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 2865:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 1 previous similar message
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 2 previous similar messages
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 1 previous similar message
-LustreError: 2870:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 2870:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 3 previous similar messages
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 7 previous similar messages
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 6164:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 13 previous similar messages
-LustreError: 2865:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
-LustreError: 2865:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 25 previous similar messages
+LustreError: lustre-OST0000-osc-ffff8881491a2000: operation ost_statfs to node 0@lo failed: rc = -107
+Lustre: lustre-OST0000-osc-ffff8881491a2000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+LustreError: lustre-OST0000-osc-MDT0000: operation ost_statfs to node 0@lo failed: rc = -107
+Lustre: lustre-OST0000-osc-MDT0000: Connection to lustre-OST0000 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+LustreError: 6245:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6245:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 4 previous similar messages
+LustreError: 6245:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6245:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 1 previous similar message
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 1 previous similar message
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 1 previous similar message
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 1 previous similar message
+LustreError: 5168:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 5168:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 2 previous similar messages
+LustreError: 5168:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 5168:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 8 previous similar messages
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 13 previous similar messages
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6249:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 24 previous similar messages
+LustreError: 6245:0:(ldlm_lib.c:1179:target_handle_connect()) lustre-OST0000: not available for connect from 0@lo (no target). If you are running an HA pair check that the target is mounted on the other server.
+LustreError: 6245:0:(ldlm_lib.c:1179:target_handle_connect()) Skipped 52 previous similar messages
 </pre>
 </body>
 </html>

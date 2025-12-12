@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=41d41906eaf2482b81bf9e762bd83064;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=279c80d9f19647fb9a711db587cf1d82;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=e156d941b93249c1aef77af4926c9e8c;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=690a05a9405d4bb580cf4ce44ddd98b7;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,6 +16,71 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (56)
+WARNING: CPU: 2 PID: 1024 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 2 UID: 0 PID: 1024 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc90000bc7710 EFLAGS: 00010246
+RAX: 8040f44260dc1b00 RBX: ffff888105baa000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff888159323750
+RBP: ffff888103fab1e0 R08: ffff888159323753 R09: 1ffff1102b2646ea
+R10: dffffc0000000000 R11: ffffed102b2646eb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff888105baa9c8 R15: ffffffff82e1aca0
+FS:  00007f88fca2a340(0000) GS:ffff8881d50aa000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000561102c257a0 CR3: 000000010760a000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1269/0x22a0 [ksocklnd]
+ ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
+ lnet_startup_lndnet+0x73e/0x25e0 [lnet]
+ ? _raw_spin_unlock+0x23/0x30
+ ? cfs_percpt_unlock+0xed/0x210 [lnet]
+ LNetNIInit+0x9cb/0x1120 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
+ ? stack_depot_save_flags+0x41/0x830
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x8e/0x7c0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6c/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? pcpu_alloc_noprof+0xadd/0xf70
+ ? codetag_module_init+0x273/0x350
+ ? load_module+0x3489/0x4390
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x270
+ ? kasan_unpoison+0x48/0x70
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x2ce/0x7c0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f88fc318779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fffe1672048 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 000055b1867ce890 RCX: 00007f88fc318779
+RDX: 0000000000000000 RSI: 000055b1867cd2a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f88fc3f85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 000055b1867cd2a0
+R13: 0000000000000000 R14: 000055b1867ce850 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -24,21 +89,20 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2705) used greatest stack depth: 24216 bytes left
+mount.lustre (2706) used greatest stack depth: 24216 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-mount.lustre (2860) used greatest stack depth: 24032 bytes left
-mount.lustre (2985) used greatest stack depth: 23720 bytes left
-Lustre: lustre-MDT0000: local client 661f6d6d-848c-42d6-a080-00ce78394588 w/o recovery
-Lustre: client wants to enable acl, but mdt not!
+mount.lustre (2865) used greatest stack depth: 24056 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: Mounted lustre-client
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client df16687e-c4a9-4212-be49-e5cab9a6d202 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 done
@@ -63,15 +127,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 01:02:10 UTC 2025
+Started at Fri Dec 12 03:55:17 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010207
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010207
-Logging to shared log directory: /tmp/test_logs/2025-12-12/010207
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035517
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035517
+Logging to shared log directory: /tmp/test_logs/2025-12-12/035517
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -82,10 +146,9 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=77g 77k 77l 77m 77n 77o 78 79 80 81a 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 01:02:17 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 01:02:17 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:19 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:19 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
-Lustre: lustre-OST0000-osc-ffff88810dee4000: disconnect after 24s idle
 cat: /etc/system-release: No such file or directory
 mgs: 
 MGS_OS_ID=debian
@@ -118,8 +181,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 01:02:21 (1765501341) ===
-Lustre: DEBUG MARKER: === sanity: start setup 01:02:21 (1765501341) ===
+=== sanity: start setup 03:55:20 (1765511720) ===
+Lustre: DEBUG MARKER: === sanity: start setup 03:55:20 (1765511720) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -127,106 +190,99 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff88810dee4000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff88810dee4000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff88810d8ba000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff88810d8ba000.idle_timeout=debug
 disable quota as required
-Lustre: 5048:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 01:02:27 (1765501347) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 01:02:27 (1765501347) ===
+Lustre: 5038:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 03:55:21 (1765511721) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 03:55:21 (1765511721) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4188]
-Lustre: lustre-OST0001: local client 661f6d6d-848c-42d6-a080-00ce78394588 w/o recovery
-Lustre: Skipped 2 previous similar messages
+ [touch] [/mnt/lustre/d0_runas_test/f4178]
+LustreError: 5173:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 5173:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff88810d8ba000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 5173:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 77g: checksum error on OST write, read ==== 01:02:31 (1765501351)
-Lustre: DEBUG MARKER: == sanity test 77g: checksum error on OST write, read ==== 01:02:31 (1765501351)
+== sanity test 77g: checksum error on OST write, read ==== 03:55:22 (1765511722)
+Lustre: DEBUG MARKER: == sanity test 77g: checksum error on OST write, read ==== 03:55:22 (1765511722)
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.0517046 s, 162 MB/s
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.0265319 s, 316 MB/s
+lfs (5706) used greatest stack depth: 23888 bytes left
 fail_loc=0x8000021a
-Lustre: lustre-OST0000: local client 661f6d6d-848c-42d6-a080-00ce78394588 w/o recovery
 Lustre: *** cfs_fail_loc=21a, val=0***
-LustreError: lustre-OST0000: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x3:0x0] object 0x240000400:2 extent [0-4194303]: client csum 98235dbd, server csum 759c5d2b
-LustreError: lustre-OST0000-osc-ffff88810dee4000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x3:0x0] object 0x240000400:2 extent [0-4194303], original client csum 98235dbd (type 2), server csum 759c5d2b (type 2), client csum now 98235dbd
-LustreError: 1046:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff8881485ccc00 x1851262259733504/t0(0) o4->lustre-OST0000-osc-ffff88810dee4000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765501369 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'dd.0' uid:0 gid:0 projid:0
+LustreError: lustre-OST0000: BAD WRITE CHECKSUM: from 12345-0@lo inode [0x200000401:0x3:0x0] object 0x240000400:2 extent [0-4194303]: client csum 64ddcec4, server csum fc14ce1f
+LustreError: lustre-OST0000-osc-ffff88810d8ba000: BAD WRITE CHECKSUM: changed in transit before arrival at OST: from 0@lo inode [0x200000401:0x3:0x0] object 0x240000400:2 extent [0-4194303], original client csum 64ddcec4 (type 2), server csum fc14ce1f (type 2), client csum now 64ddcec4
+LustreError: 1044:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff888149726880 x1851273163873792/t0(0) o4->lustre-OST0000-osc-ffff88810d8ba000@0@lo:6/4 lens 488/448 e 0 to 0 dl 1765511739 ref 2 fl Interpret:RMQU/600/0 rc 0/0 job:'dd.0' uid:0 gid:0 projid:275282496
 8+0 records in
 8+0 records out
-8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.683565 s, 12.3 MB/s
+8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.189009 s, 44.4 MB/s
 fail_loc=0
 fail_loc=0x8000021b
 Lustre: *** cfs_fail_loc=21b, val=0***
-LustreError: lustre-OST0000-osc-ffff88810dee4000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x3:0x0] object 0x240000400:2 extent [0-4095], client 4a72ee7c/4a72ee7c, server 1518dc75, cksum_type 2
-LustreError: 1045:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff888137d3af80 x1851262259734784/t0(0) o3->lustre-OST0000-osc-ffff88810dee4000@0@lo:6/4 lens 488/4536 e 0 to 0 dl 1765501371 ref 2 fl Interpret:RMQU/600/0 rc 4096/4096 job:'cmp.0' uid:0 gid:0 projid:0
+LustreError: lustre-OST0000-osc-ffff88810d8ba000: BAD READ CHECKSUM: from 0@lo inode [0x200000401:0x3:0x0] object 0x240000400:2 extent [0-4095], client 48e1ddd1/48e1ddd1, server 234fbb0c, cksum_type 2
+LustreError: 1044:0:(osc_request.c:2416:osc_brw_redo_request()) @@@ redo for recoverable error -11  req@ffff888149725a40 x1851273163875072/t0(0) o3->lustre-OST0000-osc-ffff88810d8ba000@0@lo:6/4 lens 488/4536 e 0 to 0 dl 1765511740 ref 2 fl Interpret:RMQU/600/0 rc 4096/4096 job:'cmp.0' uid:0 gid:0 projid:275282496
 fail_loc=0
-PASS 77g (7s)
+PASS 77g (4s)
 
-== sanity test 77k: enable/disable checksum correctly ==== 01:02:38 (1765501358)
-Lustre: DEBUG MARKER: == sanity test 77k: enable/disable checksum correctly ==== 01:02:38 (1765501358)
+== sanity test 77k: enable/disable checksum correctly ==== 03:55:26 (1765511726)
+Lustre: DEBUG MARKER: == sanity test 77k: enable/disable checksum correctly ==== 03:55:26 (1765511726)
 Lustre: Setting parameter lustre.osc.lustre*.checksums=0 in log params
 remount client, checksum should be 0
 Stopping client lustre-bot-kvm /mnt/lustre (opts:)
-LustreError: 5877:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88810dee4000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
-LustreError: 5877:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 5869:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88810d8ba000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
+LustreError: 5869:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: lustre-MDT0000: local client 6dc2beb9-b77b-4d85-86a2-b3540521cd14 w/o recovery
+Lustre: lustre-MDT0000: local client 64e842f6-d3a0-446b-a257-bbdfdf1b4ce0 w/o recovery
+Lustre: Skipped 2 previous similar messages
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
-Lustre: Modifying parameter lustre.osc.lustre*.checksums=1 in log params
 Waiting 90s for '1'
-Updated after 2s: want '1' got '1'
 remount client, checksum should be 1
 Stopping client lustre-bot-kvm /mnt/lustre (opts:)
-LustreError: 5979:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff8881280bc000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
-LustreError: 5979:0:(lov_obd.c:783:lov_cleanup()) Skipped 1 previous similar message
-LustreError: 5979:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
-LustreError: 5979:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 5956:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88810e732000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
+LustreError: 5956:0:(lov_obd.c:783:lov_cleanup()) Skipped 1 previous similar message
+LustreError: 5956:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 5956:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: Unmounted lustre-client
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
+Lustre: lustre-MDT0000: local client 07f710e9-16e9-4d80-8512-e9fc4dae231d w/o recovery
+Lustre: Skipped 2 previous similar messages
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: Disabling parameter lustre.osc.lustre*.checksums= in log params
+Lustre: Skipped 1 previous similar message
 remount client with option checksum, checksum should be 1
 10.0.2.15@tcp:/lustre /mnt/lustre lustre rw,checksum,encrypt,flock,lazystatfs,lruresize,nolock,statfs_project,nouser_fid2path,user_xattr,verbose 0 0
 Stopping client lustre-bot-kvm /mnt/lustre (opts:)
-LustreError: 6038:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88810e1da000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
-LustreError: 6038:0:(lov_obd.c:783:lov_cleanup()) Skipped 1 previous similar message
-LustreError: 6038:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
-LustreError: 6038:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
-Lustre: Unmounted lustre-client
 Starting client: lustre-bot-kvm:  -o user_xattr,flock,checksum 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: lustre-MDT0000: local client 029c9916-fe55-4a61-8fe0-dcb83b0b0383 w/o recovery
-Lustre: Skipped 5 previous similar messages
-Lustre: client wants to enable acl, but mdt not!
 remount client with option nochecksum, checksum should be 0
 10.0.2.15@tcp:/lustre /mnt/lustre lustre rw,checksum,encrypt,flock,lazystatfs,lruresize,nolock,statfs_project,nouser_fid2path,user_xattr,verbose 0 0
 Stopping client lustre-bot-kvm /mnt/lustre (opts:)
-LustreError: 6094:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88810ef2c000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
-LustreError: 6094:0:(lov_obd.c:783:lov_cleanup()) Skipped 1 previous similar message
-LustreError: 6094:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
-LustreError: 6094:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 6070:0:(lov_obd.c:783:lov_cleanup()) lustre-clilov-ffff88814df48000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
+LustreError: 6070:0:(lov_obd.c:783:lov_cleanup()) Skipped 3 previous similar messages
+LustreError: 6070:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 6070:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: Unmounted lustre-client
-Starting client: lustre-bot-kvm:  -o user_xattr,flock,nochecksum 10.0.2.15@tcp:/lustre /mnt/lustre
-Lustre: Mounted lustre-client
 Lustre: Skipped 1 previous similar message
+Starting client: lustre-bot-kvm:  -o user_xattr,flock,nochecksum 10.0.2.15@tcp:/lustre /mnt/lustre
 Stopping client lustre-bot-kvm /mnt/lustre (opts:)
 Starting client: lustre-bot-kvm:  -o user_xattr,flock 10.0.2.15@tcp:/lustre /mnt/lustre
 Waiting 90s for '0'
-Updated after 2s: want '0' got '0'
-PASS 77k (15s)
+PASS 77k (5s)
 
-== sanity test 77l: preferred checksum type is remembered after reconnected ========================================================== 01:02:54 (1765501374)
-Lustre: DEBUG MARKER: == sanity test 77l: preferred checksum type is remembered after reconnected ========================================================== 01:02:54 (1765501374)
-osc.lustre-OST0000-osc-ffff88814e35a000.idle_timeout=10
-osc.lustre-OST0001-osc-ffff88814e35a000.idle_timeout=10
-error: set_param: setting /sys/fs/lustre/osc/lustre-OST0000-osc-ffff88814e35a000/checksum_type=invalid: Invalid argument
-error: set_param: setting /sys/fs/lustre/osc/lustre-OST0001-osc-ffff88814e35a000/checksum_type=invalid: Invalid argument
+== sanity test 77l: preferred checksum type is remembered after reconnected ========================================================== 03:55:31 (1765511731)
+Lustre: DEBUG MARKER: == sanity test 77l: preferred checksum type is remembered after reconnected ========================================================== 03:55:31 (1765511731)
+osc.lustre-OST0000-osc-ffff888120786000.idle_timeout=10
+osc.lustre-OST0001-osc-ffff888120786000.idle_timeout=10
+error: set_param: setting /sys/fs/lustre/osc/lustre-OST0000-osc-ffff888120786000/checksum_type=invalid: Invalid argument
+error: set_param: setting /sys/fs/lustre/osc/lustre-OST0001-osc-ffff888120786000/checksum_type=invalid: Invalid argument
 error: set_param: setting 'osc/*osc-[^mM]*/checksum_type'='invalid': Invalid argument
 set checksum type to invalid, rc = 22
 Lustre: DEBUG MARKER: set checksum type to invalid, rc = 22
@@ -235,8 +291,8 @@ Lustre: DEBUG MARKER: set checksum type to adler, rc = 0
 ldlm.namespaces.*osc*.lru_size=0->400
 ldlm.namespaces.*osc*.lru_max_age=600000->3900s
 can't get os[cp].wbcfs-target-osc-[-0-9a-f]*.ost_server_uuid in 210 secs
-Lustre: lustre-OST0000: local client db592275-5368-461f-a83c-e9a66fdfa50b w/o recovery
-Lustre: Skipped 8 previous similar messages
+Lustre: lustre-OST0000: local client 7ab67f40-a4ac-43c5-b03d-c1d6bc18a3ef w/o recovery
+Lustre: Skipped 11 previous similar messages
 </pre>
 </body>
 </html>

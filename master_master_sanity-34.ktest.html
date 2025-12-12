@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=288456e3fc844fc793104750bfbe2fbc;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=cfc143edcddc475bb499933ca51e74f9;pid=1;pidfdid=301;comm=systemd;type=boot\Kernel version: 6.12.57-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=4a2aec97751c4218b29273022593fd4f;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=c463c4d0e1374af38e0fc39bde9947e7;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.15.0-ktest
 hook init_noop
 
 Running tests sanity-quick
@@ -16,6 +16,71 @@ Key type ._llcrypt registered
 Key type .llcrypt registered
 libcfs: HW NUMA nodes: 1, HW CPU cores: 4, npartitions: 2
 Lustre: Lustre: Build Version: 2.16.61_132_g6bbce1e
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (56)
+WARNING: CPU: 1 PID: 1026 at include/net/netdev_lock.h:56 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 1 UID: 0 PID: 1026 Comm: insmod Tainted: G           O        6.15.0-ktest #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: 91 9d 6a 01 00 0f 85 9c fe ff ff c6 05 84 9d 6a 01 01 48 c7 c7 20 6f e4 82 48 c7 c6 c0 6f e4 82 ba 38 00 00 00 e8 ba 13 d8 fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc90000be7710 EFLAGS: 00010246
+RAX: 7f3d0d7b8417b900 RBX: ffff888105988000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8881592a3750
+RBP: ffff8881040ae1e0 R08: ffff8881592a3753 R09: 1ffff1102b2546ea
+R10: dffffc0000000000 R11: ffffed102b2546eb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff8881059889c8 R15: ffffffff82e1aca0
+FS:  00007f0e1681c340(0000) GS:ffff8881d502a000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000056077a6e77a0 CR3: 000000011ba53000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1269/0x22a0 [ksocklnd]
+ ? ksocknal_startup+0xdbc/0x22a0 [ksocklnd]
+ lnet_startup_lndnet+0x73e/0x25e0 [lnet]
+ ? _raw_spin_unlock+0x23/0x30
+ ? cfs_percpt_unlock+0xed/0x210 [lnet]
+ LNetNIInit+0x9cb/0x1120 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? asan.module_dtor+0xb40/0xb40 [ksocklnd]
+ ? stack_depot_save_flags+0x41/0x830
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x8e/0x7c0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6c/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? pcpu_alloc_noprof+0xadd/0xf70
+ ? codetag_module_init+0x273/0x350
+ ? load_module+0x3489/0x4390
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x270
+ ? kasan_unpoison+0x48/0x70
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x2ce/0x7c0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6c/0x140
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0e16118779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007ffc9ac0c248 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 0000559994254890 RCX: 00007f0e16118779
+RDX: 0000000000000000 RSI: 00005599942532a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f0e161f85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 00005599942532a0
+R13: 0000000000000000 R14: 0000559994254850 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -24,20 +89,19 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2706) used greatest stack depth: 24216 bytes left
+mount.lustre (2707) used greatest stack depth: 24216 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
 Lustre: lustre-OST0000: new disk, initializing
 Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
 Lustre: Skipped 1 previous similar message
 Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
-mount.lustre (2864) used greatest stack depth: 24032 bytes left
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
-Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:1:ost
-Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:1:ost]
-Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client 4b1cfc62-ff2d-41b8-b585-26f2874f26b3 w/o recovery
+mount.lustre (2864) used greatest stack depth: 24056 bytes left
+mount.lustre (2989) used greatest stack depth: 23496 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
+Lustre: lustre-MDT0000: local client 604655a5-4dba-437a-861e-fcc148a04b96 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -64,15 +128,15 @@ client:
 CLIENT_OS_ID_LIKE= debian
 CLIENT_OS_ID=debian
 CLIENT_OS_VERSION_CODE=0
-Started at Fri Dec 12 01:02:01 UTC 2025
+Started at Fri Dec 12 03:55:24 UTC 2025
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
 Checking servers environments
 Checking clients lustre-bot-kvm environments
-lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010159
-Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/010159
-Logging to shared log directory: /tmp/test_logs/2025-12-12/010159
+lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035523
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_logdir /tmp/test_logs/2025-12-12/035523
+Logging to shared log directory: /tmp/test_logs/2025-12-12/035523
 lustre-bot-kvm: executing yml_node
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing yml_node
 Client: 2.16.61.132
@@ -83,8 +147,8 @@ OSS: 2.16.61.132
 Lustre: DEBUG MARKER: OSS: 2.16.61.132
 running: sanity ONLY=56rd 56re 56rf 56s 56t 56u 56v 56wa 56wb 56wc 
 run_suite sanity /workspace/lustre-release/lustre/tests/sanity.sh
------============= acceptance-small: sanity ============----- Fri Dec 12 01:02:07 UTC 2025
-Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 01:02:07 UTC 2025
+-----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:28 UTC 2025
+Lustre: DEBUG MARKER: -----============= acceptance-small: sanity ============----- Fri Dec 12 03:55:28 UTC 2025
 Running: bash /workspace/lustre-release/lustre/tests/sanity.sh
 cat: /etc/system-release: No such file or directory
 mgs: 
@@ -118,8 +182,8 @@ excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c
 Lustre: DEBUG MARKER: excepting tests: 442 460d 600a 600b 600c 600d_base 600d 801a 801b 801c 802b 802c 803a 803b 804 805 806 807a 807b 808 809 810 812a 812b 812c 813 814 815 816 817 818 819a 819b 820 823 831 832 833 834 842 850 851 852 853 854 900 901 902 903 904 905 906 907 9
 skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
 Lustre: DEBUG MARKER: skipping tests SLOW=no: 27m 60i 64b 68 71 135 136 230d 300o 842
-=== sanity: start setup 01:02:10 (1765501330) ===
-Lustre: DEBUG MARKER: === sanity: start setup 01:02:10 (1765501330) ===
+=== sanity: start setup 03:55:30 (1765511730) ===
+Lustre: DEBUG MARKER: === sanity: start setup 03:55:30 (1765511730) ===
 lustre-bot-kvm: executing check_config_client /mnt/lustre
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing check_config_client /mnt/lustre
 lustre-bot-kvm: Checking config lustre mounted on /mnt/lustre
@@ -127,28 +191,24 @@ Checking servers environments
 Checking clients lustre-bot-kvm environments
 Using TIMEOUT=100
 Lustre: DEBUG MARKER: Using TIMEOUT=100
-osc.lustre-OST0000-osc-ffff888110574000.idle_timeout=debug
-osc.lustre-OST0001-osc-ffff888110574000.idle_timeout=debug
+osc.lustre-OST0000-osc-ffff888111ad2000.idle_timeout=debug
+osc.lustre-OST0001-osc-ffff888111ad2000.idle_timeout=debug
 disable quota as required
-Lustre: lustre-OST0000-osc-ffff888110574000: disconnect after 24s idle
-Lustre: 5030:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
-=== sanity: finish setup 01:02:16 (1765501336) ===
-Lustre: DEBUG MARKER: === sanity: finish setup 01:02:16 (1765501336) ===
+Lustre: 5034:0:(mgs_llog.c:1348:mgs_modify_param()) MGS: modify general/lod.*.mdt_hash=crush (mode = 0) failed: rc = -17
+=== sanity: finish setup 03:55:33 (1765511733) ===
+Lustre: DEBUG MARKER: === sanity: finish setup 03:55:33 (1765511733) ===
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
  [true]
 running as uid/gid/euid/egid 1000/1000/1000/1000, groups: 1000
- [touch] [/mnt/lustre/d0_runas_test/f4170]
-Lustre: lustre-OST0000: local client 4b1cfc62-ff2d-41b8-b585-26f2874f26b3 w/o recovery
-Lustre: Skipped 2 previous similar messages
+ [touch] [/mnt/lustre/d0_runas_test/f4174]
 preparing for tests involving mounts
 mke2fs 1.47.2 (1-Jan-2025)
 
 debug=all
 
-== sanity test 56rd: check lfs find --printf special files ========================================================== 01:02:19 (1765501339)
-Lustre: DEBUG MARKER: == sanity test 56rd: check lfs find --printf special files ========================================================== 01:02:19 (1765501339)
-rm (5539) used greatest stack depth: 23512 bytes left
-LustreError: 2728:0:(wbcfs.c:285:memfs_create_inode()) Unsupport file mode 010644
+== sanity test 56rd: check lfs find --printf special files ========================================================== 03:55:34 (1765511734)
+Lustre: DEBUG MARKER: == sanity test 56rd: check lfs find --printf special files ========================================================== 03:55:34 (1765511734)
+LustreError: 2729:0:(wbcfs.c:285:memfs_create_inode()) Unsupport file mode 010644
 mkfifo: cannot create fifo '/mnt/lustre/d56rd.sanity/fifo': Operation not supported
  sanity test_56rd: @@@@@@ FAIL: failed to create fifo file 
 Lustre: DEBUG MARKER: sanity test_56rd: @@@@@@ FAIL: failed to create fifo file
@@ -159,13 +219,12 @@ Lustre: DEBUG MARKER: sanity test_56rd: @@@@@@ FAIL: failed to create fifo file
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:7977:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010159/sanity.test_56rd.*.1765501340.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035523/sanity.test_56rd.*.1765511734.log
 Dumping logs only on local client.
-FAIL 56rd (1s)
+FAIL 56rd (0s)
 
-== sanity test 56re: check lfs find -printf width format specifiers are consistant with regular find ========================================================== 01:02:20 (1765501340)
-Lustre: DEBUG MARKER: == sanity test 56re: check lfs find -printf width format specifiers are consistant with regular find ========================================================== 01:02:20 (1765501340)
-Lustre: lustre-OST0001: local client 4b1cfc62-ff2d-41b8-b585-26f2874f26b3 w/o recovery
+== sanity test 56re: check lfs find -printf width format specifiers are consistant with regular find ========================================================== 03:55:34 (1765511734)
+Lustre: DEBUG MARKER: == sanity test 56re: check lfs find -printf width format specifiers are consistant with regular find ========================================================== 03:55:34 (1765511734)
 Usage: truncate PATH LENGTH
 find: warning: unrecognized format directive `%|'
 lfs find: warning: unrecognized format directive: '%|'
@@ -185,36 +244,39 @@ lfs find: warning: unrecognized format directive: '%|'
 find: warning: unrecognized format directive `%|'
 lfs find: warning: unrecognized format directive: '%|'
 lfs find: warning: unrecognized format directive: '%|'
-PASS 56re (6s)
+PASS 56re (3s)
 
-== sanity test 56rf: check lfs find -printf width format specifiers for lustre specific formats ========================================================== 01:02:27 (1765501347)
-Lustre: DEBUG MARKER: == sanity test 56rf: check lfs find -printf width format specifiers for lustre specific formats ========================================================== 01:02:27 (1765501347)
+== sanity test 56rf: check lfs find -printf width format specifiers for lustre specific formats ========================================================== 03:55:37 (1765511737)
+Lustre: DEBUG MARKER: == sanity test 56rf: check lfs find -printf width format specifiers for lustre specific formats ========================================================== 03:55:37 (1765511737)
 Creating new pool testpool56rf
 Pool lustre.testpool56rf created
 Destroy the created pools: testpool56rf
 lustre.testpool56rf
 Pool lustre.testpool56rf destroyed
-PASS 56rf (9s)
+PASS 56rf (6s)
 
-== sanity test 56s: check lfs find -stripe-count works === 01:02:36 (1765501356)
-Lustre: DEBUG MARKER: == sanity test 56s: check lfs find -stripe-count works === 01:02:36 (1765501356)
-PASS 56s (3s)
+== sanity test 56s: check lfs find -stripe-count works === 03:55:43 (1765511743)
+Lustre: DEBUG MARKER: == sanity test 56s: check lfs find -stripe-count works === 03:55:43 (1765511743)
+PASS 56s (1s)
 
-== sanity test 56t: check lfs find -stripe-size works ==== 01:02:39 (1765501359)
-Lustre: DEBUG MARKER: == sanity test 56t: check lfs find -stripe-size works ==== 01:02:39 (1765501359)
-PASS 56t (4s)
+== sanity test 56t: check lfs find -stripe-size works ==== 03:55:45 (1765511745)
+Lustre: DEBUG MARKER: == sanity test 56t: check lfs find -stripe-size works ==== 03:55:45 (1765511745)
+LustreError: 6521:0:(osc_quota.c:196:osc_quotactl()) ptlrpc_queue_wait failed, rc: -95
+LustreError: 6521:0:(mdc_request.c:2159:mdc_quotactl()) lustre-MDT0000-mdc-ffff888111ad2000: ptlrpc_queue_wait failed: rc = -95
+LustreError: 6521:0:(lmv_obd.c:4195:lmv_quotactl()) getquota on mdt 0 failed. -95
+PASS 56t (2s)
 
-== sanity test 56u: check lfs find -stripe-index works === 01:02:43 (1765501363)
-Lustre: DEBUG MARKER: == sanity test 56u: check lfs find -stripe-index works === 01:02:43 (1765501363)
-PASS 56u (4s)
+== sanity test 56u: check lfs find -stripe-index works === 03:55:46 (1765511746)
+Lustre: DEBUG MARKER: == sanity test 56u: check lfs find -stripe-index works === 03:55:46 (1765511746)
+PASS 56u (2s)
 
-== sanity test 56v: check 'lfs find -m match with lfs getstripe -m' ========================================================== 01:02:47 (1765501367)
-Lustre: DEBUG MARKER: == sanity test 56v: check 'lfs find -m match with lfs getstripe -m' ========================================================== 01:02:47 (1765501367)
-PASS 56v (3s)
+== sanity test 56v: check 'lfs find -m match with lfs getstripe -m' ========================================================== 03:55:48 (1765511748)
+Lustre: DEBUG MARKER: == sanity test 56v: check 'lfs find -m match with lfs getstripe -m' ========================================================== 03:55:48 (1765511748)
+PASS 56v (1s)
 
-== sanity test 56wa: check lfs_migrate -c stripe_count works ========================================================== 01:02:50 (1765501370)
-Lustre: DEBUG MARKER: == sanity test 56wa: check lfs_migrate -c stripe_count works ========================================================== 01:02:50 (1765501370)
-total: 200 link in 1.00 seconds: 200.71 ops/second
+== sanity test 56wa: check lfs_migrate -c stripe_count works ========================================================== 03:55:49 (1765511749)
+Lustre: DEBUG MARKER: == sanity test 56wa: check lfs_migrate -c stripe_count works ========================================================== 03:55:49 (1765511749)
+total: 200 link in 0.37 seconds: 540.87 ops/second
 /workspace/lustre-release/lustre/scripts/lfs_migrate -y -v -c 1 /mnt/lustre/d56wa.sanity/file1
 /mnt/lustre/d56wa.sanity/file1: 0: lcm_mirror_count:
 mirror=1
@@ -235,11 +297,10 @@ size=4194304
 12: 4194304
 stripe_count=1,stripe_size=4194304 
 /workspace/lustre-release/lustre/utils/lfs migrate  -c 1 -S 4194304  "/mnt/lustre/d56wa.sanity/file1"
-LustreError: 7161:0:(ofd_dev.c:1877:ofd_destroy_hdl()) lustre-OST0000: error destroying object [0x240000400:0x29:0x0]: -5
 done
 /workspace/lustre-release/lustre/utils/lfs migrate -i 1 /mnt/lustre/d56wa.sanity/migr_1_ost
- sanity test_56wa: @@@@@@ FAIL: md5sum differ: aa0ebac346c320820ba1e88e7cfa9375  /mnt/lustre/d56wa.sanity/migr_1_ost, d41d8cd98f00b204e9800998ecf8427e  /mnt/lustre/d56wa.sanity/migr_1_ost 
-Lustre: DEBUG MARKER: sanity test_56wa: @@@@@@ FAIL: md5sum differ: aa0ebac346c320820ba1e88e7cfa9375 /mnt/lustre/d56wa.sanity/migr_1_ost, d41d8cd98f00b204e9800998ecf8427e /mnt/lustre/d56wa.sanity/migr_1_ost
+ sanity test_56wa: @@@@@@ FAIL: md5sum differ: eb880bbc339d27efed1b79dade53dc04  /mnt/lustre/d56wa.sanity/migr_1_ost, d41d8cd98f00b204e9800998ecf8427e  /mnt/lustre/d56wa.sanity/migr_1_ost 
+Lustre: DEBUG MARKER: sanity test_56wa: @@@@@@ FAIL: md5sum differ: eb880bbc339d27efed1b79dade53dc04 /mnt/lustre/d56wa.sanity/migr_1_ost, d41d8cd98f00b204e9800998ecf8427e /mnt/lustre/d56wa.sanity/migr_1_ost
   Trace dump:
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7317:error()
   = /workspace/lustre-release/lustre/tests/sanity.sh:8327:test_56wa()
@@ -247,12 +308,12 @@ Lustre: DEBUG MARKER: sanity test_56wa: @@@@@@ FAIL: md5sum differ: aa0ebac346c3
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:8354:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010159/sanity.test_56wa.*.1765501387.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035523/sanity.test_56wa.*.1765511756.log
 Dumping logs only on local client.
-FAIL 56wa (22s)
+FAIL 56wa (9s)
 
-== sanity test 56wb: check lfs_migrate pool support ====== 01:03:13 (1765501393)
-Lustre: DEBUG MARKER: == sanity test 56wb: check lfs_migrate pool support ====== 01:03:13 (1765501393)
+== sanity test 56wb: check lfs_migrate pool support ====== 03:55:58 (1765511758)
+Lustre: DEBUG MARKER: == sanity test 56wb: check lfs_migrate pool support ====== 03:55:58 (1765511758)
 Creating test dir...done.
 Creating test file...done.
 Detecting existing pools...none detected.
@@ -264,15 +325,15 @@ Removing test file from pool 'testpool'...done.
 Setting pool using --pool option...done.
 Destroy the created pools: testpool
 lustre.testpool
-PASS 56wb (11s)
+PASS 56wb (7s)
 
-== sanity test 56wc: check unrecognized options for lfs_migrate are passed through ========================================================== 01:03:24 (1765501404)
-Lustre: DEBUG MARKER: == sanity test 56wc: check unrecognized options for lfs_migrate are passed through ========================================================== 01:03:24 (1765501404)
+== sanity test 56wc: check unrecognized options for lfs_migrate are passed through ========================================================== 03:56:05 (1765511765)
+Lustre: DEBUG MARKER: == sanity test 56wc: check unrecognized options for lfs_migrate are passed through ========================================================== 03:56:05 (1765511765)
 Creating test dir...done
 Setting initial stripe for test file...done.
 12+0 records in
 12+0 records out
-12582912 bytes (13 MB, 12 MiB) copied, 0.728462 s, 17.3 MB/s
+12582912 bytes (13 MB, 12 MiB) copied, 0.27205 s, 46.3 MB/s
 Verifying incompatible options are detected...lfs_migrate error: option -R or -A cannot be used with -c, -S, or -p
 lfs_migrate error: option -R or -A cannot be used with -c, -S, or -p
 lfs_migrate error: option -R or -A cannot be used with -c, -S, or -p
@@ -293,60 +354,60 @@ Lustre: DEBUG MARKER: sanity test_56wc: @@@@@@ FAIL: file data has changed (1)
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7756:run_one_logged()
   = /workspace/lustre-release/lustre/tests/test-framework.sh:7556:run_test()
   = /workspace/lustre-release/lustre/tests/sanity.sh:8579:main()
-Dumping lctl log to /tmp/test_logs/2025-12-12/010159/sanity.test_56wc.*.1765501407.log
+Dumping lctl log to /tmp/test_logs/2025-12-12/035523/sanity.test_56wc.*.1765511766.log
 Dumping logs only on local client.
-FAIL 56wc (4s)
+FAIL 56wc (1s)
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
 resend_count is set to 4 4
-== sanity test complete, duration 85 sec ================= 01:03:32 (1765501412)
-Lustre: DEBUG MARKER: == sanity test complete, duration 85 sec ================= 01:03:32 (1765501412)
+== sanity test complete, duration 40 sec ================= 03:56:08 (1765511768)
+Lustre: DEBUG MARKER: == sanity test complete, duration 40 sec ================= 03:56:08 (1765511768)
 sanity: FAIL: test_56rd failed to create fifo file
-sanity: FAIL: test_56wa md5sum differ: aa0ebac346c320820ba1e88e7cfa9375  /mnt/lustre/d56wa.sanity/migr_1_ost, d41d8cd98f00b204e9800998ecf8427e  /mnt/lustre/d56wa.sanity/migr_1_ost
+sanity: FAIL: test_56wa md5sum differ: eb880bbc339d27efed1b79dade53dc04  /mnt/lustre/d56wa.sanity/migr_1_ost, d41d8cd98f00b204e9800998ecf8427e  /mnt/lustre/d56wa.sanity/migr_1_ost
 sanity: FAIL: test_56wc file data has changed (1)
-=== sanity: start cleanup 01:03:32 (1765501412) ===
-Lustre: DEBUG MARKER: === sanity: start cleanup 01:03:32 (1765501412) ===
+=== sanity: start cleanup 03:56:08 (1765511768) ===
+Lustre: DEBUG MARKER: === sanity: start cleanup 03:56:08 (1765511768) ===
 skip cleanup
-=== sanity: finish cleanup 01:03:33 (1765501413) ===
-Lustre: DEBUG MARKER: === sanity: finish cleanup 01:03:33 (1765501413) ===
+=== sanity: finish cleanup 03:56:08 (1765511768) ===
+Lustre: DEBUG MARKER: === sanity: finish cleanup 03:56:08 (1765511768) ===
 debug=super ioctl neterror warning dlmtrace error emerg ha rpctrace vfstrace config console lfsck
 sanity returned 1
-Finished at Fri Dec 12 01:03:33 UTC 2025 in 94s
+Finished at Fri Dec 12 03:56:08 UTC 2025 in 45s
 /workspace/lustre-release/lustre/tests/auster: completed with rc 0
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
-LustreError: 8857:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888110574000: inode [0x200000401:0x42:0x0] mdc close failed: rc = -108
-LustreError: 8857:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+LustreError: 8863:0:(file.c:249:ll_close_inode_openhandle()) lustre-clilmv-ffff888111ad2000: inode [0x200000401:0x42:0x0] mdc close failed: rc = -108
+LustreError: 8863:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
-LustreError: 8886:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 8886:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2713:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765501431 with bad export cookie 11665919834458991953
+LustreError: 2713:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765511792 with bad export cookie 15403116646167944072
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 8938:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 8938:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 8947:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 8947:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 8979:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 8979:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+LustreError: 8989:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 8989:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 9242:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 9242:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 9252:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 9252:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 286 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 305 from: ( set -e; run_test $i ), exiting
 
-========= PASSED sanity-quick in 223s
+========= FAILED sanity-quick in 174s
 
-Passed: sanity-quick
-Failed: 
-Kernel version: 6.12.57-ktest
-TEST SUCCESS
+Passed: 
+Failed: sanity-quick
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 401 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/sanity/sanity-34.ktest 38 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.15.0-ktest
+TEST FAILED
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=288456e3fc844fc793104750bfbe2fbc\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
-ACPI: PM: Preparing to enter system sleep state S5
-reboot: Power down
+]3008;end=4a2aec97751c4218b29273022593fd4f\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
 </pre>
 </body>
 </html>
