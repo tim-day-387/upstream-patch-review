@@ -1,0 +1,33 @@
+<html lang="en">
+<body>
+<pre>
+LU-12669 ec: recover data from parity
+
+Restore read data when some OSTs are unavailable from updated parity
+codes.
+
+When normal read fails, the read would switch to CIT_EC_RD, and the
+ec read would cover the whole Recover Group stripes, the extent lock
+of the ec_rd would cover the available data OSTs and parity OSTs, then
+it reads pages from available data objects and parity objects,
+calculates and fill in the missing data pages.
+
+In lov_io_ec_rd_start()
+* data cl_page stored in dlist
+* unavailable data cl_page stored in ec_page_list
+* parity cl_page stored in plist (cannot use put_page() buf
+  __free_page() to free its vmpage since it's from alloc_page() not
+  from page cache)
+* at the end of each RG read cycle, need to unmap data & parity
+  vmpages, and put their cl_page.
+* at the end of each RG cycle, need to unmap to-be-recovered data
+  cl_page
+* in vvp_io_ec_rd_end(), populate the recovered data vmpage to user
+  iter, unlock and free them afterwards.
+
+Signed-off-by: Bobi Jam <bobijam@whamcloud.com>
+Change-Id: I74977a9148256e2604d948979b5f0b944786e4e0
+
+</pre>
+</body>
+</html>
