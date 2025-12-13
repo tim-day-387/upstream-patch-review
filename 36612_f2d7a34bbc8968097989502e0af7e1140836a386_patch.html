@@ -1,0 +1,23 @@
+<html lang="en">
+<body>
+<pre>
+LU-8585 tests: re-enable fid2path sanity test for subdir mount
+
+When a subdirectory is mounted, the .lustre directory cannot be
+seen. With the move of llapi_fid2path() from using .lustre/fid to
+name_to_handle_at() previous sanity test that failed due to
+file sets being enabled should now pass since name_to_handle_at()
+should be file set aware. We update a few test applications to
+work with llapi_open_by_fid() if we can't access .lustre. Same
+is done with liblustreapi.so as well.
+
+Fixes: f71554200 ("LU-11208 tests: add version check to sanity tests")
+Fixes: e2ac6e1ea ("LU-9341 lod: Add special O_APPEND striping")
+Fixes: 9bd3e64b8 ("LU-28 fileset: add fileset mount support")
+Test-Parameters: trivial envdefinitions=FILESET=/subdir testlist=sanity
+Change-Id: Iddbcea298613e1dcc0af5c6f3cab4f0de01dbb5c
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+
+</pre>
+</body>
+</html>
