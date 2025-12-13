@@ -1,7 +1,7 @@
 <html lang="en">
 <body>
 <pre>
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=d3f979d83b5142bebf9934411e7e2ce8;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=a56f06e58b9f4070ac3ad0c9fff9cd55;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=0da86773e95445c2b2a31664cd0a252d;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=d15eaaf5bfb44ac48705b49d65b09983;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest
 hook init_noop
 
 Running tests llmount
@@ -21,17 +21,19 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2910) used greatest stack depth: 23616 bytes left
+mount.lustre (2911) used greatest stack depth: 23568 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
-Lustre: lustre-OST0000: new disk, initializing
-Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
+Lustre: lustre-OST0001: new disk, initializing
 Lustre: Skipped 1 previous similar message
-Lustre: lustre-OST0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: srv-lustre-OST0001: No data found on store. Initialize space.
+Lustre: Skipped 2 previous similar messages
+Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
+Lustre: Skipped 1 previous similar message
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
-Lustre: lustre-MDT0000: local client c2839ef4-0bd8-48e6-b02e-fbad7e21c52d w/o recovery
+Lustre: lustre-MDT0000: local client 2c33c8ab-4be8-4fd1-8830-a10be90d69a3 w/o recovery
 Lustre: client wants to enable acl, but mdt not!
 Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
@@ -40,32 +42,82 @@ done
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
 LustreError: 3704:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
 Lustre: Unmounted lustre-client
-LustreError: 3732:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
-LustreError: 3732:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 3734:0:(obd_class.h:479:obd_check_dev()) Device 22 not setup
+LustreError: 3734:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 3065:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765586603 with bad export cookie 7106323033895089546
+LustreError: 2916:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1765595380 with bad export cookie 5634482474228614591
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
-LustreError: 3785:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
-LustreError: 3785:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
+LustreError: 3788:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 3788:0:(obd_class.h:479:obd_check_dev()) Skipped 5 previous similar messages
 Lustre: server umount lustre-OST0000 complete
-LustreError: 3826:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
-LustreError: 3826:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+INFO: task umount:3829 blocked for more than 10 seconds.
+      Tainted: G           O       6.14.0-ktest #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:umount          state:D stack:26856 pid:3829  tgid:3829  ppid:3827   task_flags:0x400100 flags:0x00004002
+Call Trace:
+ <TASK>
+ __schedule+0x1251/0x1cd0
+ schedule+0xae/0x250
+ schedule_timeout+0x36/0x160
+ ? do_raw_spin_unlock+0x51/0x2a0
+ wait_for_common+0x289/0x4b0
+ rcu_barrier+0x440/0x540
+ lprocfs_job_stats_fini+0x10c/0x490 [obdclass]
+ ofd_device_fini+0x11bd/0x20e0 [ofd]
+ class_cleanup+0x10b8/0x1ae0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x169/0x1a0 [obdclass]
+ class_process_config+0x1f78/0x76e0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc49/0x1e90 [obdclass]
+ class_manual_cleanup+0xda5/0x1e90 [obdclass]
+ server_put_super+0x311c/0x5360 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0x100/0x170
+ resume_user_mode_work+0x3a/0x50
+ syscall_exit_to_user_mode+0x76/0xb0
+ do_syscall_64+0x78/0x140
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f3a5695a217
+RSP: 002b:00007fff7a57cd98 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f3a5695a217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055db036ba120
+RBP: 00007f3a56aba26c R08: 00007fff7a57bb80 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055db036b6e78
+R13: 000055db036ba120 R14: 000055db036b6d70 R15: 000055db036b71b0
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8378d440 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+2 locks held by umount/3829:
+ #0: ffff88812a86a0e0 (&type->s_umount_key#41){....}-{3:3}, at: deactivate_super+0x5b/0x80
+ #1: ffffffff83796c40 (rcu_state.barrier_mutex){....}-{3:3}, at: rcu_barrier+0x4e/0x540
+
+=============================================
+
+LustreError: 3829:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 3829:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
 Lustre: server umount lustre-OST0001 complete
-LNet: 4089:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
-LNetError: 4089:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: 4092:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4092:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
 LNet: Removed LNI 10.0.2.15@tcp
 Key type .llcrypt unregistered
 Key type ._llcrypt unregistered
 done
 
-========= PASSED llmount in 135s
+========= PASSED llmount in 129s
 
 Passed: llmount
 Failed: 
 Kernel version: 6.14.0-ktest
 TEST SUCCESS
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=d3f979d83b5142bebf9934411e7e2ce8\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+]3008;end=0da86773e95445c2b2a31664cd0a252d\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
 ACPI: PM: Preparing to enter system sleep state S5
 reboot: Power down
 </pre>
