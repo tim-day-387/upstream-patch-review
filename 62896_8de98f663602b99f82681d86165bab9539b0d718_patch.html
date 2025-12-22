@@ -1,0 +1,31 @@
+<html lang="en">
+<body>
+<pre>
+LU-19671 obd: introduce subsystem specific dump on eviction
+
+Lustre has options to dump logs or crash on eviction events,
+including: LDLM lock eviction, client [re]connect eviction,
+stale recovery eviction.
+
+The options obd_lbug_on_eviction and obd_dump_on_eviction control
+crash/log behavior. This patch adds ability to set these options with
+a mask or string for specific subsystems:
+- '1'/0x01: all minus pinger (old behavior)
+- 'llite'/0x02: client eviction
+- 'ldlm'/0x04: LDLM lock eviction
+- 'stale'/0x08: recovery stale eviction
+- 'pinger'/0x10: pinger eviction (new)
+
+lctl set_param dump_on_eviction=pinger,ldlm,stale
+lctl set_param lbug_on_eviction=0x14
+
+Also adds log dumping and LBUG behavior for pinger evictions, which
+previously did not produce logs or crashes.
+
+HPE-bug-id: LUS-13031
+Signed-off-by: Alexander Boyko <alexander.boyko@hpe.com>
+Change-Id: Ic9e91ee2e1c53e30dce3e633a40c2f8322af44ba
+
+</pre>
+</body>
+</html>
