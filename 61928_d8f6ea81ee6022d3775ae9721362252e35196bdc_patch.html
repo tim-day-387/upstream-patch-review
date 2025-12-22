@@ -1,0 +1,28 @@
+<html lang="en">
+<body>
+<pre>
+LU-19504 contrib: script to resolve strings in objdump
+
+can be useful to understand disassembled code:
+
+# objdump-resolve-str.sh mdd.ko
+...
+0000000000000b50 <mdd_recovery_complete+0x120> mov $0x0,%rdi
+    b53: R_X86_64_32S .data+0x1840
+0000000000000b57 <mdd_recovery_complete+0x127> mov $0x0,%rdx
+    b5a: R_X86_64_32S  .rodata.str1.1+0x6c  # mdd != ((void *)0)
+0000000000000b5e <mdd_recovery_complete+0x12e> mov $0x0,%rsi
+    b61: R_X86_64_32S  .rodata.str1.1+0x13  # ASSERTION( %s ) failed:
+0000000000000b65 <mdd_recovery_complete+0x135> movl $0x40000,0x0(%rip)
+    b67: R_X86_64_PC32 .data+0x1850
+0000000000000b6f <mdd_recovery_complete+0x13f> call 0000000000000b74
+    b70: R_X86_64_PLT32 libcfs_debug_msg-0x4
+
+Test-Parameters: trivial
+
+Signed-off-by: Alex Zhuravlev <bzzz@whamcloud.com>
+Change-Id: I55f5ef77a704970fe67d2cc663d8049e1cd0237d
+
+</pre>
+</body>
+</html>
