@@ -1,0 +1,25 @@
+<html lang="en">
+<body>
+<pre>
+LU-19692 mgc: notify MGS about target NIDs after reconnect
+
+After MGS failover its NID tables should be rebuilt from
+targets like it is done during initial target registration
+
+For that the upcall is registered in MGC and called in
+mgc_notify_active(), it collects local NIDs data and calls
+call tgt_nids_notify() to let MGS build NID tables for IR
+
+The mgc_nid_nofity() is changed to handle bulk too,
+because amount of NIDs can be big
+
+conf-sanity.sh test 73e is modified with extra test case
+
+test_77k sanity.sh was updated to don't race at mount time
+
+Signed-off-by: Mikhail Pershin <mpershin@whamcloud.com>
+Change-Id: I5fc075c73f6f6fd74ad735e2a4bfe9a8f95a158e
+
+</pre>
+</body>
+</html>
