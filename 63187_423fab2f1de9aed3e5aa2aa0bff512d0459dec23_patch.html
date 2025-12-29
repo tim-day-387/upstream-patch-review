@@ -1,0 +1,32 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: enable parallel formatting by default
+
+Enable parallel formatting of targets by default. This includes
+both intra-type parallelism (multiple MDTs or OSTs formatted
+simultaneously) and inter-type parallelism (MDT and OST formatting
+overlapping).
+
+Configuration:
+- PARALLEL_FORMAT now defaults to 1 (enabled)
+- PARALLEL_FORMAT_TYPES inherits from PARALLEL_FORMAT (=1)
+- PARALLEL_FORMAT_TARGETS="mdt ost" (MGS excluded)
+- Other operations (mount, unmount) remain disabled
+
+Test environment:
+- 1 MGS (combined with MDS)
+- 1 MDT (245MB)
+- 2 OSTs (391MB each)
+
+Performance results:
+- Baseline (serial formatting): 31.1s
+- Parallel formatting: 17.3-25.7s
+- Improvement: 17-44% faster
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I7cac5b4a677e3fee97edf57bb9a7cf3469bab92b
+
+</pre>
+</body>
+</html>
