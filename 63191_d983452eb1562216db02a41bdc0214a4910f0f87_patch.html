@@ -1,0 +1,39 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: enable parallel unmounting across types
+
+Enable inter-type parallelism for unmount operations, allowing
+clients, MDTs, and OSTs to unmount simultaneously rather than
+waiting for each type to complete sequentially.
+
+WARNING: This feature is known to have stability issues and can
+cause hangs during unmount. It is enabled here for testing
+purposes only and should not be used in production environments.
+
+Configuration:
+- PARALLEL_UMOUNT_TYPES now inherits from PARALLEL_UMOUNT (=1)
+- Allows client, MDT, and OST unmounts to overlap
+
+Test environment:
+- 1 MGS (combined with MDS)
+- 1 MDT (245MB)
+- 2 OSTs (391MB each)
+
+Performance results (when it works):
+- Baseline (sequential types): 24.6s
+- With inter-type overlap: 11.9s
+- Improvement: 51% faster (12.7s savings)
+
+Known issues:
+- Intermittent hangs during unmount operations
+- Race conditions in cleanup ordering
+- Resource deadlocks between target types
+
+Test-Parameters: fortestonly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I413c5be0437049c88a6c1066681ed258fa41fa06
+
+</pre>
+</body>
+</html>
