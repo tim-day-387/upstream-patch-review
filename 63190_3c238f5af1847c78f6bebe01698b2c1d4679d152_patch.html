@@ -1,0 +1,36 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: enable parallel mounting across types
+
+Enable inter-type parallelism for mount operations, allowing
+MDT and OST mounting to overlap rather than waiting for MDT
+to complete before starting OST mounts.
+
+Configuration:
+- PARALLEL_MOUNT_TYPES now inherits from PARALLEL_MOUNT (=1)
+- Allows MDT and OST mounts to run simultaneously
+
+Test environment:
+- 1 MGS (combined with MDS)
+- 1 MDT (245MB)
+- 2 OSTs (391MB each)
+
+Performance results:
+- Baseline (sequential types): 24.9s
+- With inter-type overlap: 26.8s
+- Result: 8% slower (1.9s penalty)
+
+Note: Inter-type mount parallelism shows a small performance
+degradation in this configuration. The overhead of running
+MDT and OST mounts simultaneously appears to outweigh any
+parallelism benefits, likely due to resource contention or
+mount dependencies. This feature is enabled for completeness
+and may show benefits in larger configurations.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I9981fc1a56d5196e311a95f9808cb14a163f09c3
+
+</pre>
+</body>
+</html>
