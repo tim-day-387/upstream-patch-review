@@ -1,0 +1,46 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: add parallel format/mount/unmount support
+
+Add support for parallel format, mount, and unmount operations
+in the test framework. These operations are controlled by a
+hierarchy of variables that allow fine-grained control over
+which operations run in parallel, which target types are
+parallelized, and whether different target types can overlap.
+
+Variable hierarchy:
+- PARALLEL_OPS: Master switch controlling all operations
+- PARALLEL_FORMAT, PARALLEL_MOUNT, PARALLEL_UMOUNT: Enable
+  parallelism for specific operations (default to PARALLEL_OPS)
+- PARALLEL_FORMAT_TARGETS, PARALLEL_MOUNT_TARGETS,
+  PARALLEL_UMOUNT_TARGETS: Space-separated list of target types
+  to parallelize within each operation (e.g., "mdt ost")
+- PARALLEL_FORMAT_TYPES, PARALLEL_MOUNT_TYPES,
+  PARALLEL_UMOUNT_TYPES: Whether to overlap different target
+  types during operations (inter-type parallelism)
+
+Implementation:
+- New helper function parallel_enabled_for(operation, target_type)
+  checks if parallelism is enabled for a specific combination
+- Updated formatall(), mountmds(), mountoss(), stopall(),
+  unmountoss() to support parallel execution with proper wait
+  barriers between target types when overlap is disabled
+- MGS excluded from parallel operations since there's only
+  ever one MGS target
+
+All parallel operations are disabled by default (PARALLEL_OPS=0)
+for backward compatibility. Future patches will enable these
+features gradually after validation.
+
+Test results show significant performance improvements when enabled:
+- Parallel format with type overlap: 19% faster than baseline
+- Parallel mount within types: 7% faster
+- Parallel unmount within types: 21% faster
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I51af959a4f20644d9bd5166c1c1c8ebcfbef69f3
+
+</pre>
+</body>
+</html>
