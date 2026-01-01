@@ -1,0 +1,32 @@
+<html lang="en">
+<body>
+<pre>
+LU-17240 tests: enable parallel unmounting by default
+
+Enable parallel unmounting of targets within types by default.
+This allows multiple clients, OSTs, or MDTs to be unmounted
+simultaneously within their respective type groups, but maintains
+sequential ordering between different target types (clients, then
+MDTs, then OSTs).
+
+Configuration:
+- PARALLEL_UMOUNT now defaults to 1 (enabled)
+- PARALLEL_UMOUNT_TYPES remains 0 (no inter-type overlap)
+- PARALLEL_UMOUNT_TARGETS="client mdt ost"
+
+Test environment:
+- 1 MGS (combined with MDS)
+- 1 MDT (245MB)
+- 2 OSTs (391MB each)
+
+Performance results:
+- Baseline (serial unmounting): 30.9s
+- Parallel unmounting within types: 26.5s
+- Improvement: 14% faster (4.4s savings)
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Icbd5fa4fc79259225b03a9feab0bc50b4b48b09d
+
+</pre>
+</body>
+</html>
