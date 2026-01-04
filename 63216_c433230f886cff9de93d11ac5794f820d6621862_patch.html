@@ -1,0 +1,40 @@
+<html lang="en">
+<body>
+<pre>
+LU-19748 gni: build fixes for gni
+
+libcfs/linux/linux-mem.h -> lustre_compat/linux/linux-mem.h
+libcfs/linux/linux-misc.h -> lustre_compat/linux/linux-misc.h
+
+__ll_vmalloc() -> __compat_vmalloc()
+
+missing semi-colon after:
+  ENUM2STR(GNI_RC_SUCCESS)
+
+GNI needs to include:
+  lustre_compat/linux/timer.h
+  linux/libcfs/libcfs_fail.h
+
+Build fix: -Werror=maybe-uninitialized
+
+  .../lustre/mgc/mgc_request.c: In function 'mgc_create_new_conn':
+  .../include/linux/libcfs/libcfs_debug.h:122:3: error: 'rc' may be
+  used uninitialized in this function [-Werror=maybe-uninitialized]
+
+      libcfs_debug_msg(&msgdata, format, ## __VA_ARGS__);
+      ^~~~~~~~~~~~~~~~
+  .../lustre/mgc/mgc_request.c:1208:6: note: 'rc' was declared here
+     int rc;
+         ^~
+Include <linux/fs.h> in HAVE_SET_POSIX_ACL_USER_NS build test
+to ensure 'struct inode' is defined.
+
+HPE-bug-id: LUS-13154
+Fixes: a050dfb80dd5 ("LU-19229 mgc: client to handle IR with unknown nets")
+Fixes: 35f58473619c ("LU-19186 osd-ldiskfs: use posix ACL api")
+Signed-off-by: Shaun Tancheff <shaun.tancheff@hpe.com>
+Change-Id: I16dd895b2ba5a6322a0c629b083760ed930b659f
+
+</pre>
+</body>
+</html>
