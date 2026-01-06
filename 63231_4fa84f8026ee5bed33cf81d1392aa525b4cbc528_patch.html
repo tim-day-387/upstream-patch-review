@@ -1,0 +1,23 @@
+<html lang="en">
+<body>
+<pre>
+LU-19750 ptlrpc: llog client to set mdt_body
+
+mdt_changelog_allow() has a check preventing "new" clients
+(after 2.17+) accessing changelog if no correct credentials
+are provided in mdt_body structure.  This is not provided
+because llog_client_open() is used with nameless changelogs
+and the client can't access mdt_body buffer set after
+undefined name buffer.
+
+If a llog (e.g. changelog) is nameless, then name buffer is
+not set and we can't use mdt_body buffer - no credentials
+and no access to changelogs.
+
+Fixes: 4e8fcee92d ("LU-13064 sec: check permissions for changelogs access")
+Signed-off-by: Alex Zhuravlev <bzzz@whamcloud.com>
+Change-Id: I9003b4e75e66acaf906c4ce962f6917809a578e8
+
+</pre>
+</body>
+</html>
