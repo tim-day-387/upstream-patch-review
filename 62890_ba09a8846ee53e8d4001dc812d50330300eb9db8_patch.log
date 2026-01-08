@@ -1,0 +1,20 @@
+LU-17000 lnet: Fix buffer overflow in lnet_net_show_dump
+
+snprintf was using 'sizeof(cpts)' that is the total
+size of the buffer and not the remaining size which
+is stored under buf_len. This would buffer-overrun
+in case the buffer is already nearly full and snprintf
+would think it still have 'sizeof(cpts)' legal buffer
+to write.
+
+This patch fixes the coverity reported buffer overrun
+by using the buf_len (remaining size left) instead of
+sizeof(cpts) which is total size. It also checks the
+return value of snprintf() and bails out in case the
+output is larger than allocated buffer.
+
+CoverityID: 404745 ("Out-of-bounds access")
+Fixes: d15bfca07 ("LU-10391 lnet: migrate full LNet NI information collection")
+Test-Parameters: trivial testlist=sanity-lnet
+Signed-off-by: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Change-Id: I6abc9b3e798fe6370b67b592389157d882482c32
