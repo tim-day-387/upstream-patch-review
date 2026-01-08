@@ -1,0 +1,25 @@
+LU-0000 uapi: add SOM mirror pattern and flag
+
+Add LOV_PATTERN_SOM pattern constant and LCME_FL_SOM
+component flag to support SOM (Size-on-MDS) mirrors.
+SOM mirrors are a special type of FLR mirror that
+contain no data, only metadata, and are used to
+enable strict SOM tracking through the FLR resync
+machinery.
+
+Update lov_pattern_supported() and
+layout_pattern_supported() to recognize the new
+pattern as valid when combined with RAID0.
+
+Update all flag groups (LCME_KNOWN_FLAGS,
+LCME_USER_COMP_FLAGS, LCME_CL_COMP_FLAGS,
+LCME_TEMPLATE_FLAGS) to include the new flag.
+
+Add wire protocol validation checks for both
+constants to ensure ABI compatibility between
+userspace and kernel.
+
+Test-Parameters: fortestonly
+Test-Parameters: forjanitoronly
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I3a94bafc5855a2b50ba8c89677506d7255b9702f
