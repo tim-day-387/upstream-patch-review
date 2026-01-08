@@ -1,0 +1,37 @@
+LU-19635 lov: lctl checksums race with [u]mount
+
+lov_mdc_tgts may be in a transition state where accessing the
+contained objects triggers a crash:
+
+  RIP: 0010:lov_set_info_async+0x278/0x850 [lov]
+  Code: 01 00 00 00 e8 69 6b 49 ff 8b 44 24 20 85 db 0f 44 d8 49 83
+        c6 10 49 81 fe 00 10 00 00 0f 84 87 03 00 00 48 8b 85 e8 07
+        00 00 <4a> 8b 04 30 48 85 c0 74 df 8b 15 d5 42 4b ff 4c 8b
+        b8 40 04 00 00
+  RSP: 0018:ffffb85d7236fcc0 EFLAGS: 00010246
+  RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+  RDX: ffff8e9e8f461000 RSI: 00000000000000a0 RDI: ffffffffc2c108ad
+  RBP: ffff8e976390a280 R08: 0000000000000080 R09: 0000000000000000
+  R10: ffffb85d7236fc80 R11: 0000000000000070 R12: 00000000ffffffa1
+  R13: ffff8e975eaf5f00 R14: 0000000000000000 R15: ffff8e974978c560
+  FS: 00007fba08df3740(0000) GS:ffff8e9e8f280000(0000)
+      knlGS:0000000000000000
+  CS: 0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+  CR2: 0000000000000000 CR3: 00000030b9d50000 CR4: 0000000000350ee0
+  Call Trace:
+  <TASK>
+  ? __die_body+0x1a/0x60
+  ? page_fault_oops+0x131/0x540
+  ? srso_return_thunk+0x5/0x5f
+  ? __kmem_cache_alloc_node+0x1a5/0x2f0
+  ? srso_return_thunk+0x5/0x5f
+  ? slab_post_alloc_hook+0x69/0x2b0
+  ? exc_page_fault+0x69/0x130
+  ? asm_exc_page_fault+0x22/0x30
+  ? lov_set_info_async+0x278/0x850 [lov]
+  checksums_store+0x119/0x420 [lustre]
+...
+
+HPE-bug-id: LUS-13133
+Signed-off-by: Shaun Tancheff <shaun.tancheff@hpe.com>
+Change-Id: I55d32226b09dc230f88509b1255c1af5bb2f6d23
