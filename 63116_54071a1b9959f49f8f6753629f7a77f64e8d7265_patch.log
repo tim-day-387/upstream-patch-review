@@ -1,0 +1,15 @@
+LU-19733 ptlrpc: skip NIDs on missing networks
+
+Prevent usage of a NID on network which is missing locally,
+e.g. in a setup when client configured networks are subset
+of server networks, like in multi-tenancy setups
+
+Patch does the following:
+- create/export LNetHasLocalNet() supplimentary function
+- don't add NID with missing networks in uuid_nid_data
+  structure where connection possible NIDs are stored
+- skip peer creation on missing network in LNetAddPeer()
+  and LNetPeerDiscovered() functions called from Lustre
+
+Signed-off-by: Mikhail Pershin <mpershin@whamcloud.com>
+Change-Id: Idfac7c1518efa54994039e51a3ae473d992e407b
