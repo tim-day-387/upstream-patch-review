@@ -1,0 +1,16 @@
+LU-19750 mdt: update mdt_changelog_allow() version check
+
+Update MDT llog version check to allow clients to access llog
+until client-side fix to initialize mdt_body is widely available
+(currently set to expire after build version 3.2.53).
+
+Pass obd_export from caller to mdt_changelog_allow() instead of
+doing more work to extract it out of mdt_thread_info each time.
+Always check NODEMAP_RBAC_CHLG_OPS role even if mdt_body unset.
+
+Test-Parameters: trivial
+Fixes: 4e8fcee92d ("LU-13064 sec: check permissions for changelogs access")
+Fixes: 815dfd3451 ("LU-19750 ptlrpc: llog client to set mdt_body")
+Fixes: 971e025f5f ("LU-16524 sec: enforce rbac roles")
+Signed-off-by: Andreas Dilger <adilger@thelustrecollective.com>
+Change-Id: I2820e09fb89fdbc05716d851807a00fe753ebbe5
