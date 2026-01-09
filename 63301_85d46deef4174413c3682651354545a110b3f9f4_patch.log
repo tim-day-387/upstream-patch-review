@@ -1,0 +1,23 @@
+LU-0000 mdt: make ACL fetch a soft failure
+
+Make fetching the ACL during a getattr a soft
+failure. The client can decide whether the ACL
+is truly needed.
+
+In the case where the client needs the ACL to
+access a directory, the client may return EPERM.
+This is acceptable, since otherwise the client
+would fail with an IO error.
+
+For accessing ACLs directly, the client will
+try to read the xattr directly. Since this
+isn't happening in a getattr or open call,
+mdt_pack_acl2body() is avoided entirely.
+
+However, this allows normal metadata operations
+(like ls -l or similar) to proceed without hitting
+spurious IO errors.
+
+Test-Parameters: ignore
+Signed-off-by: Timothy Day <timday@amazon.com>
+Change-Id: Iacf687fe1aca05c5ca978e7012a7b37c4185a930
