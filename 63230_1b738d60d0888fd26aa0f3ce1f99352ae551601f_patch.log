@@ -1,0 +1,16 @@
+LU-17515 lnet: adapt conns_per_peer using lustre_expected_clients
+
+Use lustre_expected_clients as a hint to calculate the
+conns_per_peer value to avoid creating excessive TCP
+connections in large clusters.
+
+The calculation derives candidate values based on link speed
+(speed_cpp) and expected client count (expected_cpp), and selects
+the most conservative conns_per_peer from speed_cpp and expected_cpp.
+This keeps the total number of peer connections within safe limits
+while allowing higher parallelism for smaller clusters.
+
+Test-Parameters: forjanitoronly
+
+Change-Id: I4427677d7aa3c9e7c9cffe321acfd64bf42766aa
+Signed-off-by: Chakshu Kansal <ckansal@ddn.com>
