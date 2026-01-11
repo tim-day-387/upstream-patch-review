@@ -35,9 +35,43 @@ const app = {
     return "All";
   },
 
+  // Get selected filter value for home page enforced tests
+  getSelectedEnforcedFilter() {
+    const radios = document.getElementsByName("enforcedfilter");
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) {
+        return radios[i].value;
+      }
+    }
+    return "All";
+  },
+
+  // Get selected filter value for home page optional tests
+  getSelectedOptionalFilter() {
+    const radios = document.getElementsByName("optionalfilter");
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) {
+        return radios[i].value;
+      }
+    }
+    return "All";
+  },
+
   // Get row status from table row
   getRowStatus(row) {
     const statusCell = row.querySelector("td:nth-child(5)");
+    return statusCell ? statusCell.textContent.trim() : "";
+  },
+
+  // Get row enforced status from home page table row
+  getRowEnforcedStatus(row) {
+    const statusCell = row.querySelector("td:nth-child(7)");
+    return statusCell ? statusCell.textContent.trim() : "";
+  },
+
+  // Get row optional status from home page table row
+  getRowOptionalStatus(row) {
+    const statusCell = row.querySelector("td:nth-child(8)");
     return statusCell ? statusCell.textContent.trim() : "";
   },
 
@@ -58,13 +92,36 @@ const app = {
     }
   },
 
+  // Update filter on home page
+  updateHomeFilter() {
+    const enforcedFilter = this.getSelectedEnforcedFilter();
+    const optionalFilter = this.getSelectedOptionalFilter();
+    const table = document.querySelector("table");
+    if (!table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+    for (const row of rows) {
+      const enforcedStatus = this.getRowEnforcedStatus(row);
+      const optionalStatus = this.getRowOptionalStatus(row);
+
+      const enforcedMatch = enforcedFilter === "All" || enforcedStatus === enforcedFilter;
+      const optionalMatch = optionalFilter === "All" || optionalStatus === optionalFilter;
+
+      if (enforcedMatch && optionalMatch) {
+        row.classList.remove("filtered");
+      } else {
+        row.classList.add("filtered");
+      }
+    }
+  },
+
   // Handle routing based on URL hash
   handleRoute() {
     const hash = window.location.hash;
 
     if (hash.startsWith("#review/")) {
-      const changeId = hash.substring("#review/".length);
-      this.showReviewByChangeId(changeId);
+      const gitHash = hash.substring("#review/".length);
+      this.showReviewByGitHash(gitHash);
     } else if (hash === "#status") {
       this.showStatus();
     } else {
@@ -72,20 +129,13 @@ const app = {
     }
   },
 
-  // Show review by change ID
-  showReviewByChangeId(changeId) {
-    // Find the home file that matches this change_id
-    const homeFile = Object.keys(this.metadata || {})
-      .filter((path) => path.endsWith("_home.html"))
-      .find((path) => {
-        const data = this.metadata[path];
-        return data.change_id === changeId;
-      });
-
-    if (homeFile) {
-      this.showTestDetail(homeFile);
+  // Show review by git hash
+  showReviewByGitHash(gitHash) {
+    // Check if this git hash exists in metadata
+    if (this.metadata && this.metadata[gitHash]) {
+      this.showTestDetail(gitHash);
     } else {
-      this.showError(`Review with change ID ${changeId} not found`);
+      this.showError(`Review with git hash ${gitHash} not found`);
     }
   },
 
@@ -119,12 +169,11 @@ const app = {
       return;
     }
 
-    // Get all home files
-    const homeFiles = Object.keys(this.metadata)
-      .filter((path) => path.endsWith("_home.html"))
-      .map((path) => ({
-        path: path,
-        data: this.metadata[path],
+    // Get all git hashes with complete metadata
+    const testRuns = Object.keys(this.metadata)
+      .map((gitHash) => ({
+        gitHash: gitHash,
+        data: this.metadata[gitHash],
       }))
       .filter(
         (item) =>
@@ -135,7 +184,7 @@ const app = {
       );
 
     // Sort by timestamp (newest first)
-    homeFiles.sort(
+    testRuns.sort(
       (a, b) =>
         parseFloat(b.data.time_stamp || 0) - parseFloat(a.data.time_stamp || 0),
     );
@@ -143,6 +192,20 @@ const app = {
     // Build HTML
     let html = `
             <h1>Testing Status</h1>
+            <div id="filters">
+                <div>
+                    Filter by (Enforced):
+                    <label><input type="radio" name="enforcedfilter" onchange="app.updateHomeFilter()" value="PASS"> Passed</label>
+                    <label><input type="radio" name="enforcedfilter" onchange="app.updateHomeFilter()" value="FAIL"> Failed</label>
+                    <label><input type="radio" name="enforcedfilter" onchange="app.updateHomeFilter()" value="All" checked> All</label>
+                </div>
+                <div>
+                    Filter by (Optional):
+                    <label><input type="radio" name="optionalfilter" onchange="app.updateHomeFilter()" value="PASS"> Passed</label>
+                    <label><input type="radio" name="optionalfilter" onchange="app.updateHomeFilter()" value="FAIL"> Failed</label>
+                    <label><input type="radio" name="optionalfilter" onchange="app.updateHomeFilter()" value="All" checked> All</label>
+                </div>
+            </div>
             <table>
                 <colgroup>
                     <col style="width: 10%">
@@ -166,8 +229,9 @@ const app = {
                 <tbody>
         `;
 
-    for (const item of homeFiles) {
+    for (const item of testRuns) {
       const data = item.data;
+      const gitHash = item.gitHash;
       const timestamp = parseFloat(data.time_stamp);
       const date = new Date(timestamp * 1000);
       const readable = date.toLocaleString("en-US", {
@@ -207,14 +271,12 @@ const app = {
       const enforcedSummary = summarize(enforcedResults);
       const optionalSummary = summarize(optionalResults);
 
-      const filename = item.path.split("/").pop();
-
       html += `
                 <tr>
-                    <td><a href="#review/${this.escapeHtml(data.change_id)}">Link</a></td>
+                    <td><a href="#review/${this.escapeHtml(gitHash)}">Link</a></td>
                     <td>${this.escapeHtml(data.subject)}</td>
-                    <td><a href="https://review.whamcloud.com/plugins/gitiles/fs/lustre-release/+/${data.patch_revision}" target="_blank">${this.escapeHtml(data.patch_revision)}</a></td>
-                    <td><a href="https://review.whamcloud.com/c/fs/lustre-release/+/${data.change_id}" target="_blank">${this.escapeHtml(data.change_id)}</a></td>
+                    <td><a href="https://review.whamcloud.com/plugins/gitiles/fs/lustre-release/+/${this.escapeHtml(gitHash)}" target="_blank">${this.escapeHtml(gitHash)}</a></td>
+                    <td><a href="https://review.whamcloud.com/c/fs/lustre-release/+/${this.escapeHtml(data.change_id)}" target="_blank">${this.escapeHtml(data.change_id)}</a></td>
                     <td>${readable}</td>
                     <td>${this.escapeHtml(data.total_runtime || "N/A")}</td>
                     <td style="color:${enforcedSummary.color};">${enforcedSummary.text}</td>
@@ -232,17 +294,18 @@ const app = {
   },
 
   // Show detailed test results for a specific test
-  showTestDetail(homePath) {
+  showTestDetail(gitHash) {
     this.currentView = "detail";
     const content = document.getElementById("content");
 
-    const data = this.metadata[homePath];
+    const data = this.metadata[gitHash];
     if (!data) {
       this.showError("Test data not found");
       return;
     }
 
     const subject = data.subject || "Unknown";
+    const changeId = data.change_id || "";
 
     // Collect all result/enforced metadata
     const results = [];
@@ -258,15 +321,9 @@ const app = {
         const descriptionKey = "description" + name;
         const description = data[descriptionKey] || `Job: ${name}`;
 
-        // Determine log file path
-        // Strip /var/www/ci-lustre/ prefix if present to get web-relative path
-        const webPath = homePath.replace(
-          /^\/var\/www\/ci-lustre\/upstream-patch-review\//,
-          "",
-        );
-        const changeId = webPath.replace(/_home\.html$/, "");
+        // Determine log file path based on changeId and gitHash
         const logPath =
-          changeId + "_" + name.replace(/ /g, "_").toLowerCase() + ".log";
+          changeId + "_" + gitHash + "_" + name.replace(/ /g, "_").toLowerCase() + ".log";
 
         results.push({
           name,
@@ -284,7 +341,7 @@ const app = {
             <a href="#" onclick="app.showHome(); return false;" class="back-link">← Back to Home</a>
             <h1>${this.escapeHtml(subject)}</h1>
             <div id="filters">
-                Filter by:
+                Filter by (Status):
                 <label><input type="radio" name="statusfilter" onchange="app.updateFilter()" value="PASS"> Passed</label>
                 <label><input type="radio" name="statusfilter" onchange="app.updateFilter()" value="FAIL"> Failed</label>
                 <label><input type="radio" name="statusfilter" onchange="app.updateFilter()" value="All" checked> All</label>
