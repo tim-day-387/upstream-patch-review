@@ -1,0 +1,15 @@
+LU-19620 obdclass: llog to continue if broken
+
+if a plain llog is corrupted for a reason, then llog_osd_next_block()
+return -EINVAL. handle this error in llog_process_thread() so that
+llog processing doesn't stop.
+
+a catalog can be corrupted as well and we should be able to recover.
+
+add a procfs entry dumping current plain llog used by OSP:
+osp..sync_current_llog=[0x1:0x5:0x0] (1 plains), current [0x1:0x6:0x0]
+
+add a test reproducing a broken llog problems.
+
+Signed-off-by: Alex Zhuravlev <bzzz@whamcloud.com>
+Change-Id: If72a169e11fda7ed88b7dfcbd7b65bd340efaa9c
