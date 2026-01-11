@@ -1,0 +1,15 @@
+LU-19237 llite: Update i_version when losing osc/dom lock
+
+It looks like when multiple nodes reexport NFS, writes via one server
+might not be visible on the other one.
+Similarly to readdir cache, looks like we need to update i_version
+when we lose osc/dom lock as a proxy for some other node doing writes.
+
+There's no easy way to see the inode at OSC layer, but every time we
+lose a lock CAT_KMS att update is set so we'd latch onto that.
+Potentially some writes might also call that, but we do not want to
+remove regular VFS i_version handling for writes anyway because not
+every write extends the KMS.
+
+Change-Id: I13e05785935d64481b8640013242534a8daf1d99
+Signed-off-by: Oleg Drokin <green@whamcloud.com>
