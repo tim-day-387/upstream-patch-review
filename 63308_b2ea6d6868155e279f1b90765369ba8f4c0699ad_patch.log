@@ -1,0 +1,44 @@
+LU-19770 llite: split ll_dir_ioctl into smaller chunks
+
+Currently the function is over 900 lines long.
+Used augment agent (whatever the default llm) to
+split it into smaller chunks.
+
+Key Improvements:
+1. Massive Size Reduction: The main ll_dir_ioctl() function was
+  reduced from 940 lines to just 101 lines (an 89% reduction!)
+
+2. 18 New Handler Functions Created: Each ioctl command now has its
+  own dedicated handler function with a clear, descriptive name:
+    • ll_dir_ioctl_mdc_lookup()
+    • ll_dir_ioctl_lmv_setstripe()
+    • ll_dir_ioctl_lmv_set_default_stripe()
+    • ll_dir_ioctl_lov_setstripe()
+    • ll_dir_ioctl_lmv_getstripe()
+    • ll_dir_ioctl_remove_entry()
+    • ll_dir_ioctl_lov_getstripe() (handles 7 related commands)
+    • ll_dir_ioctl_quotactl()
+    • ll_dir_ioctl_getobdcount()
+    • ll_dir_ioctl_fid2mdtidx()
+    • ll_dir_ioctl_hsm_request()
+    • ll_dir_ioctl_hsm_progress()
+    • ll_dir_ioctl_hsm_copy_start()
+    • ll_dir_ioctl_hsm_copy_end()
+    • ll_dir_ioctl_migrate()
+    • ll_dir_ioctl_ladvise2()
+    • ll_dir_ioctl_pcc_state()
+    • ll_dir_ioctl_pcc_detach_by_fid()
+
+3. Clean Main Function: The main ll_dir_ioctl() function is now a
+  simple, readable dispatcher that just calls the appropriate handler
+  based on the ioctl command.
+
+4. Better Code Organization:
+  • Each handler is self-contained and focused on a single
+    responsibility
+  • Related logic is grouped together
+  • Much easier to navigate and understand
+  • Changes to one handler won't affect others
+
+Change-Id: If74c3c6e7fb9b4c6dc117d0a11f871e5408e9505
+Signed-off-by: Oleg Drokin <green@whamcloud.com>
