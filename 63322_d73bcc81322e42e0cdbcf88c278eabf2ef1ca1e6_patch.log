@@ -1,0 +1,34 @@
+LU-19771 tests: Add more lfsck test coverasge
+
+Augment / Claude Opus 4.5 agent identified some possible gaps
+in lfsck testing coverage and added some tests:
+
+| Test | Purpose | OBD_FAIL Points Tested |
+|------|---------|----------------------|
+| test_46 | Network notification failure between MDTs |
+OBD_FAIL_LFSCK_NOTIFY_NET (0x16f0) |
+| test_47 | Network query failure between MDTs |
+OBD_FAIL_LFSCK_QUERY_NET (0x16f1) |
+| test_48 | LUDA_UPGRADE/LUDA_REPAIR entry handling | - |
+| test_49 | Transient lock/transaction failures | OBD_FAIL_OBD_DQACQ
+(0x604) |
+| test_50 | Concurrent file operations during scan |
+OBD_FAIL_LFSCK_DELAY1 (0x1600) |
+| test_51 | Bad dirent types in regular directories |
+OBD_FAIL_LFSCK_BAD_TYPE (0x1623) |
+| test_52 | LinkEA overflow handling | - |
+| test_53 | Dot-sequence FID directory handling | - |
+
+Coverage Improvements
+
+  • Network failures: Previously untested OBD_FAIL_LFSCK_NOTIFY_NET and
+    OBD_FAIL_LFSCK_QUERY_NET are now covered
+  • Error recovery: Transient failure handling is now explicitly tested
+  • Concurrency: Tests verify LFSCK behavior with concurrent file
+    operations
+  • Edge cases: LinkEA overflow, special directories, and LUDA_UPGRADE
+    paths are now tested
+
+Change-Id: I37810e2295f9e5b7d2f9370b9c7f9843e586f83a
+Test-Parameters: trivial testlist=sanity-lfsck
+Signed-off-by: Oleg Drokin <green@whamcloud.com>
