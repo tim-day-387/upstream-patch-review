@@ -1,0 +1,18 @@
+LU-18813 osd-wbcfs: remove calls to alloc_file_pseudo()
+
+Duplicate the work of "LU-19388 osd: remove calls to alloc_file_pseudo()"
+but for osd-wbcfs.
+
+fput() which we need to call after alloc_file_pseudo() doesn't release
+file struct right away and postponed jobs to release it may create
+a massive load to system interrupting regular Lustre processing.
+
+The reason for using alloc_file_pseudo() was due to the removal
+of kallsyms_lookup_name(). The function iterate_dir() will crash
+unless security_file_alloc() and security_file_free() are not
+called. Now that Lustre uses kprobes to export functions we
+can unwind the work of LU-13783.
+
+Test-Parameters: trivial
+Signed-off-by: Timothy Day <timday@amazon.com>
+Change-Id: I378babbd6ec42c0f5ba6f3b6f74ccabb458dde01
