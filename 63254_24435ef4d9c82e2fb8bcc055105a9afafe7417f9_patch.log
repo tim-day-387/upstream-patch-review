@@ -1,0 +1,20 @@
+LU-19759 llite: reject pipe iterators for direct IO
+
+NFS splice reads pass pipe iterators to ll_direct_IO_impl.
+The existing check only rejected pipe iterators for
+unaligned DIO, but pipe iterators also cannot work with
+aligned DIO because iov_iter_get_pages_alloc2() cannot pin
+pages from pipe buffers.
+
+This caused issues when hybrid IO was enabled with a low
+read threshold, as NFS splice reads would attempt DIO with
+a pipe iterator, leading to potential memory access issues.
+
+Reject all pipe iterators for DIO and fall back to buffered
+IO. Additionally, add a check in ll_hybrid_bio_dio_switch_
+check() to prevent hybrid IO from switching to DIO for pipe
+iterators, since the DIO code should reject it, but we also
+shouldn't ask in the first place.
+
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: Ide959a870256dfa73ea996105718549841614b92
