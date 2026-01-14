@@ -1,0 +1,32 @@
+LU-16897 lnet: sparse read optimization (SRO)
+
+When a sparse file is read, pages representing holes are built with
+zeroes and sent. Sparse read optimization (SRO) will prevent sending
+zeroes through network.
+
+When an OSS wants to send an LNet message containing pages coming from
+holes, md is remapped to skip holes and an LNET_MSG_PUT_SPARSE is sent
+to share the new mapping with hole locations. When the client receives
+this message, it does the remapping and ACK. Then, the server will
+send the remapped data as usual.
+
+SRO works at ptlrpc and LNet level, leaving lnd code untouched. It
+requires the patch on the client and the OSSs. If the OSS or the
+client does not have the patch, SRO will simply be disabled.
+
+SRO is configured per client (one value for each OST):
+$ lctl set_param osc.*.sparse_read_threshold_kb=<uint>
+If the value is 0, SRO is simply disabled. If the value is greater, it
+defines the threshold for the minimum number of sparse pages needed
+(on the client) in an LNet message to have the optimization enabled.
+The value in kiB is rounded up to correspond to a multiple of
+PAGE_SIZE. Indeed, since SRO increases the number of messages shared
+between the OSS and the client, it won't be always productive. Thus,
+the threshold can be tuned depending on the environment.
+
+Test-Parameters: testlist=sanity serverversion=2.16
+Test-Parameters: testlist=sanity clientversion=2.16 env=SANITY_EXCEPT="0d 230b"
+Test-Parameters: testlist=sanity,sanity-flr env=SPARSE_READ_THRESHOLD=1
+Test-Parameters: testlist=sanity env=ONLY="910 911" clientarch=aarch64 clientdistro=el9.5
+Signed-off-by: Cyril Bordage <cbordage@whamcloud.com>
+Change-Id: I81ed101ee2a774866c03a5d44526e00ab96b210e
