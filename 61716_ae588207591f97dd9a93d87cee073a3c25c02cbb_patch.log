@@ -1,0 +1,10 @@
+LU-8066 mgs: migrate files out of procfs
+
+Move all the simple proc files to sysfs. The more complex files
+get moved to debugfs. The MGS layer was the last to use
+lprocfs_evict_client_seq_write(). We can instead use the already
+existing evice_client_store() that is already being used by other
+obd device layers.
+
+Change-Id: I9358c4e422c323c784dbdb375f0e767429c6c7da
+Signed-off-by: James Simmons <jsimmons@infradead.org>
