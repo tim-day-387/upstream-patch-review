@@ -1,0 +1,17 @@
+LU-12064 obdclass: auto-scale at_min based on expected clients
+
+When administrators set lustre_expected_clients, the system
+now automatically calculates an appropriate at_min value using
+the formula: ilog2(lustre_expected_clients) * 3
+
+This provides:
+- Small clusters (10 clients): at_min=9s (responsive)
+- Medium clusters (500 clients): at_min=24s (balanced)
+- Large clusters (5000 clients): at_min=36s (stable)
+- Very large clusters (10000+ clients): at_min=39s+
+
+Also adds conf-sanity test_164 that verifies the
+functionality
+
+Change-Id: I5c42da4343c1ca62b2fd20f7f40e997a356e6b4f
+Signed-off-by: Chakshu Kansal <ckansal@ddn.com>
