@@ -1,0 +1,14 @@
+LU-19563 lnet: Increase the default lnet_interfaces_max
+
+Increase the default lnet_interfaces_max value from 200 to 4096
+we are running into conditions where 200 is not enough especially
+when there are lots of vlans. So, lets increase the default
+lnet_interfaces_max to another arbitrary high number.
+The only place it uses are related to ping and metadata discovery
+and its only like 160kb or so for 4K interfaces. The memory pressure
+is negligible so it should be fine if we make it future proof with
+value like 4096. It is mostly used in lnet_extra_bytes_for_md()
+
+Test-Parameters: trivial
+Signed-off-by: Manish Regmi <mregmi@ddn.com>
+Change-Id: I08c60fb7ee48872939962681b03db28b99d2604f
