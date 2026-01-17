@@ -1,0 +1,19 @@
+LU-19798 osp: fix osp_md_index_it_next() on retry
+
+In osp_md_index_it_next() if 'ent' is non-NULL and points to the
+last entry in the current index page. In this case, a new index
+page will be loaded with osp_it_next_page() and after the loading,
+'ent' remains intact. The entry retrieving based on 'ent' is wrong.
+Even worse, it may cause kernel crash by accessing an unmaped page.
+
+Only instantiate 'ent' after the again: marker so that it points
+to the correct page even if there are retries in this function.
+
+Fix nearby code style issues (no 'else' after 'return', formatting).
+
+Link: http://lists.lustre.org/pipermail/lustre-devel-lustre.org/2025-December/011344.html
+
+Reported-by: Caifeng Zhu <caifeng_zhu@163.com>
+Fixes: 60e07b9721 ("LU-4690 lod: separate master object with master stripe")
+Signed-off-by: Andreas Dilger <adilger@thelustrecollective.com>
+Change-Id: Idd614a35ceb1676ca940d175378cb8d10b083668
