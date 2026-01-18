@@ -1,0 +1,36 @@
+LU-19796 kfilnd: fix sg_table free after orig_nents overwrite
+
+The kfilnd transaction code was overwriting sg_table.orig_nents
+with the actual number of populated segments to work around
+dma_[un]map_sgtable() requirements. However, orig_nents must
+remain the original allocation size so sg_free_table() can
+determine whether to dismantle a chained multi-page table or
+just issue kfree().
+
+This caused kernel warnings in free_nonslab_page() when freeing
+transactions with scatter-gather tables:
+
+  WARNING: CPU: 1 PID: 806 at mm/slub.c:3591 free_nonslab_page+0x70/0x90
+  Call Trace:
+    kfree+0x20e/0x250
+    __sg_free_table+0x5f/0x80
+    kfilnd_tn_free+0x23a/0x3a0 [kkfilnd]
+
+The fix introduces tn_sgt_alloc_nents to save the original
+allocation size and kfilnd_tn_sgt_free() to restore orig_nents
+before calling sg_free_table(). This preserves the allocation
+metadata needed for proper cleanup while still allowing the
+dma mapping functions to work with only the populated segments.
+
+Additional changes:
+- Move tn_num_iovec outside HAVE_KFI_SGL ifdef since it's only
+  used in the non-SGL code path
+- Update debug messages to use tn_sgt.nents instead of the
+  removed tn_num_iovec assignment
+- Add alloc_nents to debug output for better diagnostics
+
+Fixes: 86775f2d6f ("LUS-10076 kfilnd: GDS support for kfilnd")
+Test-Parameters: trivial
+HPE-bug-id: LUS-13118
+Signed-off-by: Chris Horn <chris.horn@hpe.com>
+Change-Id: Ib9eac555f1a665991ef1baf45530905de732d5ee
