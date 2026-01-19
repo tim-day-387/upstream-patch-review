@@ -1,0 +1,23 @@
+LU-6497 llite: Remove redundant check
+
+Remove redundant check for 'result' under ll_page_mkwrite0()
+
+'return' stores the return value cl_io_loop(). Which indicates
+that IO was successfully submitted. The two checks following
+cl_io_loop() are to confirm if the pages are in consistent state
+or not. That is, a) page is not truncated b) Page is still dirty.
+In these case, the result is appropriately set to either -ENODATA
+or -EAGAIN.
+
+It looks like the addition result check is not required as when
+checking for !PageDirty(vmpage) 'result' is just marked -EAGAIN
+without checking for result == 0. The same pattern is followed
+under vmpage->mapping == NULL check removing the redundant result
+check
+
+This was reported by smatch
+This was reported by cppcheck
+
+Test-Parameters: trivial
+Signed-off-by: Arshad Hussain <arshad.hussain@aeoncomputing.com>
+Change-Id: I1e1ba9ac51d3e850e9251dc7516e8dfa0b2b9c10
