@@ -1,0 +1,16 @@
+LU-19763 socklnd: Check sendpage_ok for ZC
+
+Add a check for sendpage_ok() on pages to be sent via zero-copy.
+If any page is not suitable for sendpage, disable zero-copy for
+the transaction.
+
+Also add configuration check for sendpage_ok() availability.
+This was added in kernel commit v5.9-rc6-325-gc381b07941.
+
+This reverts commit v2_13_52-101-g0c45e49457 because this code
+is no longer needed.
+
+Test-Parameters: trivial
+Fixes: 0c45e49457 ("LU-12945 lnet: Disable zero copy when running on VM")
+Signed-off-by: Jinshan Xiong <jinshanx@google.com>
+Change-Id: Ic0e3a069c1919f8170dd2d037c2791fa6b07244e
