@@ -1,0 +1,31 @@
+LU-9 lod: improve qos stripe allocation
+
+Replace random OST selection with deterministic weighted round-robin
+allocation that ensures proportional distribution based on OST
+capacity and distributing the load across MDSs.
+
+The previous QoS method relied on RNG to approximately
+distribute stripes proportionally to OST weights, however this lead
+to occasional unbalancing due to RNG variance. This new approach
+uses a cursor-based system that increments by the average weight,
+ensuring that OSTs with a higher weight will be hit more often
+and OSTs with a lower weight will be skipped more often.
+
+Key improvements:
+- Deterministic allocation eliminates RNG variance
+- Better load distribution across unbalanced OSTs
+- Enhanced anti-aliasing to prevent clustering
+- New aggressive rebalancing (prio_freee > 100%)
+- prio_free <= 100% is now a linear slider between RR and QoS
+- Comprehensive test coverage for allocation patterns
+
+These features are now enabled by default through
+  qos_threshold_rr=0
+  qos_prio_free=100
+which means that QoS is active if there is a difference of 0% or more
+across target devices, and will balance directly proportional to the
+target weights.
+
+Test-Parameters: testlist=sanity env=ONLY=413a
+Signed-off-by: Frederick Dilger <fdilger@whamcloud.com>
+Change-Id: Ie314438e03f867fe978adc37d62b504532961cd2
