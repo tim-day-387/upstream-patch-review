@@ -1,0 +1,17 @@
+LU-13932 ldiskfs: mmp wait time adjustments
+
+Introduce a small delay of 2 seconds between write and read
+back of the mmp block for the SEQ_CLEAN case,
+currently there is no delay at all and could potentially
+break mmp proction when 2 nodes mounts the same fs
+simultaneously and both see SEQ_CLEAN from the initial read.
+
+Reduce the max wait time from mmp_check_interval + 60 to
+mmp_check_interval + 20.
+
+In kmmpd thread, slowly decay mmp_check_interval to
+EXT4_MMP_MIN_CHECK_INTERVAL according to IO completion time
+to avoid fluctuations.
+
+Signed-off-by: Li Dongyang <dongyangli@ddn.com>
+Change-Id: I9d08e0f62c89e041275f3edc53e1da496b8c0444
