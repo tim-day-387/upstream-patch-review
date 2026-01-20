@@ -1,0 +1,54 @@
+LU-12187 lfs: add EC setstripe support with k+m notation
+
+Add support for Erasure Coding (EC) layouts in lfs
+setstripe using simple "k+m" notation where k is data
+stripe count and 'm' is parity stripe count
+(must be <= min('k', 4)) that make up the RAID Set
+geometry.
+
+When --ec is specified, an EC parity mirror is
+automatically created that matches the data mirror's
+extent structure. The --ec option can appear anywhere
+in the command line.
+
+EC Inheritance Rules:
+- Single --ec applies to all components in the parity
+  mirror
+- Multiple --ec values inherit forward: each applies to
+  its component and subsequent components until replaced
+  by another --ec
+- The first --ec also applies to any earlier components
+  (backward inheritance)
+
+EC Stripe Count Reduction:
+- When a data component has a stripe count less than
+  the EC data count, the EC data count is automatically
+  reduced to match
+- Example: -E 128M --ec 8+2 -E -1 -c 4 creates EC 8+2
+  for the first component and EC 4+2 for the second
+
+Usage examples:
+  # Single component with EC(8+2)
+  lfs setstripe -E -1 -c 8 --ec 8+2 /mnt/lustre/file
+
+  # Order independent (--ec can appear anywhere)
+  lfs setstripe --ec 8+2 -E -1 -c 8 /mnt/lustre/file
+
+  # Multiple components, single EC spec (both get EC 8+2)
+  lfs setstripe -E 128M -E -1 --ec 8+2 /mnt/lustre/file
+
+  # Different EC for different components
+  lfs setstripe -E 128M --ec 4+2 -E -1 --ec 8+2
+    /mnt/lustre/file
+
+  # EC inheritance with holes
+  lfs setstripe -E 128M --ec 4+2 -E 512M -E -1 --ec 8+2
+    /mnt/lustre/file
+
+  # Long form option
+  lfs setstripe --ec-stripe-count 4+2 -E -1
+    /mnt/lustre/file
+
+Test-Parameters: testlist=sanity-ec
+Signed-off-by: Patrick Farrell <pfarrell@whamcloud.com>
+Change-Id: I642ad6bc87894a2cb3ce79ca7e69c4d582df1d2a
