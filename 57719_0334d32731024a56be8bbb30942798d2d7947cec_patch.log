@@ -1,0 +1,38 @@
+LU-18627 build: Enable gcov coverage
+
+Enable code coverage in Lustre kernel and userspace code:
+
+Add coverage as a configure option
+
+Lustre kernel module coverage requires a kernel built with
+  CONFIG_GCOV_KERNEL=y
+
+Module coverage also requires profiling enabled for specific
+directories, a line similar to the following to the respective
+kernel Makefile(build/Rules.in):
+  GCOV_PROFILE := y
+
+A lustre-coverage package will be created which holds the
+lustre source and gcno files (gcov.tar.xz) and a script
+lcov-merge.sh to collect coverage data from all nodes in the
+cluster and run lcov [and fastcov] with the captured traces to
+create a final report in html format. On RHEL/Fedora distros
+the lustre-coverage packages depends on kernel-gcov package
+which is generated when the kernel.spec is built '--with gcov'
+
+Developers building or using kernels with CONFIG_GCOV_KERNEL that
+do not follow "the RHEL way" can build and use the dummy package:
+  contrib-kernel-coverage.spec
+available in the contrib directory to satisfy install dependencies
+of the lustre-coverage package.
+
+A spec in contrib: contrib-kernel-coverage.spec can be
+built to provide the dependency instead, since most users
+are only interested in Lustre coverage and not overly concerned
+with full kernel coverage.
+
+Test-Parameters: trivial
+HPE-bug-id: LUS-9188
+Signed-off-by: Antoine Mwamba <antoine.mwamba@hpe.com>
+Signed-off-by: Shaun Tancheff <shaun.tancheff@hpe.com>
+Change-Id: Ic3c9f460cd47f241d4318172919d64bc54abe5ff
