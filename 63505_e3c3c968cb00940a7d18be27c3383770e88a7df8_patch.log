@@ -1,0 +1,16 @@
+LU-19806 tests: do not put FSNAME at start of variable
+
+In test-framework.sh pool handling functions, the environment
+variable "${fsname}_CREATED_POOLS" was used to track OST pools
+that were created and needed to be cleaned up.  If FSNAME starts
+with a digit, then this produced an invalid bash variable name.
+
+Change the variable name to "CREATED_POOLS_${fsname}", which
+will be safe for bash to use.
+
+Test-Parameters: trivial testlist=ost-pools
+Test-Parameters: optional testlist=ost-pools env=FSNAME=12345678
+Test-Parameters: optional testlist=sanity env=FSNAME=12345678
+Test-Parameters: optional testlist=sanity-sec env=FSNAME=12345678
+Signed-off-by: Andreas Dilger <adilger@thelustrecollective.com>
+Change-Id: I6d822d66612227d1c76108a93e5a42be373ebbe5
