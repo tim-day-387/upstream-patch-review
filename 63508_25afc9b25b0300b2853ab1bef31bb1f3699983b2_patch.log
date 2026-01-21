@@ -1,0 +1,16 @@
+LU-18562 tests: fix sanity-dom/151i[bc] for extent MDT
+
+The MDT ldiskfs formatting options were changed to use extents
+by default, in order to improve llog allocation performance.
+This caused sanity-dom test_151ib and test_151ic to fail 100%
+of test sessions for the past 3 months, because they expected
+indirect block allocation counts for all DoM files.
+
+Fix these subtests to allow either indirect or extent mapped block
+allocation, since the exact number of blocks is not critical, but
+rather fallocate allocates *about that many* blocks to DoM files.
+
+Fixes: 1f3e4df2fb ("LU-18562 osd: llog write batch block allocation")
+Test-Parameters: trivial testlist=sanity-dom env=SANITY_DOM_ONLY=sanity
+Signed-off-by: Andreas Dilger <adilger@thelustrecollective.com>
+Change-Id: I45514ad38a55c6709f70a467912c34ce04ba8fee
