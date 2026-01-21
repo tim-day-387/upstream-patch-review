@@ -1,0 +1,23 @@
+LU-19079 sec: gss token for nodemap identification
+
+Put into the security context the nodemap name retrieved during GSS
+authentication. This nodemap name is then used to apply nodemap
+membership of exports at target connect and reconnect.
+The consequence is that a nodemap with no associated NID ranges but
+with the gssonly_identification property set will take membership of
+clients solely based on the nodemap name associated with the strong
+authentication token used for GSS context negotiation.
+
+For this purpose the function nodemap_add_member() is enhanced to
+take an extra struct ptlrpc_svc_ctx * parameter, to be able to fetch
+the nodemap name from the security context. This enables making an
+export part of a nodemap while the corresponding client NID is not
+part of the nodemap range. Thus this is restricted to nodemaps with
+the gssonly_identification property set.
+
+Add sanity-sec test_79 to demonstrate the feature.
+
+Signed-off-by: Sebastien Buisson <sbuisson@ddn.com>
+Change-Id: I58b50cb783f98813234e703a440555d26abfb780
+Reviewed-by: Marc Vef <mvef@whamcloud.com>
+Reviewed-by: Andreas Dilger <adilger@whamcloud.com>
