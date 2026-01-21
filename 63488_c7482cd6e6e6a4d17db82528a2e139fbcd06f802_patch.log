@@ -1,0 +1,20 @@
+LU-19784 tests: mmp/test_8 wait time changes
+
+To prepare for the e2fsprogs/libext2fs changes
+reducing the wait time when the MMP sequence
+number is EXT4_MMP_SEQ_CLEAN,
+
+LU-19784 ext2fs: mmp wait time ajustments
+https://review.whamcloud.com/63478
+
+We need to make sure the sequence number is not
+EXT4_MMP_SEQ_CLEAN before running e2fsck.
+
+We can use debugfs to change the MMP sequence number,
+rename mark_mmp_block() to set_mmp_seq() to reflect
+this.
+
+Remove mmp_mark.sh, which is not needed any more.
+
+Change-Id: I81b9d28061862a99b04fa92de0cc18a536c9d17b
+Signed-off-by: Li Dongyang <dongyangli@ddn.com>
