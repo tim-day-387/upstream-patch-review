@@ -1,0 +1,11 @@
+LU-19447 fld: fix an error handling in fld_client_rpc()
+
+In fld_client_rpc(), when the first rpc returns -EAGAIN, it will
+sleep for 2 seconds and then retry, and will quit retrying when an
+interrupt is received. However, it has already put the first req
+before the sleep, and after the interrupt, it will try to put the req
+again, which leads to a double free.
+
+Fixes: b1acf734f3 ("LU-13468 fld: repeat rpc in fld_client_rpc after EAGAIN")
+Signed-off-by: Bobi Jam <bobijam@whamcloud.com>
+Change-Id: I7e0921a1af112e0017bdc8a842e350d3d1fe4564
