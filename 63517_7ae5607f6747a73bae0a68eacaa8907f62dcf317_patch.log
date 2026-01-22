@@ -1,0 +1,29 @@
+LU-1158 general: support ns timestamps with compatibility
+
+Add backward compatibility for nanosecond timestamps between
+clients and servers with different feature support levels.
+
+Use OBD_CONNECT_NANOSEC_TIME flag to negotiate nanosecond
+timestamp support during connection. When the flag is not set,
+timestamps are exchanged in seconds for compatibility with
+legacy clients and servers.
+
+Client-side changes (llite, mdc):
+- Add LL_NSEC_TIME_THRESHOLD (128 years in seconds) to detect
+  whether received timestamps are in seconds or nanoseconds
+- Convert seconds to nanoseconds when receiving from legacy
+  servers in ll_update_inode(), ll_update_times(), and dir.c
+- Convert nanoseconds to seconds when sending to legacy servers
+  in mdc_create_pack(), mdc_open_pack(), mdc_setattr_pack()
+
+Server-side changes (mdt, ofd):
+- Add exp_connect_nanosec_time() to check client capability
+- Convert nanoseconds to seconds in mdt_pack_attr2body() and
+  ofd_lvbo_fill() when sending to legacy clients
+- Convert seconds to nanoseconds in mdt_setattr_unpack_rec(),
+  mdt_create_unpack(), mdt_open_unpack() when receiving from
+  legacy clients
+
+Signed-off-by: Sohei Koyama <skoyama@ddn.com>
+Change-Id: Ie298b38c743eafe02af4be148371cc053c82a7fd
+Test-Parameters: testlist=pjdfstest
