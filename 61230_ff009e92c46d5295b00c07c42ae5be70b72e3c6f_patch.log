@@ -1,0 +1,31 @@
+LU-19344 llite: set read size correctly
+
+The problem with the extent lock  is that it don't update an i_size
+after lock lost and enqueue new one.  To solve this, vvp_prep_size
+was created.
+However, it can only handle two out of three cases:
+
+1. When the extent lock has been lost and there is no valid size
+   available, a glimpse is sent.
+2. When the lock has been renewed and the size has increased,
+   the i_size is updated to the minimal known size.
+
+in some cases, the size might decrease after the lock renewal. If
+this happens, it is safe to change the i_size to kms, as the i_size
+value is not accurate anyway. Size can be changed if it's not
+protected by ldlm locks for all stripes, but it don't update an
+i_size. Users should call the stat() function if the size needs to be
+set correctly for this point.
+
+Test sanity 251b was removed because of an incorrect assumption. The
+read after the write should never return an end-of-file (EOF). While
+the test started from a 5-second  sleep before, the write started 2
+seconds after the read starts, so the writer should have finished
+before the read. Once the test was run on the same node, the write
+will update the i_size, and the read would see this update to copy
+data.
+
+HPE-bug-id: LUS-13048
+Fixes: 4468f6c9d9 ("LU-16025 llite: adjust read count as file got truncated")
+Change-Id: Iaafaa57204d3ba261fd6146ed155027e5ccbc3ad
+Signed-off-by: Alexey Lyashkov <alexey.lyashkov@hpe.com>
