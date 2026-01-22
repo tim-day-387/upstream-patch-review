@@ -1,0 +1,24 @@
+LU-18222 quota: add LQA directory-based record management
+
+Add directory-based LQA initialization at MDT startup that scans for
+lqa-dt-* and lqa-md-* directories in quota_master and automatically
+creates in-memory LQA structures with ranges.
+
+LQA range record format uses struct lqa_id_range from lustre_user.h
+
+lir_start: Range start ID (inclusive)
+lir_end: Range end ID (inclusive)
+
+This structure defines the record format used to store LQA ranges
+in indexed storage. Each range is stored as a separate IAM record with
+the range start ID as the key and this structure as the record value.
+
+Range indexes are stored as "ranges" IAM index in the pool directory:
+quota_master/
+  ├── lqa-dt-<lqa_name>/   # Data target pool for <lqa_name>
+  │   └── ranges           # Binary file containing DT ranges
+  └── lqa-md-<lqa_name>/   # Metadata target pool for <lqa_name>
+       └── ranges           # Binary file containing MD ranges
+
+Signed-off-by: Artem Blagodarenko <ablagodarenko@ddn.com>
+Change-Id: Ibefc9d292d5e44d6814e73cc9b48adfedaf70743
