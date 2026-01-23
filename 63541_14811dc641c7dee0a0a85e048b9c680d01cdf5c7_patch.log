@@ -1,0 +1,9 @@
+LU-19791 quota: fix silent data loss for root project
+
+When root_prj_enable is set, it is possible that the pages stored in
+the cache after buffered IO could be dropped if root is out of quota
+on a different client. Fix that by forcing to write all lnb coming
+with OBD_BRW_ASYNC flag.
+
+Signed-off-by: Sergey Cheremencev <scherementsev@ddn.com>
+Change-Id: I544b19ddf4ffc683f845e1c16cbbfd8a5606d44a
