@@ -188,10 +188,10 @@ configure: LNet kernel checks
 ==============================================================================
 checking whether to enable tunable backoff TCP support... yes
 checking if Linux kernel has tunable backoff TCP support... no
-checking if external o2iblnd needs to use Compat RDMA... no
-checking whether to use any OFED backport headers... no
 configure: WARNING:
 Auto detection of external O2IB failed. Build of external o2ib disabled.
+checking if external o2iblnd needs to use Compat RDMA... no
+checking whether to use any OFED backport headers... no
 readlink: missing operand
 Try 'readlink --help' for more information.
 checking whether to enable OpenIB gen2 support... yes
@@ -876,32 +876,6 @@ In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h
  4257 |                         attr->cat_mtime_ns = inode_get_mtime_ns(inode);
       |                                              ^~~~~~~~~~~~~~~~~~
 make[7]: *** [scripts/Makefile.build:229: /home/ktest/git/lustre-release/lustre/lmv/lmv_obd.o] Error 1
-make[6]: *** [scripts/Makefile.build:478: /home/ktest/git/lustre-release/lustre/lmv] Error 2
-make[6]: *** Waiting for unfinished jobs....
-In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h:41,
-                 from /home/ktest/git/lustre-release/lustre/include/lustre_lib.h:38,
-                 from /home/ktest/git/lustre-release/lustre/include/lustre_dlm.h:29,
-                 from /home/ktest/git/lustre-release/lustre/llite/llite_lib.c:48:
-/home/ktest/git/lustre-release/lustre/llite/llite_lib.c: In function 'll_update_inode':
-/home/ktest/git/lustre-release/lustre/include/lu_object.h:534:50: error: lvalue required as unary '&' operand
-  534 | #define inode_get_atime_ns(i)   timespec64_to_ns(&inode_get_atime(i))
-      |                                                  ^
-/home/ktest/git/lustre-release/lustre/llite/llite_lib.c:2913:32: note: in expansion of macro 'inode_get_atime_ns'
- 2913 |                 if (atime_ns > inode_get_atime_ns(inode)) {
-      |                                ^~~~~~~~~~~~~~~~~~
-/home/ktest/git/lustre-release/lustre/include/lu_object.h:535:50: error: lvalue required as unary '&' operand
-  535 | #define inode_get_mtime_ns(i)   timespec64_to_ns(&inode_get_mtime(i))
-      |                                                  ^
-/home/ktest/git/lustre-release/lustre/llite/llite_lib.c:2925:32: note: in expansion of macro 'inode_get_mtime_ns'
- 2925 |                 if (mtime_ns > inode_get_mtime_ns(inode)) {
-      |                                ^~~~~~~~~~~~~~~~~~
-/home/ktest/git/lustre-release/lustre/include/lu_object.h:536:50: error: lvalue required as unary '&' operand
-  536 | #define inode_get_ctime_ns(i)   timespec64_to_ns(&inode_get_ctime(i))
-      |                                                  ^
-/home/ktest/git/lustre-release/lustre/llite/llite_lib.c:2941:32: note: in expansion of macro 'inode_get_ctime_ns'
- 2941 |                 if (ctime_ns > inode_get_ctime_ns(inode)) {
-      |                                ^~~~~~~~~~~~~~~~~~
-make[7]: *** [scripts/Makefile.build:229: /home/ktest/git/lustre-release/lustre/llite/llite_lib.o] Error 1
 make[7]: *** Waiting for unfinished jobs....
 In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h:41,
                  from /home/ktest/git/lustre-release/lustre/include/lustre_lib.h:38,
@@ -932,7 +906,34 @@ In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h
 /home/ktest/git/lustre-release/lustre/llite/file.c:1686:17: note: in expansion of macro 'inode_get_ctime_ns'
  1686 |         ctime = inode_get_ctime_ns(inode);
       |                 ^~~~~~~~~~~~~~~~~~
+make[6]: *** [scripts/Makefile.build:478: /home/ktest/git/lustre-release/lustre/lmv] Error 2
+make[6]: *** Waiting for unfinished jobs....
 make[7]: *** [scripts/Makefile.build:229: /home/ktest/git/lustre-release/lustre/llite/file.o] Error 1
+make[7]: *** Waiting for unfinished jobs....
+In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h:41,
+                 from /home/ktest/git/lustre-release/lustre/include/lustre_lib.h:38,
+                 from /home/ktest/git/lustre-release/lustre/include/lustre_dlm.h:29,
+                 from /home/ktest/git/lustre-release/lustre/llite/llite_lib.c:48:
+/home/ktest/git/lustre-release/lustre/llite/llite_lib.c: In function 'll_update_inode':
+/home/ktest/git/lustre-release/lustre/include/lu_object.h:534:50: error: lvalue required as unary '&' operand
+  534 | #define inode_get_atime_ns(i)   timespec64_to_ns(&inode_get_atime(i))
+      |                                                  ^
+/home/ktest/git/lustre-release/lustre/llite/llite_lib.c:2913:32: note: in expansion of macro 'inode_get_atime_ns'
+ 2913 |                 if (atime_ns > inode_get_atime_ns(inode)) {
+      |                                ^~~~~~~~~~~~~~~~~~
+/home/ktest/git/lustre-release/lustre/include/lu_object.h:535:50: error: lvalue required as unary '&' operand
+  535 | #define inode_get_mtime_ns(i)   timespec64_to_ns(&inode_get_mtime(i))
+      |                                                  ^
+/home/ktest/git/lustre-release/lustre/llite/llite_lib.c:2925:32: note: in expansion of macro 'inode_get_mtime_ns'
+ 2925 |                 if (mtime_ns > inode_get_mtime_ns(inode)) {
+      |                                ^~~~~~~~~~~~~~~~~~
+/home/ktest/git/lustre-release/lustre/include/lu_object.h:536:50: error: lvalue required as unary '&' operand
+  536 | #define inode_get_ctime_ns(i)   timespec64_to_ns(&inode_get_ctime(i))
+      |                                                  ^
+/home/ktest/git/lustre-release/lustre/llite/llite_lib.c:2941:32: note: in expansion of macro 'inode_get_ctime_ns'
+ 2941 |                 if (ctime_ns > inode_get_ctime_ns(inode)) {
+      |                                ^~~~~~~~~~~~~~~~~~
+make[7]: *** [scripts/Makefile.build:229: /home/ktest/git/lustre-release/lustre/llite/llite_lib.o] Error 1
 In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h:41,
                  from /home/ktest/git/lustre-release/lustre/include/obd_class.h:22,
                  from /home/ktest/git/lustre-release/lustre/obdclass/obdo.c:23:
@@ -979,9 +980,9 @@ In file included from /home/ktest/git/lustre-release/lustre/include/lustre_net.h
 /home/ktest/git/lustre-release/lustre/obdclass/obdo.c:64:35: note: in expansion of macro 'inode_get_ctime_ns'
    64 |                 dst->o_ctime_ns = inode_get_ctime_ns(src);
       |                                   ^~~~~~~~~~~~~~~~~~
-make[6]: *** [scripts/Makefile.build:478: /home/ktest/git/lustre-release/lustre/llite] Error 2
 make[7]: *** [scripts/Makefile.build:229: /home/ktest/git/lustre-release/lustre/obdclass/obdo.o] Error 1
 make[7]: *** Waiting for unfinished jobs....
+make[6]: *** [scripts/Makefile.build:478: /home/ktest/git/lustre-release/lustre/llite] Error 2
 make[6]: *** [scripts/Makefile.build:478: /home/ktest/git/lustre-release/lustre/obdclass] Error 2
 make[5]: *** [scripts/Makefile.build:478: /home/ktest/git/lustre-release/lustre] Error 2
 make[4]: *** [/usr/src/kernels/6.12.58-82.121.amzn2023.x86_64/Makefile:1945: /home/ktest/git/lustre-release] Error 2
