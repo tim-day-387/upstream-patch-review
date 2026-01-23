@@ -1,0 +1,15 @@
+LU-13773 tests: propagate sanity-dom sanity/n FAIL
+
+If one of the sanity.sh or sanityn.sh subtests fail while running
+sanity-som, the errors are logged, but test_sanity and test_sanityn
+do not report a failure due to "return 0" at the end.  This allows
+regressions in DoM functionality to be landed unnoticed (e.g.
+LU-18562 changed MDT formatting and caused sanity test_151ib/151ic
+to fail 100% of test runs).
+
+Return an error if the sanity or sanityn subtest run fails.
+
+Fixes: 1140d209f0 ("LU-10589 tests: insulate sanity-dom from test failures")
+Test-Parameters: trivial testlist=sanity-dom
+Signed-off-by: Andreas Dilger <adilger@thelustrecollective.com>
+Change-Id: I576f0a1389765a5d1c675b9bc847ff83c3fcaa26
