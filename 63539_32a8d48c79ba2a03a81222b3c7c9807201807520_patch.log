@@ -1,0 +1,16 @@
+LU-19822 lnet: interfaces can be manually disabled
+
+Implement lnetctl disable/enable to allow admins to selectively
+block traffic on LNet interfaces. Currently, the only way to
+manually disable an LNet interface is to delete it. An lnetctl
+tunable would give admins a network agnostic method to
+temporarily block traffic to a subset of clients or block
+certain routes.
+
+This patch also implements the needed kernel infrastructure. When
+an interface is disabled, sends are routed over the other available
+interfaces (if available). recv are dropped outright.
+
+Test-Parameters: trivial
+Signed-off-by: Timothy Day <timday@amazon.com>
+Change-Id: I2387ef98f265b3fa77a5b8a22413a5c29b4c627f
