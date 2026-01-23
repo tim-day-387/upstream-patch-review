@@ -1,0 +1,9 @@
+LU-19824 ldlm: don't allow sysfs reads before ldlm is setup
+
+If you attempt to access per_cpu counters before they are
+initialized, you may crash. To avoid this, short-circuit
+sysfs read in LDLM until LDLM is properly setup. This is
+tracked by a new field in ldlm_state.
+
+Signed-off-by: Timothy Day <timday@amazon.com>
+Change-Id: I96dad1d36f9d6dd6fac425009ea91ab71d75fecf
