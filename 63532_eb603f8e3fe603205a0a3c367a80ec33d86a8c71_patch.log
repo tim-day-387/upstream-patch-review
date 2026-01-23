@@ -1,0 +1,57 @@
+LU-19819: Fix lctl help messages
+
+This commit fixes lfsck_query short help message.
+Before:
+    # lfsck_query --help
+    check the LFSCK global status
+    usage:
+    lfsck_query [-M | --device MDT_device] [-h | --help]
+                [-t | --type check_type[,check_type...]]
+                [-t | --wait]
+    options:
+    -M: device to query LFSCK on
+    -t: LFSCK type(s) to be queried (default is all)
+    -h: this help message
+    -w: do not return until LFSCK not running
+
+After
+    # lctl lfsck_query --help
+    check the LFSCK global status
+    usage:
+    lfsck_query [-M | --device MDT_device] [-h | --help]
+                [-t | --type check_type[,check_type...]]
+                [-w | --wait]
+    options:
+    -M: device to query LFSCK on
+    -t: LFSCK type(s) to be queried (default is all)
+    -h: this help message
+    -w: do not return until LFSCK not running
+
+By the way, it alos align help messages by replacing tabs by space and have
+a cleaner output.
+
+Before:
+usage: lfsck_start [--device|-M [MDT,OST]_device]
+		     [--all|-A] [--create-ostobj|-c [on | off]]
+		     [--create-mdtobj|-C [on | off]]
+		     [--delay-create-ostobj|-d [on | off]]
+		     [--error|-e {continue | abort}] [--help|-h]
+		     [--dryrun|-n [on | off]] [--orphan|-o]
+		     [--reset|-r] [--speed|-s speed_limit]
+		     [--type|-t lfsck_type[,lfsck_type...]]
+		     [--window-size|-w size]
+After:
+lfsck_start: start LFSCK
+usage: lfsck_start [--device|-M [MDT,OST]_device]
+                   [--all|-A] [--create-ostobj|-c [on | off]]
+                   [--create-mdtobj|-C [on | off]]
+                   [--delay-create-ostobj|-d [on | off]]
+                   [--error|-e {continue | abort}] [--help|-h]
+                   [--dryrun|-n [on | off]] [--orphan|-o]
+                   [--reset|-r] [--speed|-s speed_limit]
+                   [--type|-t lfsck_type[,lfsck_type...]]
+                   [--window-size|-w size]
+
+Change-Id: If7facb032003dea788037ba9b84fbbd0c10851fa
+Test-Parameters: trivial
+Signed-off-by: Aurélien Cedeyn <acedeyn@ddn.com>
