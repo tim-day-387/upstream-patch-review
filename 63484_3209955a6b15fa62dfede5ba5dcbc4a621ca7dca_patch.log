@@ -1,0 +1,22 @@
+LU-12187 llapi: create arbitrary mirror IDs and validate count
+
+Currently, the component list on the llapi has no concept of mirrors,
+and the mirror count is explicitly set through
+"llapi_layout_mirror_count_set()". However, there is no validation
+during layout sanity check that the set mirror count matches the
+component layout. In case an incorrect mirror count is set this then
+fails at the LOD layer on the MDS.
+
+This patch includes the following:
+1. Adds validation for composite layouts during the sanity check if
+   the mirror count matches the component layout.
+2. Adds the function "llapi_layout_mirror_count_sync()" which sets the
+   mirror count based on the component layout.
+3. During the new function in 2., assign a temporary mirror ID for
+   each component. This is used on a follow-up patch to address a
+   component with a mirror ID to protect with EC.
+
+Added llapi_layout_tests 36 and 37 to exercise this functionality.
+
+Signed-off-by: Marc Vef <mvef@whamcloud.com>
+Change-Id: I96c77ee2f41474396c80c593aba6058cbe76fa02
