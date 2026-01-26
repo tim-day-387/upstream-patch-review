@@ -1,0 +1,31 @@
+LU-19597 tbf: remove the redundant codes
+
+This patch removes specific TBF policies ("struct nrs_tbf_ops"
+callbacks) and associated hashtables, retaining only the generic
+policy functions.
+
+The policy hashtables are unified into a single rhashtable to use RCU
+accesses. The hash key is built by packing the enabled TBF fields.
+
+e.g: "tbf uid+gid" policy has a hash key length of 64bits (2*32bits).
+
+This patch reworks the TBF LRU to make it generic, replacing the
+previous implementation that relied on cfs_hash buckets.
+It uses RCU list/lock to reduce the contention.
+
+The TBF_CLI_DEBUG macro has been introduced to provide detailed
+information about object classes. It uses the rule format to display
+the hash key.
+
+e.g:
+nrs_tbf_lru_tryhit()) mdt.0 NRS: TBF LRU hit: class@...
+jobid={touch.0}&uid={0}&gid={0} rule@...
+
+Add regression test sanityn 77s.
+
+Test-Parameters: testlist=sanityn env=ONLY=77
+Test-Parameters: testlist=sanityn env=ONLY=77
+Test-Parameters: testlist=sanityn env=ONLY=77s,ONLY_REPEAT=50
+Fixes: 7375cd6da6 ("LU-16796 ldlm: Change struct ldlm_resource to use refcount_t")
+Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
+Change-Id: I69c00e18febecb4e5cd820ebe1ff9a1d662821db
