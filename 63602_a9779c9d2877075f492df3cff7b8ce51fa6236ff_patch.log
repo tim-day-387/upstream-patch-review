@@ -1,0 +1,24 @@
+LU-19829 hsm: set dirty flag on archive failure
+
+The 9f1ef86ac3 skip duplication check for archive requests
+(hsm_find_compatible_cb()). This enables several archive resquests for
+the same file to be enqueued and then send to different copytools.
+
+Some copytool/backend (like HPSS) does not support and check for
+concurent archives of the same file. One request process can fail
+the other one.
+
+This could end up to the following case:
+ - THR1: receive hsm_progress with rc = 0
+	 -> the file is marked "archived"
+ - THR2: receive hsm_progress with rc = 2
+	 -> the HSM state is unchanged (still "archived"), but the
+	    backend file is lost.
+
+This patch tries to mitigate this issue by setting the dirty flag in
+HSM state on archive failure. So the file cannot be released.
+This needs locking to preserve HSM state coherency.
+
+Fixes: 9f1ef86ac3 ("LU-13651 hsm: call hsm_find_compatible_cb() only for cancel")
+Signed-off-by: Etienne AUJAMES <eaujames@ddn.com>
+Change-Id: I4c8508138ee2fed33d7077cb838d02d1c16ff514
