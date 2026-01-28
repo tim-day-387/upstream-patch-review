@@ -2,14 +2,110 @@ CLI: ./podman-ktest --podman-socket unix:///run/podman/podman.sock --shared-file
 
   Checking /dev/kvm exists... OK
   Checking /dev/kvm permissions... OK
-  Creating ccache directory... FAILED
-  Checking ccache directory writable... FAILED
+  Creating ccache directory... OK
+  Checking ccache directory writable... OK
 
-Environment validation failed with 2 error(s):
+Environment validated successfully
+Creating kernel tarball at /tmp/ktest-kernel.tar.gz...
+Creating lustre tarball at /tmp/ktest-lustre.tar.gz...
+Executing 19 jobs
+Jobs will start as soon as their dependencies are satisfied
+Using tarball input mode
 
-  [ccache_directory] Failed to create ccache directory: /tmp/ktest/ccache
-    Remediation: Ensure the parent directory exists and is writable: /tmp
+START contribution-report tool contributions
+START license-status tool license-status
+START lustre_mainline_native build tests/fs/lustre/boot.ktest
+START lustre_mainline_strict build tests/fs/lustre/boot-strict.ktest
+START kernel-doc tool kernel_doc_helper.sh
+START lustre_u24 build tests/fs/lustre/boot.ktest
+START lustre_mainline build tests/fs/lustre/boot.ktest
+START lustre_al2023 build tests/fs/lustre/boot.ktest
+START checkpatch-parallel tool checkpatch-parallel
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 32s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-kernel.tar.gz 33s
+PUT /tmp/ktest-lustre.tar.gz 13s
+PUT /tmp/ktest-lustre.tar.gz 13s
+PUT /tmp/ktest-lustre.tar.gz 12s
+PUT /tmp/ktest-lustre.tar.gz 12s
+PUT /tmp/ktest-lustre.tar.gz 12s
+PUT /tmp/ktest-lustre.tar.gz 12s
+PUT /tmp/ktest-lustre.tar.gz 12s
+PUT /tmp/ktest-lustre.tar.gz 12s
+PUT /tmp/ktest-lustre.tar.gz 13s
+END contribution-report tool contributions PASS 50s
+END kernel-doc tool kernel_doc_helper.sh PASS 52s
+END license-status tool license-status PASS 58s
+END checkpatch-parallel tool checkpatch-parallel PASS 115s
+END lustre_al2023 build tests/fs/lustre/boot.ktest PASS 173s
+END lustre_u24 build tests/fs/lustre/boot.ktest PASS 201s
+GET /tmp/ktest_lustre_mainline_strict_ur62txib.tar 5s
+END lustre_mainline_strict build tests/fs/lustre/boot-strict.ktest FAIL 384s (exit code: 1)
+GET /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 3s
+GET /tmp/ktest_lustre_mainline_7hzjeoap.tar 3s
+END lustre_mainline_native build tests/fs/lustre/boot.ktest PASS 400s
+START clang-tidy tool clang-tidy
+START cc-plugin tool cc-plugin
+START boot run tests/fs/lustre/boot.ktest
+START llmount run tests/fs/lustre/llmount.ktest
+START llog-unit run tests/fs/lustre/llog-unit.ktest
+START mgs-setup run tests/fs/lustre/mgs-setup.ktest
+START sanity-1 run tests/fs/lustre/sanity/sanity-1.ktest
+START sanity-2 run tests/fs/lustre/sanity/sanity-2.ktest
+START sanity-3 run tests/fs/lustre/sanity/sanity-3.ktest
+START sanity-4 run tests/fs/lustre/sanity/sanity-4.ktest
+END lustre_mainline build tests/fs/lustre/boot.ktest PASS 402s
+PUT /tmp/ktest-kernel.tar.gz 42s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest-kernel.tar.gz 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 51s
+PUT /tmp/ktest-lustre.tar.gz 97s
+PUT /tmp/ktest-lustre.tar.gz 106s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 20s
+PUT /tmp/ktest_lustre_mainline_native_e4qq55qz.tar 20s
+END cc-plugin tool cc-plugin FAIL 174s (exit code: 127)
+END boot run tests/fs/lustre/boot.ktest PASS 181s
+END sanity-2 run tests/fs/lustre/sanity/sanity-2.ktest PASS 197s
+END clang-tidy tool clang-tidy PASS 201s
+END mgs-setup run tests/fs/lustre/mgs-setup.ktest PASS 202s
+END sanity-3 run tests/fs/lustre/sanity/sanity-3.ktest PASS 206s
+END sanity-1 run tests/fs/lustre/sanity/sanity-1.ktest PASS 209s
+END sanity-4 run tests/fs/lustre/sanity/sanity-4.ktest PASS 209s
+END llmount run tests/fs/lustre/llmount.ktest PASS 255s
+END llog-unit run tests/fs/lustre/llog-unit.ktest PASS 267s
 
-  [ccache_writable] ccache directory is not writable: /tmp/ktest/ccache
-    Remediation: Fix permissions: chmod 777 /tmp/ktest/ccache (or rm -rf /tmp/ktest/ccache/* to clear stale cache)
+============================================================
+Final Results:
+  checkpatch-parallel: PASS (115s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_checkpatch-parallel.log)
+  contribution-report: PASS (50s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_contribution-report.log)
+  license-status: PASS (58s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_license-status.log)
+  kernel-doc: PASS (52s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_kernel-doc.log)
+  lustre_u24: PASS (201s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_lustre_u24.log)
+  lustre_al2023: PASS (173s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_lustre_al2023.log)
+  lustre_mainline_strict: FAIL (384s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_lustre_mainline_strict.log)
+  lustre_mainline: PASS (402s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_lustre_mainline.log)
+  lustre_mainline_native: PASS (400s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_lustre_mainline_native.log)
+  clang-tidy: PASS (201s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_clang-tidy.log)
+  cc-plugin: FAIL (174s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_cc-plugin.log)
+  boot: PASS (181s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_boot.log)
+  llmount: PASS (255s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_llmount.log)
+  llog-unit: PASS (267s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_llog-unit.log)
+  mgs-setup: PASS (202s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_mgs-setup.log)
+  sanity-1: PASS (209s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_sanity-1.log)
+  sanity-2: PASS (197s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_sanity-2.log)
+  sanity-3: PASS (206s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_sanity-3.log)
+  sanity-4: PASS (209s) (log: /var/www/ci-lustre/upstream-patch-review/5026d3c86d5577d930877651cb47f12e74dd87cf_sanity-4.log)
 
+Total execution time: 697s
