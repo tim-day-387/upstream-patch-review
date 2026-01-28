@@ -321,9 +321,9 @@ const app = {
         const descriptionKey = "description" + name;
         const description = data[descriptionKey] || `Job: ${name}`;
 
-        // Determine log file path based on changeId and gitHash
+        // Determine log file path based on gitHash
         const logPath =
-          changeId + "_" + gitHash + "_" + name.replace(/ /g, "_").toLowerCase() + ".log";
+          gitHash + "_" + name.replace(/ /g, "_").toLowerCase() + ".log";
 
         results.push({
           name,
