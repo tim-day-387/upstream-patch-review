@@ -1,0 +1,27 @@
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#364: FILE: lustre/include/lustre_compat.h:585:
++#define vfs_create(ns, de, mode, di)	\
++	vfs_create(d_inode((de)->d_parent), (de), (mode), !!(di))
+
+WARNING:MACRO_ARG_UNUSED: Argument 'isnew' is not used in function-like macro
+#420: FILE: lustre/include/lustre_compat.h:651:
++#define ilookup5_nowait(sb, hash, fn, data, isnew) \
++	ilookup5_nowait((sb), (hash), (fn), (data))
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#558: FILE: lustre/mdc/mdc_locks.c:109:
++		LASSERTF(inode_state_read(old_inode) & I_FREEING,
+ 			 "Found existing inode %px/%lu/%u state %lu in lock: setting data to %px/%lu/%u\n",
+ 			 old_inode, old_inode->i_ino, old_inode->i_generation,
++			 (unsigned long)inode_state_read(old_inode),
++			 (unsigned long)inode_state_read(old_inode),
+
+total: 0 errors, 3 warnings, 527 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
