@@ -1,0 +1,98 @@
+UPDATE ROOT IMAGE ... done
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=ae4917038bab46af92df0341032e370e;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=95ef5c0f9b634c6aab6798490070d6f6;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.14.0-ktest-3187326718-20260202
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.50_86_g3187326
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2905) used greatest stack depth: 24312 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+mount.lustre (3047) used greatest stack depth: 24160 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client 63d0f898-ad14-43c4-bd1a-6cbfd1343208 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+LustreError: 3705:0:(obd_class.h:479:obd_check_dev()) Device 20 not setup
+Lustre: Unmounted lustre-client
+Lustre: server umount lustre-MDT0000 complete
+LustreError: 2909:0:(ldlm_lockd.c:2563:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1770016924 with bad export cookie 2671158789255476501
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+LustreError: 3788:0:(obd_class.h:479:obd_check_dev()) Device 12 not setup
+LustreError: 3788:0:(obd_class.h:479:obd_check_dev()) Skipped 11 previous similar messages
+Lustre: server umount lustre-OST0000 complete
+INFO: task umount:3829 blocked for more than 10 seconds.
+      Tainted: G           O       6.14.0-ktest-3187326718-20260202 #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:umount          state:R  running task     stack:26856 pid:3829  tgid:3829  ppid:3827   task_flags:0x400100 flags:0x00004002
+Call Trace:
+ <TASK>
+ ? lock_acquire+0x11d/0x2c0
+ ? cfs_hash_for_each_relax+0x347/0xbe0 [obdclass]
+ ? do_raw_spin_lock+0xe0/0x260
+ ? cfs_hash_for_each_relax+0x3c4/0xbe0 [obdclass]
+ ? ldlm_namespace_cleanup+0x190/0x190 [ptlrpc]
+ ? cfs_hash_for_each_nolock+0x2d4/0x690 [obdclass]
+ ? ldlm_namespace_cleanup+0x190/0x190 [ptlrpc]
+ ? ldlm_namespace_cleanup+0x64/0x190 [ptlrpc]
+ ? lwp_import_event+0x60/0xc0 [osp]
+ ? obd_import_event+0x173/0x490 [ptlrpc]
+ ? ptlrpc_invalidate_import+0xa98/0xc60 [ptlrpc]
+ ? lwp_process_config+0x191/0x480 [osp]
+ ? server_put_super+0x184c/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ ? evict_inodes+0x41c/0x520
+ ? generic_shutdown_super+0x101/0x320
+ ? kill_anon_super+0x3d/0x70
+ ? deactivate_locked_super+0x95/0xe0
+ ? cleanup_mnt+0x1e3/0x3d0
+ ? task_work_run+0x100/0x170
+ ? resume_user_mode_work+0x3a/0x50
+ ? syscall_exit_to_user_mode+0x76/0xb0
+ ? do_syscall_64+0x78/0x140
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ </TASK>
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8358a180 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x50/0x200
+2 locks held by umount/3829:
+
+=============================================
+
+LustreError: 3829:0:(obd_class.h:479:obd_check_dev()) Device 2 not setup
+LustreError: 3829:0:(obd_class.h:479:obd_check_dev()) Skipped 1 previous similar message
+Lustre: server umount lustre-OST0001 complete
+LNet: 4092:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4092:0:(acceptor.c:264:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+done
+
+========= PASSED llmount in 89s
+
+Passed: llmount
+Failed: 
+Kernel version: 6.14.0-ktest-3187326718-20260202
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=ae4917038bab46af92df0341032e370e\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro. Quota mode: none.
+ACPI: PM: Preparing to enter system sleep state S5
+reboot: Power down
