@@ -1,0 +1,148 @@
+UPDATE ROOT IMAGE ... done
+c[?7l[2J[0mSeaBIOS (version 1.15.0-1)
+
+
+iPXE (https://ipxe.org) 00:01.0 C000 PCI2.10 PnP PMM+7FF8ADC0+7FECADC0 C000
+Press Ctrl-B to configure iPXE (PCI 00:01.0)...                                                                               
+
+
+Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=39dea31f697b4fb0b7f89a73180edd27;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=d13c8fb6c9d4449082b6abc1ff501a38;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-b1d2f5046e-20260224
+hook init_noop
+
+Running tests mgs-setup
+
+========= TEST   mgs-setup
+/workspace/lustre-release/lustre/tests/test-framework.sh: line 6868: cd: HOME not set
+cat: /etc/system-release: No such file or directory
+mgs: 
+MGS_OS_ID=debian
+MGS_OS_VERSION_CODE=0
+MGS_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+mds1: 
+MDS1_OS_ID=debian
+MDS1_OS_VERSION_CODE=0
+MDS1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+ost1: 
+OST1_OS_VERSION_CODE=0
+OST1_OS_ID=debian
+OST1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+client: 
+CLIENT_OS_ID_LIKE= debian
+CLIENT_OS_ID=debian
+CLIENT_OS_VERSION_CODE=0
+Loading modules from /workspace/lustre-release/lustre
+detected 16 online CPUs by sysfs
+MODOPTS_LIBCFS=
+libcfs will create CPU partition based on online CPUs
+libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.50_143_gb1d2f50
+ptlrpc/ptlrpc options: 'lbug_on_grant_miscount=1'
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (72)
+WARNING: CPU: 7 PID: 1146 at include/net/netdev_lock.h:72 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 7 UID: 0 PID: 1146 Comm: insmod Tainted: G           O        6.16.0-ktest-b1d2f5046e-20260224 #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: ec d4 6b 01 00 0f 85 9c fe ff ff c6 05 df d4 6b 01 01 48 c7 c7 00 61 e3 82 48 c7 c6 a0 61 e3 82 ba 48 00 00 00 e8 8a 0a db fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc9000160f6f8 EFLAGS: 00010246
+RAX: 475718cbae125a00 RBX: ffff888107540000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2fa2fd0
+RBP: ffff888109cfb1e0 R08: ffff8882a2fa2fd3 R09: 1ffff110545f45fa
+R10: dffffc0000000000 R11: ffffed10545f45fb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff8881075409c8 R15: ffffffff82e0bbe0
+FS:  00007f3faf81d340(0000) GS:ffff88831ed60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f502286a280 CR3: 0000000126f81000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1225/0x2230 [ksocklnd]
+ ? ksocknal_startup+0xd72/0x2230 [ksocklnd]
+ lnet_startup_lndnet+0x5f9/0x25e0 [lnet]
+ LNetNIInit+0xadc/0x1220 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? cfs_arch_exit+0x8a0/0x8a0 [libcfs]
+ ? stack_depot_save_flags+0x43/0x7f0
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x61/0x6f0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6f/0x1f0
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? free_frozen_page_commit+0x45a/0xed0
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ? vfree+0x1c5/0x240
+ ? kfree+0x12f/0x370
+ ? vfree+0x1c5/0x240
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x260
+ ? kasan_unpoison+0x48/0x70
+ ? __kasan_slab_alloc+0x37/0x60
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x22d/0x6f0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f3faf118779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff807b9918 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 0000557329bb98a0 RCX: 00007f3faf118779
+RDX: 0000000000000000 RSI: 0000557329bb82a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f3faf1f85c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000557329bb82a0
+R13: 0000000000000000 R14: 0000557329bb9860 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+gss/krb5 is not supported
+Lustre: Echo OBD driver; http://www.lustre.org/
+quota/lquota options: 'hash_lqs_cur_bits=3'
+/workspace/lustre-release/lustre/tests/test-framework.sh: line 6868: cd: HOME not set
+cat: /etc/system-release: No such file or directory
+cat: /etc/system-release: No such file or directory
+cat: /etc/system-release: No such file or directory
+cat: /etc/system-release: No such file or directory
+arg[0] = /workspace/lustre-release/lustre/utils/mount.lustre
+arg[1] = -v
+arg[2] = lustre-wbcfs
+arg[3] = /mnt/lustre-mgs
+source = lustre-wbcfs (lustre-wbcfs), target = /mnt/lustre-mgs
+options(0/4096) = 
+Lustre is using wbcfs as backend
+checking for existing Lustre data: found
+OSD_WBC_TGT_TYPE=MGT
+OSD_WBC_FSNAME=lustre
+OSD_WBC_INDEX=0
+svname -> lustre:MGS0000
+OSD_WBC_MGS_NID=10.0.2.15@tcp
+mounting device lustre-wbcfs at /mnt/lustre-mgs, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,svname=lustre-MGS0000,device=lustre-wbcfs
+Lustre: lustre-MGS0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: server umount lustre-MGS0000 complete
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 318 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 337 from: ( set -e; run_test $i ), exiting
+
+========= FAILED mgs-setup in 16s
+
+Passed: 
+Failed: mgs-setup
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 436 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/mgs-setup.ktest 36 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.16.0-ktest-b1d2f5046e-20260224
+TEST FAILED
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=39dea31f697b4fb0b7f89a73180edd27\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
