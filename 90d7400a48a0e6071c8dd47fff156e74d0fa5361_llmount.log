@@ -1,0 +1,70 @@
+UPDATE ROOT IMAGE ... done
+c[?7l[2J[0mSeaBIOS (version 1.15.0-1)
+
+
+iPXE (https://ipxe.org) 00:01.0 C000 PCI2.10 PnP PMM+7FF8AE10+7FECAE10 C000
+Press Ctrl-B to configure iPXE (PCI 00:01.0)...                                                                               
+
+
+Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=2a2e72abeba44f6dbdcc97907849ba98;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=26c83aee101d4016b619b4ce85ad7a6b;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-90d7400a48-20260225
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.50_163_g90d7400
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2911) used greatest stack depth: 23656 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client 1d7f5c52-95ab-4fa4-a8d8-73233f7e0e50 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+Lustre: Unmounted lustre-client
+Oops: general protection fault, probably for non-canonical address 0xdffffc0000000028: 0000 [#1] SMP KASAN
+KASAN: null-ptr-deref in range [0x0000000000000140-0x0000000000000147]
+CPU: 8 UID: 0 PID: 3753 Comm: umount Tainted: G           O        6.16.0-ktest-90d7400a48-20260225 #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:kasan_byte_accessible+0x12/0x20
+Code: ef ff ff 34 01 e9 21 ff ff ff 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 66 0f 1f 00 48 c1 ef 03 48 b8 00 00 00 00 00 fc ff df <0f> b6 04 07 3c 08 0f 92 c0 c3 0f 1f 40 00 66 0f 1f 00 e9 87 1c 00
+RSP: 0018:ffffc90008baf6a0 EFLAGS: 00010216
+RAX: dffffc0000000000 RBX: ffffffff82a2ac85 RCX: dffffc0000000000
+RDX: 0000000000000000 RSI: ffffffff82a2ac85 RDI: 0000000000000028
+RBP: 0000000000000001 R08: 0000000000000001 R09: 0000000000000000
+R10: 0000000000000000 R11: ffffed102518091d R12: 0000000000000140
+R13: ffffffff81a1b480 R14: 0000000000000140 R15: 0000000000000000
+FS:  00007f50fae98840(0000) GS:ffff88831ede0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f50fb1647a0 CR3: 0000000154b7e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kasan_check_byte+0x12/0x30
+ lock_acquire+0x7a/0x1f0
+ ? __d_lookup+0x5c/0x470
+ down_read+0x35/0x2a0
+ ? lookup_noperm_unlocked+0x130/0x190
+ lookup_noperm_unlocked+0x130/0x190
+ lookup_noperm_positive_unlocked+0xf/0x70
+ debugfs_lookup+0xa4/0xd0
+ debugfs_lookup_and_remove+0xf/0x70
+ lproc_mgs_del_live+0xc1/0xf0 [mgs]
+ mgs_put_fsdb+0x7d/0x850 [mgs]
