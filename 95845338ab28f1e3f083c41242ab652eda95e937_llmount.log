@@ -1,0 +1,130 @@
+UPDATE ROOT IMAGE ... done
+c[?7l[2J[0mSeaBIOS (version 1.15.0-1)
+
+
+iPXE (https://ipxe.org) 00:01.0 C000 PCI2.10 PnP PMM+7FF8AE10+7FECAE10 C000
+Press Ctrl-B to configure iPXE (PCI 00:01.0)...                                                                               
+
+
+Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=bdb50b66a3144b25a83e9c03904cd725;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=326cb1a93d164431a276830c7ef0c1ba;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-95845338ab-20260225
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.50_143_g9584533
+------------[ cut here ]------------
+RTNL: assertion failed at include/net/netdev_lock.h (72)
+WARNING: CPU: 2 PID: 1150 at include/net/netdev_lock.h:72 __linkwatch_sync_dev+0x226/0x280
+Modules linked in: ptlrpc(O+) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 2 UID: 0 PID: 1150 Comm: insmod Tainted: G           O        6.16.0-ktest-95845338ab-20260225 #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__linkwatch_sync_dev+0x226/0x280
+Code: ec d4 6b 01 00 0f 85 9c fe ff ff c6 05 df d4 6b 01 01 48 c7 c7 00 61 e3 82 48 c7 c6 a0 61 e3 82 ba 48 00 00 00 e8 8a 0a db fe <0f> 0b e9 76 fe ff ff 0f 0b e9 6f fe ff ff 44 89 f1 80 e1 07 38 c1
+RSP: 0018:ffffc9000309f6f8 EFLAGS: 00010246
+RAX: 8de4b72b3c818200 RBX: ffff888106b58000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2d22fd0
+RBP: ffff8881291901e0 R08: ffff8882a2d22fd3 R09: 1ffff110545a45fa
+R10: dffffc0000000000 R11: ffffed10545a45fb R12: dffffc0000000000
+R13: dffffc0000000000 R14: ffff888106b589c8 R15: ffffffff82e0bbe0
+FS:  00007fca56c1f340(0000) GS:ffff88831eae0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055f8bad33480 CR3: 000000011febe000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? bpf_dummy_test_sleepable+0x10/0x10
+ ethtool_op_get_link+0x12/0x60
+ lnet_get_link_status+0x169/0x300 [lnet]
+ ksocknal_startup+0x1225/0x2230 [ksocklnd]
+ ? ksocknal_startup+0xd72/0x2230 [ksocklnd]
+ lnet_startup_lndnet+0x5f9/0x25e0 [lnet]
+ LNetNIInit+0xadc/0x1220 [lnet]
+ ptlrpc_init_portals+0xb6/0x380 [ptlrpc]
+ init_module+0x2f8/0x1000 [ptlrpc]
+ do_one_initcall+0x119/0x410
+ ? 0xffffffffa055f000
+ ? stack_depot_save_flags+0x43/0x7f0
+ ? kasan_save_track+0x40/0x70
+ ? kasan_save_track+0x2f/0x70
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x61/0x6f0
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x6f/0x1f0
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? free_frozen_page_commit+0x45a/0xed0
+ ? do_raw_spin_unlock+0x51/0x2a0
+ ? vfree+0x1c5/0x240
+ ? kfree+0x12f/0x370
+ ? vfree+0x1c5/0x240
+ ? lock_acquire+0xe7/0x1f0
+ ? __kmalloc_cache_noprof+0x34/0x260
+ ? kasan_unpoison+0x48/0x70
+ ? __kasan_slab_alloc+0x37/0x60
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x22d/0x6f0
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fca56d2e779
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 4f 86 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fffe8986c18 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 000055f8bfe338a0 RCX: 00007fca56d2e779
+RDX: 0000000000000000 RSI: 000055f8bfe322a0 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007fca56e0e5c0
+R10: 0000000000000000 R11: 0000000000000246 R12: 000055f8bfe322a0
+R13: 0000000000000000 R14: 000055f8bfe33860 R15: 0000000000000003
+ </TASK>
+---[ end trace 0000000000000000 ]---
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2907) used greatest stack depth: 24280 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+mount.lustre (3050) used greatest stack depth: 24136 bytes left
+mount.lustre (3166) used greatest stack depth: 24120 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client c1b8832f-6e42-479b-ae95-a66170d74109 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+Lustre: Unmounted lustre-client
+Lustre: server umount lustre-MDT0000 complete
+LustreError: 3376:0:(ldlm_lockd.c:2564:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1772056069 with bad export cookie 9201961729254391549
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+Lustre: server umount lustre-OST0000 complete
+Lustre: server umount lustre-OST0001 complete
+LNet: 4102:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4102:0:(acceptor.c:252:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+done
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 318 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 337 from: ( set -e; run_test $i ), exiting
+
+========= FAILED llmount in 90s
+
+Passed: 
+Failed: llmount
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 436 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/llmount.ktest 33 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.16.0-ktest-95845338ab-20260225
+TEST FAILED
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=bdb50b66a3144b25a83e9c03904cd725\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
