@@ -1,0 +1,99 @@
+UPDATE ROOT IMAGE ... done
+c[?7l[2J[0mSeaBIOS (version 1.15.0-1)
+
+
+iPXE (https://ipxe.org) 00:01.0 C000 PCI2.10 PnP PMM+7FF8AE10+7FECAE10 C000
+Press Ctrl-B to configure iPXE (PCI 00:01.0)...                                                                               
+
+
+Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=e9e89953e3484764abfa1e311ec7cbb1;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=06620f45e3c84c05a24abb5e03ab7418;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-2683cb724d-20260227
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.50_163_g2683cb7
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2914) used greatest stack depth: 23672 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client 421c8152-1da7-40e6-8bcb-dfc7829c15d0 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+Lustre: Unmounted lustre-client
+Lustre: server umount lustre-MDT0000 complete
+LustreError: 2919:0:(ldlm_lockd.c:2564:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1772174062 with bad export cookie 15954301793218926003
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+INFO: task umount:3800 blocked for more than 10 seconds.
+      Tainted: G           O        6.16.0-ktest-2683cb724d-20260227 #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:umount          state:R  running task     stack:26864 pid:3800  tgid:3800  ppid:3798   task_flags:0x400100 flags:0x00004002
+Call Trace:
+ <TASK>
+ ? lock_acquire+0xe7/0x1f0
+ ? do_raw_spin_lock+0xdf/0x260
+ ? cfs_hash_for_each_relax+0x3c3/0xbe0 [obdclass]
+ ? ldlm_namespace_cleanup+0x190/0x190 [ptlrpc]
+ ? cfs_hash_for_each_nolock+0x2d3/0x680 [obdclass]
+ ? ldlm_namespace_cleanup+0x190/0x190 [ptlrpc]
+ ? ldlm_namespace_cleanup+0x85/0x190 [ptlrpc]
+ ? lwp_import_event+0x60/0xc0 [osp]
+ ? obd_import_event+0x146/0x3b0 [ptlrpc]
+ ? ptlrpc_invalidate_import+0xa58/0xc20 [ptlrpc]
+ ? lwp_process_config+0x191/0x480 [osp]
+ ? server_put_super+0x184b/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ ? generic_shutdown_super+0x101/0x320
+ ? kill_anon_super+0x3d/0x70
+ ? deactivate_locked_super+0x95/0xe0
+ ? cleanup_mnt+0x1e3/0x3d0
+ ? task_work_run+0xff/0x170
+ ? exit_to_user_mode_loop+0xa0/0xe0
+ ? do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ </TASK>
+
+Showing all locks held in the system:
+3 locks held by kworker/u64:0/12:
+ #0: ffff8882a3036dd8 (&rq->__lock){....}-{2:2}, at: raw_spin_rq_lock_nested+0x12/0x20
+ #1: ffff8882a2e36dd8 (&rq->__lock){....}-{2:2}, at: raw_spin_rq_lock_nested+0x12/0x20
+ #2: ffffffff8464ed48 (&____s->seqcount){....}-{0:0}, at: hrtimer_start_range_ns+0x1ce/0xa20
+1 lock held by khungtaskd/99:
+ #0: ffffffff8378bb40 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x29/0xf0
+2 locks held by umount/3800:
+
+=============================================
+
+Lustre: server umount lustre-OST0000 complete
+Lustre: server umount lustre-OST0001 complete
+LNet: 4106:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4106:0:(acceptor.c:252:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+done
+
+========= PASSED llmount in 99s
+
+Passed: llmount
+Failed: 
+Kernel version: 6.16.0-ktest-2683cb724d-20260227
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=e9e89953e3484764abfa1e311ec7cbb1\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
