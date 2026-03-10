@@ -1,0 +1,1622 @@
+UPDATE ROOT IMAGE ... done
+c[?7l[2J[0mSeaBIOS (version 1.15.0-1)
+
+
+iPXE (https://ipxe.org) 00:01.0 C000 PCI2.10 PnP PMM+7FF8AE10+7FECAE10 C000
+Press Ctrl-B to configure iPXE (PCI 00:01.0)...                                                                               
+
+
+Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=22d5d4df46804ff6b304b4bedfc153c5;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=52398941678344958b03350bc937ddc3;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-071dbaa3a8-20260310
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.50_241_g071dbaa
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2953) used greatest stack depth: 26208 bytes left
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2913) used greatest stack depth: 23672 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client d628248c-ff4a-4619-811b-f1a6ea0ec316 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+------------[ cut here ]------------
+BUG: Dentry 00000000c6633ae7{i=200000003000006,n=lfsck_layout}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff88810b171a70 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 0200000003000006 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 00000000599d5a6f{i=200000003000005,n=lfsck_bookmark}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff88810b171490 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 0200000003000005 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 000000000fe491f4{i=200000003000004,n=LFSCK}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff88810b1711a0 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 0200000003000004 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 00000000fe5b19c0{i=200000003000003,n=nodemap}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff88810442bac0 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 0200000003000003 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 000000004975821a{i=a000004,n=lustre-client}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff88810441cd38 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 000000000a000004 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 000000005207cbde{i=a000003,n=params}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff88810441e4b8 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 000000000a000003 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 0000000097039262{i=a000002,n=lustre-OST0000}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 10 PID: 3790 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008c4f578 EFLAGS: 00010286
+RAX: feb3cd60fab71000 RBX: ffff888120cdef00 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 0000000000000001 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: dffffc0000000000
+R13: ffff8881140ca640 R14: 000000000a000002 R15: ffffffffa13e62e0
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+VFS: Busy inodes after unmount of wbcfs (wbcfs)
+WARNING: CPU: 10 PID: 3790 at fs/super.c:653 generic_shutdown_super+0x179/0x320
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 10 UID: 0 PID: 3790 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:generic_shutdown_super+0x179/0x320
+Code: 24 4c 89 e0 48 c1 e8 03 42 80 3c 28 00 74 08 4c 89 e7 e8 3a c4 fb ff 49 8b 14 24 48 c7 c7 c0 aa cf 82 4c 89 fe e8 57 df 81 ff <0f> 0b 4c 8d bb 80 08 00 00 4c 89 ff e8 f6 86 03 01 42 80 7c 2d 00
+RSP: 0018:ffffc90008c4f678 EFLAGS: 00010246
+RAX: feb3cd60fab71000 RBX: ffff8881140ca000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a3122fd0
+RBP: 1ffff11022819518 R08: ffff8882a3122fd3 R09: 1ffff110546245fa
+R10: dffffc0000000000 R11: ffffed10546245fb R12: ffffffffa13e62e0
+R13: dffffc0000000000 R14: ffff8881140ca8c0 R15: ffff8881140ca640
+FS:  00007fc0d9717840(0000) GS:ffff88831eee0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fc0d99e37a0 CR3: 0000000155474000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fc0d996e217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffd27783b88 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fc0d996e217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 0000558cb22453c0
+RBP: 00007fc0d9ace26c R08: 00007ffd27782970 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 0000558cb2241e78
+R13: 0000558cb22453c0 R14: 0000558cb2241d70 R15: 0000558cb22421b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+Lustre: server umount lustre-OST0000 complete
+------------[ cut here ]------------
+BUG: Dentry 00000000ed34d355{i=200000003000006,n=lfsck_layout}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff888147851be8 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 0200000003000006 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 00000000c783078b{i=200000003000005,n=lfsck_bookmark}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff888147851608 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 0200000003000005 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 00000000f664d371{i=200000003000004,n=LFSCK}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff888147851318 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 0200000003000004 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 0000000087559f0b{i=200000003000003,n=nodemap}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff8881047afac0 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 0200000003000003 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 0000000051e19105{i=a000004,n=lustre-client}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff8881007eaa98 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 000000000a000004 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 0000000063177dfc{i=a000003,n=params}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff8881007ea920 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 000000000a000003 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+BUG: Dentry 00000000e23cf3d8{i=a000002,n=lustre-OST0001}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 3 PID: 3831 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:umount_check+0x154/0x1a0
+Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 00 f8 cf 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 50 6d 7d ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
+RSP: 0018:ffffc90008d0f578 EFLAGS: 00010286
+RAX: 296767b2db1e4100 RBX: ffff888104514bc0 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 0000000000000001 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: dffffc0000000000
+R13: ffff88811d7ca640 R14: 000000000a000002 R15: ffffffffa13e62e0
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? __d_free+0x20/0x20
+ d_walk+0x2c8/0x490
+ do_one_tree+0x32/0xd0
+ shrink_dcache_for_umount+0x7c/0x110
+ generic_shutdown_super+0x67/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+VFS: Busy inodes after unmount of wbcfs (wbcfs)
+WARNING: CPU: 3 PID: 3831 at fs/super.c:653 generic_shutdown_super+0x179/0x320
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 3 UID: 0 PID: 3831 Comm: umount Tainted: G        W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:generic_shutdown_super+0x179/0x320
+Code: 24 4c 89 e0 48 c1 e8 03 42 80 3c 28 00 74 08 4c 89 e7 e8 3a c4 fb ff 49 8b 14 24 48 c7 c7 c0 aa cf 82 4c 89 fe e8 57 df 81 ff <0f> 0b 4c 8d bb 80 08 00 00 4c 89 ff e8 f6 86 03 01 42 80 7c 2d 00
+RSP: 0018:ffffc90008d0f678 EFLAGS: 00010246
+RAX: 296767b2db1e4100 RBX: ffff88811d7ca000 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2da2fd0
+RBP: 1ffff11023af9518 R08: ffff8882a2da2fd3 R09: 1ffff110545b45fa
+R10: dffffc0000000000 R11: ffffed10545b45fb R12: ffffffffa13e62e0
+R13: dffffc0000000000 R14: ffff88811d7ca8c0 R15: ffff88811d7ca640
+FS:  00007f0c4e10d840(0000) GS:ffff88831eb60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055ce01692018 CR3: 00000001285d2000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ mntput_no_expire+0x4bb/0x540
+ ? shrink_dcache_sb+0x89/0xe0
+ osd_umount+0x108/0x260 [osd_wbcfs]
+ osd_device_fini+0x12a/0x2b0 [osd_wbcfs]
+ class_cleanup+0x10b7/0x1aa0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x1f80/0x7600 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xc99/0x1d50 [obdclass]
+ class_manual_cleanup+0xde0/0x1d50 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osd_obd_disconnect+0x18a/0x310 [osd_wbcfs]
+ obd_disconnect+0x171/0x460 [obdclass]
+ lustre_put_lsi+0x2ce/0xaa0 [obdclass]
+ server_put_super+0x3547/0x4d60 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f0c4e364217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffdc127caa8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007f0c4e364217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055ce01692140
+RBP: 00007f0c4e4c426c R08: 00007ffdc127b890 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055ce0168ee78
+R13: 000055ce01692140 R14: 000055ce0168ed70 R15: 000055ce0168f1b0
+ </TASK>
+---[ end trace 0000000000000000 ]---
+Lustre: server umount lustre-OST0001 complete
+=============================================================================
+BUG memfs_inode_cache (Tainted: G        W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x0000000060e40560 @offset=0
+Object 0x000000008cde4abc @offset=1808
+Object 0x000000006060450d @offset=3616
+Object 0x00000000fc0251cb @offset=5424
+Object 0x00000000bfa2359c @offset=7232
+Object 0x00000000fe3f8f02 @offset=9040
+Object 0x000000004fd67deb @offset=10848
+Object 0x000000009040896e @offset=12656
+Object 0x00000000a4d79066 @offset=14464
+Object 0x0000000019105d9a @offset=16272
+Object 0x00000000197a2c87 @offset=18080
+Object 0x00000000b984c4e8 @offset=19888
+Slab 0x0000000069a8557e objects=18 used=12 fp=0x00000000fd3d4b1f flags=0x8000000000000240(workingset|head|zone=2)
+Disabling lock debugging due to kernel taint
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea000440e000 R14: ffff8881289e4180 R15: ffffea000476ae10
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x000000006d5e9252 @offset=0
+Slab 0x0000000053a3cfa5 objects=18 used=1 fp=0x00000000c8f4954b flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea000476ae00 R14: ffff8881289e4180 R15: ffffea00048f2a10
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x00000000f111d2f7 @offset=0
+Slab 0x0000000061552763 objects=18 used=1 fp=0x00000000934ee7cc flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea00048f2a00 R14: ffff8881289e4180 R15: ffffea00042b5a10
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x000000000030f76a @offset=0
+Object 0x00000000186de8d5 @offset=3616
+Object 0x0000000012fc49c7 @offset=5424
+Object 0x000000000a599961 @offset=7232
+Object 0x0000000043ad3957 @offset=12656
+Object 0x00000000913f3cf5 @offset=14464
+Object 0x00000000ba4eaeb5 @offset=18080
+Object 0x00000000bebf6b7d @offset=23504
+Object 0x00000000e59df725 @offset=25312
+Object 0x000000009a06a23a @offset=27120
+Object 0x00000000c0563002 @offset=28928
+Object 0x00000000ca7c1237 @offset=30736
+Slab 0x000000007adcabf0 objects=18 used=12 fp=0x00000000ea184f50 flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea00042b5a00 R14: ffff8881289e4180 R15: ffffea0004a2f010
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x00000000e97e4926 @offset=0
+Object 0x0000000058d1ac2d @offset=1808
+Object 0x000000002e3556b2 @offset=5424
+Object 0x000000002c8ff9df @offset=10848
+Object 0x00000000b887210d @offset=12656
+Object 0x00000000d86912a9 @offset=14464
+Object 0x00000000d282b4e6 @offset=16272
+Object 0x00000000c6141930 @offset=18080
+Object 0x00000000ebea51a5 @offset=19888
+Slab 0x0000000039449b73 objects=18 used=9 fp=0x0000000051e2c9ce flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea0004a2f000 R14: ffff8881289e4180 R15: ffffea0004ceee10
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x0000000018848443 @offset=0
+Object 0x00000000774c5433 @offset=1808
+Object 0x00000000d6a13b4b @offset=5424
+Object 0x000000000ace2c00 @offset=7232
+Object 0x000000004b448073 @offset=9040
+Object 0x00000000b33b617c @offset=10848
+Object 0x0000000084fba8be @offset=12656
+Object 0x00000000725d7169 @offset=14464
+Object 0x000000000706da02 @offset=16272
+Object 0x00000000ffe4816d @offset=18080
+Object 0x00000000e3846238 @offset=19888
+Object 0x0000000052389726 @offset=21696
+Object 0x00000000bae48d29 @offset=23504
+Object 0x00000000502415de @offset=25312
+Object 0x000000001bab36cf @offset=27120
+Object 0x00000000b48c4bb4 @offset=28928
+Object 0x00000000c8dfe7d8 @offset=30736
+Slab 0x0000000082fa750d objects=18 used=17 fp=0x0000000051a8acd7 flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea0004a6e400 R14: ffff8881289e4180 R15: ffffea0004233010
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x00000000215c097c @offset=7232
+Object 0x00000000602b7ea2 @offset=16272
+Slab 0x0000000083efb635 objects=18 used=2 fp=0x00000000cb9be45d flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea0004233000 R14: ffff8881289e4180 R15: ffffea0004fe1410
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x000000003e69ab78 @offset=0
+Object 0x00000000cafcb369 @offset=1808
+Object 0x00000000599ff7ec @offset=3616
+Object 0x00000000da11cc95 @offset=5424
+Slab 0x000000003b86f0b7 objects=18 used=4 fp=0x00000000fb9e2085 flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea0004fe1400 R14: ffff8881289e4180 R15: ffffea0004f41210
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+=============================================================================
+BUG memfs_inode_cache (Tainted: G    B   W  O       ): Objects remaining on __kmem_cache_shutdown()
+-----------------------------------------------------------------------------
+
+Object 0x0000000030a219f1 @offset=9040
+Object 0x000000003ec4f550 @offset=10848
+Object 0x000000002b8aa931 @offset=12656
+Object 0x00000000a38f8876 @offset=14464
+Object 0x000000004f26d0a0 @offset=16272
+Object 0x000000000c972241 @offset=18080
+Object 0x00000000e26e9d6f @offset=19888
+Object 0x000000000e3c8738 @offset=21696
+Object 0x000000008dec0cb6 @offset=23504
+Slab 0x0000000019bcbd0e objects=18 used=9 fp=0x0000000069946270 flags=0x8000000000000240(workingset|head|zone=2)
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 3916 at mm/slub.c:1135 __slab_err+0x19/0x20
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:__slab_err+0x19/0x20
+Code: 16 0c 83 49 89 f1 e9 36 aa ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 e8 c6 ff ff ff bf 05 00 00 00 be 01 00 00 00 e8 87 a3 13 00 <0f> 0b c3 0f 1f 40 00 0f 1f 44 00 00 55 41 56 53 4c 89 c3 49 89 ce
+RSP: 0018:ffffc90008f4fdc8 EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff8881289e2280 RCX: ffffffff8135db28
+RDX: 0000000000000001 RSI: 0000000000000008 RDI: ffffffff84282da0
+RBP: ffff8881289e4180 R08: ffffffff84282da7 R09: 1ffffffff08505b4
+R10: dffffc0000000000 R11: fffffbfff08505b5 R12: ffff8881289e41c8
+R13: ffffea0004f41200 R14: ffff8881289e4180 R15: ffff8881289e41c8
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __kmem_cache_shutdown+0xa6/0x1e0
+ ? cleanup_module+0x21/0x30 [osd_wbcfs]
+ kmem_cache_destroy+0x7b/0x150
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+kmem_cache_destroy memfs_inode_cache: Slab cache still has objects when called from cleanup_module+0x21/0x30 [osd_wbcfs]
+WARNING: CPU: 4 PID: 3916 at mm/slab_common.c:526 kmem_cache_destroy+0x148/0x150
+Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O-) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+CPU: 4 UID: 0 PID: 3916 Comm: rmmod Tainted: G    B   W  O        6.16.0-ktest-071dbaa3a8-20260310 #1 NONE 
+Tainted: [B]=BAD_PAGE, [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+RIP: 0010:kmem_cache_destroy+0x148/0x150
+Code: 96 ef d9 02 48 89 de 5b 41 5e 5d e9 42 ef 0a 00 48 8b 53 60 48 c7 c7 1e ba 0b 83 48 c7 c6 30 52 0f 83 4c 89 f1 e8 d8 2f 95 ff <0f> 0b e9 36 ff ff ff 90 66 0f 1f 00 0f 1f 44 00 00 53 48 89 fb e8
+RSP: 0018:ffffc90008f4fe38 EFLAGS: 00010246
+RAX: d19a79fa87cdf300 RBX: ffff8881289e2280 RCX: 0000000000000027
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a2e22fd0
+RBP: 0000000000000001 R08: ffff8882a2e22fd3 R09: 1ffff110545c45fa
+R10: dffffc0000000000 R11: ffffed10545c45fb R12: ffffffffa13eae60
+R13: dffffc0000000000 R14: ffffffffa0fd7b01 R15: ffffffffa13eae60
+FS:  00007f1d8325b340(0000) GS:ffff88831ebe0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f1d82b99941 CR3: 00000001177cd000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ cleanup_module+0x21/0x30 [osd_wbcfs]
+ __x64_sys_delete_module+0x1df/0x360
+ ? fpregs_assert_state_consistent+0x50/0xe0
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x40
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f1d82b1b417
+Code: 73 01 c3 48 8b 0d e1 59 0d 00 f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 b8 b0 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b1 59 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007fff6dc3ec58 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+RAX: ffffffffffffffda RBX: 0000562516a7f830 RCX: 00007f1d82b1b417
+RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000562516a7f890
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000206 R12: 0000562516a7e2a0
+R13: 00007fff6dc3ef50 R14: 0000562516a7f830 R15: 00007fff6dc3ef58
+ </TASK>
+---[ end trace 0000000000000000 ]---
+LNet: 4094:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4094:0:(acceptor.c:252:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+LustreError: 4129:0:(class_obd.c:982:obdclass_exit()) obd_memory max: 247910418, leaked: 3617
+Error 254 at /host/home/ktest/ktest/tests/../lib/common.sh 100 from: ( set -e; "$@" ) > "$out" 2>&1, exiting
+
+/workspace/lustre-release/lustre/tests/test-framework.sh: line 6872: cd: HOME not set
+cat: /etc/system-release: No such file or directory
+mgs: 
+MGS_OS_ID=debian
+MGS_OS_VERSION_CODE=0
+MGS_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+mds1: 
+MDS1_OS_ID=debian
+MDS1_OS_VERSION_CODE=0
+MDS1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+ost1: 
+OST1_OS_VERSION_CODE=0
+OST1_OS_ID=debian
+OST1_OS_ID_LIKE= debian
+cat: /etc/system-release: No such file or directory
+client: 
+CLIENT_OS_ID_LIKE= debian
+CLIENT_OS_ID=debian
+CLIENT_OS_VERSION_CODE=0
+Stopping clients: lustre-bot-kvm /mnt/lustre (opts:-f)
+Stopping client lustre-bot-kvm /mnt/lustre opts:-f
+Stopping clients: lustre-bot-kvm /mnt/lustre2 (opts:-f)
+Stopping /mnt/lustre-mds1 (opts:-f) on lustre-bot-kvm
+Stopping /mnt/lustre-ost1 (opts:-f) on lustre-bot-kvm
+Stopping /mnt/lustre-ost2 (opts:-f) on lustre-bot-kvm
+[  116.532781] LustreError: 4129:0:(class_obd.c:982:obdclass_exit()) obd_memory max: 247910418, leaked: 3617
+
+Memory leaks detected
+Error 254 at /host/home/ktest/ktest/tests/fs/lustre/lustre-libs.sh 317 from: FSTYPE="$FSTYPE" "$lustre_pkg_path/lustre/tests/llmountcleanup.sh", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 337 from: ( set -e; run_test $i ), exiting
+
+========= FAILED llmount in 90s
+
+Passed: 
+Failed: llmount
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 436 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/llmount.ktest 33 from: return ${#tests_failed[@]}, exiting
+Kernel version: 6.16.0-ktest-071dbaa3a8-20260310
+TEST FAILED
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=22d5d4df46804ff6b304b4bedfc153c5\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
