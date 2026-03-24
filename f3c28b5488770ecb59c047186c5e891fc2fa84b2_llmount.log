@@ -7,7 +7,7 @@ Press Ctrl-B to configure iPXE (PCI 00:01.0)...
 
 
 Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=02d410b36d8947b39efb54e4b49483c8;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=9abd6f47a7844181aca7c8e8ba62f0b7;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-b76b01a618-20260324
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=ec6e3e7ff3df4e0c96edb41b6d228f3b;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=28b5330d900646848cfb75d2c43db02b;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.16.0-ktest-f3c28b5488-20260324
 hook init_noop
 
 Running tests llmount
@@ -15,7 +15,7 @@ Running tests llmount
 ========= TEST   llmount
 SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
 libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
-Lustre: Lustre: Build Version: 2.17.51_23_gb76b01a
+Lustre: Lustre: Build Version: 2.17.51_1_gf3c28b5
 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
 Lustre: Echo OBD driver; http://www.lustre.org/
 Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
@@ -24,41 +24,36 @@ Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
 Lustre: lustre-MDT0000: new disk, initializing
 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
-mount.lustre (2910) used greatest stack depth: 24248 bytes left
+mount.lustre (2914) used greatest stack depth: 23672 bytes left
 Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
-Lustre: srv-lustre-OST0000: No data found on store. Initialize space.
-Lustre: Skipped 1 previous similar message
-mount.lustre (3054) used greatest stack depth: 24072 bytes left
-Lustre: lustre-OST0001: new disk, initializing
-Lustre: Skipped 1 previous similar message
-Lustre: lustre-OST0001: Imperative Recovery not enabled, recovery window 300-900
-Lustre: Skipped 1 previous similar message
-Lustre: lustre-MDT0000: local client 64f112bc-e261-420c-9d2a-951b18564829 w/o recovery
+mount.lustre (3056) used greatest stack depth: 23640 bytes left
 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
-Lustre: client wants to enable acl, but mdt not!
 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
-Lustre: Mounted lustre-client
 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client c9c64e3c-e8da-49f0-a488-40593f626f51 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
 Lustre: DEBUG MARKER: Using TIMEOUT=100
 Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
 done
 CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
 Lustre: Unmounted lustre-client
 Lustre: server umount lustre-MDT0000 complete
-LustreError: 2914:0:(ldlm_lockd.c:2564:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1774341217 with bad export cookie 13020761133813229940
+LustreError: 3383:0:(ldlm_lockd.c:2564:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1774343178 with bad export cookie 2339984384284605227
 LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
 Lustre: server umount lustre-OST0000 complete
 Lustre: server umount lustre-OST0001 complete
-BUG: unable to handle page fault for address: fffffbfff42ec431
-#PF: supervisor read access in kernel mode
-#PF: error_code(0x0000) - not-present page
-PGD 2e3beb067 P4D 2e3beb067 PUD 2e3be7067 PMD 132e3b067 PTE 0
-Oops: Oops: 0000 [#1] SMP KASAN
-CPU: 12 UID: 0 PID: 3961 Comm: rmmod Tainted: G           O        6.16.0-ktest-b76b01a618-20260324 #1 NONE 
-Tainted: [O]=OOT_MODULE
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
-RIP: 0010:cleanup_module+0x8f/0x1280 [mdd]
-Code: 49 81 ff 20 41 61 a0 0f 84 12 03 00 00 49 bd 00 01 00 00 00 00 ad de 49 8d 45 22 48 89 44 24 10 4c 89 fb 4c 89 fd 48 c1 ed 03 <42> 80 7c 25 00 00 74 08 48 89 df e8 01 18 0b e0 4c 8b 3b 4c 8d 73
-RSP: 0018:ffffc90020a17e10 EFLAGS: 00010212
-RAX: 1ffffffff42f5639 RBX: ffffffffa1762188 RCX: ffffffffa1907f6b
+LNet: 4101:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4101:0:(acceptor.c:252:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+done
+
+========= PASSED llmount in 109s
+
+Passed: llmount
+Failed: 
+Kernel version: 6.16.0-ktest-f3c28b5488-20260324
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=ec6e3e7ff3df4e0c96edb41b6d228f3b\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
