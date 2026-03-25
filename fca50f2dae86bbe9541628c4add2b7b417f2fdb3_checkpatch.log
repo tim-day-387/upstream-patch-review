@@ -1,0 +1,91 @@
+WARNING:MACRO_ARG_UNUSED: Argument 'mnt' is not used in function-like macro
+#272: FILE: include/lustre_compat/linux/linux-fs.h:65:
++#define ll_vfs_symlink(dir, dentry, mnt, path, mode) \
++		       vfs_symlink(dir, dentry, path, mode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'mnt' is not used in function-like macro
+#275: FILE: include/lustre_compat/linux/linux-fs.h:68:
++#define ll_vfs_symlink(dir, dentry, mnt, path, mode) \
++		       vfs_symlink(dir, dentry, path)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'mode' is not used in function-like macro
+#275: FILE: include/lustre_compat/linux/linux-fs.h:68:
++#define ll_vfs_symlink(dir, dentry, mnt, path, mode) \
++		       vfs_symlink(dir, dentry, path)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#296: FILE: include/lustre_compat/linux/linux-fs.h:89:
++#define vfs_unlink(ns, dir, de) vfs_unlink(dir, de, NULL)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'salt' is not used in function-like macro
+#340: FILE: include/lustre_compat/linux/linux-fs.h:133:
++# define ll_full_name_hash(salt, name, len) full_name_hash(name, len)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'a' is not used in function-like macro
+#358: FILE: include/lustre_compat/linux/linux-fs.h:151:
++#define posix_acl_valid(a, b)		posix_acl_valid(b)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'useroffset' is not used in function-like macro
+#396: FILE: include/lustre_compat/linux/linux-fs.h:189:
++#define kmem_cache_create_usercopy(name, size, align, flags, useroffset, \
++				   usersize, ctor)			 \
++	kmem_cache_create(name, size, align, flags, ctor)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'usersize' is not used in function-like macro
+#396: FILE: include/lustre_compat/linux/linux-fs.h:189:
++#define kmem_cache_create_usercopy(name, size, align, flags, useroffset, \
++				   usersize, ctor)			 \
++	kmem_cache_create(name, size, align, flags, ctor)
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#463: FILE: include/lustre_compat/linux/linux-fs.h:256:
++    defined(HAVE_IOV_ITER_GET_PAGES_ALLOC2)$
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#503: FILE: include/lustre_compat/linux/linux-fs.h:296:
++#define vfs_create(ns, de, mode, di)	\
++	vfs_create(d_inode((de)->d_parent), (de), (mode), !!(di))
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#512: FILE: include/lustre_compat/linux/linux-fs.h:305:
++#define posix_acl_update_mode(ns, inode, mode, acl) \
++	posix_acl_update_mode(inode, mode, acl)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#514: FILE: include/lustre_compat/linux/linux-fs.h:307:
++#define notify_change(ns, de, attr, inode)	notify_change(de, attr, inode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#515: FILE: include/lustre_compat/linux/linux-fs.h:308:
++#define inode_owner_or_capable(ns, inode)	inode_owner_or_capable(inode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#516: FILE: include/lustre_compat/linux/linux-fs.h:309:
++#define vfs_mkdir(ns, dir, de, mode)		vfs_mkdir(dir, de, mode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#517: FILE: include/lustre_compat/linux/linux-fs.h:310:
++#define ll_set_acl(ns, inode, acl, type)	ll_set_acl(inode, acl, type)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'isnew' is not used in function-like macro
+#558: FILE: include/lustre_compat/linux/linux-fs.h:356:
++#define ilookup5_nowait(sb, hash, fn, data, isnew) \
++	ilookup5_nowait((sb), (hash), (fn), (data))
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#1103: FILE: lustre/mdc/mdc_locks.c:109:
++		LASSERTF(inode_state_read(old_inode) & I_FREEING,
+ 			 "Found existing inode %px/%lu/%u state %lu in lock: setting data to %px/%lu/%u\n",
+ 			 old_inode, old_inode->i_ino, old_inode->i_generation,
++			 (unsigned long)inode_state_read(old_inode),
++			 (unsigned long)inode_state_read(old_inode),
+
+total: 0 errors, 17 warnings, 1063 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
