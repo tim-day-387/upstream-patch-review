@@ -1,0 +1,138 @@
+UPDATE ROOT IMAGE ... done
+c[?7l[2J[0mSeaBIOS (version 1.15.0-1)
+
+
+iPXE (https://ipxe.org) 00:01.0 C000 PCI2.10 PnP PMM+7FF8AE10+7FECAE10 C000
+Press Ctrl-B to configure iPXE (PCI 00:01.0)...                                                                               
+
+
+Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=22b83d9c61e74c3987c88b1dd821bbdd;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=94849d4e29344aa8804ef9d89263790b;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.17.0-ktest-8596a12f4d-20260412
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.52_2_g8596a12
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+llog_process_th (2942) used greatest stack depth: 25672 bytes left
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2906) used greatest stack depth: 24296 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+mount.lustre (3048) used greatest stack depth: 23640 bytes left
+==================================================================
+BUG: KASAN: slab-out-of-bounds in statfs_pack+0x2f/0x230 [obdclass]
+Write of size 192 at addr ffff888140295a30 by task ll_ost_create00/3052
+
+CPU: 8 UID: 0 PID: 3052 Comm: ll_ost_create00 Tainted: G           O        6.17.0-ktest-8596a12f4d-20260412 #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+Call Trace:
+ <TASK>
+ dump_stack_lvl+0x8a/0xd0
+ print_report+0xc8/0x270
+ ? statfs_pack+0x2f/0x230 [obdclass]
+ kasan_report+0xa3/0xe0
+ ? statfs_pack+0x2f/0x230 [obdclass]
+ kasan_check_range+0x2ab/0x2c0
+ __asan_memset+0x22/0x40
+ statfs_pack+0x2f/0x230 [obdclass]
+ ? memfs_evict_inode+0x360/0x360 [osd_wbcfs]
+ osd_statfs+0x1c1/0x460 [osd_wbcfs]
+ tgt_statfs_internal+0x2ca/0x8a0 [ptlrpc]
+ ofd_statfs+0x127/0xdd0 [ofd]
+ ofd_statfs_hdl+0x1b9/0x560 [ofd]
+ tgt_request_handle+0x2105/0x3cd0 [ptlrpc]
+ ptlrpc_main+0x5e92/0x9280 [ptlrpc]
+ ? __kthread_parkme+0x7f/0x150
+ kthread+0x565/0x6c0
+ ? ptlrpc_start_thread+0x1d40/0x1d40 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork+0xf1/0x260
+ ? kthread_unuse_mm+0x130/0x130
+ ret_from_fork_asm+0x11/0x20
+ </TASK>
+
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:1:ost
+Allocated by task 3052:
+ kasan_save_track+0x2f/0x70
+Lustre: cli-lustre-OST0001-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:ost]
+ __kasan_kmalloc+0x72/0x80
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x240000400
+ __kmalloc_noprof+0x166/0x340
+ null_alloc_rs+0x1c0/0x5c0 [ptlrpc]
+ sptlrpc_svc_alloc_rs+0x1b8/0x7b0 [ptlrpc]
+ lustre_pack_reply_v2+0x46e/0x9f0 [ptlrpc]
+ lustre_pack_reply_flags+0x12a/0x3a0 [ptlrpc]
+ req_capsule_server_pack+0xcf/0x670 [ptlrpc]
+ tgt_request_handle+0x20d9/0x3cd0 [ptlrpc]
+ ptlrpc_main+0x5e92/0x9280 [ptlrpc]
+ kthread+0x565/0x6c0
+ ret_from_fork+0xf1/0x260
+ ret_from_fork_asm+0x11/0x20
+
+The buggy address belongs to the object at ffff888140295800
+ which belongs to the cache kmalloc-1k of size 1024
+The buggy address is located 560 bytes inside of
+ allocated 704-byte region [ffff888140295800, ffff888140295ac0)
+
+The buggy address belongs to the physical page:
+page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x140290
+head: order:3 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
+flags: 0x8000000000000040(head|zone=2)
+page_type: f5(slab)
+raw: 8000000000000040 ffff888100042dc0 dead000000000122 0000000000000000
+raw: 0000000000000000 0000000080100010 00000000f5000000 0000000000000000
+head: 8000000000000040 ffff888100042dc0 dead000000000122 0000000000000000
+head: 0000000000000000 0000000080100010 00000000f5000000 0000000000000000
+head: 8000000000000003 ffffea000500a401 00000000ffffffff 00000000ffffffff
+head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff888140295980: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffff888140295a00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffff888140295a80: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc fc
+                                           ^
+ ffff888140295b00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff888140295b80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+==================================================================
+Disabling lock debugging due to kernel taint
+Lustre: lustre-MDT0000: local client 8dea6eb0-d481-43da-9464-559e2f981bb1 w/o recovery
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000400
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+done
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+Lustre: Unmounted lustre-client
+Lustre: server umount lustre-MDT0000 complete
+LustreError: 3373:0:(ldlm_lockd.c:2564:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1775960153 with bad export cookie 1335666542762980369
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+Lustre: server umount lustre-OST0000 complete
+Lustre: server umount lustre-OST0001 complete
+LNet: 4086:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4086:0:(acceptor.c:252:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+done
+
+========= PASSED llmount in 95s
+
+Passed: llmount
+Failed: 
+NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+Kernel version: 6.17.0-ktest-8596a12f4d-20260412
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=22b83d9c61e74c3987c88b1dd821bbdd\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
