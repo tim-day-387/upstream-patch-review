@@ -1,0 +1,79 @@
+WARNING:MACRO_ARG_UNUSED: Argument 'page' is not used in function-like macro
+#113: FILE: include/lustre_compat/linux/folio.h:35:
++#define folio_order(page)		(0)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'page' is not used in function-like macro
+#144: FILE: include/lustre_compat/linux/folio.h:421:
++#define wbe_folio_size(page)		(PAGE_SIZE)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'folio' is not used in function-like macro
+#154: FILE: include/lustre_compat/linux/folio.h:440:
++#define folio_size(folio)			(PAGE_SIZE)
+
+WARNING:SPACE_BEFORE_TAB: please, no space before tabs
+#533: FILE: lustre/include/obd.h:113:
++^Iu16^I^I  ^I  bp_order:4,   /* folio order [BIO] */$
+
+WARNING:LONG_LINE_STRING: line length of 110 exceeds 100 columns
+#759: FILE: lustre/llite/llite_mmap.c:445:
++	       "COMPLETED: "DFID": vma=%p start=%#lx end=%#lx vm_flags=%#lx pgoff=%lu vmf_flags=%#x: rc=%d\n",
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#3086: FILE: lustre/osc/osc_cache.c:1197:
++		LASSERTF(ext->oe_npgs <=
++			 (LNET_MAX_IOV * osc_max_brw_imp(osc_cli(obj))),
++			 "ext:%px [%lu-%lu] oe_npgs:%d\n",
++			 ext, ext->oe_start, ext->oe_end, ext->oe_npgs);
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#3664: FILE: lustre/osc/osc_cache.c:2724:
++		LASSERTF(ext->oe_npgs <= (LNET_MAX_IOV * osc_max_brw_imp(cli)),
++			 "ext:%px [%lu-%lu] oe_npgs:%d (added:%d)\n",
++			 ext, ext->oe_start, ext->oe_end, ext->oe_npgs, npgs);
+
+ERROR:TRAILING_WHITESPACE: trailing whitespace
+#3895: FILE: lustre/osc/osc_cache.c:3544:
++ $
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#3895: FILE: lustre/osc/osc_cache.c:3544:
++ $
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#5306: FILE: lustre/osc/osc_request.c:1992:
++		LASSERTF(brw_count == 1 ||
++			 (ergo(i == 0, poff + pg->bp_count == brw_size(pg)) &&
++			  ergo(i > 0 && i < brw_count - 1,
++			       poff == 0 && pg->bp_count == brw_size(pg)) &&
++			  ergo(i == brw_count - 1, poff == 0)),
++			 "i:%d/%d pg:%px f:%px bp_off:%llu, bp_pgoff:%d poff:%d bp_count:%u size:%zu npgs:%d\n",
++			 i, brw_count, pg, pg->bp_folio,
++			 pg->bp_off, pg->bp_pgoff, poff,
++			 pg->bp_count, brw_size(pg), brw_npgs(pg));
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#5498: FILE: lustre/osc/osc_request.c:2324:
++^I^I^I^I        struct cl_page *cl_page,$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#5499: FILE: lustre/osc/osc_request.c:2325:
++^I^I^I^I        int fpgno, unsigned int offs)$
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#5959: FILE: lustre/osc/osc_request.c:3062:
++		LASSERTF(npgs <= (osc_max_brw_imp(cli) * LNET_MAX_IOV),
++			 "npgs:%d added ext:%px [%ld-%ld] oe_npgs:%d\n",
++			 npgs, ext, ext->oe_start, ext->oe_end, ext->oe_npgs);
+
+total: 3 errors, 10 warnings, 5655 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+NOTE: Whitespace errors detected.
+      You may wish to use scripts/cleanpatch or scripts/cleanfile
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
