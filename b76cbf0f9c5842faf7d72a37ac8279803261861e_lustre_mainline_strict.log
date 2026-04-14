@@ -1,5 +1,5 @@
-KERNEL BUILD [boot.ktest] ... done
-LUSTRE BUILD [boot.ktest] ... Error 2 at /home/ktest/ktest/lib/common.sh 100 from: ( set -e; "$@" ) > "$out" 2>&1, exiting
+KERNEL BUILD [boot-strict.ktest] ... done
+LUSTRE BUILD [boot-strict.ktest] ... Error 2 at /home/ktest/ktest/lib/common.sh 100 from: ( set -e; "$@" ) > "$out" 2>&1, exiting
 
 configure.ac:25: installing 'config/compile'
 configure.ac:20: installing 'config/config.guess'
@@ -27,7 +27,9 @@ checking whether we are cross compiling... no
 checking for suffix of object files... o
 checking whether the compiler supports GNU C... yes
 checking whether clang-20 accepts -g... yes
-checking for clang-20 option to enable C11 features... none needed
+checking for clang-20 option to enable C11 features... unsupported
+checking for clang-20 option to enable C99 features... unsupported
+checking for clang-20 option to enable C89 features... unsupported
 checking whether clang-20 understands -c and -o together... yes
 checking dependency style of clang-20... gcc3
 checking whether the compiler supports GNU C++... yes
@@ -126,7 +128,7 @@ checking for python... no
 configure: WARNING: Cannot find python in your system path
 checking whether to build LUTF (LNet Unit Test Framework)... no
 checking whether to build Lustre client support... yes
-checking whether mpitests can be built... no
+checking whether mpitests can be built... yes
 checking whether to build Linux kernel modules... yes (linux-gnu)
 find: '/usr/src/kernels/': No such file or directory
 checking for Linux sources... /home/ktest/git/linux
@@ -142,7 +144,7 @@ checking for /home/ktest/git/linux/include/linux/kconfig.h... yes
 checking for external module build target... M58
 checking for compiler version text... yes
 checking that modules can be built at all... yes
-checking for Linux kernel utsrelease... 6.17.0-ktest-579f330960-20260414
+checking for Linux kernel utsrelease... 6.17.0-ktest-b76cbf0f9c-20260414
 checking for RedHat kernel release number... 
 checking if Linux kernel was built with CONFIG_SUSE_KERNEL... no
 checking for Ubuntu kernel signature... no
@@ -751,7 +753,7 @@ config.status: executing depfiles commands
 config.status: executing libtool commands
 
 CC:            clang-20
-CFLAGS:        -Wno-error=attribute-warning -Wno-error=unused-but-set-variable -Wno-error=single-bit-bitfield-constant-conversion -Wno-error=format-security -Wno-error=cast-function-type-strict -I/tmp/ktest-out/kernel_build.x86_64//include -I/tmp/ktest-out/kernel_build.x86_64//include -I/tmp/ktest-out/kernel_build.x86_64//arch/x86/include/generated -I/tmp/ktest-out/kernel_build.x86_64//arch/x86/include/generated/uapi -I/tmp/ktest-out/kernel_build.x86_64//include/generated -I/tmp/ktest-out/kernel_build.x86_64//include/generated/uapi  -Wno-gnu
+CFLAGS:        -Werror -I/tmp/ktest-out/kernel_build.x86_64//include -I/tmp/ktest-out/kernel_build.x86_64//include -I/tmp/ktest-out/kernel_build.x86_64//arch/x86/include/generated -I/tmp/ktest-out/kernel_build.x86_64//arch/x86/include/generated/uapi -I/tmp/ktest-out/kernel_build.x86_64//include/generated -I/tmp/ktest-out/kernel_build.x86_64//include/generated/uapi  -Wno-gnu
 EXTRA_CFLAGS:   -Wno-gnu
 
 EXTRA_KCFLAGS: -include /tmp/ktest-out/lustre-release/undef.h -include /tmp/ktest-out/lustre-release/config.h  -g -I/tmp/ktest-out/lustre-release/libcfs/include -I/tmp/ktest-out/lustre-release/libcfs/include/libcfs -I/tmp/ktest-out/lustre-release/lnet/include/uapi -I/tmp/ktest-out/lustre-release/lnet/include -I/tmp/ktest-out/lustre-release/lustre/include/uapi -I/tmp/ktest-out/lustre-release/lustre/include -I/tmp/ktest-out/lustre-release/include -Wno-format-truncation -Wno-gnu
@@ -776,899 +778,226 @@ M=/tmp/ktest-out/lustre-release -o tmp_include_depends -o scripts -o \
 include/config/MARKER modules
 make[3]: Entering directory '/tmp/ktest-out/kernel_build.x86_64'
 make[4]: Entering directory '/tmp/ktest-out/lustre-release'
-  CC [M]  lustre/obdclass/llog.o
   CC [M]  lustre/fid/fid_request.o
-  CC [M]  lustre/fid/lproc_fid.o
-  CC [M]  lnet/selftest/console.o
-  CC [M]  lustre/kunit/ec_test.o
-  CC [M]  lustre/obdecho/echo_client.o
-  CC [M]  lustre/ptlrpc/recover.o
-  CC [M]  libcfs/libcfs/fail.o
-  CC [M]  lustre/llite/dcache.o
-  CC [M]  lustre/ec/ec_kmod.o
-  CC [M]  lustre/ptlrpc/client.o
-  CC [M]  lustre/ptlrpc/connection.o
-  CC [M]  lustre/osp/osp_dev.o
-  CC [M]  lustre/lfsck/lfsck_lib.o
-  CC [M]  lustre/lov/lov_dev.o
-  CC [M]  lustre/mgc/mgc_request.o
-  CC [M]  lustre/obdecho/debug.o
-  CC [M]  lustre/mgs/mgs_handler.o
-  CC [M]  lustre/mdt/mdt_handler.o
-  CC [M]  lustre/lfsck/lfsck_engine.o
-  CC [M]  lustre/mdd/mdd_acl.o
-  CC [M]  lustre/mdc/mdc_request.o
-  CC [M]  libcfs/libcfs/debug.o
   CC [M]  lnet/lnet/api-ni.o
-  CC [M]  lustre/fld/fld_request.o
-  CC [M]  lustre/osc/osc_request.o
-  CC [M]  lustre/lmv/lmv_obd.o
+  CC [M]  lustre/kunit/ec_test.o
+  CC [M]  lustre/mgc/mgc_request.o
   CC [M]  lustre/lod/lod_dev.o
   CC [M]  lustre/osd-wbcfs/osd_handler.o
-  CC [M]  lustre/ofd/ofd_dev.o
-  CC [M]  lustre/quota/qsd_config.o
-In file included from lustre/llite/dcache.c:24:
-lustre/llite/llite_internal.h:1499:51: warning: declaration of 'struct fileattr' will not be visible outside of this function [-Wvisibility]
- 1499 | int ll_fileattr_get(struct dentry *dentry, struct fileattr *fa);
-      |                                                   ^
-lustre/llite/llite_internal.h:1501:37: warning: declaration of 'struct fileattr' will not be visible outside of this function [-Wvisibility]
- 1501 |                     struct dentry *dentry, struct fileattr *fa);
-      |                                                   ^
-2 warnings generated.
-  CC [M]  lustre/fid/fid_handler.o
-  CC [M]  lnet/klnds/socklnd/socklnd.o
-  CC [M]  lustre/obdclass/llog_cat.o
+  CC [M]  lustre/mdt/mdt_handler.o
   CC [M]  lnet/selftest/conrpc.o
-  CC [M]  lustre/quota/qsd_entry.o
-  CC [M]  lustre/lod/lod_lov.o
-  CC [M]  lustre/ec/ec_base.o
-  CC [M]  lustre/mdc/mdc_reint.o
-  CC [M]  lustre/ofd/ofd_obd.o
-  CC [M]  lustre/mgs/mgs_fs.o
-  CC [M]  lustre/kunit/kinode.o
-  CC [M]  lustre/obdecho/echo.o
-  CC [M]  lustre/osp/osp_object.o
-  CC [M]  lustre/mdt/mdt_lib.o
-  CC [M]  lustre/mgs/mgs_llog.o
-  CC [M]  lustre/lfsck/lfsck_bookmark.o
-  CC [M]  lustre/mdd/mdd_changelog.o
-  CC [M]  libcfs/libcfs/module.o
-  CC [M]  lustre/llite/dir.o
-  CC [M]  lnet/lnet/config.o
-  CC [M]  lustre/lov/lov_ea.o
-  CC [M]  libcfs/libcfs/tracefile.o
-  CC [M]  lustre/mgc/lproc_mgc.o
-  CC [M]  lustre/mdd/mdd_device.o
-  CC [M]  lustre/fld/fld_cache.o
-  CC [M]  lustre/ptlrpc/niobuf.o
-  CC [M]  lustre/mdd/mdd_dir.o
+  CC [M]  lustre/fld/fld_request.o
+  CC [M]  lnet/klnds/socklnd/socklnd.o
   CC [M]  lustre/osd-wbcfs/osd_object.o
-In file included from lustre/llite/dir.c:40:
-lustre/llite/llite_internal.h:1499:51: warning: declaration of 'struct fileattr' will not be visible outside of this function [-Wvisibility]
- 1499 | int ll_fileattr_get(struct dentry *dentry, struct fileattr *fa);
-      |                                                   ^
-lustre/llite/llite_internal.h:1501:37: warning: declaration of 'struct fileattr' will not be visible outside of this function [-Wvisibility]
- 1501 |                     struct dentry *dentry, struct fileattr *fa);
-      |                                                   ^
-2 warnings generated.
-  CC [M]  lustre/lmv/lmv_intent.o
-  CC [M]  lustre/osd-wbcfs/osd_hash.o
-  CC [M]  lustre/lod/lproc_lod.o
-  CC [M]  lustre/osc/lproc_osc.o
-  CC [M]  lnet/selftest/conctl.o
-  CC [M]  lustre/fid/fid_store.o
-  CC [M]  lustre/obdclass/llog_obd.o
-  CC [M]  lustre/quota/qsd_handler.o
-  CC [M]  lustre/mgs/lproc_mgs.o
-  LD [M]  lustre/obdecho/obdecho.o
-  CC [M]  lustre/ec/ec_base_aliases.o
-  CC [M]  lustre/mdc/lproc_mdc.o
-  CC [M]  lustre/llite/file.o
-  CC [M]  lustre/lov/lov_io.o
-  CC [M]  lustre/osp/osp_precreate.o
-  CC [M]  libcfs/libcfs/../../lustre_compat/kernel/sched/wait_bit.o
-  CC [M]  lustre/mgc/mgc_request_server.o
-  CC [M]  lnet/lnet/nidstrings.o
-  CC [M]  lustre/mdc/mdc_locks.o
-  CC [M]  lustre/ofd/ofd_fs.o
+  CC [M]  libcfs/libcfs/debug.o
+  CC [M]  lnet/selftest/console.o
+  CC [M]  lustre/obdecho/echo_client.o
+  CC [M]  lustre/lov/lov_dev.o
+  CC [M]  lustre/mgs/mgs_handler.o
+  CC [M]  lustre/quota/qsd_config.o
+  CC [M]  lustre/obdclass/llog.o
+  CC [M]  lustre/osc/osc_request.o
+  CC [M]  lustre/mdd/mdd_changelog.o
+  CC [M]  lustre/fld/fld_cache.o
+  CC [M]  lustre/mdd/mdd_acl.o
+  CC [M]  lustre/lfsck/lfsck_lib.o
+  CC [M]  lustre/osp/osp_dev.o
+  CC [M]  lustre/ofd/ofd_dev.o
+  CC [M]  lustre/ec/ec_kmod.o
+  CC [M]  lustre/mdd/mdd_device.o
+  CC [M]  lustre/lmv/lmv_obd.o
+  CC [M]  lustre/ptlrpc/client.o
+  CC [M]  lustre/mdc/mdc_request.o
+  CC [M]  lustre/llite/dcache.o
+  CC [M]  lustre/mdd/mdd_dir.o
+  CC [M]  lustre/ec/ec_base.o
+  CC [M]  lnet/lnet/config.o
   CC [M]  lustre/mdd/mdd_lock.o
-  CC [M]  lustre/mdt/mdt_reint.o
-  CC [M]  lustre/mdc/mdc_lib.o
-  CC [M]  lustre/lmv/lproc_lmv.o
-  CC [M]  lustre/osc/osc_dev.o
-  CC [M]  lustre/ptlrpc/pack_generic.o
-  CC [M]  libcfs/libcfs/../../lustre_compat/mm/shrinker_debug.o
-  CC [M]  lustre/fld/lproc_fld.o
-  CC [M]  lustre/osd-wbcfs/osd_index_hash.o
-  CC [M]  lustre/lmv/lmv_fld.o
-  CC [M]  lustre/kunit/obd_test.o
+  CC [M]  lustre/kunit/kinode.o
+  CC [M]  libcfs/libcfs/fail.o
+  CC [M]  lustre/osd-wbcfs/osd_hash.o
+  CC [M]  lustre/ec/ec_base_aliases.o
+  CC [M]  lustre/fid/lproc_fid.o
+  LD [M]  lustre/ec/ec.o
+  CC [M]  lustre/lov/lov_ea.o
+  CC [M]  lnet/selftest/conctl.o
+  CC [M]  lustre/obdclass/llog_cat.o
+  CC [M]  lustre/mdt/mdt_lib.o
+  CC [M]  lustre/quota/qsd_entry.o
+  CC [M]  libcfs/libcfs/module.o
+  CC [M]  lustre/ptlrpc/recover.o
+  CC [M]  lustre/ofd/ofd_obd.o
+  CC [M]  lustre/mgc/lproc_mgc.o
+  CC [M]  lustre/obdecho/debug.o
+  CC [M]  lnet/lnet/nidstrings.o
   CC [M]  lustre/mdd/mdd_lproc.o
-  CC [M]  lustre/lfsck/lfsck_namespace.o
-  CC [M]  lustre/mdc/mdc_changelog.o
+  CC [M]  lustre/mgs/mgs_fs.o
+  CC [M]  lustre/ofd/ofd_fs.o
+  CC [M]  lustre/osd-wbcfs/osd_index_hash.o
+  CC [M]  lnet/selftest/framework.o
+  CC [M]  lustre/lov/lov_io.o
+  CC [M]  lustre/obdclass/llog_obd.o
+  CC [M]  lustre/ptlrpc/connection.o
+  CC [M]  lustre/fid/fid_handler.o
+  CC [M]  lustre/llite/dir.o
+  CC [M]  lustre/mdc/mdc_reint.o
+  CC [M]  lustre/fld/lproc_fld.o
+  CC [M]  lustre/lod/lod_lov.o
+  CC [M]  lustre/lmv/lmv_intent.o
+  CC [M]  lnet/lnet/lnet_rdma.o
+  CC [M]  lnet/selftest/timer.o
+  CC [M]  lnet/klnds/socklnd/socklnd_cb.o
+  CC [M]  libcfs/libcfs/tracefile.o
+  CC [M]  lustre/osd-wbcfs/osd_io.o
+  CC [M]  lustre/quota/qsd_handler.o
+  CC [M]  lustre/osd-wbcfs/osd_dirent.o
   CC [M]  lustre/obdclass/llog_swab.o
+  CC [M]  lustre/ptlrpc/niobuf.o
+In file included from lustre/llite/dcache.c:24:
+lustre/llite/llite_internal.h:1500:51: error: declaration of 'struct fileattr' will not be visible outside of this function [-Werror,-Wvisibility]
+ 1500 | int ll_fileattr_get(struct dentry *dentry, struct fileattr *fa);
+      |                                                   ^
+lustre/llite/llite_internal.h:1502:37: error: declaration of 'struct fileattr' will not be visible outside of this function [-Werror,-Wvisibility]
+ 1502 |                     struct dentry *dentry, struct fileattr *fa);
+      |                                                   ^
+2 errors generated.
+make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/llite/dcache.o] Error 1
+make[8]: *** Waiting for unfinished jobs....
+  CC [M]  lustre/mdc/lproc_mdc.o
+  CC [M]  libcfs/libcfs/../../lustre_compat/kernel/sched/wait_bit.o
+  CC [M]  lustre/fid/fid_store.o
+  CC [M]  lustre/kunit/obd_test.o
+  CC [M]  lustre/osp/osp_object.o
+  CC [M]  lustre/mdd/mdd_object.o
+  CC [M]  lnet/selftest/rpc.o
+  CC [M]  lustre/fld/fld_handler.o
+  CC [M]  lustre/lov/lov_lock.o
+  CC [M]  libcfs/libcfs/../../lustre_compat/mm/shrinker_debug.o
+  CC [M]  lustre/fld/fld_index.o
+  CC [M]  lustre/mgc/mgc_request_server.o
+  CC [M]  lustre/ofd/ofd_trans.o
+  CC [M]  lnet/lnet/lock.o
+  CC [M]  lustre/mgs/mgs_llog.o
+  CC [M]  lnet/klnds/socklnd/socklnd_lib.o
+  CC [M]  lustre/obdclass/class_obd.o
   CC [M]  lustre/quota/qsd_lib.o
   CC [M]  lustre/fid/fid_lib.o
-  CC [M]  lnet/selftest/framework.o
-  LD [M]  lustre/ec/ec.o
-  CC [M]  lustre/lod/lod_object.o
-  CC [M]  lustre/lod/lod_pool.o
-  CC [M]  lustre/mgs/mgs_nids.o
-  CC [M]  lustre/lov/lov_merge.o
-  CC [M]  lustre/lod/lod_qos.o
-  CC [M]  lustre/osp/osp_sync.o
-  CC [M]  libcfs/libcfs/../../lustre_compat/mm/vmalloc.o
-  CC [M]  lustre/lov/lov_lock.o
-  LD [M]  lustre/mgc/mgc.o
-  CC [M]  lnet/lnet/lnet_rdma.o
-  CC [M]  lustre/mgs/mgs_barrier.o
-  CC [M]  lustre/mdt/mdt_xattr.o
-  CC [M]  lustre/ofd/ofd_trans.o
-  CC [M]  lustre/lod/lod_sub_object.o
-  CC [M]  lustre/fld/fld_index.o
-  CC [M]  lustre/osd-wbcfs/osd_io.o
-  CC [M]  lustre/fld/fld_handler.o
-  CC [M]  lustre/mdd/mdd_object.o
-  CC [M]  lustre/osc/osc_object.o
-  LD [M]  lustre/lmv/lmv.o
-  CC [M]  lustre/mdc/mdc_dev.o
-  CC [M]  libcfs/libcfs/../../lustre_compat/lib/generic-radix-tree.o
-  CC [M]  lustre/lfsck/lfsck_layout.o
-  LD [M]  lustre/fid/fid.o
-  CC [M]  lustre/obdclass/class_obd.o
-  CC [M]  lustre/quota/qsd_lock.o
-  CC [M]  lnet/selftest/timer.o
-  CC [M]  libcfs/libcfs/../../lustre_compat/symbols.o
-  CC [M]  lustre/lfsck/lfsck_striped_dir.o
-  CC [M]  lustre/quota/qsd_reint.o
-  CC [M]  lustre/kunit/obd_mod_rpcs_test.o
+  CC [M]  lustre/obdecho/echo.o
+  CC [M]  lustre/osc/lproc_osc.o
+  CC [M]  lustre/mdc/mdc_lib.o
+  CC [M]  lustre/mdd/mdd_orphans.o
+  CC [M]  lustre/osd-wbcfs/osd_lproc.o
 lnet/klnds/socklnd/socklnd.c:42:15: error: call to undeclared function 'dev_get_flags'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    42 |                 int flags = dev_get_flags(dev);
       |                             ^
 1 error generated.
-  CC [M]  lustre/mdt/mdt_recovery.o
-  CC [M]  lustre/mdt/mdt_identity.o
 make[9]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lnet/klnds/socklnd/socklnd.o] Error 1
+make[9]: *** Waiting for unfinished jobs....
+  CC [M]  lustre/ptlrpc/pack_generic.o
+  CC [M]  lustre/obdclass/genops.o
+  CC [M]  lustre/osp/osp_precreate.o
+  CC [M]  lustre/mdt/mdt_reint.o
+  CC [M]  lnet/selftest/module.o
+  CC [M]  lustre/lfsck/lfsck_engine.o
+  CC [M]  lustre/lod/lproc_lod.o
+  CC [M]  libcfs/libcfs/../../lustre_compat/mm/vmalloc.o
+In file included from lustre/llite/dir.c:40:
+lustre/llite/llite_internal.h:1500:51: error: declaration of 'struct fileattr' will not be visible outside of this function [-Werror,-Wvisibility]
+ 1500 | int ll_fileattr_get(struct dentry *dentry, struct fileattr *fa);
+      |                                                   ^
+lustre/llite/llite_internal.h:1502:37: error: declaration of 'struct fileattr' will not be visible outside of this function [-Werror,-Wvisibility]
+ 1502 |                     struct dentry *dentry, struct fileattr *fa);
+      |                                                   ^
+2 errors generated.
+make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/llite/dir.o] Error 1
+  CC [M]  lnet/lnet/lib-me.o
+make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lustre/llite] Error 2
+make[7]: *** Waiting for unfinished jobs....
+  CC [M]  libcfs/libcfs/../../lustre_compat/lib/generic-radix-tree.o
+  CC [M]  lustre/kunit/obd_mod_rpcs_test.o
+  CC [M]  lustre/lmv/lmv_fld.o
+  LD [M]  lustre/fld/fld.o
+  CC [M]  lustre/lov/lov_merge.o
+lustre/lov/lov_io.c:1962:12: error: call to undeclared function 'grab_cache_page'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 1962 |                 vmpage = grab_cache_page(inode->i_mapping, page_idx);
+      |                          ^
+lustre/lov/lov_io.c:1962:12: note: did you mean 'read_cache_page'?
+/home/ktest/git/linux/include/linux/pagemap.h:977:14: note: 'read_cache_page' declared here
+  977 | struct page *read_cache_page(struct address_space *, pgoff_t index,
+      |              ^
+lustre/lov/lov_io.c:1962:10: error: incompatible integer to pointer conversion assigning to 'struct page *' from 'int' [-Wint-conversion]
+ 1962 |                 vmpage = grab_cache_page(inode->i_mapping, page_idx);
+      |                        ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/lov/lov_io.c:2146:12: error: call to undeclared function 'grab_cache_page'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+ 2146 |                 vmpage = grab_cache_page(inode->i_mapping, page_idx);
+      |                          ^
+lustre/lov/lov_io.c:2146:10: error: incompatible integer to pointer conversion assigning to 'struct page *' from 'int' [-Wint-conversion]
+ 2146 |                 vmpage = grab_cache_page(inode->i_mapping, page_idx);
+      |                        ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4 errors generated.
+make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/lov/lov_io.o] Error 1
+make[8]: *** Waiting for unfinished jobs....
+  CC [M]  lustre/lfsck/lfsck_bookmark.o
+  CC [M]  lustre/ptlrpc/events.o
+  CC [M]  lustre/lod/lod_pool.o
+  CC [M]  lustre/osc/osc_dev.o
+  CC [M]  libcfs/libcfs/../../lustre_compat/symbols.o
 make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lnet/klnds/socklnd] Error 2
 make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lnet/klnds] Error 2
 make[7]: *** Waiting for unfinished jobs....
-  CC [M]  lustre/osp/lproc_osp.o
-  LD [M]  lustre/lod/lod.o
-  CC [M]  lustre/mdt/mdt_open.o
-  CC [M]  lnet/lnet/lock.o
-  CC [M]  lustre/ofd/ofd_objects.o
-  CC [M]  lustre/kunit/llog_test.o
-  CC [M]  lustre/ofd/ofd_io.o
-  CC [M]  lustre/osd-wbcfs/osd_dirent.o
-  CC [M]  lustre/kunit/ldlm_extent.o
-  LD [M]  lustre/mgs/mgs.o
-  CC [M]  lustre/mdd/mdd_orphans.o
-  CC [M]  lustre/ofd/lproc_ofd.o
-  CC [M]  lustre/osc/osc_page.o
+  CC [M]  lustre/quota/qsd_lock.o
+  CC [M]  lustre/osp/osp_sync.o
   CC [M]  lustre/mdd/mdd_permission.o
-  LD [M]  lustre/fld/fld.o
-In file included from lustre/llite/file.c:37:
-lustre/llite/llite_internal.h:1499:51: warning: declaration of 'struct fileattr' will not be visible outside of this function [-Wvisibility]
- 1499 | int ll_fileattr_get(struct dentry *dentry, struct fileattr *fa);
-      |                                                   ^
-lustre/llite/llite_internal.h:1501:37: warning: declaration of 'struct fileattr' will not be visible outside of this function [-Wvisibility]
- 1501 |                     struct dentry *dentry, struct fileattr *fa);
-      |                                                   ^
-lustre/llite/file.c:704:6: warning: variable 'rc' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
-  704 |         if (rd_pgs == 0)
-      |             ^~~~~~~~~~~
-lustre/llite/file.c:719:6: note: uninitialized use occurs here
-  719 |         if (rc < 0) {
-      |             ^~
-lustre/llite/file.c:704:2: note: remove the 'if' if its condition is always false
-  704 |         if (rd_pgs == 0)
-      |         ^~~~~~~~~~~~~~~~
-  705 |                 goto exit;
-      |                 ~~~~~~~~~
-lustre/llite/file.c:658:10: note: initialize the variable 'rc' to silence this warning
-  658 |         int             rc;
-      |                           ^
-      |                            = 0
-lustre/llite/file.c:6794:18: error: incompatible function pointer types initializing 'int (*)(struct dentry *, struct file_kattr *)' with an expression of type 'int (struct dentry *, struct fileattr *)' [-Wincompatible-function-pointer-types]
- 6794 |         .fileattr_get   = ll_fileattr_get,
-      |                           ^~~~~~~~~~~~~~~
-lustre/llite/file.c:6795:18: error: incompatible function pointer types initializing 'int (*)(struct mnt_idmap *, struct dentry *, struct file_kattr *)' with an expression of type 'int (struct mnt_idmap *, struct dentry *, struct fileattr *)' [-Wincompatible-function-pointer-types]
- 6795 |         .fileattr_set   = ll_fileattr_set,
-      |                           ^~~~~~~~~~~~~~~
-3 warnings and 2 errors generated.
-make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/llite/file.o] Error 1
-make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lustre/llite] Error 2
-make[7]: *** Waiting for unfinished jobs....
-  CC [M]  lnet/selftest/rpc.o
-  CC [M]  lustre/ptlrpc/events.o
-  CC [M]  lustre/lov/lov_obd.o
-  CC [M]  lustre/ofd/ofd_oss.o
-  CC [M]  lustre/obdclass/hash.o
-  CC [M]  lustre/mdc/mdc_batch.o
-  CC [M]  lustre/obdclass/genops.o
-  CC [M]  lustre/ptlrpc/ptlrpc_module.o
-  CC [M]  lnet/lnet/lib-me.o
-  CC [M]  lustre/osc/osc_lock.o
-  LD [M]  lustre/lfsck/lfsck.o
-  CC [M]  libcfs/libcfs/../../lustre_compat/misc.o
-  CC [M]  lustre/osc/osc_io.o
-  CC [M]  lustre/quota/qsd_request.o
-  CC [M]  lustre/osd-wbcfs/osd_lproc.o
-  CC [M]  lustre/quota/qsd_writeback.o
-  CC [M]  lustre/osp/lwp_dev.o
-  CC [M]  lustre/mdt/mdt_lproc.o
-  CC [M]  lustre/osp/osp_md_object.o
-  CC [M]  lustre/obdclass/lprocfs_status.o
-  CC [M]  lustre/mdd/mdd_trans.o
-  CC [M]  lustre/ptlrpc/service.o
   CC [M]  lustre/osd-wbcfs/wbcfs.o
-  CC [M]  lustre/obdclass/lprocfs_counters.o
-  CC [M]  lustre/ptlrpc/llog_net.o
-  CC [M]  lustre/quota/qmt_dev.o
-  CC [M]  lustre/ofd/ofd_dlm.o
-  CC [M]  lnet/selftest/module.o
-  CC [M]  lustre/ptlrpc/pinger.o
-  CC [M]  lustre/lov/lov_object.o
-  CC [M]  lustre/ptlrpc/llog_client.o
-  CC [M]  lustre/mdc/mdc_acl.o
-  CC [M]  lustre/ofd/ofd_lvb.o
+  LD [M]  lustre/fid/fid.o
+  CC [M]  lustre/mdc/mdc_locks.o
+  CC [M]  lustre/mgs/lproc_mgs.o
+  CC [M]  lustre/obdclass/hash.o
+  LD [M]  lustre/obdecho/obdecho.o
+  CC [M]  lustre/mgs/mgs_nids.o
+  CC [M]  lnet/selftest/ping_test.o
+  CC [M]  lustre/ofd/ofd_objects.o
+  CC [M]  lustre/lmv/lproc_lmv.o
   CC [M]  lnet/lnet/lib-msg.o
+  CC [M]  lustre/kunit/ldlm_extent.o
+  CC [M]  lustre/mdd/mdd_trans.o
+  CC [M]  lustre/osp/lproc_osp.o
+  CC [M]  libcfs/libcfs/../../lustre_compat/misc.o
+  CC [M]  lustre/mdt/mdt_xattr.o
+  CC [M]  lustre/mdc/mdc_changelog.o
+  CC [M]  lustre/mgs/mgs_barrier.o
+make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lustre/lov] Error 2
+  CC [M]  lustre/quota/qsd_reint.o
+  CC [M]  lustre/osc/osc_object.o
+  CC [M]  lustre/ofd/ofd_io.o
+  CC [M]  lustre/lfsck/lfsck_namespace.o
+  LD [M]  lustre/mgc/mgc.o
+  CC [M]  lustre/kunit/llog_test.o
+  CC [M]  lustre/lod/lod_object.o
+  CC [M]  lnet/selftest/brw_test.o
+  CC [M]  lustre/osp/lwp_dev.o
+  CC [M]  lustre/ptlrpc/ptlrpc_module.o
+  CC [M]  lustre/mdt/mdt_recovery.o
+  CC [M]  lustre/mdc/mdc_dev.o
   CC [M]  lnet/lnet/lib-md.o
+  CC [M]  lustre/obdclass/lprocfs_status.o
+  LD [M]  lustre/mdd/mdd.o
+  CC [M]  lnet/lnet/lib-ptl.o
+  CC [M]  lustre/ofd/lproc_ofd.o
+  CC [M]  lustre/lfsck/lfsck_layout.o
+  CC [M]  lustre/quota/qsd_request.o
+  CC [M]  lustre/lod/lod_qos.o
+  CC [M]  lustre/ptlrpc/service.o
+  CC [M]  lustre/osc/osc_page.o
+  CC [M]  lustre/mdt/mdt_open.o
   LD [M]  libcfs/libcfs/libcfs.o
-  CC [M]  lustre/quota/qmt_entry.o
-  CC [M]  lustre/obdclass/lustre_handles.o
-  CC [M]  lustre/osc/osc_quota.o
-  CC [M]  lustre/osp/osp_trans.o
-  CC [M]  lustre/ptlrpc/ptlrpcd.o
-  CC [M]  lustre/quota/qmt_handler.o
-  CC [M]  lustre/ptlrpc/import.o
-  CC [M]  lustre/ptlrpc/pers.o
-  CC [M]  lustre/mdt/mdt_som.o
-  CC [M]  lustre/ptlrpc/lproc_ptlrpc.o
-  CC [M]  lustre/quota/qmt_lqa.o
-  CC [M]  lustre/mdt/mdt_fs.o
-  CC [M]  lustre/ofd/ofd_access_log.o
+  CC [M]  lustre/osp/osp_md_object.o
+  CC [M]  lustre/osc/osc_lock.o
+  CC [M]  lustre/osc/osc_io.o
 libcfs/libcfs/libcfs.o: warning: objtool: __cfs_fail_check_set+0x20d: lbug_with_loc() missing __noreturn in .c/.h or NORETURN() in noreturns.h
 libcfs/libcfs/libcfs.o: warning: objtool: cfs_tracefile_init+0x3f8: lbug_with_loc() missing __noreturn in .c/.h or NORETURN() in noreturns.h
-  CC [M]  lnet/selftest/ping_test.o
-  CC [M]  lnet/lnet/lib-ptl.o
-  CC [M]  lustre/obdclass/lustre_peer.o
-  CC [M]  lustre/mdt/mdt_lvb.o
-  CC [M]  lustre/quota/qmt_pool.o
-  CC [M]  lustre/quota/qmt_lock.o
-  CC [M]  lustre/ptlrpc/wiretest.o
-  CC [M]  lustre/quota/lproc_quota.o
-  CC [M]  lustre/lov/lov_offset.o
-  CC [M]  lustre/obdclass/statfs_pack.o
-  CC [M]  lnet/selftest/brw_test.o
-  LD [M]  lustre/mdd/mdd.o
-  LD [M]  lustre/mdc/mdc.o
-  CC [M]  lustre/osc/osc_cache.o
-  CC [M]  lustre/lov/lov_pack.o
-  CC [M]  lustre/quota/lquota_disk.o
-  CC [M]  lnet/lnet/lib-socket.o
-  CC [M]  lustre/lov/lov_page.o
-  CC [M]  lustre/mdt/mdt_hsm.o
-  LD [M]  lustre/osp/osp.o
-  CC [M]  lustre/mdt/mdt_mds.o
-  CC [M]  lustre/mdt/mdt_io.o
-  CC [M]  lustre/obdclass/obdo.o
-  CC [M]  lustre/ptlrpc/layout.o
-  CC [M]  lnet/lnet/lib-move.o
-  LD [M]  lustre/ofd/ofd.o
-  CC [M]  lustre/mdt/mdt_restripe.o
-  CC [M]  lustre/mdt/mdt_hsm_cdt_actions.o
-  CC [M]  lustre/ptlrpc/sec.o
-lustre/ptlrpc/layout.c:971:2: warning: cast from 'void (*)(struct mgs_target_info *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
-  971 |         DEFINE_MSGF("mgs_target_info", 0, sizeof(struct mgs_target_info),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  972 |                     lustre_swab_mgs_target_info, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:976:2: warning: cast from 'void (*)(struct mgs_target_nidlist *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
-  976 |         DEFINE_MSGF("mgs_target_nidlist", 0, sizeof(struct mgs_target_nidlist),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  977 |                     lustre_swab_mgs_target_nidlist, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:989:2: warning: cast from 'void (*)(struct mgs_config_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
-  989 |         DEFINE_MSGF("mgs_config_read request", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  990 |                     sizeof(struct mgs_config_body),
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  991 |                     lustre_swab_mgs_config_body, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:995:2: warning: cast from 'void (*)(struct mgs_config_res *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
-  995 |         DEFINE_MSGF("mgs_config_read reply ", 0, sizeof(struct mgs_config_res),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  996 |                     lustre_swab_mgs_config_res, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1000:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1000 |         DEFINE_MSGF("generic u32", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1001 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1013:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1013 |         DEFINE_MSGF("getinfo_vallen", 0, sizeof(__u32),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1014 |                     lustre_swab_generic_32s, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1022:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1022 |         DEFINE_MSGF("seq_query_opc", 0, sizeof(__u32),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1023 |                     lustre_swab_generic_32s, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1027:2: warning: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1027 |         DEFINE_MSGF("seq_query_range", 0, sizeof(struct lu_seq_range),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1028 |                     lustre_swab_lu_seq_range, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1032:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1032 |         DEFINE_MSGF("fld_query_opc", 0, sizeof(__u32),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1033 |                     lustre_swab_generic_32s, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1037:2: warning: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1037 |         DEFINE_MSGF("fld_query_mdfld", 0, sizeof(struct lu_seq_range),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1038 |                     lustre_swab_lu_seq_range, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1042:2: warning: cast from 'void (*)(struct mdt_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1042 |         DEFINE_MSGF("mdt_body", 0, sizeof(struct mdt_body),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1043 |                     lustre_swab_mdt_body, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1047:2: warning: cast from 'int (*)(struct obd_quotactl *, __u32)' (aka 'int (*)(struct obd_quotactl *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
- 1047 |         DEFINE_MSGFL("obd_quotactl", 0, sizeof(struct obd_quotactl),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1048 |                      lustre_swab_obd_quotactl, NULL);
-      |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:962:18: note: expanded from macro 'DEFINE_MSGFL'
-  962 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
-      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1056:2: warning: cast from 'void (*)(struct quota_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1056 |         DEFINE_MSGF("quota_body", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1057 |                     sizeof(struct quota_body), lustre_swab_quota_body, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1061:2: warning: cast from 'void (*)(struct mdt_ioepoch *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1061 |         DEFINE_MSGF("mdt_ioepoch", 0, sizeof(struct mdt_ioepoch),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1062 |                     lustre_swab_mdt_ioepoch, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1066:2: warning: cast from 'void (*)(struct ptlrpc_body_v3 *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1066 |         DEFINE_MSGF("ptlrpc_body", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1067 |                     sizeof(struct ptlrpc_body), lustre_swab_ptlrpc_body, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1071:2: warning: cast from 'void (*)(struct close_data *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1071 |         DEFINE_MSGF("data_version", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1072 |                     sizeof(struct close_data), lustre_swab_close_data, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1076:2: warning: cast from 'void (*)(struct obd_statfs *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1076 |         DEFINE_MSGF("obd_statfs", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1077 |                     sizeof(struct obd_statfs), lustre_swab_obd_statfs, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1123:2: warning: cast from 'void (*)(struct llogd_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1123 |         DEFINE_MSGF("llogd_body", 0, sizeof(struct llogd_body),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1124 |                     lustre_swab_llogd_body, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1128:2: warning: cast from 'void (*)(struct llog_log_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1128 |         DEFINE_MSGF("llog_log_hdr", 0, sizeof(struct llog_log_hdr),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1129 |                     lustre_swab_llog_hdr, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1133:2: warning: cast from 'void (*)(struct llogd_conn_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1133 |         DEFINE_MSGF("llogd_conn_body", 0, sizeof(struct llogd_conn_body),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1134 |                     lustre_swab_llogd_conn_body, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1148:2: warning: cast from 'void (*)(struct obd_connect_data *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1148 |         DEFINE_MSGF("cdata",
-      |         ^~~~~~~~~~~~~~~~~~~~
- 1149 |                     RMF_F_NO_SIZE_CHECK /* we allow extra space for interop */,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1150 |                     sizeof(struct obd_connect_data),
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1151 |                     lustre_swab_connect, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1155:2: warning: cast from 'void (*)(struct ldlm_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1155 |         DEFINE_MSGF("dlm_req", RMF_F_NO_SIZE_CHECK /* ldlm_request_bufsize */,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1156 |                     offsetof(struct ldlm_request,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1157 |                              lock_handle[LDLM_LOCKREQ_HANDLES]),
-      |                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1158 |                     lustre_swab_ldlm_request, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1162:2: warning: cast from 'void (*)(struct ldlm_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1162 |         DEFINE_MSGF("dlm_rep", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
- 1163 |                     sizeof(struct ldlm_reply), lustre_swab_ldlm_reply, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1167:2: warning: cast from 'void (*)(struct ldlm_intent *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1167 |         DEFINE_MSGF("ldlm_intent", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1168 |                     sizeof(struct ldlm_intent), lustre_swab_ldlm_intent, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1189:2: warning: cast from 'void (*)(struct mdt_rec_reint *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1189 |         DEFINE_MSGF("rec_reint", 0, sizeof(struct mdt_rec_reint),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1190 |                     lustre_swab_mdt_rec_reint, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1216:2: warning: cast from 'void (*)(struct layout_intent *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1216 |         DEFINE_MSGF("layout_intent", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1217 |                     sizeof(struct layout_intent), lustre_swab_layout_intent,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1218 |                     NULL);
-      |                     ~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1229:2: warning: cast from 'void (*)(struct ost_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1229 |         DEFINE_MSGF("ost_body", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
- 1230 |                     sizeof(struct ost_body), lustre_swab_ost_body,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1231 |                     dump_ost_body);
-      |                     ~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1229:2: warning: cast from 'void (*)(struct ost_body *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1229 |         DEFINE_MSGF("ost_body", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
- 1230 |                     sizeof(struct ost_body), lustre_swab_ost_body,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1231 |                     dump_ost_body);
-      |                     ~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:955:17: note: expanded from macro 'DEFINE_MSGF'
-  955 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1235:2: warning: cast from 'void (*)(struct obd_ioobj *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1235 |         DEFINE_MSGF("obd_ioobj", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1236 |                     sizeof(struct obd_ioobj), lustre_swab_obd_ioobj, dump_ioo);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1235:2: warning: cast from 'void (*)(struct obd_ioobj *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1235 |         DEFINE_MSGF("obd_ioobj", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1236 |                     sizeof(struct obd_ioobj), lustre_swab_obd_ioobj, dump_ioo);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:955:17: note: expanded from macro 'DEFINE_MSGF'
-  955 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1240:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1240 |         DEFINE_MSGF("niobuf_remote", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1241 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1242 |                     dump_rniobuf);
-      |                     ~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1240:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1240 |         DEFINE_MSGF("niobuf_remote", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1241 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1242 |                     dump_rniobuf);
-      |                     ~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:955:17: note: expanded from macro 'DEFINE_MSGF'
-  955 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1246:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1246 |         DEFINE_MSGF("niobuf_inline", RMF_F_NO_SIZE_CHECK,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1247 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1248 |                     dump_rniobuf);
-      |                     ~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1246:2: warning: cast from 'void (*)(struct niobuf_remote *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1246 |         DEFINE_MSGF("niobuf_inline", RMF_F_NO_SIZE_CHECK,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1247 |                     sizeof(struct niobuf_remote), lustre_swab_niobuf_remote,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1248 |                     dump_rniobuf);
-      |                     ~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:955:17: note: expanded from macro 'DEFINE_MSGF'
-  955 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1252:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1252 |         DEFINE_MSGF("niobuf_rcs", RMF_F_STRUCT_ARRAY, sizeof(__u32),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1253 |                     lustre_swab_generic_32s, dump_rcs);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1252:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1252 |         DEFINE_MSGF("niobuf_rcs", RMF_F_STRUCT_ARRAY, sizeof(__u32),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1253 |                     lustre_swab_generic_32s, dump_rcs);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:955:17: note: expanded from macro 'DEFINE_MSGF'
-  955 |         .rmf_dumper  = (void (*)(void *))(dumper)               \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1257:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1257 |         DEFINE_MSGF("eavals_lens", RMF_F_STRUCT_ARRAY, sizeof(__u32),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1258 |                     lustre_swab_generic_32s, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1262:2: warning: cast from 'void (*)(__u64 *)' (aka 'void (*)(unsigned long long *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1262 |         DEFINE_MSGF("obd_id", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~
- 1263 |                     sizeof(__u64), lustre_swab_ost_last_id, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1267:2: warning: cast from 'void (*)(struct lu_fid *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1267 |         DEFINE_MSGF("fid", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~
- 1268 |                     sizeof(struct lu_fid), lustre_swab_lu_fid, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1272:2: warning: cast from 'void (*)(struct ost_id *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1272 |         DEFINE_MSGF("ost_id", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~
- 1273 |                     sizeof(struct ost_id), lustre_swab_ost_id, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1277:2: warning: cast from 'void (*)(struct ll_fiemap_info_key *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1277 |         DEFINE_MSGF("fiemap_key", 0, sizeof(struct ll_fiemap_info_key),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1278 |                     lustre_swab_fiemap_info_key, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1282:2: warning: cast from 'int (*)(struct fiemap *, __u32)' (aka 'int (*)(struct fiemap *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
- 1282 |         DEFINE_MSGFL("fiemap", 0, -1, lustre_swab_fiemap, NULL);
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:962:18: note: expanded from macro 'DEFINE_MSGFL'
-  962 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
-      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1286:2: warning: cast from 'void (*)(struct idx_info *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1286 |         DEFINE_MSGF("idx_info", 0, sizeof(struct idx_info),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1287 |                     lustre_swab_idx_info, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1293:2: warning: cast from 'void (*)(struct hsm_user_state *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1293 |         DEFINE_MSGF("hsm_user_state", 0, sizeof(struct hsm_user_state),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1294 |                     lustre_swab_hsm_user_state, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1298:2: warning: cast from 'void (*)(struct hsm_state_set *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1298 |         DEFINE_MSGF("hsm_state_set", 0, sizeof(struct hsm_state_set),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1299 |                     lustre_swab_hsm_state_set, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1303:2: warning: cast from 'void (*)(struct hsm_progress_kernel *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1303 |         DEFINE_MSGF("hsm_progress", 0, sizeof(struct hsm_progress_kernel),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1304 |                     lustre_swab_hsm_progress_kernel, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1308:2: warning: cast from 'void (*)(struct hsm_current_action *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1308 |         DEFINE_MSGF("hsm_current_action", 0, sizeof(struct hsm_current_action),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1309 |                     lustre_swab_hsm_current_action, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1313:2: warning: cast from 'void (*)(struct hsm_user_item *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1313 |         DEFINE_MSGF("hsm_user_item", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1314 |                     sizeof(struct hsm_user_item), lustre_swab_hsm_user_item,
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1315 |                     NULL);
-      |                     ~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1319:2: warning: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1319 |         DEFINE_MSGF("hsm_archive", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1320 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1324:2: warning: cast from 'void (*)(struct hsm_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1324 |         DEFINE_MSGF("hsm_request", 0, sizeof(struct hsm_request),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1325 |                     lustre_swab_hsm_request, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1329:2: warning: cast from 'void (*)(struct mdc_swap_layouts *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1329 |         DEFINE_MSGF("swap_layouts", 0, sizeof(struct  mdc_swap_layouts),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1330 |                     lustre_swab_swap_layouts, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1334:2: warning: cast from 'void (*)(struct lfsck_request *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1334 |         DEFINE_MSGF("lfsck_request", 0, sizeof(struct lfsck_request),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1335 |                     lustre_swab_lfsck_request, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1339:2: warning: cast from 'void (*)(struct lfsck_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1339 |         DEFINE_MSGF("lfsck_reply", 0, sizeof(struct lfsck_reply),
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1340 |                     lustre_swab_lfsck_reply, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1344:2: warning: cast from 'void (*)(struct ladvise_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1344 |         DEFINE_MSGF("ladvise_request", 0,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1345 |                     sizeof(struct ladvise_hdr),
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1346 |                     lustre_swab_ladvise_hdr, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1350:2: warning: cast from 'void (*)(struct lu_ladvise *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1350 |         DEFINE_MSGF("ladvise_request", RMF_F_STRUCT_ARRAY,
-      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1351 |                     sizeof(struct lu_ladvise),
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1352 |                     lustre_swab_ladvise, NULL);
-      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1356:4: warning: cast from 'void (*)(struct batch_update_reply *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1356 |                         DEFINE_MSGF("batch_update_reply", 0, -1,
-      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1357 |                                     lustre_swab_batch_update_reply, NULL);
-      |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1360:39: warning: cast from 'void (*)(struct but_update_header *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1360 | struct req_msg_field RMF_BUT_HEADER = DEFINE_MSGF("but_update_header", 0,
-      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1361 |                                 -1, lustre_swab_but_update_header, NULL);
-      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:1364:36: warning: cast from 'void (*)(struct but_update_buffer *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 1364 | struct req_msg_field RMF_BUT_BUF = DEFINE_MSGF("but_update_buf",
-      |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1365 |                         RMF_F_STRUCT_ARRAY, sizeof(struct but_update_buffer),
-      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 1366 |                         lustre_swab_but_update_buffer, NULL);
-      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:2350:3: warning: cast from 'char *(*)(struct lustre_msg_v2 *, __u32, __u32)' (aka 'char *(*)(struct lustre_msg_v2 *, unsigned int, unsigned int)') to 'typeof (getter)' (aka 'void *(*)(struct lustre_msg_v2 *, unsigned int, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
- 2350 |                 (typeof(getter))lustre_msg_string : lustre_msg_buf;
-      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:2960:39: warning: cast from 'int (*)(struct object_update_request *, __u32)' (aka 'int (*)(struct object_update_request *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
- 2960 | struct req_msg_field RMF_OUT_UPDATE = DEFINE_MSGFL("object_update", 0, -1,
-      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 2961 |                                 lustre_swab_object_update_request, NULL);
-      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:962:18: note: expanded from macro 'DEFINE_MSGFL'
-  962 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
-      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:2965:4: warning: cast from 'int (*)(struct object_update_reply *, __u32)' (aka 'int (*)(struct object_update_reply *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Wcast-function-type-strict]
- 2965 |                         DEFINE_MSGFL("object_update_reply", 0, -1,
-      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 2966 |                                     lustre_swab_object_update_reply, NULL);
-      |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:962:18: note: expanded from macro 'DEFINE_MSGFL'
-  962 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
-      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:2969:46: warning: cast from 'void (*)(struct out_update_header *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 2969 | struct req_msg_field RMF_OUT_UPDATE_HEADER = DEFINE_MSGF("out_update_header", 0,
-      |                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 2970 |                                 -1, lustre_swab_out_update_header, NULL);
-      |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:2973:43: warning: cast from 'void (*)(struct out_update_buffer *)' to 'void (*)(void *)' converts to incompatible function type [-Wcast-function-type-strict]
- 2973 | struct req_msg_field RMF_OUT_UPDATE_BUF = DEFINE_MSGF("update_buf",
-      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~
- 2974 |                         RMF_F_STRUCT_ARRAY, sizeof(struct out_update_buffer),
-      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 2975 |                         lustre_swab_out_update_buffer, NULL);
-      |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
-  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-63 warnings generated.
-  CC [M]  lustre/mdt/mdt_hsm_cdt_requests.o
-  CC [M]  lustre/lov/lov_pool.o
+  CC [M]  lustre/obdclass/lprocfs_counters.o
   LD [M]  lnet/selftest/lnet_selftest.o
-  CC [M]  lustre/ptlrpc/sec_ctx.o
-  CC [M]  lustre/lov/lov_request.o
-  CC [M]  lustre/obdclass/obd_config.o
-  CC [M]  lnet/lnet/module.o
-  CC [M]  lustre/ptlrpc/sec_gc.o
-  CC [M]  lustre/quota/lquota_entry.o
-  CC [M]  lustre/lov/lovsub_dev.o
-  CC [M]  lustre/lov/lovsub_object.o
-  CC [M]  lustre/mdt/mdt_hsm_cdt_client.o
-  LD [M]  lustre/osc/osc.o
-  CC [M]  lustre/mdt/mdt_hsm_cdt_agent.o
-  CC [M]  lustre/ptlrpc/sec_config.o
-  CC [M]  lnet/lnet/lo.o
-  CC [M]  lustre/quota/lquota_lib.o
-  CC [M]  lustre/lov/lproc_lov.o
-  CC [M]  lustre/obdclass/obd_mount.o
-  CC [M]  lustre/ptlrpc/sec_lproc.o
-  CC [M]  lustre/ptlrpc/sec_null.o
-  CC [M]  lustre/mdt/mdt_coordinator.o
-  CC [M]  lnet/lnet/router.o
-  CC [M]  lustre/ptlrpc/sec_plain.o
-  CC [M]  lustre/obdclass/lu_object.o
-  CC [M]  lnet/lnet/lnet_debugfs.o
-  CC [M]  lustre/obdclass/cl_page.o
-  CC [M]  lustre/mdt/mdt_batch.o
-  CC [M]  lustre/obdclass/obd_sysfs.o
-  CC [M]  lnet/lnet/acceptor.o
-  CC [M]  lustre/obdclass/cl_object.o
-  CC [M]  lustre/ptlrpc/nrs_delay.o
-  CC [M]  lustre/ptlrpc/nrs.o
-  CC [M]  lnet/lnet/peer.o
-  CC [M]  lustre/obdclass/cl_io.o
-  CC [M]  lnet/lnet/net_fault.o
-  CC [M]  lustre/ptlrpc/nrs_fifo.o
-  CC [M]  lustre/obdclass/linkea.o
-  CC [M]  lustre/obdclass/cl_lock.o
-  CC [M]  lnet/lnet/udsp.o
-  LD [M]  lustre/quota/lquota.o
-  CC [M]  lustre/ptlrpc/heap.o
-  CC [M]  lustre/obdclass/kernelcomm.o
-  LD [M]  lustre/lov/lov.o
-  CC [M]  lustre/obdclass/upcall_cache.o
-  CC [M]  lustre/obdclass/jobid.o
-  CC [M]  lustre/ptlrpc/errno.o
-  CC [M]  lustre/ptlrpc/batch.o
-  CC [M]  lustre/obdclass/integrity.o
-  CC [M]  lnet/lnet/adler.o
-  CC [M]  lustre/obdclass/obd_cksum.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/l_lock.o
-  CC [M]  lnet/lnet/lnet-crypto.o
-  CC [M]  lustre/obdclass/lu_tgt_descs.o
-  LD [M]  lustre/mdt/mdt.o
-  CC [M]  lustre/obdclass/lu_tgt_pool.o
-  CC [M]  lustre/obdclass/range_lock.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_lock.o
-  CC [M]  lustre/obdclass/page_pools.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_resource.o
-  CC [M]  lnet/lnet/lib-cpt.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_lib.o
-  CC [M]  lustre/obdclass/dt_object.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_extent.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_plain.o
-  CC [M]  lustre/obdclass/llog_ioctl.o
-  CC [M]  lustre/obdclass/idmap.o
-  CC [M]  lustre/obdclass/llog_osd.o
-  CC [M]  lustre/obdclass/local_storage.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_lockd.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_request.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_inodebits.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_flock.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_pool.o
-  CC [M]  lustre/obdclass/lprocfs_jobstats.o
-  CC [M]  lustre/obdclass/md_attrs.o
-  CC [M]  lustre/obdclass/lu_ucred.o
-  CC [M]  lustre/obdclass/lprocfs_status_server.o
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_reclaim.o
 lustre/osd-wbcfs/wbcfs.c:631:4: error: call to undeclared function 'zero_user'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
   631 |                         zero_user(page, from + copied, len - copied);
       |                         ^
@@ -1682,41 +1011,300 @@ lustre/osd-wbcfs/wbcfs.c:1045:15: error: incompatible function pointer types ini
  1045 |         .write_end      = memfs_write_end,
       |                           ^~~~~~~~~~~~~~~
 4 errors generated.
-  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_cache_policy.o
-  CC [M]  lustre/obdclass/obdo_server.o
+  CC [M]  lnet/lnet/lib-socket.o
 make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/osd-wbcfs/wbcfs.o] Error 1
 make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lustre/osd-wbcfs] Error 2
-  CC [M]  lustre/ptlrpc/nodemap_lproc.o
+  CC [M]  lustre/osc/osc_quota.o
+  CC [M]  lustre/lfsck/lfsck_striped_dir.o
+  CC [M]  lustre/lod/lod_sub_object.o
+  CC [M]  lustre/ptlrpc/pinger.o
+  CC [M]  lnet/lnet/lib-move.o
+  LD [M]  lustre/mgs/mgs.o
+  CC [M]  lnet/lnet/module.o
+  CC [M]  lustre/quota/qsd_writeback.o
+  CC [M]  lustre/ofd/ofd_oss.o
+  CC [M]  lustre/obdclass/lustre_handles.o
+  CC [M]  lustre/mdc/mdc_batch.o
+  CC [M]  lustre/osp/osp_trans.o
+  LD [M]  lustre/lmv/lmv.o
+  CC [M]  lustre/mdt/mdt_identity.o
+  CC [M]  lustre/ofd/ofd_dlm.o
+  CC [M]  lustre/quota/qmt_dev.o
+  CC [M]  lnet/lnet/lo.o
+  CC [M]  lustre/osc/osc_cache.o
+  CC [M]  lustre/obdclass/lustre_peer.o
+  CC [M]  lustre/mdc/mdc_acl.o
+  CC [M]  lustre/ofd/ofd_lvb.o
+  CC [M]  lustre/mdt/mdt_lproc.o
+  CC [M]  lnet/lnet/router.o
+  CC [M]  lnet/lnet/lnet_debugfs.o
+  LD [M]  lustre/lod/lod.o
+  CC [M]  lnet/lnet/acceptor.o
+  CC [M]  lustre/quota/qmt_entry.o
+  CC [M]  lustre/ptlrpc/llog_net.o
+  CC [M]  lustre/quota/qmt_handler.o
+  CC [M]  lustre/ptlrpc/llog_client.o
+  CC [M]  lustre/ofd/ofd_access_log.o
+  CC [M]  lustre/mdt/mdt_fs.o
+  CC [M]  lustre/quota/qmt_lqa.o
+  LD [M]  lustre/osp/osp.o
+  CC [M]  lustre/ptlrpc/import.o
+  CC [M]  lnet/lnet/peer.o
+  CC [M]  lustre/mdt/mdt_som.o
+  CC [M]  lustre/quota/qmt_lock.o
+  CC [M]  lustre/obdclass/statfs_pack.o
+  CC [M]  lustre/ptlrpc/ptlrpcd.o
+  CC [M]  lustre/ptlrpc/pers.o
+  CC [M]  lustre/mdt/mdt_lvb.o
+  CC [M]  lustre/ptlrpc/lproc_ptlrpc.o
+  CC [M]  lustre/ptlrpc/wiretest.o
+  LD [M]  lustre/lfsck/lfsck.o
+  CC [M]  lustre/mdt/mdt_hsm.o
+  CC [M]  lustre/quota/qmt_pool.o
+  CC [M]  lustre/obdclass/obdo.o
+  CC [M]  lustre/ptlrpc/layout.o
+  CC [M]  lustre/obdclass/obd_config.o
+  CC [M]  lustre/mdt/mdt_mds.o
+  CC [M]  lustre/quota/lproc_quota.o
+  CC [M]  lustre/mdt/mdt_io.o
+  CC [M]  lustre/quota/lquota_disk.o
+  CC [M]  lnet/lnet/net_fault.o
+  LD [M]  lustre/osc/osc.o
+  CC [M]  lustre/ptlrpc/sec.o
+  CC [M]  lustre/mdt/mdt_restripe.o
+  LD [M]  lustre/mdc/mdc.o
+  CC [M]  lustre/ptlrpc/sec_ctx.o
+  CC [M]  lustre/obdclass/obd_mount.o
+  CC [M]  lustre/mdt/mdt_hsm_cdt_actions.o
+  LD [M]  lustre/ofd/ofd.o
+  CC [M]  lustre/quota/lquota_entry.o
+  CC [M]  lustre/quota/lquota_lib.o
+  CC [M]  lustre/ptlrpc/sec_gc.o
+  CC [M]  lustre/ptlrpc/sec_config.o
+  CC [M]  lustre/obdclass/obd_sysfs.o
+  CC [M]  lnet/lnet/udsp.o
+  CC [M]  lustre/mdt/mdt_hsm_cdt_requests.o
+  CC [M]  lustre/obdclass/lu_object.o
+  CC [M]  lnet/lnet/lnet-crypto.o
+  CC [M]  lustre/ptlrpc/sec_lproc.o
+  CC [M]  lnet/lnet/adler.o
+  CC [M]  lustre/obdclass/cl_object.o
+  CC [M]  lustre/mdt/mdt_hsm_cdt_client.o
+  CC [M]  lustre/mdt/mdt_hsm_cdt_agent.o
+  CC [M]  lnet/lnet/lib-cpt.o
+  CC [M]  lustre/ptlrpc/sec_null.o
+  CC [M]  lustre/obdclass/cl_page.o
+  CC [M]  lustre/mdt/mdt_coordinator.o
+  CC [M]  lustre/ptlrpc/sec_plain.o
+  CC [M]  lustre/mdt/mdt_batch.o
+lnet/lnet/lib-socket.c:575:15: error: call to undeclared function 'dev_get_flags'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  575 |                 int flags = dev_get_flags(dev);
+      |                             ^
+1 error generated.
+make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lnet/lnet/lib-socket.o] Error 1
+make[8]: *** Waiting for unfinished jobs....
+  CC [M]  lustre/obdclass/cl_lock.o
+  CC [M]  lustre/ptlrpc/nrs.o
+  CC [M]  lustre/obdclass/cl_io.o
+  CC [M]  lustre/ptlrpc/nrs_fifo.o
+  CC [M]  lustre/obdclass/linkea.o
+  CC [M]  lustre/ptlrpc/nrs_delay.o
+  CC [M]  lustre/ptlrpc/heap.o
+  CC [M]  lustre/ptlrpc/errno.o
+  CC [M]  lustre/ptlrpc/batch.o
+  CC [M]  lustre/obdclass/upcall_cache.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/l_lock.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_lock.o
+  CC [M]  lustre/obdclass/kernelcomm.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_resource.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_lib.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_plain.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_extent.o
+make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lnet/lnet] Error 2
+  CC [M]  lustre/obdclass/jobid.o
+make[6]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lnet] Error 2
+make[6]: *** Waiting for unfinished jobs....
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_request.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_lockd.o
+  CC [M]  lustre/obdclass/integrity.o
+  CC [M]  lustre/ptlrpc/../../lustre/ldlm/ldlm_flock.o
+  CC [M]  lustre/obdclass/obd_cksum.o
+  CC [M]  lustre/obdclass/lu_tgt_descs.o
+  CC [M]  lustre/obdclass/lu_tgt_pool.o
+  CC [M]  lustre/obdclass/range_lock.o
+lustre/ptlrpc/layout.c:971:2: error: cast from 'void (*)(struct mgs_target_info *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+  971 |         DEFINE_MSGF("mgs_target_info", 0, sizeof(struct mgs_target_info),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  972 |                     lustre_swab_mgs_target_info, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:976:2: error: cast from 'void (*)(struct mgs_target_nidlist *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+  976 |         DEFINE_MSGF("mgs_target_nidlist", 0, sizeof(struct mgs_target_nidlist),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  977 |                     lustre_swab_mgs_target_nidlist, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:989:2: error: cast from 'void (*)(struct mgs_config_body *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+  989 |         DEFINE_MSGF("mgs_config_read request", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  990 |                     sizeof(struct mgs_config_body),
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  991 |                     lustre_swab_mgs_config_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:995:2: error: cast from 'void (*)(struct mgs_config_res *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+  995 |         DEFINE_MSGF("mgs_config_read reply ", 0, sizeof(struct mgs_config_res),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  996 |                     lustre_swab_mgs_config_res, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1000:2: error: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1000 |         DEFINE_MSGF("generic u32", RMF_F_STRUCT_ARRAY,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1001 |                     sizeof(__u32), lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1013:2: error: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1013 |         DEFINE_MSGF("getinfo_vallen", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1014 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1022:2: error: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1022 |         DEFINE_MSGF("seq_query_opc", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1023 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1027:2: error: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1027 |         DEFINE_MSGF("seq_query_range", 0, sizeof(struct lu_seq_range),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1028 |                     lustre_swab_lu_seq_range, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1032:2: error: cast from 'void (*)(__u32 *)' (aka 'void (*)(unsigned int *)') to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1032 |         DEFINE_MSGF("fld_query_opc", 0, sizeof(__u32),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1033 |                     lustre_swab_generic_32s, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1037:2: error: cast from 'void (*)(struct lu_seq_range *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1037 |         DEFINE_MSGF("fld_query_mdfld", 0, sizeof(struct lu_seq_range),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1038 |                     lustre_swab_lu_seq_range, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1042:2: error: cast from 'void (*)(struct mdt_body *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1042 |         DEFINE_MSGF("mdt_body", 0, sizeof(struct mdt_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1043 |                     lustre_swab_mdt_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1047:2: error: cast from 'int (*)(struct obd_quotactl *, __u32)' (aka 'int (*)(struct obd_quotactl *, unsigned int)') to 'int (*)(void *, __u32)' (aka 'int (*)(void *, unsigned int)') converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1047 |         DEFINE_MSGFL("obd_quotactl", 0, sizeof(struct obd_quotactl),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1048 |                      lustre_swab_obd_quotactl, NULL);
+      |                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:962:18: note: expanded from macro 'DEFINE_MSGFL'
+  962 |         .rmf_swab_len = (int (*)(void *, __u32))(swab_len),     \
+      |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1056:2: error: cast from 'void (*)(struct quota_body *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1056 |         DEFINE_MSGF("quota_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1057 |                     sizeof(struct quota_body), lustre_swab_quota_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1061:2: error: cast from 'void (*)(struct mdt_ioepoch *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1061 |         DEFINE_MSGF("mdt_ioepoch", 0, sizeof(struct mdt_ioepoch),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1062 |                     lustre_swab_mdt_ioepoch, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1066:2: error: cast from 'void (*)(struct ptlrpc_body_v3 *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1066 |         DEFINE_MSGF("ptlrpc_body", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1067 |                     sizeof(struct ptlrpc_body), lustre_swab_ptlrpc_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1071:2: error: cast from 'void (*)(struct close_data *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1071 |         DEFINE_MSGF("data_version", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1072 |                     sizeof(struct close_data), lustre_swab_close_data, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1076:2: error: cast from 'void (*)(struct obd_statfs *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1076 |         DEFINE_MSGF("obd_statfs", 0,
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1077 |                     sizeof(struct obd_statfs), lustre_swab_obd_statfs, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1123:2: error: cast from 'void (*)(struct llogd_body *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1123 |         DEFINE_MSGF("llogd_body", 0, sizeof(struct llogd_body),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1124 |                     lustre_swab_llogd_body, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:1128:2: error: cast from 'void (*)(struct llog_log_hdr *)' to 'void (*)(void *)' converts to incompatible function type [-Werror,-Wcast-function-type-strict]
+ 1128 |         DEFINE_MSGF("llog_log_hdr", 0, sizeof(struct llog_log_hdr),
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1129 |                     lustre_swab_llog_hdr, NULL);
+      |                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lustre/ptlrpc/layout.c:954:17: note: expanded from macro 'DEFINE_MSGF'
+  954 |         .rmf_swabber = (void (*)(void *))(swabber),             \
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+20 errors generated.
+make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/ptlrpc/layout.o] Error 1
+make[8]: *** Waiting for unfinished jobs....
+  CC [M]  lustre/obdclass/page_pools.o
+  CC [M]  lustre/obdclass/dt_object.o
+  CC [M]  lustre/obdclass/idmap.o
+  CC [M]  lustre/obdclass/llog_ioctl.o
+  CC [M]  lustre/obdclass/llog_osd.o
+  CC [M]  lustre/obdclass/local_storage.o
+  CC [M]  lustre/obdclass/lprocfs_jobstats.o
+  CC [M]  lustre/obdclass/lprocfs_status_server.o
+  CC [M]  lustre/obdclass/lu_ucred.o
+  CC [M]  lustre/obdclass/md_attrs.o
+  CC [M]  lustre/obdclass/obdo_server.o
   CC [M]  lustre/obdclass/scrub.o
-  CC [M]  lustre/ptlrpc/nodemap_handler.o
+  LD [M]  lustre/mdt/mdt.o
   CC [M]  lustre/obdclass/upcall_cache_internal.o
-  CC [M]  lustre/ptlrpc/nodemap_idmap.o
-  CC [M]  lustre/ptlrpc/nodemap_member.o
-  CC [M]  lustre/ptlrpc/nodemap_range.o
-lustre/ptlrpc/nodemap_handler.c:3624:2: warning: expression result unused; should this cast be to 'void'? [-Wunused-value]
- 3624 |         (void *)cfs_hash_del_key(hash, newname);
-      |         ^     ~
-1 warning generated.
-  CC [M]  lustre/ptlrpc/nodemap_fileset_alt.o
-  CC [M]  lustre/ptlrpc/nodemap_storage.o
-  CC [M]  lustre/ptlrpc/nrs_orr.o
-  CC [M]  lustre/ptlrpc/nrs_crr.o
-  CC [M]  lustre/ptlrpc/nrs_tbf.o
-  CC [M]  lustre/ptlrpc/llog_server.o
-  CC [M]  lustre/ptlrpc/pack_server.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/tgt_main.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/tgt_handler.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/tgt_lastrcvd.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/out_lib.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/out_handler.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/update_records.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/update_trans.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/tgt_mount.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/barrier.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/tgt_fmd.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/update_recovery.o
-  CC [M]  lustre/ptlrpc/../../lustre/target/tgt_grant.o
-  LD [M]  lustre/obdclass/obdclass.o
+  LD [M]  lustre/quota/lquota.o
 lustre/ptlrpc/sec_ctx.c:33:17: error: no member named 'lock' in 'struct fs_struct'
    33 |         spin_lock(&fs->lock);
       |                    ~~  ^
@@ -1785,16 +1373,8 @@ lustre/ptlrpc/sec_ctx.c:38:19: error: no member named 'lock' in 'struct fs_struc
       |                      ~~  ^
 7 errors generated.
 make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lustre/ptlrpc/sec_ctx.o] Error 1
-make[8]: *** Waiting for unfinished jobs....
-lnet/lnet/lib-socket.c:575:15: error: call to undeclared function 'dev_get_flags'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-  575 |                 int flags = dev_get_flags(dev);
-      |                             ^
-1 error generated.
-make[8]: *** [/home/ktest/git/linux/scripts/Makefile.build:287: lnet/lnet/lib-socket.o] Error 1
-make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lnet/lnet] Error 2
-make[6]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lnet] Error 2
-make[6]: *** Waiting for unfinished jobs....
 make[7]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lustre/ptlrpc] Error 2
+  LD [M]  lustre/obdclass/obdclass.o
 make[6]: *** [/home/ktest/git/linux/scripts/Makefile.build:556: lustre] Error 2
 make[5]: *** [/home/ktest/git/linux/Makefile:2011: .] Error 2
 make[4]: *** [/home/ktest/git/linux/Makefile:248: __sub-make] Error 2
