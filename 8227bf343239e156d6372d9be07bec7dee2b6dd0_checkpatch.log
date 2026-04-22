@@ -1,0 +1,107 @@
+WARNING:FILE_PATH_CHANGES: added, moved or deleted file(s), does MAINTAINERS need updating?
+#2: 
+new file mode 100644
+
+WARNING:LONG_LINE_STRING: line length of 156 exceeds 100 columns
+#3160: FILE: lustre/ptlrpc/nrs_fairshare.c:1311:
++		CERROR("%s: fairshare mode '%s' not supported; use jobid_fair, uid_fair, nid_fair, or a two-level '<a>_then_<b>_fair' composite of those\n",
+
+WARNING:PREFER_FALLTHROUGH: Prefer 'fallthrough;' over fallthrough comment
+#3339: FILE: lustre/ptlrpc/nrs_fairshare.c:1490:
++ * below fsh_opp_threshold, and as the force-dispatch / fall-through
+
+WARNING:PREFER_FALLTHROUGH: Prefer 'fallthrough;' over fallthrough comment
+#3475: FILE: lustre/ptlrpc/nrs_fairshare.c:1626:
++			/* OOM: fall through to oldest-FIFO so we still
+
+WARNING:PREFER_FALLTHROUGH: Prefer 'fallthrough;' over fallthrough comment
+#3501: FILE: lustre/ptlrpc/nrs_fairshare.c:1652:
++		 * picker; if everything is over-rate, fall through to
+
+WARNING:TRAILING_SEMICOLON: macros should not use a trailing semicolon
+#3576: FILE: lustre/ptlrpc/nrs_fairshare.c:1727:
++#define NRS_FS_FOR_EACH_HEAD_BEGIN(svc, svcpt, i, nrs, pol, head) do {	\
++	mutex_lock(&nrs_core.nrs_mutex);				\
++	ptlrpc_service_for_each_part((svcpt), (i), (svc)) {		\
++		(nrs) = &(svcpt)->scp_nrs_reg;				\
++		spin_lock(&(nrs)->nrs_lock);				\
++		list_for_each_entry((pol), &(nrs)->nrs_policy_list,	\
++				    pol_list) {				\
++			if (strcmp((pol)->pol_desc->pd_name,		\
++				   NRS_POL_NAME_FAIRSHARE) != 0 ||	\
++			    (pol)->pol_state != NRS_POL_STATE_STARTED)	\
++				continue;				\
++			(head) = (pol)->pol_private;
+
+WARNING:MULTISTATEMENT_MACRO_USE_DO_WHILE: Non-declarative macros with multiple statements should be enclosed in a do - while loop
+#3589: FILE: lustre/ptlrpc/nrs_fairshare.c:1740:
++#define NRS_FS_FOR_EACH_HEAD_END(nrs)					\
++		}							\
++		spin_unlock(&(nrs)->nrs_lock);				\
++	}								\
++	mutex_unlock(&nrs_core.nrs_mutex);				\
++} while (0)
+
+BUT SEE:
+
+   do {} while (0) advice is over-stated in a few situations:
+
+   The more obvious case is macros, like MODULE_PARM_DESC, invoked at
+   file-scope, where C disallows code (it must be in functions).  See
+   $exceptions if you have one to add by name.
+
+   More troublesome is declarative macros used at top of new scope,
+   like DECLARE_PER_CPU.  These might just compile with a do-while-0
+   wrapper, but would be incorrect.  Most of these are handled by
+   detecting struct,union,etc declaration primitives in $exceptions.
+
+   Theres also macros called inside an if (block), which "return" an
+   expression.  These cannot do-while, and need a ({}) wrapper.
+
+   Enjoy this qualification while we work to improve our heuristics.
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#3832: FILE: lustre/ptlrpc/nrs_fairshare.c:1983:
++			case NRS_RULE_FIELD_JOBID: fname = "jobid"; break;
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#3833: FILE: lustre/ptlrpc/nrs_fairshare.c:1984:
++			case NRS_RULE_FIELD_UID:   fname = "uid";   break;
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#3834: FILE: lustre/ptlrpc/nrs_fairshare.c:1985:
++			case NRS_RULE_FIELD_NID:   fname = "nid";   break;
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#3835: FILE: lustre/ptlrpc/nrs_fairshare.c:1986:
++			default: break;
+
+WARNING:SPDX_LICENSE_TAG: Missing or malformed SPDX-License-Identifier tag in line 2
+#4048: FILE: lustre/tests/nrs-fairshare-bench.sh:2:
++#
+
+WARNING:LONG_LINE: line length of 103 exceeds 100 columns
+#4299: FILE: lustre/tests/sanityn.sh:6468:
++		ost.OSS.ost_io.nrs_fairshare_rule="start\ r2\ uid=\{501,502\}\ rate=500\ minrate=10" ||
+
+WARNING:LONG_LINE: line length of 118 exceeds 100 columns
+#4711: FILE: lustre/tests/sanityn.sh:6880:
++		$ostsvc.nrs_fairshare_rule="start\ $rule_name\ uid={$RUNAS_ID}\ rate=$fs_rate\ minrate=$fs_minrate" ||
+
+WARNING:LONG_LINE_STRING: line length of 106 exceeds 100 columns
+#4746: FILE: lustre/tests/sanityn.sh:6915:
++		error "runas rate ($runas_rate) exceeds rate ceiling ($rpc_rate) by more than $tolerance%"
+
+WARNING:LONG_LINE_STRING: line length of 114 exceeds 100 columns
+#4748: FILE: lustre/tests/sanityn.sh:6917:
++		error "runas rate ($runas_rate) below minrate floor ($expected_rpc_rate) by more than $tolerance%"
+
+total: 4 errors, 12 warnings, 4685 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
