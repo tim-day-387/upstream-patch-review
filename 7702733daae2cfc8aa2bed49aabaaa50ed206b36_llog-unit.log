@@ -311,3 +311,43 @@ R13: 00007fffe8d6af78 R14: 00007f5ae3ea5000 R15: 0000561caf65f420
 Kernel panic - not syncing: LBUG
 CPU: 10 UID: 0 PID: 2135 Comm: lctl Tainted: G    B      O        6.17.0-ktest-7702733daa-20260503 #1 NONE 
 Tainted: [B]=BAD_PAGE, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
+Call Trace:
+ <TASK>
+ vpanic+0x13c/0x400
+ panic+0x60/0x60
+ ? __printk_cpu_sync_put+0x4d/0x60
+ lbug_with_loc+0x8b/0xa0 [libcfs]
+ lu_object_put+0x418/0xbd0 [obdclass]
+ llog_osd_close+0x14a/0x570 [obdclass]
+ llog_close+0xa0/0xe0 [obdclass]
+ llog_cat_close+0x109/0x650 [obdclass]
+ llog_test_13+0xd1c/0x1610 [llog_test]
+ llog_run_tests+0x472b/0x5a00 [llog_test]
+ ? __llog_ctxt_put+0x110/0x2f0 [obdclass]
+ llog_test_device_init+0x6e8/0xa20 [llog_test]
+ obd_setup+0x504/0x8d0 [obdclass]
+ class_setup+0x76b/0xf90 [obdclass]
+ class_process_config+0x31f9/0x7d20 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ class_handle_ioctl+0x1fbf/0x33a0 [obdclass]
+ ? cap_capable+0xac/0x2e0
+ obd_class_ioctl+0x1f6/0x3c0 [obdclass]
+ __x64_sys_ioctl+0x97e/0xe40
+ ? do_sigaction+0x3aa/0x5c0
+ ? _copy_to_user+0x3d/0x60
+ ? __x64_sys_rt_sigaction+0x107/0x140
+ do_syscall_64+0x6f/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x70
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7f5ae3bc18db
+Code: 00 48 89 44 24 18 31 c0 48 8d 44 24 60 c7 04 24 10 00 00 00 48 89 44 24 08 48 8d 44 24 20 48 89 44 24 10 b8 10 00 00 00 0f 05 <89> c2 3d 00 f0 ff ff 77 1c 48 8b 44 24 18 64 48 2b 04 25 28 00 00
+RSP: 002b:00007fffe8d67910 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00007fffe8d6af68 RCX: 00007f5ae3bc18db
+RDX: 00007fffe8d679d0 RSI: 00000000c00866b8 RDI: 0000000000000003
+RBP: 00007fffe8d679a0 R08: 0000000000000000 R09: 00007f5ae3c9cb20
+R10: 0000000000000070 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007fffe8d6af78 R14: 00007f5ae3ea5000 R15: 0000561caf65f420
+ </TASK>
+Kernel Offset: disabled
+---[ end Kernel panic - not syncing: LBUG ]---
