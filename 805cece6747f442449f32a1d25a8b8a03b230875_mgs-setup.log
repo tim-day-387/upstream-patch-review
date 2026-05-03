@@ -7,7 +7,7 @@ Press Ctrl-B to configure iPXE (PCI 00:01.0)...
 
 
 Booting from ROM..c[?7l[2JKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
-P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=813ebcdfa4ab4055840af2e9b8fcbd6a;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=85b92497647e400eac222c0a16d9aabb;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.17.0-ktest-805cece674-20260503
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=c6ebe44714cd47cab8fa52e9861ff3df;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=61737d487bf74ade8e6bf559cdf326c0;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.17.0-ktest-805cece674-20260503
 hook init_noop
 
 Running tests mgs-setup
@@ -68,23 +68,23 @@ OSD_WBC_MGS_NID=10.0.2.15@tcp
 mounting device lustre-wbcfs at /mnt/lustre-mgs, flags=0x1000000 options=osd=osd-wbcfs,mgs,virgin,update,svname=lustre-MGS0000,device=lustre-wbcfs
 Lustre: lustre-MGS0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
 ------------[ cut here ]------------
-BUG: Dentry 000000008c2470f2{i=200000003000004,n=NIDTBL_VERSIONS}  still in use (1) [unmount of wbcfs wbcfs]
-WARNING: CPU: 11 PID: 1866 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+BUG: Dentry 0000000082fdfe04{i=200000003000004,n=NIDTBL_VERSIONS}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 11 PID: 1865 at fs/dcache.c:1598 umount_check+0x154/0x1a0
 Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 11 UID: 0 PID: 1866 Comm: umount Tainted: G           O        6.17.0-ktest-805cece674-20260503 #1 NONE 
+CPU: 11 UID: 0 PID: 1865 Comm: umount Tainted: G           O        6.17.0-ktest-805cece674-20260503 #1 NONE 
 Tainted: [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
 RIP: 0010:umount_check+0x154/0x1a0
 Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 c0 1f d0 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 c0 35 7c ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
-RSP: 0018:ffffc900038af578 EFLAGS: 00010286
-RAX: ed39a79b5d02c700 RBX: ffff88810a45b948 RCX: 0000000000000027
+RSP: 0018:ffffc900038df578 EFLAGS: 00010286
+RAX: 4dbb0236888d9400 RBX: ffff88811ddf0a48 RCX: 0000000000000027
 RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a31a2fd0
 RBP: 0000000000000001 R08: ffff8882a31a2fd3 R09: 1ffff110546345fa
 R10: dffffc0000000000 R11: ffffed10546345fb R12: dffffc0000000000
-R13: ffff88811c9fe640 R14: 0200000003000004 R15: ffffffffa13e52e0
-FS:  00007f39785e0840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
+R13: ffff88811e63c640 R14: 0200000003000004 R15: ffffffffa13e52e0
+FS:  00007fa8ee3b2840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00005612f9aac008 CR3: 0000000120b6c000 CR4: 0000000000750eb0
+CR2: 00005608cdb53090 CR3: 000000010d91d000 CR4: 0000000000750eb0
 PKRU: 55555554
 Call Trace:
  <TASK>
@@ -123,34 +123,34 @@ Call Trace:
  do_syscall_64+0x150/0x1f0
  ? arch_exit_to_user_mode_prepare+0x9/0x70
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f3978837217
+RIP: 0033:0x7fa8ee609217
 Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
-RSP: 002b:00007fff0c38cc38 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007f3978837217
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 00005612f9aac6b0
-RBP: 00007f397899726c R08: 0000000000000020 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000246 R12: 00005612f9aa93a8
-R13: 00005612f9aac6b0 R14: 00005612f9aa92a0 R15: 00005612f9aa96e0
+RSP: 002b:00007ffe42729808 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007fa8ee609217
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000555bcfab56d0
+RBP: 00007fa8ee76926c R08: 0000000000000020 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000555bcfab23a8
+R13: 0000555bcfab56d0 R14: 0000555bcfab22a0 R15: 0000555bcfab26e0
  </TASK>
 ---[ end trace 0000000000000000 ]---
 ------------[ cut here ]------------
-BUG: Dentry 00000000fdeaab82{i=a000002,n=params}  still in use (1) [unmount of wbcfs wbcfs]
-WARNING: CPU: 11 PID: 1866 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+BUG: Dentry 000000001604f4b7{i=a000002,n=params}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 11 PID: 1865 at fs/dcache.c:1598 umount_check+0x154/0x1a0
 Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 11 UID: 0 PID: 1866 Comm: umount Tainted: G        W  O        6.17.0-ktest-805cece674-20260503 #1 NONE 
+CPU: 11 UID: 0 PID: 1865 Comm: umount Tainted: G        W  O        6.17.0-ktest-805cece674-20260503 #1 NONE 
 Tainted: [W]=WARN, [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
 RIP: 0010:umount_check+0x154/0x1a0
 Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 c0 1f d0 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 c0 35 7c ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
-RSP: 0018:ffffc900038af578 EFLAGS: 00010286
-RAX: ed39a79b5d02c700 RBX: ffff8881079e2920 RCX: 0000000000000027
+RSP: 0018:ffffc900038df578 EFLAGS: 00010286
+RAX: 4dbb0236888d9400 RBX: ffff88811ddf2a98 RCX: 0000000000000027
 RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a31a2fd0
 RBP: 0000000000000001 R08: ffff8882a31a2fd3 R09: 1ffff110546345fa
 R10: dffffc0000000000 R11: ffffed10546345fb R12: dffffc0000000000
-R13: ffff88811c9fe640 R14: 000000000a000002 R15: ffffffffa13e52e0
-FS:  00007f39785e0840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
+R13: ffff88811e63c640 R14: 000000000a000002 R15: ffffffffa13e52e0
+FS:  00007fa8ee3b2840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00005612f9aac008 CR3: 0000000120b6c000 CR4: 0000000000750eb0
+CR2: 00005608cdb53090 CR3: 000000010d91d000 CR4: 0000000000750eb0
 PKRU: 55555554
 Call Trace:
  <TASK>
@@ -189,34 +189,34 @@ Call Trace:
  do_syscall_64+0x150/0x1f0
  ? arch_exit_to_user_mode_prepare+0x9/0x70
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f3978837217
+RIP: 0033:0x7fa8ee609217
 Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
-RSP: 002b:00007fff0c38cc38 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007f3978837217
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 00005612f9aac6b0
-RBP: 00007f397899726c R08: 0000000000000020 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000246 R12: 00005612f9aa93a8
-R13: 00005612f9aac6b0 R14: 00005612f9aa92a0 R15: 00005612f9aa96e0
+RSP: 002b:00007ffe42729808 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007fa8ee609217
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000555bcfab56d0
+RBP: 00007fa8ee76926c R08: 0000000000000020 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000555bcfab23a8
+R13: 0000555bcfab56d0 R14: 0000555bcfab22a0 R15: 0000555bcfab26e0
  </TASK>
 ---[ end trace 0000000000000000 ]---
 ------------[ cut here ]------------
-BUG: Dentry 00000000c4b97524{i=200000003000003,n=nodemap}  still in use (1) [unmount of wbcfs wbcfs]
-WARNING: CPU: 11 PID: 1866 at fs/dcache.c:1598 umount_check+0x154/0x1a0
+BUG: Dentry 00000000f25576a7{i=200000003000003,n=nodemap}  still in use (1) [unmount of wbcfs wbcfs]
+WARNING: CPU: 11 PID: 1865 at fs/dcache.c:1598 umount_check+0x154/0x1a0
 Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 11 UID: 0 PID: 1866 Comm: umount Tainted: G        W  O        6.17.0-ktest-805cece674-20260503 #1 NONE 
+CPU: 11 UID: 0 PID: 1865 Comm: umount Tainted: G        W  O        6.17.0-ktest-805cece674-20260503 #1 NONE 
 Tainted: [W]=WARN, [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
 RIP: 0010:umount_check+0x154/0x1a0
 Code: f7 ff 4d 8b 0f 49 81 c5 40 06 00 00 48 c7 c7 c0 1f d0 82 48 89 de 4c 89 f2 48 89 d9 41 89 e8 41 55 e8 c0 35 7c ff 48 83 c4 08 <0f> 0b 31 c0 5b 41 5c 41 5d 41 5e 41 5f 5d c3 89 f9 80 e1 07 80 c1
-RSP: 0018:ffffc900038af578 EFLAGS: 00010286
-RAX: ed39a79b5d02c700 RBX: ffff88810a459be8 RCX: 0000000000000027
+RSP: 0018:ffffc900038df578 EFLAGS: 00010286
+RAX: 4dbb0236888d9400 RBX: ffff88810b3305e0 RCX: 0000000000000027
 RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a31a2fd0
 RBP: 0000000000000001 R08: ffff8882a31a2fd3 R09: 1ffff110546345fa
 R10: dffffc0000000000 R11: ffffed10546345fb R12: dffffc0000000000
-R13: ffff88811c9fe640 R14: 0200000003000003 R15: ffffffffa13e52e0
-FS:  00007f39785e0840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
+R13: ffff88811e63c640 R14: 0200000003000003 R15: ffffffffa13e52e0
+FS:  00007fa8ee3b2840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00005612f9aac008 CR3: 0000000120b6c000 CR4: 0000000000750eb0
+CR2: 00005608cdb53090 CR3: 000000010d91d000 CR4: 0000000000750eb0
 PKRU: 55555554
 Call Trace:
  <TASK>
@@ -255,34 +255,34 @@ Call Trace:
  do_syscall_64+0x150/0x1f0
  ? arch_exit_to_user_mode_prepare+0x9/0x70
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f3978837217
+RIP: 0033:0x7fa8ee609217
 Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
-RSP: 002b:00007fff0c38cc38 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007f3978837217
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 00005612f9aac6b0
-RBP: 00007f397899726c R08: 0000000000000020 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000246 R12: 00005612f9aa93a8
-R13: 00005612f9aac6b0 R14: 00005612f9aa92a0 R15: 00005612f9aa96e0
+RSP: 002b:00007ffe42729808 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007fa8ee609217
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000555bcfab56d0
+RBP: 00007fa8ee76926c R08: 0000000000000020 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000555bcfab23a8
+R13: 0000555bcfab56d0 R14: 0000555bcfab22a0 R15: 0000555bcfab26e0
  </TASK>
 ---[ end trace 0000000000000000 ]---
 ------------[ cut here ]------------
 VFS: Busy inodes after unmount of wbcfs (wbcfs)
-WARNING: CPU: 11 PID: 1866 at fs/super.c:653 generic_shutdown_super+0x179/0x320
+WARNING: CPU: 11 PID: 1865 at fs/super.c:653 generic_shutdown_super+0x179/0x320
 Modules linked in: lustre(O) osp(O) ofd(O) lod(O) mdt(O) mdd(O) mgs(O) osd_wbcfs(O) lquota(O) lfsck(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
-CPU: 11 UID: 0 PID: 1866 Comm: umount Tainted: G        W  O        6.17.0-ktest-805cece674-20260503 #1 NONE 
+CPU: 11 UID: 0 PID: 1865 Comm: umount Tainted: G        W  O        6.17.0-ktest-805cece674-20260503 #1 NONE 
 Tainted: [W]=WARN, [O]=OOT_MODULE
 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.15.0-1 04/01/2014
 RIP: 0010:generic_shutdown_super+0x179/0x320
 Code: 24 4c 89 e0 48 c1 e8 03 42 80 3c 28 00 74 08 4c 89 e7 e8 ea c4 fb ff 49 8b 14 24 48 c7 c7 c0 d2 cf 82 4c 89 fe e8 e7 93 80 ff <0f> 0b 4c 8d bb 80 08 00 00 4c 89 ff e8 26 ef 07 01 42 80 7c 2d 00
-RSP: 0018:ffffc900038af678 EFLAGS: 00010246
-RAX: ed39a79b5d02c700 RBX: ffff88811c9fe000 RCX: 0000000000000027
+RSP: 0018:ffffc900038df678 EFLAGS: 00010246
+RAX: 4dbb0236888d9400 RBX: ffff88811e63c000 RCX: 0000000000000027
 RDX: 0000000000000001 RSI: 0000000000000004 RDI: ffff8882a31a2fd0
-RBP: 1ffff1102393fd18 R08: ffff8882a31a2fd3 R09: 1ffff110546345fa
+RBP: 1ffff11023cc7918 R08: ffff8882a31a2fd3 R09: 1ffff110546345fa
 R10: dffffc0000000000 R11: ffffed10546345fb R12: ffffffffa13e52e0
-R13: dffffc0000000000 R14: ffff88811c9fe8c0 R15: ffff88811c9fe640
-FS:  00007f39785e0840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
+R13: dffffc0000000000 R14: ffff88811e63c8c0 R15: ffff88811e63c640
+FS:  00007fa8ee3b2840(0000) GS:ffff88831ef38000(0000) knlGS:0000000000000000
 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00005612f9aac008 CR3: 0000000120b6c000 CR4: 0000000000750eb0
+CR2: 00005608cdb53090 CR3: 000000010d91d000 CR4: 0000000000750eb0
 PKRU: 55555554
 Call Trace:
  <TASK>
@@ -316,24 +316,28 @@ Call Trace:
  do_syscall_64+0x150/0x1f0
  ? arch_exit_to_user_mode_prepare+0x9/0x70
  entry_SYSCALL_64_after_hwframe+0x4b/0x53
-RIP: 0033:0x7f3978837217
+RIP: 0033:0x7fa8ee609217
 Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
-RSP: 002b:00007fff0c38cc38 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007f3978837217
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: 00005612f9aac6b0
-RBP: 00007f397899726c R08: 0000000000000020 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000246 R12: 00005612f9aa93a8
-R13: 00005612f9aac6b0 R14: 00005612f9aa92a0 R15: 00005612f9aa96e0
+RSP: 002b:00007ffe42729808 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00007fa8ee609217
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000555bcfab56d0
+RBP: 00007fa8ee76926c R08: 0000000000000020 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000555bcfab23a8
+R13: 0000555bcfab56d0 R14: 0000555bcfab22a0 R15: 0000555bcfab26e0
  </TASK>
 ---[ end trace 0000000000000000 ]---
 Lustre: server umount lustre-MGS0000 complete
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 342 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 361 from: ( set -e; run_test $i ), exiting
 
-========= PASSED mgs-setup in 13s
+========= FAILED mgs-setup in 14s
 
-Passed: mgs-setup
-Failed: 
+Passed: 
+Failed: mgs-setup
+Error 1 at /host/home/ktest/ktest/tests/prelude.sh 467 from: return ${#tests_failed[@]}, exiting
+Error 1 at /host//home/ktest/ktest/tests/fs/lustre/mgs-setup.ktest 36 from: return ${#tests_failed[@]}, exiting
 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
 Kernel version: 6.17.0-ktest-805cece674-20260503
-TEST SUCCESS
+TEST FAILED
 Failed to connect to system scope bus via local transport: No such file or directory
-]3008;end=813ebcdfa4ab4055840af2e9b8fcbd6a\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
+]3008;end=c6ebe44714cd47cab8fa52e9861ff3df\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
