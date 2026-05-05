@@ -1,0 +1,60 @@
+CLI: ./podman-ktest --podman-socket unix:///run/podman/podman.sock --shared-filesystem /tmp --tarball-input job lustre-ci --output /var/www/ci-lustre/upstream-patch-review --git-hash ac962ce3a668a487c2c7200d1410a96e5ed8063d --change-id 65626_ac962ce3a668a487c2c7200d1410a96e5ed8063d --subject LU-20173 tests: debug sanity-sec/31
+
+  Checking /dev/kvm exists... OK
+  Checking /dev/kvm permissions... OK
+  Creating ccache directory... OK
+  Checking ccache directory writable... OK
+
+Environment validated successfully
+Creating kernel tarball at /tmp/ktest-kernel.tar.gz...
+Creating lustre tarball at /tmp/ktest-lustre.tar.gz...
+Executing 16 jobs
+Jobs will start as soon as their dependencies are satisfied
+Using tarball input mode
+
+START lustre_mainline build tests/fs/lustre/boot.ktest
+START checkpatch tool checkpatch
+START al2023 build tests/fs/lustre/boot.ktest
+START u24 build tests/fs/lustre/boot.ktest
+START lustre_mainline_native build tests/fs/lustre/boot.ktest
+START lustre_mainline_strict build tests/fs/lustre/boot-strict.ktest
+PUT /tmp/ktest-lustre.tar.gz 1s
+PUT /tmp/ktest-lustre.tar.gz 2s
+PUT /tmp/ktest-kernel.tar.gz 6s
+PUT /tmp/ktest-kernel.tar.gz 6s
+PUT /tmp/ktest-kernel.tar.gz 6s
+PUT /tmp/ktest-kernel.tar.gz 6s
+PUT /tmp/ktest-lustre.tar.gz 2s
+PUT /tmp/ktest-lustre.tar.gz 2s
+PUT /tmp/ktest-lustre.tar.gz 2s
+PUT /tmp/ktest-lustre.tar.gz 2s
+END u24 build tests/fs/lustre/boot.ktest FAIL 10s (exit code: 2)
+END checkpatch tool checkpatch PASS 11s
+END al2023 build tests/fs/lustre/boot.ktest PASS 47s
+GET /tmp/ktest_lustre_mainline_21ahsaod.tar 6s
+GET /tmp/ktest_lustre_mainline_strict_ke5uzzwz.tar 6s
+GET /tmp/ktest_lustre_mainline_native_p3454pix.tar 6s
+END lustre_mainline build tests/fs/lustre/boot.ktest FAIL 85s (exit code: 1)
+END lustre_mainline_strict build tests/fs/lustre/boot-strict.ktest FAIL 86s (exit code: 1)
+END lustre_mainline_native build tests/fs/lustre/boot.ktest FAIL 87s (exit code: 1)
+
+============================================================
+Final Results:
+  checkpatch: PASS (11s) (log: /var/www/ci-lustre/upstream-patch-review/ac962ce3a668a487c2c7200d1410a96e5ed8063d_checkpatch.log)
+  u24: FAIL (10s) (log: /var/www/ci-lustre/upstream-patch-review/ac962ce3a668a487c2c7200d1410a96e5ed8063d_u24.log)
+  al2023: PASS (47s) (log: /var/www/ci-lustre/upstream-patch-review/ac962ce3a668a487c2c7200d1410a96e5ed8063d_al2023.log)
+  lustre_mainline_strict: FAIL (86s) (log: /var/www/ci-lustre/upstream-patch-review/ac962ce3a668a487c2c7200d1410a96e5ed8063d_lustre_mainline_strict.log)
+  lustre_mainline: FAIL (85s) (log: /var/www/ci-lustre/upstream-patch-review/ac962ce3a668a487c2c7200d1410a96e5ed8063d_lustre_mainline.log)
+  lustre_mainline_native: FAIL (87s) (log: /var/www/ci-lustre/upstream-patch-review/ac962ce3a668a487c2c7200d1410a96e5ed8063d_lustre_mainline_native.log)
+  clang-tidy: SKIPPED (due to dependency failure)
+  cc-plugin: SKIPPED (due to dependency failure)
+  boot: SKIPPED (due to dependency failure)
+  llmount: SKIPPED (due to dependency failure)
+  llog-unit: SKIPPED (due to dependency failure)
+  mgs-setup: SKIPPED (due to dependency failure)
+  sanity-1: SKIPPED (due to dependency failure)
+  sanity-2: SKIPPED (due to dependency failure)
+  sanity-3: SKIPPED (due to dependency failure)
+  sanity-4: SKIPPED (due to dependency failure)
+
+Total execution time: 119s
