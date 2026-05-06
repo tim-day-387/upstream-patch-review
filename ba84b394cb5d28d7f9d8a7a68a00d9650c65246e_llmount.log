@@ -1661,3 +1661,74 @@ Call Trace:
  osp_device_fini+0x28b/0x460 [osp]
  ? class_disconnect_exports+0x4dc/0x6d0 [obdclass]
  class_cleanup+0x10c7/0x1ab0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x2417/0x7d20 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xcbd/0x1d10 [obdclass]
+ class_manual_cleanup+0xe04/0x1d10 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ osp_obd_disconnect+0x1ab/0x300 [osp]
+ obd_disconnect+0x171/0x460 [lod]
+ lod_putref+0x88c/0xc00 [lod]
+ lod_fini_tgt+0x59f/0x630 [lod]
+ lod_device_fini+0x10d/0x350 [lod]
+ class_cleanup+0x10c7/0x1ab0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x2417/0x7d20 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xcbd/0x1d10 [obdclass]
+ class_manual_cleanup+0xe04/0x1d10 [obdclass]
+ ? class_disconnect+0x5f0/0x9c0 [obdclass]
+ lod_obd_disconnect+0x214/0x3c0 [lod]
+ obd_disconnect+0x173/0x480 [mdd]
+ mdd_process_config+0x7da/0xad0 [mdd]
+ mdt_stack_fini+0xdbd/0x1b90 [mdt]
+ mdt_device_fini+0x1bc0/0x2aa0 [mdt]
+ class_cleanup+0x10c7/0x1ab0 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ class_process_config+0x2417/0x7d20 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_manual_cleanup+0xcbd/0x1d10 [obdclass]
+ class_manual_cleanup+0xe04/0x1d10 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? class_name2obd+0x168/0x1a0 [obdclass]
+ server_put_super+0x2c27/0x4c30 [ptlrpc]
+ ? _raw_spin_unlock+0x23/0x30
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0xa0/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x70
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fd4d2858217
+RSP: 002b:00007ffef7c2e9a8 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fd4d2858217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000055a373507650
+RBP: 00007fd4d29b826c R08: 00007ffef7c2d790 R09: 00000000ffffffff
+R10: 0000000000000000 R11: 0000000000000202 R12: 000055a373503ea8
+R13: 000055a373507650 R14: 000055a373503da0 R15: 000055a3735041e0
+ </TASK>
+Future hung task reports are suppressed, see sysctl kernel.hung_task_warnings
+
+Showing all locks held in the system:
+1 lock held by khungtaskd/99:
+ #0: ffffffff8378c340 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x29/0xf0
+1 lock held by umount/3731:
+ #0: ffff888137c7a0e0 (&type->s_umount_key#41){....}-{3:3}, at: deactivate_super+0x5b/0x80
+
+=============================================
+
+Lustre: lustre-MDT0000: Not available for connect from 0@lo (stopping)
+Lustre: Skipped 13 previous similar messages
+Lustre: lustre-MDT0000: Not available for connect from 0@lo (stopping)
+Lustre: Skipped 25 previous similar messages
+Lustre: lustre-MDT0000: Not available for connect from 0@lo (stopping)
+Lustre: Skipped 51 previous similar messages
+Lustre: lustre-MDT0000: Not available for connect from 0@lo (stopping)
+Lustre: Skipped 101 previous similar messages
