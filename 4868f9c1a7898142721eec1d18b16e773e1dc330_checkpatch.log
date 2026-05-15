@@ -1,0 +1,3587 @@
+WARNING:FILE_PATH_CHANGES: added, moved or deleted file(s), does MAINTAINERS need updating?
+#35: 
+new file mode 100644
+
+ERROR:COMPLEX_MACRO: Macros with complex values should be enclosed in parentheses
+#66: FILE: lustre/tests/mpi/simul.c:27:
++#define FILEMODE S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH
+
+BUT SEE:
+
+   do {} while (0) advice is over-stated in a few situations:
+
+   The more obvious case is macros, like MODULE_PARM_DESC, invoked at
+   file-scope, where C disallows code (it must be in functions).  See
+   $exceptions if you have one to add by name.
+
+   More troublesome is declarative macros used at top of new scope,
+   like DECLARE_PER_CPU.  These might just compile with a do-while-0
+   wrapper, but would be incorrect.  Most of these are handled by
+   detecting struct,union,etc declaration primitives in $exceptions.
+
+   Theres also macros called inside an if (block), which "return" an
+   expression.  These cannot do-while, and need a ({}) wrapper.
+
+   Enjoy this qualification while we work to improve our heuristics.
+
+WARNING:SYMBOLIC_PERMS: Symbolic permissions 'S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH' are not preferred. Consider using octal permissions '0664'.
+#66: FILE: lustre/tests/mpi/simul.c:27:
++#define FILEMODE S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH
+
+ERROR:COMPLEX_MACRO: Macros with complex values should be enclosed in parentheses
+#67: FILE: lustre/tests/mpi/simul.c:28:
++#define DIRMODE S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IXOTH
+
+BUT SEE:
+
+   do {} while (0) advice is over-stated in a few situations:
+
+   The more obvious case is macros, like MODULE_PARM_DESC, invoked at
+   file-scope, where C disallows code (it must be in functions).  See
+   $exceptions if you have one to add by name.
+
+   More troublesome is declarative macros used at top of new scope,
+   like DECLARE_PER_CPU.  These might just compile with a do-while-0
+   wrapper, but would be incorrect.  Most of these are handled by
+   detecting struct,union,etc declaration primitives in $exceptions.
+
+   Theres also macros called inside an if (block), which "return" an
+   expression.  These cannot do-while, and need a ({}) wrapper.
+
+   Enjoy this qualification while we work to improve our heuristics.
+
+WARNING:SYMBOLIC_PERMS: Symbolic permissions 'S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IXOTH' are not preferred. Consider using octal permissions '0565'.
+#67: FILE: lustre/tests/mpi/simul.c:28:
++#define DIRMODE S_IRUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IXOTH
+
+ERROR:GLOBAL_INITIALISERS: do not initialise globals to NULL
+#73: FILE: lustre/tests/mpi/simul.c:34:
++char *testdir = NULL;
+
+WARNING:STATIC_CONST_CHAR_ARRAY: static char array declaration should probably be static const char
+#78: FILE: lustre/tests/mpi/simul.c:39:
++static char version[] = "1.16";
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#90: FILE: lustre/tests/mpi/simul.c:51:
++    fprintf(stdout, "%s: Process %d(%s): FAILED in %s, %s: %s\n",\$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#93: FILE: lustre/tests/mpi/simul.c:54:
++    fflush(stdout);\$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#94: FILE: lustre/tests/mpi/simul.c:55:
++    MPI_Abort(MPI_COMM_WORLD, 1); \$
+
+ERROR:SPACING: space required before the open parenthesis '('
+#95: FILE: lustre/tests/mpi/simul.c:56:
++} while(0)
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#98: FILE: lustre/tests/mpi/simul.c:59:
++    fprintf(stdout, "%s: Process %d(%s): FAILED, %s: %s\n",\$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#101: FILE: lustre/tests/mpi/simul.c:62:
++    fflush(stdout);\$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#102: FILE: lustre/tests/mpi/simul.c:63:
++    MPI_Abort(MPI_COMM_WORLD, 1); \$
+
+ERROR:SPACING: space required before the open parenthesis '('
+#103: FILE: lustre/tests/mpi/simul.c:64:
++} while(0)
+
+ERROR:FUNCTION_WITHOUT_ARGS: Bad function definition - char *timestamp() should probably be char *timestamp(void)
+#106: FILE: lustre/tests/mpi/simul.c:67:
++char *timestamp() {
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#106: FILE: lustre/tests/mpi/simul.c:67:
++char *timestamp() {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#107: FILE: lustre/tests/mpi/simul.c:68:
++    static char datestring[80];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#108: FILE: lustre/tests/mpi/simul.c:69:
++    time_t timestamp;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#110: FILE: lustre/tests/mpi/simul.c:71:
++    fflush(stdout);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#111: FILE: lustre/tests/mpi/simul.c:72:
++    timestamp = time(NULL);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#112: FILE: lustre/tests/mpi/simul.c:73:
++    strftime(datestring, 80, "%T", localtime(&timestamp));$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#114: FILE: lustre/tests/mpi/simul.c:75:
++    return datestring;$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#117: FILE: lustre/tests/mpi/simul.c:78:
++inline void begin(char *str) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#118: FILE: lustre/tests/mpi/simul.c:79:
++    if (verbose > 0 && rank == 0) {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#119: FILE: lustre/tests/mpi/simul.c:80:
++        gettimeofday(&t1, NULL);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#119: FILE: lustre/tests/mpi/simul.c:80:
++        gettimeofday(&t1, NULL);$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#120: FILE: lustre/tests/mpi/simul.c:81:
++        fprintf(stdout, "%s:\tBeginning %s\n", timestamp(), str);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#120: FILE: lustre/tests/mpi/simul.c:81:
++        fprintf(stdout, "%s:\tBeginning %s\n", timestamp(), str);$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#121: FILE: lustre/tests/mpi/simul.c:82:
++        fflush(stdout);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#121: FILE: lustre/tests/mpi/simul.c:82:
++        fflush(stdout);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#122: FILE: lustre/tests/mpi/simul.c:83:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#125: FILE: lustre/tests/mpi/simul.c:86:
++inline void end(char *str) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#126: FILE: lustre/tests/mpi/simul.c:87:
++    double elapsed;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#128: FILE: lustre/tests/mpi/simul.c:89:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#129: FILE: lustre/tests/mpi/simul.c:90:
++    if (verbose > 0 && rank == 0) {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#133: FILE: lustre/tests/mpi/simul.c:94:
++ ^I^I  / (double)1000000;$
+
+WARNING:SPACE_BEFORE_TAB: please, no space before tabs
+#133: FILE: lustre/tests/mpi/simul.c:94:
++ ^I^I  / (double)1000000;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#133: FILE: lustre/tests/mpi/simul.c:94:
++ ^I^I  / (double)1000000;$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#134: FILE: lustre/tests/mpi/simul.c:95:
++	if (elapsed >= 60) {
++	    fprintf(stdout, "%s:\tFinished %-15s(%.2f min)\n",
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#137: FILE: lustre/tests/mpi/simul.c:98:
++	} else {
++	    fprintf(stdout, "%s:\tFinished %-15s(%.3f sec)\n",
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#143: FILE: lustre/tests/mpi/simul.c:104:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#146: FILE: lustre/tests/mpi/simul.c:107:
++void Seq_begin(MPI_Comm comm, int numprocs) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#147: FILE: lustre/tests/mpi/simul.c:108:
++    int size;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#148: FILE: lustre/tests/mpi/simul.c:109:
++    int rank;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#149: FILE: lustre/tests/mpi/simul.c:110:
++    int buf;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#150: FILE: lustre/tests/mpi/simul.c:111:
++    MPI_Status status;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#152: FILE: lustre/tests/mpi/simul.c:113:
++    MPI_Comm_size(comm, &size);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#153: FILE: lustre/tests/mpi/simul.c:114:
++    MPI_Comm_rank(comm, &rank);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#155: FILE: lustre/tests/mpi/simul.c:116:
++    if (rank >= numprocs) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#155: FILE: lustre/tests/mpi/simul.c:116:
++    if (rank >= numprocs) {
++	MPI_Recv(&buf, 1, MPI_INT, rank-numprocs, 1333, comm, &status);
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#157: FILE: lustre/tests/mpi/simul.c:118:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#160: FILE: lustre/tests/mpi/simul.c:121:
++void Seq_end(MPI_Comm comm, int numprocs) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#161: FILE: lustre/tests/mpi/simul.c:122:
++    int size;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#162: FILE: lustre/tests/mpi/simul.c:123:
++    int rank;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#163: FILE: lustre/tests/mpi/simul.c:124:
++    int buf;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#165: FILE: lustre/tests/mpi/simul.c:126:
++    MPI_Comm_size(comm, &size);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#166: FILE: lustre/tests/mpi/simul.c:127:
++    MPI_Comm_rank(comm, &rank);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#168: FILE: lustre/tests/mpi/simul.c:129:
++    if ((rank + numprocs) < size) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#168: FILE: lustre/tests/mpi/simul.c:129:
++    if ((rank + numprocs) < size) {
++	MPI_Send(&buf, 1, MPI_INT, rank+numprocs, 1333, comm);
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#170: FILE: lustre/tests/mpi/simul.c:131:
++    }$
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use * on subsequent lines
+#174: FILE: lustre/tests/mpi/simul.c:135:
++/* This function does not FAIL if the requested "name" does not exist.  This
++   is just to clean up any files or directories left over from previous runs.*/
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use a trailing */ on a separate line
+#174: FILE: lustre/tests/mpi/simul.c:135:
++   is just to clean up any files or directories left over from previous runs.*/
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#175: FILE: lustre/tests/mpi/simul.c:136:
++void remove_file_or_dir(char *name) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#176: FILE: lustre/tests/mpi/simul.c:137:
++    struct stat statbuf;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#177: FILE: lustre/tests/mpi/simul.c:138:
++    char errmsg[MAX_FILENAME_LEN+20];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#179: FILE: lustre/tests/mpi/simul.c:140:
++    if (stat(name, &statbuf) != -1) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#180: FILE: lustre/tests/mpi/simul.c:141:
++	if (S_ISREG(statbuf.st_mode)) {
++	    printf("stale file found\n");
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#182: FILE: lustre/tests/mpi/simul.c:143:
++	    if (unlink(name) == -1) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#185: FILE: lustre/tests/mpi/simul.c:146:
++	    }
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#187: FILE: lustre/tests/mpi/simul.c:148:
++	if (S_ISDIR(statbuf.st_mode)) {
++	    printf("stale directory found\n");
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#189: FILE: lustre/tests/mpi/simul.c:150:
++	    if (rmdir(name) == -1) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#192: FILE: lustre/tests/mpi/simul.c:153:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#194: FILE: lustre/tests/mpi/simul.c:155:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#197: FILE: lustre/tests/mpi/simul.c:158:
++char *create_files(char *prefix, int filesize, int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#198: FILE: lustre/tests/mpi/simul.c:159:
++    static char filename[MAX_FILENAME_LEN];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#199: FILE: lustre/tests/mpi/simul.c:160:
++    char errmsg[MAX_FILENAME_LEN+20];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#200: FILE: lustre/tests/mpi/simul.c:161:
++    int fd, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#201: FILE: lustre/tests/mpi/simul.c:162:
++    short zero = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#204: FILE: lustre/tests/mpi/simul.c:165:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#205: FILE: lustre/tests/mpi/simul.c:166:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    sprintf(filename, "%s/%s.%d", testdir, prefix, i);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#208: FILE: lustre/tests/mpi/simul.c:169:
++	    if ((fd = creat(filename, FILEMODE)) == -1) {
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#208: FILE: lustre/tests/mpi/simul.c:169:
++	    if ((fd = creat(filename, FILEMODE)) == -1) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#211: FILE: lustre/tests/mpi/simul.c:172:
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#212: FILE: lustre/tests/mpi/simul.c:173:
++	    if (filesize > 0) {
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#213: FILE: lustre/tests/mpi/simul.c:174:
++		if (lseek(fd, filesize - 1, SEEK_SET) == -1) {
++		    sprintf(errmsg, "lseek in file %s", filename);
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#217: FILE: lustre/tests/mpi/simul.c:178:
++		if (write(fd, &zero, 1) == -1) {
++		    sprintf(errmsg, "write in file %s", filename);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#221: FILE: lustre/tests/mpi/simul.c:182:
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#222: FILE: lustre/tests/mpi/simul.c:183:
++	    if (close(fd) == -1) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#225: FILE: lustre/tests/mpi/simul.c:186:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#227: FILE: lustre/tests/mpi/simul.c:188:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#229: FILE: lustre/tests/mpi/simul.c:190:
++    if (shared)$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#231: FILE: lustre/tests/mpi/simul.c:192:
++    else$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#234: FILE: lustre/tests/mpi/simul.c:195:
++    return filename;$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#237: FILE: lustre/tests/mpi/simul.c:198:
++void remove_files(char *prefix, int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#238: FILE: lustre/tests/mpi/simul.c:199:
++    char filename[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#239: FILE: lustre/tests/mpi/simul.c:200:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#242: FILE: lustre/tests/mpi/simul.c:203:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#243: FILE: lustre/tests/mpi/simul.c:204:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    sprintf(filename, "%s/%s.%d", testdir, prefix, i);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#246: FILE: lustre/tests/mpi/simul.c:207:
++	    if (unlink(filename) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#246: FILE: lustre/tests/mpi/simul.c:207:
++	    if (unlink(filename) == -1) {
++		FAIL("unlink failed");
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#248: FILE: lustre/tests/mpi/simul.c:209:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#250: FILE: lustre/tests/mpi/simul.c:211:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#253: FILE: lustre/tests/mpi/simul.c:214:
++char *create_dirs(char *prefix, int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#254: FILE: lustre/tests/mpi/simul.c:215:
++    static char dirname[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#255: FILE: lustre/tests/mpi/simul.c:216:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#258: FILE: lustre/tests/mpi/simul.c:219:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#259: FILE: lustre/tests/mpi/simul.c:220:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    sprintf(dirname, "%s/%s.%d", testdir, prefix, i);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#262: FILE: lustre/tests/mpi/simul.c:223:
++	    if (mkdir(dirname, DIRMODE) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#262: FILE: lustre/tests/mpi/simul.c:223:
++	    if (mkdir(dirname, DIRMODE) == -1) {
++		FAIL("init mkdir failed");
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#264: FILE: lustre/tests/mpi/simul.c:225:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#266: FILE: lustre/tests/mpi/simul.c:227:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#268: FILE: lustre/tests/mpi/simul.c:229:
++    if (shared)$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#270: FILE: lustre/tests/mpi/simul.c:231:
++    else$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#273: FILE: lustre/tests/mpi/simul.c:234:
++    return dirname;$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#276: FILE: lustre/tests/mpi/simul.c:237:
++void remove_dirs(char *prefix, int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#277: FILE: lustre/tests/mpi/simul.c:238:
++    char dirname[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#278: FILE: lustre/tests/mpi/simul.c:239:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#281: FILE: lustre/tests/mpi/simul.c:242:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#282: FILE: lustre/tests/mpi/simul.c:243:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    sprintf(dirname, "%s/%s.%d", testdir, prefix, i);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#284: FILE: lustre/tests/mpi/simul.c:245:
++	    if (rmdir(dirname) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#284: FILE: lustre/tests/mpi/simul.c:245:
++	    if (rmdir(dirname) == -1) {
++		FAIL("rmdir failed");
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#286: FILE: lustre/tests/mpi/simul.c:247:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#288: FILE: lustre/tests/mpi/simul.c:249:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#291: FILE: lustre/tests/mpi/simul.c:252:
++char *create_symlinks(char *prefix, int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#292: FILE: lustre/tests/mpi/simul.c:253:
++    static char filename[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#293: FILE: lustre/tests/mpi/simul.c:254:
++    static char linkname[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#294: FILE: lustre/tests/mpi/simul.c:255:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#297: FILE: lustre/tests/mpi/simul.c:258:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#298: FILE: lustre/tests/mpi/simul.c:259:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    sprintf(filename, "%s/symlink_target", testdir);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#302: FILE: lustre/tests/mpi/simul.c:263:
++	    if (symlink(filename, linkname) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#302: FILE: lustre/tests/mpi/simul.c:263:
++	    if (symlink(filename, linkname) == -1) {
++		FAIL("symlink failed");
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#304: FILE: lustre/tests/mpi/simul.c:265:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#306: FILE: lustre/tests/mpi/simul.c:267:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#308: FILE: lustre/tests/mpi/simul.c:269:
++    if (shared)$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#310: FILE: lustre/tests/mpi/simul.c:271:
++    else$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#313: FILE: lustre/tests/mpi/simul.c:274:
++    return linkname;$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#316: FILE: lustre/tests/mpi/simul.c:277:
++void check_single_success(char *testname, int rc, int error_rc) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#317: FILE: lustre/tests/mpi/simul.c:278:
++    int *rc_vec = NULL, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#318: FILE: lustre/tests/mpi/simul.c:279:
++    int fail = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#319: FILE: lustre/tests/mpi/simul.c:280:
++    int pass = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#321: FILE: lustre/tests/mpi/simul.c:282:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#322: FILE: lustre/tests/mpi/simul.c:283:
++	if ((rc_vec = (int *)malloc(sizeof(int)*size)) == NULL) {
++	    FAIL("malloc failed");
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#322: FILE: lustre/tests/mpi/simul.c:283:
++	if ((rc_vec = (int *)malloc(sizeof(int)*size)) == NULL) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#322: FILE: lustre/tests/mpi/simul.c:283:
++	if ((rc_vec = (int *)malloc(sizeof(int)*size)) == NULL) {
++	    FAIL("malloc failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#325: FILE: lustre/tests/mpi/simul.c:286:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#326: FILE: lustre/tests/mpi/simul.c:287:
++    MPI_Gather(&rc, 1, MPI_INT, rc_vec, 1, MPI_INT, 0, MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#327: FILE: lustre/tests/mpi/simul.c:288:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#328: FILE: lustre/tests/mpi/simul.c:289:
++	for (i = 0; i < size; i++) {
++	    if (rc_vec[i] == error_rc)
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#329: FILE: lustre/tests/mpi/simul.c:290:
++	    if (rc_vec[i] == error_rc)
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#331: FILE: lustre/tests/mpi/simul.c:292:
++	    else
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#334: FILE: lustre/tests/mpi/simul.c:295:
++	if (!((pass == 1) && (fail == size-1))) {
++	    fprintf(stdout, "%s: FAILED in %s: ", timestamp(), testname);
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#336: FILE: lustre/tests/mpi/simul.c:297:
++	    if (pass > 1)
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#338: FILE: lustre/tests/mpi/simul.c:299:
++	    else
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#344: FILE: lustre/tests/mpi/simul.c:305:
++    }$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#347: FILE: lustre/tests/mpi/simul.c:308:
++void simul_open(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#348: FILE: lustre/tests/mpi/simul.c:309:
++    int fd;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#349: FILE: lustre/tests/mpi/simul.c:310:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#351: FILE: lustre/tests/mpi/simul.c:312:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#352: FILE: lustre/tests/mpi/simul.c:313:
++    filename = create_files("simul_open", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#353: FILE: lustre/tests/mpi/simul.c:314:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#356: FILE: lustre/tests/mpi/simul.c:317:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#357: FILE: lustre/tests/mpi/simul.c:318:
++    if ((fd = open(filename, O_RDWR)) == -1) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#357: FILE: lustre/tests/mpi/simul.c:318:
++    if ((fd = open(filename, O_RDWR)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#357: FILE: lustre/tests/mpi/simul.c:318:
++    if ((fd = open(filename, O_RDWR)) == -1) {
++	FAIL("open failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#359: FILE: lustre/tests/mpi/simul.c:320:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#360: FILE: lustre/tests/mpi/simul.c:321:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#363: FILE: lustre/tests/mpi/simul.c:324:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#364: FILE: lustre/tests/mpi/simul.c:325:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#365: FILE: lustre/tests/mpi/simul.c:326:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#365: FILE: lustre/tests/mpi/simul.c:326:
++    if (close(fd) == -1) {
++	FAIL("close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#367: FILE: lustre/tests/mpi/simul.c:328:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#368: FILE: lustre/tests/mpi/simul.c:329:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#369: FILE: lustre/tests/mpi/simul.c:330:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#370: FILE: lustre/tests/mpi/simul.c:331:
++    remove_files("simul_open", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#371: FILE: lustre/tests/mpi/simul.c:332:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#374: FILE: lustre/tests/mpi/simul.c:335:
++void simul_close(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#375: FILE: lustre/tests/mpi/simul.c:336:
++    int fd;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#376: FILE: lustre/tests/mpi/simul.c:337:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#378: FILE: lustre/tests/mpi/simul.c:339:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#379: FILE: lustre/tests/mpi/simul.c:340:
++    filename = create_files("simul_close", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#380: FILE: lustre/tests/mpi/simul.c:341:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#382: FILE: lustre/tests/mpi/simul.c:343:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#383: FILE: lustre/tests/mpi/simul.c:344:
++    if ((fd = open(filename, O_RDWR)) == -1) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#383: FILE: lustre/tests/mpi/simul.c:344:
++    if ((fd = open(filename, O_RDWR)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#383: FILE: lustre/tests/mpi/simul.c:344:
++    if ((fd = open(filename, O_RDWR)) == -1) {
++	FAIL("open failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#385: FILE: lustre/tests/mpi/simul.c:346:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#386: FILE: lustre/tests/mpi/simul.c:347:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#387: FILE: lustre/tests/mpi/simul.c:348:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#389: FILE: lustre/tests/mpi/simul.c:350:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#391: FILE: lustre/tests/mpi/simul.c:352:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#391: FILE: lustre/tests/mpi/simul.c:352:
++    if (close(fd) == -1) {
++	FAIL("close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#393: FILE: lustre/tests/mpi/simul.c:354:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#394: FILE: lustre/tests/mpi/simul.c:355:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#396: FILE: lustre/tests/mpi/simul.c:357:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#397: FILE: lustre/tests/mpi/simul.c:358:
++    remove_files("simul_close", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#398: FILE: lustre/tests/mpi/simul.c:359:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#401: FILE: lustre/tests/mpi/simul.c:362:
++void simul_chdir(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#402: FILE: lustre/tests/mpi/simul.c:363:
++    char cwd[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#403: FILE: lustre/tests/mpi/simul.c:364:
++    char *dirname;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#405: FILE: lustre/tests/mpi/simul.c:366:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#406: FILE: lustre/tests/mpi/simul.c:367:
++    if (getcwd(cwd, 1024) == NULL) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#406: FILE: lustre/tests/mpi/simul.c:367:
++    if (getcwd(cwd, 1024) == NULL) {
++	FAIL("init getcwd failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#408: FILE: lustre/tests/mpi/simul.c:369:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#409: FILE: lustre/tests/mpi/simul.c:370:
++    dirname = create_dirs("simul_chdir", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#410: FILE: lustre/tests/mpi/simul.c:371:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#412: FILE: lustre/tests/mpi/simul.c:373:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#414: FILE: lustre/tests/mpi/simul.c:375:
++    if (chdir(dirname) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#414: FILE: lustre/tests/mpi/simul.c:375:
++    if (chdir(dirname) == -1) {
++	FAIL("chdir failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#416: FILE: lustre/tests/mpi/simul.c:377:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#417: FILE: lustre/tests/mpi/simul.c:378:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#419: FILE: lustre/tests/mpi/simul.c:380:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#421: FILE: lustre/tests/mpi/simul.c:382:
++    if (chdir(cwd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#421: FILE: lustre/tests/mpi/simul.c:382:
++    if (chdir(cwd) == -1) {
++	FAIL("chdir back failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#423: FILE: lustre/tests/mpi/simul.c:384:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#424: FILE: lustre/tests/mpi/simul.c:385:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#425: FILE: lustre/tests/mpi/simul.c:386:
++    remove_dirs("simul_chdir", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#426: FILE: lustre/tests/mpi/simul.c:387:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#429: FILE: lustre/tests/mpi/simul.c:390:
++void simul_file_stat(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#430: FILE: lustre/tests/mpi/simul.c:391:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#431: FILE: lustre/tests/mpi/simul.c:392:
++    struct stat buf;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#433: FILE: lustre/tests/mpi/simul.c:394:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#434: FILE: lustre/tests/mpi/simul.c:395:
++    filename = create_files("simul_file_stat", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#435: FILE: lustre/tests/mpi/simul.c:396:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#437: FILE: lustre/tests/mpi/simul.c:398:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#439: FILE: lustre/tests/mpi/simul.c:400:
++    if (stat(filename, &buf) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#439: FILE: lustre/tests/mpi/simul.c:400:
++    if (stat(filename, &buf) == -1) {
++	FAIL("stat failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#441: FILE: lustre/tests/mpi/simul.c:402:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#442: FILE: lustre/tests/mpi/simul.c:403:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#444: FILE: lustre/tests/mpi/simul.c:405:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#445: FILE: lustre/tests/mpi/simul.c:406:
++    remove_files("simul_file_stat", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#446: FILE: lustre/tests/mpi/simul.c:407:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#449: FILE: lustre/tests/mpi/simul.c:410:
++void simul_dir_stat(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#450: FILE: lustre/tests/mpi/simul.c:411:
++    char *dirname;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#451: FILE: lustre/tests/mpi/simul.c:412:
++    struct stat buf;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#453: FILE: lustre/tests/mpi/simul.c:414:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#454: FILE: lustre/tests/mpi/simul.c:415:
++    dirname = create_dirs("simul_dir_stat", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#455: FILE: lustre/tests/mpi/simul.c:416:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#457: FILE: lustre/tests/mpi/simul.c:418:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#459: FILE: lustre/tests/mpi/simul.c:420:
++    if (stat(dirname, &buf) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#459: FILE: lustre/tests/mpi/simul.c:420:
++    if (stat(dirname, &buf) == -1) {
++	FAIL("stat failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#461: FILE: lustre/tests/mpi/simul.c:422:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#462: FILE: lustre/tests/mpi/simul.c:423:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#464: FILE: lustre/tests/mpi/simul.c:425:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#465: FILE: lustre/tests/mpi/simul.c:426:
++    remove_dirs("simul_dir_stat", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#466: FILE: lustre/tests/mpi/simul.c:427:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#469: FILE: lustre/tests/mpi/simul.c:430:
++void simul_readdir(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#470: FILE: lustre/tests/mpi/simul.c:431:
++    DIR *dir;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#471: FILE: lustre/tests/mpi/simul.c:432:
++    char *dirname;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#472: FILE: lustre/tests/mpi/simul.c:433:
++    struct dirent *dptr;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#474: FILE: lustre/tests/mpi/simul.c:435:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#475: FILE: lustre/tests/mpi/simul.c:436:
++    dirname = create_dirs("simul_readdir", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#476: FILE: lustre/tests/mpi/simul.c:437:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#478: FILE: lustre/tests/mpi/simul.c:439:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#479: FILE: lustre/tests/mpi/simul.c:440:
++    if ((dir = opendir(dirname)) == NULL) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#479: FILE: lustre/tests/mpi/simul.c:440:
++    if ((dir = opendir(dirname)) == NULL) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#479: FILE: lustre/tests/mpi/simul.c:440:
++    if ((dir = opendir(dirname)) == NULL) {
++	FAIL("init opendir failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#481: FILE: lustre/tests/mpi/simul.c:442:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#482: FILE: lustre/tests/mpi/simul.c:443:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#483: FILE: lustre/tests/mpi/simul.c:444:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#485: FILE: lustre/tests/mpi/simul.c:446:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#487: FILE: lustre/tests/mpi/simul.c:448:
++    if ((dptr = readdir(dir)) == NULL) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#487: FILE: lustre/tests/mpi/simul.c:448:
++    if ((dptr = readdir(dir)) == NULL) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#487: FILE: lustre/tests/mpi/simul.c:448:
++    if ((dptr = readdir(dir)) == NULL) {
++	FAIL("readdir failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#489: FILE: lustre/tests/mpi/simul.c:450:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#490: FILE: lustre/tests/mpi/simul.c:451:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#492: FILE: lustre/tests/mpi/simul.c:453:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#494: FILE: lustre/tests/mpi/simul.c:455:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#495: FILE: lustre/tests/mpi/simul.c:456:
++    if (closedir(dir) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#495: FILE: lustre/tests/mpi/simul.c:456:
++    if (closedir(dir) == -1) {
++	FAIL("closedir failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#497: FILE: lustre/tests/mpi/simul.c:458:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#498: FILE: lustre/tests/mpi/simul.c:459:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#499: FILE: lustre/tests/mpi/simul.c:460:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#500: FILE: lustre/tests/mpi/simul.c:461:
++    remove_dirs("simul_readdir", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#501: FILE: lustre/tests/mpi/simul.c:462:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#504: FILE: lustre/tests/mpi/simul.c:465:
++void simul_statfs(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#505: FILE: lustre/tests/mpi/simul.c:466:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#506: FILE: lustre/tests/mpi/simul.c:467:
++    struct statfs buf;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#508: FILE: lustre/tests/mpi/simul.c:469:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#509: FILE: lustre/tests/mpi/simul.c:470:
++    filename = create_files("simul_statfs", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#510: FILE: lustre/tests/mpi/simul.c:471:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#512: FILE: lustre/tests/mpi/simul.c:473:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#514: FILE: lustre/tests/mpi/simul.c:475:
++    if (statfs(filename, &buf) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#514: FILE: lustre/tests/mpi/simul.c:475:
++    if (statfs(filename, &buf) == -1) {
++	FAIL("statfs failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#516: FILE: lustre/tests/mpi/simul.c:477:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#517: FILE: lustre/tests/mpi/simul.c:478:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#519: FILE: lustre/tests/mpi/simul.c:480:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#520: FILE: lustre/tests/mpi/simul.c:481:
++    remove_files("simul_statfs", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#521: FILE: lustre/tests/mpi/simul.c:482:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#524: FILE: lustre/tests/mpi/simul.c:485:
++void simul_lseek(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#525: FILE: lustre/tests/mpi/simul.c:486:
++    int fd;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#526: FILE: lustre/tests/mpi/simul.c:487:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#528: FILE: lustre/tests/mpi/simul.c:489:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#529: FILE: lustre/tests/mpi/simul.c:490:
++    filename = create_files("simul_lseek", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#530: FILE: lustre/tests/mpi/simul.c:491:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#532: FILE: lustre/tests/mpi/simul.c:493:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#533: FILE: lustre/tests/mpi/simul.c:494:
++    if ((fd = open(filename, O_RDWR)) == -1) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#533: FILE: lustre/tests/mpi/simul.c:494:
++    if ((fd = open(filename, O_RDWR)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#533: FILE: lustre/tests/mpi/simul.c:494:
++    if ((fd = open(filename, O_RDWR)) == -1) {
++	FAIL("init open failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#535: FILE: lustre/tests/mpi/simul.c:496:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#536: FILE: lustre/tests/mpi/simul.c:497:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#537: FILE: lustre/tests/mpi/simul.c:498:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#539: FILE: lustre/tests/mpi/simul.c:500:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#541: FILE: lustre/tests/mpi/simul.c:502:
++    if (lseek(fd, 1024, SEEK_SET) == -1) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#544: FILE: lustre/tests/mpi/simul.c:505:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#545: FILE: lustre/tests/mpi/simul.c:506:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#547: FILE: lustre/tests/mpi/simul.c:508:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#549: FILE: lustre/tests/mpi/simul.c:510:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#550: FILE: lustre/tests/mpi/simul.c:511:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#550: FILE: lustre/tests/mpi/simul.c:511:
++    if (close(fd) == -1) {
++	FAIL("cleanup close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#552: FILE: lustre/tests/mpi/simul.c:513:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#553: FILE: lustre/tests/mpi/simul.c:514:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#554: FILE: lustre/tests/mpi/simul.c:515:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#555: FILE: lustre/tests/mpi/simul.c:516:
++    remove_files("simul_lseek", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#556: FILE: lustre/tests/mpi/simul.c:517:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#559: FILE: lustre/tests/mpi/simul.c:520:
++void simul_read(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#560: FILE: lustre/tests/mpi/simul.c:521:
++    int fd;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#561: FILE: lustre/tests/mpi/simul.c:522:
++    ssize_t fin;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#562: FILE: lustre/tests/mpi/simul.c:523:
++    char buf[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#563: FILE: lustre/tests/mpi/simul.c:524:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#564: FILE: lustre/tests/mpi/simul.c:525:
++    int i = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#565: FILE: lustre/tests/mpi/simul.c:526:
++    int retry = 100;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#567: FILE: lustre/tests/mpi/simul.c:528:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#568: FILE: lustre/tests/mpi/simul.c:529:
++    filename = create_files("simul_read", 1024, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#569: FILE: lustre/tests/mpi/simul.c:530:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#571: FILE: lustre/tests/mpi/simul.c:532:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#572: FILE: lustre/tests/mpi/simul.c:533:
++    if ((fd = open(filename, O_RDWR)) == -1) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#572: FILE: lustre/tests/mpi/simul.c:533:
++    if ((fd = open(filename, O_RDWR)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#572: FILE: lustre/tests/mpi/simul.c:533:
++    if ((fd = open(filename, O_RDWR)) == -1) {
++	FAIL("init open failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#574: FILE: lustre/tests/mpi/simul.c:535:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#575: FILE: lustre/tests/mpi/simul.c:536:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#576: FILE: lustre/tests/mpi/simul.c:537:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#578: FILE: lustre/tests/mpi/simul.c:539:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#580: FILE: lustre/tests/mpi/simul.c:541:
++    for (i = 1024; (i > 0) && (retry > 0); i -= fin, retry--) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#581: FILE: lustre/tests/mpi/simul.c:542:
++	if ((fin = read(fd, buf, (size_t)i)) == -1) {
++	    FAIL("read failed");
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#581: FILE: lustre/tests/mpi/simul.c:542:
++	if ((fin = read(fd, buf, (size_t)i)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#581: FILE: lustre/tests/mpi/simul.c:542:
++	if ((fin = read(fd, buf, (size_t)i)) == -1) {
++	    FAIL("read failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#584: FILE: lustre/tests/mpi/simul.c:545:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#585: FILE: lustre/tests/mpi/simul.c:546:
++    if( (retry == 0) && (i > 0) )$
+
+ERROR:SPACING: space prohibited after that open parenthesis '('
+#585: FILE: lustre/tests/mpi/simul.c:546:
++    if( (retry == 0) && (i > 0) )
+
+ERROR:SPACING: space prohibited before that close parenthesis ')'
+#585: FILE: lustre/tests/mpi/simul.c:546:
++    if( (retry == 0) && (i > 0) )
+
+ERROR:SPACING: space required before the open parenthesis '('
+#585: FILE: lustre/tests/mpi/simul.c:546:
++    if( (retry == 0) && (i > 0) )
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#587: FILE: lustre/tests/mpi/simul.c:548:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#589: FILE: lustre/tests/mpi/simul.c:550:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#591: FILE: lustre/tests/mpi/simul.c:552:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#592: FILE: lustre/tests/mpi/simul.c:553:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#592: FILE: lustre/tests/mpi/simul.c:553:
++    if (close(fd) == -1) {
++	FAIL("cleanup close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#594: FILE: lustre/tests/mpi/simul.c:555:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#595: FILE: lustre/tests/mpi/simul.c:556:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#596: FILE: lustre/tests/mpi/simul.c:557:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#597: FILE: lustre/tests/mpi/simul.c:558:
++    remove_files("simul_read", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#598: FILE: lustre/tests/mpi/simul.c:559:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#601: FILE: lustre/tests/mpi/simul.c:562:
++void simul_write(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#602: FILE: lustre/tests/mpi/simul.c:563:
++    int fd;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#603: FILE: lustre/tests/mpi/simul.c:564:
++    ssize_t fin;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#604: FILE: lustre/tests/mpi/simul.c:565:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#605: FILE: lustre/tests/mpi/simul.c:566:
++    int i = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#606: FILE: lustre/tests/mpi/simul.c:567:
++    int retry = 100;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#608: FILE: lustre/tests/mpi/simul.c:569:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#609: FILE: lustre/tests/mpi/simul.c:570:
++    filename = create_files("simul_write", size * sizeof(int), shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#610: FILE: lustre/tests/mpi/simul.c:571:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#612: FILE: lustre/tests/mpi/simul.c:573:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#613: FILE: lustre/tests/mpi/simul.c:574:
++    if ((fd = open(filename, O_RDWR)) == -1) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#613: FILE: lustre/tests/mpi/simul.c:574:
++    if ((fd = open(filename, O_RDWR)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#613: FILE: lustre/tests/mpi/simul.c:574:
++    if ((fd = open(filename, O_RDWR)) == -1) {
++	FAIL("init open failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#615: FILE: lustre/tests/mpi/simul.c:576:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#616: FILE: lustre/tests/mpi/simul.c:577:
++    if (lseek(fd, rank*sizeof(int), SEEK_SET) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#616: FILE: lustre/tests/mpi/simul.c:577:
++    if (lseek(fd, rank*sizeof(int), SEEK_SET) == -1) {
++	FAIL("init lseek failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#618: FILE: lustre/tests/mpi/simul.c:579:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#619: FILE: lustre/tests/mpi/simul.c:580:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#620: FILE: lustre/tests/mpi/simul.c:581:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#622: FILE: lustre/tests/mpi/simul.c:583:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#624: FILE: lustre/tests/mpi/simul.c:585:
++    for (i = sizeof(int); (i > 0) && (retry > 0); i -= fin, retry--) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#625: FILE: lustre/tests/mpi/simul.c:586:
++	if ((fin = write(fd, &rank, (size_t)i)) == -1) {
++	    FAIL("write failed");
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#625: FILE: lustre/tests/mpi/simul.c:586:
++	if ((fin = write(fd, &rank, (size_t)i)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#625: FILE: lustre/tests/mpi/simul.c:586:
++	if ((fin = write(fd, &rank, (size_t)i)) == -1) {
++	    FAIL("write failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#628: FILE: lustre/tests/mpi/simul.c:589:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#629: FILE: lustre/tests/mpi/simul.c:590:
++    if( (retry == 0) && (i > 0) )$
+
+ERROR:SPACING: space prohibited after that open parenthesis '('
+#629: FILE: lustre/tests/mpi/simul.c:590:
++    if( (retry == 0) && (i > 0) )
+
+ERROR:SPACING: space prohibited before that close parenthesis ')'
+#629: FILE: lustre/tests/mpi/simul.c:590:
++    if( (retry == 0) && (i > 0) )
+
+ERROR:SPACING: space required before the open parenthesis '('
+#629: FILE: lustre/tests/mpi/simul.c:590:
++    if( (retry == 0) && (i > 0) )
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#631: FILE: lustre/tests/mpi/simul.c:592:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#633: FILE: lustre/tests/mpi/simul.c:594:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#635: FILE: lustre/tests/mpi/simul.c:596:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#636: FILE: lustre/tests/mpi/simul.c:597:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#636: FILE: lustre/tests/mpi/simul.c:597:
++    if (close(fd) == -1) {
++	FAIL("cleanup close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#638: FILE: lustre/tests/mpi/simul.c:599:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#639: FILE: lustre/tests/mpi/simul.c:600:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#640: FILE: lustre/tests/mpi/simul.c:601:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#641: FILE: lustre/tests/mpi/simul.c:602:
++    remove_files("simul_write", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#642: FILE: lustre/tests/mpi/simul.c:603:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#645: FILE: lustre/tests/mpi/simul.c:606:
++void simul_mkdir(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#646: FILE: lustre/tests/mpi/simul.c:607:
++    int rc, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#647: FILE: lustre/tests/mpi/simul.c:608:
++    char dirname[MAX_FILENAME_LEN];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#649: FILE: lustre/tests/mpi/simul.c:610:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#650: FILE: lustre/tests/mpi/simul.c:611:
++    if (shared)$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_mkdir', this function's name, in a string
+#651: FILE: lustre/tests/mpi/simul.c:612:
++	sprintf(dirname, "%s/simul_mkdir.0", testdir);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#652: FILE: lustre/tests/mpi/simul.c:613:
++    else$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_mkdir', this function's name, in a string
+#653: FILE: lustre/tests/mpi/simul.c:614:
++	sprintf(dirname, "%s/simul_mkdir.%d", testdir, rank);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#654: FILE: lustre/tests/mpi/simul.c:615:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#655: FILE: lustre/tests/mpi/simul.c:616:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    char buf[MAX_FILENAME_LEN];
+
+WARNING:LINE_SPACING: Missing a blank line after declarations
+#657: FILE: lustre/tests/mpi/simul.c:618:
++	    char buf[MAX_FILENAME_LEN];
++	    sprintf(buf, "%s/simul_mkdir.%d", testdir, i);
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_mkdir', this function's name, in a string
+#657: FILE: lustre/tests/mpi/simul.c:618:
++	    sprintf(buf, "%s/simul_mkdir.%d", testdir, i);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#660: FILE: lustre/tests/mpi/simul.c:621:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#661: FILE: lustre/tests/mpi/simul.c:622:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#663: FILE: lustre/tests/mpi/simul.c:624:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#665: FILE: lustre/tests/mpi/simul.c:626:
++    rc = mkdir(dirname, DIRMODE);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#666: FILE: lustre/tests/mpi/simul.c:627:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#667: FILE: lustre/tests/mpi/simul.c:628:
++	if (rc == -1) {
++	    FAIL("mkdir failed");
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#667: FILE: lustre/tests/mpi/simul.c:628:
++	if (rc == -1) {
++	    FAIL("mkdir failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#671: FILE: lustre/tests/mpi/simul.c:632:
++    } else { /* Only one should succeed */$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#673: FILE: lustre/tests/mpi/simul.c:634:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#674: FILE: lustre/tests/mpi/simul.c:635:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#676: FILE: lustre/tests/mpi/simul.c:637:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#677: FILE: lustre/tests/mpi/simul.c:638:
++    remove_dirs("simul_mkdir", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#678: FILE: lustre/tests/mpi/simul.c:639:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#681: FILE: lustre/tests/mpi/simul.c:642:
++void simul_rmdir(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#682: FILE: lustre/tests/mpi/simul.c:643:
++    int rc;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#683: FILE: lustre/tests/mpi/simul.c:644:
++    char *dirname;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#685: FILE: lustre/tests/mpi/simul.c:646:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#686: FILE: lustre/tests/mpi/simul.c:647:
++    dirname = create_dirs("simul_rmdir", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#687: FILE: lustre/tests/mpi/simul.c:648:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#688: FILE: lustre/tests/mpi/simul.c:649:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#690: FILE: lustre/tests/mpi/simul.c:651:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#692: FILE: lustre/tests/mpi/simul.c:653:
++    rc = rmdir(dirname);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#693: FILE: lustre/tests/mpi/simul.c:654:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#694: FILE: lustre/tests/mpi/simul.c:655:
++	if (rc == -1) {
++	    FAIL("rmdir failed");
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#694: FILE: lustre/tests/mpi/simul.c:655:
++	if (rc == -1) {
++	    FAIL("rmdir failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#698: FILE: lustre/tests/mpi/simul.c:659:
++    } else { /* Only one should succeed */$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#700: FILE: lustre/tests/mpi/simul.c:661:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#701: FILE: lustre/tests/mpi/simul.c:662:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#703: FILE: lustre/tests/mpi/simul.c:664:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#704: FILE: lustre/tests/mpi/simul.c:665:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#707: FILE: lustre/tests/mpi/simul.c:668:
++void simul_creat(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#708: FILE: lustre/tests/mpi/simul.c:669:
++    int fd, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#709: FILE: lustre/tests/mpi/simul.c:670:
++    char filename[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#711: FILE: lustre/tests/mpi/simul.c:672:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#712: FILE: lustre/tests/mpi/simul.c:673:
++    if (shared)$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_creat', this function's name, in a string
+#713: FILE: lustre/tests/mpi/simul.c:674:
++	sprintf(filename, "%s/simul_creat.0", testdir);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#714: FILE: lustre/tests/mpi/simul.c:675:
++    else$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_creat', this function's name, in a string
+#715: FILE: lustre/tests/mpi/simul.c:676:
++	sprintf(filename, "%s/simul_creat.%d", testdir, rank);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#716: FILE: lustre/tests/mpi/simul.c:677:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#717: FILE: lustre/tests/mpi/simul.c:678:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    char buf[MAX_FILENAME_LEN];
+
+WARNING:LINE_SPACING: Missing a blank line after declarations
+#719: FILE: lustre/tests/mpi/simul.c:680:
++	    char buf[MAX_FILENAME_LEN];
++	    sprintf(buf, "%s/simul_creat.%d", testdir, i);
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_creat', this function's name, in a string
+#719: FILE: lustre/tests/mpi/simul.c:680:
++	    sprintf(buf, "%s/simul_creat.%d", testdir, i);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#722: FILE: lustre/tests/mpi/simul.c:683:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#723: FILE: lustre/tests/mpi/simul.c:684:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#725: FILE: lustre/tests/mpi/simul.c:686:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#727: FILE: lustre/tests/mpi/simul.c:688:
++    fd = creat(filename, FILEMODE);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#728: FILE: lustre/tests/mpi/simul.c:689:
++    if (fd == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#728: FILE: lustre/tests/mpi/simul.c:689:
++    if (fd == -1) {
++	FAIL("creat failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#730: FILE: lustre/tests/mpi/simul.c:691:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#731: FILE: lustre/tests/mpi/simul.c:692:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#733: FILE: lustre/tests/mpi/simul.c:694:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#735: FILE: lustre/tests/mpi/simul.c:696:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#736: FILE: lustre/tests/mpi/simul.c:697:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#736: FILE: lustre/tests/mpi/simul.c:697:
++    if (close(fd) == -1) {
++	FAIL("close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#738: FILE: lustre/tests/mpi/simul.c:699:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#739: FILE: lustre/tests/mpi/simul.c:700:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#740: FILE: lustre/tests/mpi/simul.c:701:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#741: FILE: lustre/tests/mpi/simul.c:702:
++    remove_files("simul_creat", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#742: FILE: lustre/tests/mpi/simul.c:703:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#745: FILE: lustre/tests/mpi/simul.c:706:
++void simul_unlink(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#746: FILE: lustre/tests/mpi/simul.c:707:
++    int rc;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#747: FILE: lustre/tests/mpi/simul.c:708:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#749: FILE: lustre/tests/mpi/simul.c:710:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#750: FILE: lustre/tests/mpi/simul.c:711:
++    filename = create_files("simul_unlink", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#751: FILE: lustre/tests/mpi/simul.c:712:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#753: FILE: lustre/tests/mpi/simul.c:714:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#755: FILE: lustre/tests/mpi/simul.c:716:
++    rc = unlink(filename);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#756: FILE: lustre/tests/mpi/simul.c:717:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#757: FILE: lustre/tests/mpi/simul.c:718:
++	if (rc == -1) {
++	    FAIL("unlink failed");
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#757: FILE: lustre/tests/mpi/simul.c:718:
++	if (rc == -1) {
++	    FAIL("unlink failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#760: FILE: lustre/tests/mpi/simul.c:721:
++    } else {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#762: FILE: lustre/tests/mpi/simul.c:723:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#763: FILE: lustre/tests/mpi/simul.c:724:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#765: FILE: lustre/tests/mpi/simul.c:726:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#766: FILE: lustre/tests/mpi/simul.c:727:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#769: FILE: lustre/tests/mpi/simul.c:730:
++void simul_rename(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#770: FILE: lustre/tests/mpi/simul.c:731:
++    int rc, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#771: FILE: lustre/tests/mpi/simul.c:732:
++    char *oldfilename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#772: FILE: lustre/tests/mpi/simul.c:733:
++    char newfilename[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#773: FILE: lustre/tests/mpi/simul.c:734:
++    char *testname = "simul_rename";$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#775: FILE: lustre/tests/mpi/simul.c:736:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#776: FILE: lustre/tests/mpi/simul.c:737:
++    oldfilename = create_files(testname, 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#777: FILE: lustre/tests/mpi/simul.c:738:
++    sprintf(newfilename, "%s/%s_new.%d", testdir, testname, rank);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#778: FILE: lustre/tests/mpi/simul.c:739:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#779: FILE: lustre/tests/mpi/simul.c:740:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    char buf[MAX_FILENAME_LEN];
+
+WARNING:LINE_SPACING: Missing a blank line after declarations
+#781: FILE: lustre/tests/mpi/simul.c:742:
++	    char buf[MAX_FILENAME_LEN];
++	    sprintf(buf, "%s/%s_new.%d", testdir, testname, i);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#784: FILE: lustre/tests/mpi/simul.c:745:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#785: FILE: lustre/tests/mpi/simul.c:746:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#787: FILE: lustre/tests/mpi/simul.c:748:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#789: FILE: lustre/tests/mpi/simul.c:750:
++    rc = rename(oldfilename, newfilename);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#790: FILE: lustre/tests/mpi/simul.c:751:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#791: FILE: lustre/tests/mpi/simul.c:752:
++	if (rc == -1) {
++	    FAIL("stat failed");
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#791: FILE: lustre/tests/mpi/simul.c:752:
++	if (rc == -1) {
++	    FAIL("stat failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#794: FILE: lustre/tests/mpi/simul.c:755:
++    } else {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#796: FILE: lustre/tests/mpi/simul.c:757:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#797: FILE: lustre/tests/mpi/simul.c:758:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#799: FILE: lustre/tests/mpi/simul.c:760:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#800: FILE: lustre/tests/mpi/simul.c:761:
++    if (rc == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#801: FILE: lustre/tests/mpi/simul.c:762:
++	if (unlink(newfilename) == -1)
++	    FAIL("unlink failed");
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#803: FILE: lustre/tests/mpi/simul.c:764:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#804: FILE: lustre/tests/mpi/simul.c:765:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#807: FILE: lustre/tests/mpi/simul.c:768:
++void simul_truncate(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#808: FILE: lustre/tests/mpi/simul.c:769:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#810: FILE: lustre/tests/mpi/simul.c:771:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#811: FILE: lustre/tests/mpi/simul.c:772:
++    filename = create_files("simul_truncate", 2048, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#812: FILE: lustre/tests/mpi/simul.c:773:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#814: FILE: lustre/tests/mpi/simul.c:775:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#816: FILE: lustre/tests/mpi/simul.c:777:
++    if (truncate(filename, 1024) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#816: FILE: lustre/tests/mpi/simul.c:777:
++    if (truncate(filename, 1024) == -1) {
++	FAIL("truncate failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#818: FILE: lustre/tests/mpi/simul.c:779:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#819: FILE: lustre/tests/mpi/simul.c:780:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#821: FILE: lustre/tests/mpi/simul.c:782:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#822: FILE: lustre/tests/mpi/simul.c:783:
++    remove_files("simul_truncate", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#823: FILE: lustre/tests/mpi/simul.c:784:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#826: FILE: lustre/tests/mpi/simul.c:787:
++void simul_readlink(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#827: FILE: lustre/tests/mpi/simul.c:788:
++    char *linkname;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#828: FILE: lustre/tests/mpi/simul.c:789:
++    char buf[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#830: FILE: lustre/tests/mpi/simul.c:791:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#831: FILE: lustre/tests/mpi/simul.c:792:
++    linkname = create_symlinks("simul_readlink", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#832: FILE: lustre/tests/mpi/simul.c:793:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#834: FILE: lustre/tests/mpi/simul.c:795:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#836: FILE: lustre/tests/mpi/simul.c:797:
++    if (readlink(linkname, buf, 1024) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#836: FILE: lustre/tests/mpi/simul.c:797:
++    if (readlink(linkname, buf, 1024) == -1) {
++	FAIL("readlink failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#838: FILE: lustre/tests/mpi/simul.c:799:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#839: FILE: lustre/tests/mpi/simul.c:800:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#841: FILE: lustre/tests/mpi/simul.c:802:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#842: FILE: lustre/tests/mpi/simul.c:803:
++    remove_files("simul_readlink", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#843: FILE: lustre/tests/mpi/simul.c:804:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#846: FILE: lustre/tests/mpi/simul.c:807:
++void simul_symlink(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#847: FILE: lustre/tests/mpi/simul.c:808:
++    int rc, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#848: FILE: lustre/tests/mpi/simul.c:809:
++    char linkname[MAX_FILENAME_LEN];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#849: FILE: lustre/tests/mpi/simul.c:810:
++    char filename[MAX_FILENAME_LEN];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#851: FILE: lustre/tests/mpi/simul.c:812:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#852: FILE: lustre/tests/mpi/simul.c:813:
++    if (shared)$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_symlink', this function's name, in a string
+#853: FILE: lustre/tests/mpi/simul.c:814:
++	sprintf(linkname, "%s/simul_symlink.0", testdir);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#854: FILE: lustre/tests/mpi/simul.c:815:
++    else$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_symlink', this function's name, in a string
+#855: FILE: lustre/tests/mpi/simul.c:816:
++	sprintf(linkname, "%s/simul_symlink.%d", testdir, rank);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#856: FILE: lustre/tests/mpi/simul.c:817:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#857: FILE: lustre/tests/mpi/simul.c:818:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    char buf[MAX_FILENAME_LEN];
+
+WARNING:LINE_SPACING: Missing a blank line after declarations
+#859: FILE: lustre/tests/mpi/simul.c:820:
++	    char buf[MAX_FILENAME_LEN];
++	    sprintf(buf, "%s/simul_symlink.%d", testdir, i);
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_symlink', this function's name, in a string
+#859: FILE: lustre/tests/mpi/simul.c:820:
++	    sprintf(buf, "%s/simul_symlink.%d", testdir, i);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#862: FILE: lustre/tests/mpi/simul.c:823:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#863: FILE: lustre/tests/mpi/simul.c:824:
++    sprintf(filename, "%s/simul_symlink_target", testdir);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#864: FILE: lustre/tests/mpi/simul.c:825:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#866: FILE: lustre/tests/mpi/simul.c:827:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#868: FILE: lustre/tests/mpi/simul.c:829:
++    rc = symlink(filename, linkname);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#869: FILE: lustre/tests/mpi/simul.c:830:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#870: FILE: lustre/tests/mpi/simul.c:831:
++	if (rc == -1) {
++	    FAIL("symlink failed");
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#870: FILE: lustre/tests/mpi/simul.c:831:
++	if (rc == -1) {
++	    FAIL("symlink failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#873: FILE: lustre/tests/mpi/simul.c:834:
++    } else {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#875: FILE: lustre/tests/mpi/simul.c:836:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#876: FILE: lustre/tests/mpi/simul.c:837:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#878: FILE: lustre/tests/mpi/simul.c:839:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#879: FILE: lustre/tests/mpi/simul.c:840:
++    remove_files("simul_symlink", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#880: FILE: lustre/tests/mpi/simul.c:841:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#883: FILE: lustre/tests/mpi/simul.c:844:
++void simul_link_to_one(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#884: FILE: lustre/tests/mpi/simul.c:845:
++    int rc, i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#885: FILE: lustre/tests/mpi/simul.c:846:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#886: FILE: lustre/tests/mpi/simul.c:847:
++    char linkname[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#888: FILE: lustre/tests/mpi/simul.c:849:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#889: FILE: lustre/tests/mpi/simul.c:850:
++    if (shared)$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#891: FILE: lustre/tests/mpi/simul.c:852:
++    else$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#893: FILE: lustre/tests/mpi/simul.c:854:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#894: FILE: lustre/tests/mpi/simul.c:855:
++	for (i = 0; i < (shared ? 1 : size); i++) {
++	    char buf[MAX_FILENAME_LEN];
+
+WARNING:LINE_SPACING: Missing a blank line after declarations
+#896: FILE: lustre/tests/mpi/simul.c:857:
++	    char buf[MAX_FILENAME_LEN];
++	    sprintf(buf, "%s/simul_link.%d", testdir, i);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#899: FILE: lustre/tests/mpi/simul.c:860:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#900: FILE: lustre/tests/mpi/simul.c:861:
++    filename = create_files("simul_link_target", 0, SHARED);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#901: FILE: lustre/tests/mpi/simul.c:862:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#903: FILE: lustre/tests/mpi/simul.c:864:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#905: FILE: lustre/tests/mpi/simul.c:866:
++    rc = link(filename, linkname);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#906: FILE: lustre/tests/mpi/simul.c:867:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#907: FILE: lustre/tests/mpi/simul.c:868:
++	if (rc == -1) {
++	    FAIL("link failed");
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#907: FILE: lustre/tests/mpi/simul.c:868:
++	if (rc == -1) {
++	    FAIL("link failed");
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#910: FILE: lustre/tests/mpi/simul.c:871:
++    } else {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#912: FILE: lustre/tests/mpi/simul.c:873:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#913: FILE: lustre/tests/mpi/simul.c:874:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#915: FILE: lustre/tests/mpi/simul.c:876:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#916: FILE: lustre/tests/mpi/simul.c:877:
++    remove_files("simul_link_target", SHARED);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#917: FILE: lustre/tests/mpi/simul.c:878:
++    remove_files("simul_link", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#918: FILE: lustre/tests/mpi/simul.c:879:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#921: FILE: lustre/tests/mpi/simul.c:882:
++void simul_link_to_many(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#922: FILE: lustre/tests/mpi/simul.c:883:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#923: FILE: lustre/tests/mpi/simul.c:884:
++    char linkname[1024];$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#924: FILE: lustre/tests/mpi/simul.c:885:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#926: FILE: lustre/tests/mpi/simul.c:887:
++    if (shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#927: FILE: lustre/tests/mpi/simul.c:888:
++	if (verbose > 0 && rank == 0)
++	    printf("%s:\tThis is just a place holder; no test is run here.\n",
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#931: FILE: lustre/tests/mpi/simul.c:892:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#932: FILE: lustre/tests/mpi/simul.c:893:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#933: FILE: lustre/tests/mpi/simul.c:894:
++    filename = create_files("simul_link", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#934: FILE: lustre/tests/mpi/simul.c:895:
++    sprintf(linkname, "%s/simul_link_target.%d", testdir, rank);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#935: FILE: lustre/tests/mpi/simul.c:896:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#936: FILE: lustre/tests/mpi/simul.c:897:
++	for (i = 0; i < size; i++) {
++	    char buf[MAX_FILENAME_LEN];
+
+WARNING:LINE_SPACING: Missing a blank line after declarations
+#938: FILE: lustre/tests/mpi/simul.c:899:
++	    char buf[MAX_FILENAME_LEN];
++	    sprintf(buf, "%s/simul_link_target.%d", testdir, i);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#941: FILE: lustre/tests/mpi/simul.c:902:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#942: FILE: lustre/tests/mpi/simul.c:903:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#944: FILE: lustre/tests/mpi/simul.c:905:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#946: FILE: lustre/tests/mpi/simul.c:907:
++    if (link(filename, linkname) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#946: FILE: lustre/tests/mpi/simul.c:907:
++    if (link(filename, linkname) == -1) {
++	FAIL("link failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#948: FILE: lustre/tests/mpi/simul.c:909:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#949: FILE: lustre/tests/mpi/simul.c:910:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#951: FILE: lustre/tests/mpi/simul.c:912:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#952: FILE: lustre/tests/mpi/simul.c:913:
++    remove_files("simul_link", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#953: FILE: lustre/tests/mpi/simul.c:914:
++    remove_files("simul_link_target", !SHARED);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#954: FILE: lustre/tests/mpi/simul.c:915:
++    end("cleanup");$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#957: FILE: lustre/tests/mpi/simul.c:918:
++void simul_fcntl_lock(int shared) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#958: FILE: lustre/tests/mpi/simul.c:919:
++    int rc, fd;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#959: FILE: lustre/tests/mpi/simul.c:920:
++    char *filename;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#960: FILE: lustre/tests/mpi/simul.c:921:
++    struct flock sf_lock = {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#961: FILE: lustre/tests/mpi/simul.c:922:
++        .l_type = F_WRLCK,$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#961: FILE: lustre/tests/mpi/simul.c:922:
++        .l_type = F_WRLCK,$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#965: FILE: lustre/tests/mpi/simul.c:926:
++    };$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#966: FILE: lustre/tests/mpi/simul.c:927:
++    struct flock sf_unlock = {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#967: FILE: lustre/tests/mpi/simul.c:928:
++        .l_type = F_UNLCK,$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#967: FILE: lustre/tests/mpi/simul.c:928:
++        .l_type = F_UNLCK,$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#971: FILE: lustre/tests/mpi/simul.c:932:
++    };$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#973: FILE: lustre/tests/mpi/simul.c:934:
++    begin("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#974: FILE: lustre/tests/mpi/simul.c:935:
++    filename = create_files("simul_fcntl", 0, shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#975: FILE: lustre/tests/mpi/simul.c:936:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#977: FILE: lustre/tests/mpi/simul.c:938:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#978: FILE: lustre/tests/mpi/simul.c:939:
++    if ((fd = open(filename, O_RDWR)) == -1) {$
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#978: FILE: lustre/tests/mpi/simul.c:939:
++    if ((fd = open(filename, O_RDWR)) == -1) {
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#978: FILE: lustre/tests/mpi/simul.c:939:
++    if ((fd = open(filename, O_RDWR)) == -1) {
++	FAIL("open failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#980: FILE: lustre/tests/mpi/simul.c:941:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#981: FILE: lustre/tests/mpi/simul.c:942:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#982: FILE: lustre/tests/mpi/simul.c:943:
++    end("setup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#984: FILE: lustre/tests/mpi/simul.c:945:
++    begin("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#986: FILE: lustre/tests/mpi/simul.c:947:
++    rc = fcntl(fd, F_SETLK, &sf_lock);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#987: FILE: lustre/tests/mpi/simul.c:948:
++    if (!shared) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#988: FILE: lustre/tests/mpi/simul.c:949:
++	if (rc == -1) {
++            if (errno == ENOSYS) {
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#989: FILE: lustre/tests/mpi/simul.c:950:
++            if (errno == ENOSYS) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#989: FILE: lustre/tests/mpi/simul.c:950:
++            if (errno == ENOSYS) {$
+
+WARNING:ENOSYS: ENOSYS means 'invalid syscall nr' and nothing else
+#989: FILE: lustre/tests/mpi/simul.c:950:
++            if (errno == ENOSYS) {
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#990: FILE: lustre/tests/mpi/simul.c:951:
++                if (rank == 0) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#990: FILE: lustre/tests/mpi/simul.c:951:
++                if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#990: FILE: lustre/tests/mpi/simul.c:951:
++                if (rank == 0) {
++                    fprintf(stdout, "WARNING: fcntl locking not supported.\n");
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#991: FILE: lustre/tests/mpi/simul.c:952:
++                    fprintf(stdout, "WARNING: fcntl locking not supported.\n");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#991: FILE: lustre/tests/mpi/simul.c:952:
++                    fprintf(stdout, "WARNING: fcntl locking not supported.\n");$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#992: FILE: lustre/tests/mpi/simul.c:953:
++                    fflush(stdout);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#992: FILE: lustre/tests/mpi/simul.c:953:
++                    fflush(stdout);$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#993: FILE: lustre/tests/mpi/simul.c:954:
++                }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#993: FILE: lustre/tests/mpi/simul.c:954:
++                }$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#994: FILE: lustre/tests/mpi/simul.c:955:
++            } else {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#994: FILE: lustre/tests/mpi/simul.c:955:
++            } else {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#995: FILE: lustre/tests/mpi/simul.c:956:
++                FAIL("fcntl lock failed");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#995: FILE: lustre/tests/mpi/simul.c:956:
++                FAIL("fcntl lock failed");$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#996: FILE: lustre/tests/mpi/simul.c:957:
++            }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#996: FILE: lustre/tests/mpi/simul.c:957:
++            }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#999: FILE: lustre/tests/mpi/simul.c:960:
++    } else {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1004: FILE: lustre/tests/mpi/simul.c:965:
++        int nosys = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1004: FILE: lustre/tests/mpi/simul.c:965:
++        int nosys = 0;$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1005: FILE: lustre/tests/mpi/simul.c:966:
++	if (rank == 0) {
++	    if ((rc_vec = (int *)malloc(sizeof(int)*size)) == NULL)
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1006: FILE: lustre/tests/mpi/simul.c:967:
++	    if ((rc_vec = (int *)malloc(sizeof(int)*size)) == NULL)
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#1006: FILE: lustre/tests/mpi/simul.c:967:
++	    if ((rc_vec = (int *)malloc(sizeof(int)*size)) == NULL)
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1008: FILE: lustre/tests/mpi/simul.c:969:
++	    if ((er_vec = (int *)malloc(sizeof(int)*size)) == NULL)
+
+ERROR:ASSIGN_IN_IF: do not use assignment in if condition
+#1008: FILE: lustre/tests/mpi/simul.c:969:
++	    if ((er_vec = (int *)malloc(sizeof(int)*size)) == NULL)
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1014: FILE: lustre/tests/mpi/simul.c:975:
++	if (rank == 0) {
++	    for (i = 0; i < size; i++) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1015: FILE: lustre/tests/mpi/simul.c:976:
++	    for (i = 0; i < size; i++) {
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1016: FILE: lustre/tests/mpi/simul.c:977:
++^I        if (rc_vec[i] == -1) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#1016: FILE: lustre/tests/mpi/simul.c:977:
++	        if (rc_vec[i] == -1) {
++                    if (er_vec[i] == ENOSYS) {
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1017: FILE: lustre/tests/mpi/simul.c:978:
++                    if (er_vec[i] == ENOSYS) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1017: FILE: lustre/tests/mpi/simul.c:978:
++                    if (er_vec[i] == ENOSYS) {$
+
+WARNING:ENOSYS: ENOSYS means 'invalid syscall nr' and nothing else
+#1017: FILE: lustre/tests/mpi/simul.c:978:
++                    if (er_vec[i] == ENOSYS) {
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1018: FILE: lustre/tests/mpi/simul.c:979:
++                        nosys++;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1018: FILE: lustre/tests/mpi/simul.c:979:
++                        nosys++;$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1019: FILE: lustre/tests/mpi/simul.c:980:
++                    } else if (er_vec[i] != EACCES && er_vec[i] != EAGAIN) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1019: FILE: lustre/tests/mpi/simul.c:980:
++                    } else if (er_vec[i] != EACCES && er_vec[i] != EAGAIN) {$
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1022: FILE: lustre/tests/mpi/simul.c:983:
++		    }
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#1024: FILE: lustre/tests/mpi/simul.c:985:
++		} else {
++		    pass++;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1027: FILE: lustre/tests/mpi/simul.c:988:
++	    }
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1028: FILE: lustre/tests/mpi/simul.c:989:
++            if (nosys == size) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1028: FILE: lustre/tests/mpi/simul.c:989:
++            if (nosys == size) {$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1029: FILE: lustre/tests/mpi/simul.c:990:
++                fprintf(stdout, "WARNING: fcntl locking not supported.\n");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1029: FILE: lustre/tests/mpi/simul.c:990:
++                fprintf(stdout, "WARNING: fcntl locking not supported.\n");$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1030: FILE: lustre/tests/mpi/simul.c:991:
++                fflush(stdout);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1030: FILE: lustre/tests/mpi/simul.c:991:
++                fflush(stdout);$
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1031: FILE: lustre/tests/mpi/simul.c:992:
++            } else if (!((pass == 1) && (fail == size-1))) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1031: FILE: lustre/tests/mpi/simul.c:992:
++            } else if (!((pass == 1) && (fail == size-1))) {$
+
+WARNING:EMBEDDED_FUNCTION_NAME: Prefer using '"%s...", __func__' to using 'simul_fcntl_lock', this function's name, in a string
+#1033: FILE: lustre/tests/mpi/simul.c:994:
++			"%s: FAILED in simul_fcntl_lock", timestamp());
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#1034: FILE: lustre/tests/mpi/simul.c:995:
++		if (pass > 1)
++		    fprintf(stdout,
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#1037: FILE: lustre/tests/mpi/simul.c:998:
++		else
++		    fprintf(stdout,
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1042: FILE: lustre/tests/mpi/simul.c:1003:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1046: FILE: lustre/tests/mpi/simul.c:1007:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1047: FILE: lustre/tests/mpi/simul.c:1008:
++    end("test");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1049: FILE: lustre/tests/mpi/simul.c:1010:
++    begin("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1051: FILE: lustre/tests/mpi/simul.c:1012:
++    Seq_begin(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1052: FILE: lustre/tests/mpi/simul.c:1013:
++    if (!shared || rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (4, 12)
+#1052: FILE: lustre/tests/mpi/simul.c:1013:
++    if (!shared || rank == 0) {
++	    rc = fcntl(fd, F_SETLK, &sf_unlock);
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1054: FILE: lustre/tests/mpi/simul.c:1015:
++            if (rc == -1 && errno != ENOSYS)$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1054: FILE: lustre/tests/mpi/simul.c:1015:
++            if (rc == -1 && errno != ENOSYS)$
+
+WARNING:ENOSYS: ENOSYS means 'invalid syscall nr' and nothing else
+#1054: FILE: lustre/tests/mpi/simul.c:1015:
++            if (rc == -1 && errno != ENOSYS)
+
+ERROR:CODE_INDENT: code indent should use tabs where possible
+#1055: FILE: lustre/tests/mpi/simul.c:1016:
++                FAIL("fcntl unlock failed");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1055: FILE: lustre/tests/mpi/simul.c:1016:
++                FAIL("fcntl unlock failed");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1056: FILE: lustre/tests/mpi/simul.c:1017:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1057: FILE: lustre/tests/mpi/simul.c:1018:
++    if (close(fd) == -1) {$
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#1057: FILE: lustre/tests/mpi/simul.c:1018:
++    if (close(fd) == -1) {
++	FAIL("close failed");
++    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1059: FILE: lustre/tests/mpi/simul.c:1020:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1060: FILE: lustre/tests/mpi/simul.c:1021:
++    Seq_end(MPI_COMM_WORLD, throttle);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1061: FILE: lustre/tests/mpi/simul.c:1022:
++    MPI_Barrier(MPI_COMM_WORLD);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1062: FILE: lustre/tests/mpi/simul.c:1023:
++    remove_files("simul_fcntl", shared);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1063: FILE: lustre/tests/mpi/simul.c:1024:
++    end("cleanup");$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1067: FILE: lustre/tests/mpi/simul.c:1028:
++    char *name;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1068: FILE: lustre/tests/mpi/simul.c:1029:
++    void (*function) (int);$
+
+WARNING:SPACING: Unnecessary space before function pointer arguments
+#1068: FILE: lustre/tests/mpi/simul.c:1029:
++    void (*function) (int);
+
+WARNING:FUNCTION_ARGUMENTS: function definition argument 'int' should also have an identifier name
+#1068: FILE: lustre/tests/mpi/simul.c:1029:
++    void (*function) (int);
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1069: FILE: lustre/tests/mpi/simul.c:1030:
++    int simul; /* Flag designating support for simultaneus mode */$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1070: FILE: lustre/tests/mpi/simul.c:1031:
++    int indiv; /* Flag designating support for individual mode */$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1074: FILE: lustre/tests/mpi/simul.c:1035:
++    {"open", simul_open},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1075: FILE: lustre/tests/mpi/simul.c:1036:
++    {"close", simul_close},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1076: FILE: lustre/tests/mpi/simul.c:1037:
++    {"file stat", simul_file_stat},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1077: FILE: lustre/tests/mpi/simul.c:1038:
++    {"lseek", simul_lseek},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1078: FILE: lustre/tests/mpi/simul.c:1039:
++    {"read", simul_read},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1079: FILE: lustre/tests/mpi/simul.c:1040:
++    {"write", simul_write},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1080: FILE: lustre/tests/mpi/simul.c:1041:
++    {"chdir", simul_chdir},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1081: FILE: lustre/tests/mpi/simul.c:1042:
++    {"directory stat", simul_dir_stat},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1082: FILE: lustre/tests/mpi/simul.c:1043:
++    {"statfs", simul_statfs},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1083: FILE: lustre/tests/mpi/simul.c:1044:
++    {"readdir", simul_readdir},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1084: FILE: lustre/tests/mpi/simul.c:1045:
++    {"mkdir", simul_mkdir},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1085: FILE: lustre/tests/mpi/simul.c:1046:
++    {"rmdir", simul_rmdir},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1086: FILE: lustre/tests/mpi/simul.c:1047:
++    {"unlink", simul_unlink},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1087: FILE: lustre/tests/mpi/simul.c:1048:
++    {"rename", simul_rename},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1088: FILE: lustre/tests/mpi/simul.c:1049:
++    {"creat", simul_creat},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1089: FILE: lustre/tests/mpi/simul.c:1050:
++    {"truncate", simul_truncate},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1090: FILE: lustre/tests/mpi/simul.c:1051:
++    {"symlink", simul_symlink},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1091: FILE: lustre/tests/mpi/simul.c:1052:
++    {"readlink", simul_readlink},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1092: FILE: lustre/tests/mpi/simul.c:1053:
++    {"link to one file", simul_link_to_one},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1093: FILE: lustre/tests/mpi/simul.c:1054:
++    {"link to a file per process", simul_link_to_many},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1094: FILE: lustre/tests/mpi/simul.c:1055:
++    {"fcntl locking", simul_fcntl_lock},$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1095: FILE: lustre/tests/mpi/simul.c:1056:
++    {0}$
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use * on subsequent lines
+#1099: FILE: lustre/tests/mpi/simul.c:1060:
++/* Searches an array of ints for one int.  A "-1" must mark the end of the
++   array.  */
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use a trailing */ on a separate line
+#1099: FILE: lustre/tests/mpi/simul.c:1060:
++   array.  */
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#1100: FILE: lustre/tests/mpi/simul.c:1061:
++int int_in_list(int item, int *list) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1101: FILE: lustre/tests/mpi/simul.c:1062:
++    int *ptr;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1103: FILE: lustre/tests/mpi/simul.c:1064:
++    if (list == NULL)$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1105: FILE: lustre/tests/mpi/simul.c:1066:
++    ptr = list;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1106: FILE: lustre/tests/mpi/simul.c:1067:
++    while (*ptr != -1) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1107: FILE: lustre/tests/mpi/simul.c:1068:
++	if (*ptr == item)
++	    return 1;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1108: FILE: lustre/tests/mpi/simul.c:1069:
++	    return 1;
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1110: FILE: lustre/tests/mpi/simul.c:1071:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1111: FILE: lustre/tests/mpi/simul.c:1072:
++    return 0;$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#1115: FILE: lustre/tests/mpi/simul.c:1076:
++int *string_split(char *string) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1116: FILE: lustre/tests/mpi/simul.c:1077:
++    char *ptr;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1117: FILE: lustre/tests/mpi/simul.c:1078:
++    char *tmp;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1118: FILE: lustre/tests/mpi/simul.c:1079:
++    int excl_cnt = 1;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1119: FILE: lustre/tests/mpi/simul.c:1080:
++    int *list;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1120: FILE: lustre/tests/mpi/simul.c:1081:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1122: FILE: lustre/tests/mpi/simul.c:1083:
++    ptr = string;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1123: FILE: lustre/tests/mpi/simul.c:1084:
++    while((tmp = strchr(ptr, ','))) {$
+
+ERROR:SPACING: space required before the open parenthesis '('
+#1123: FILE: lustre/tests/mpi/simul.c:1084:
++    while((tmp = strchr(ptr, ','))) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1126: FILE: lustre/tests/mpi/simul.c:1087:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1128: FILE: lustre/tests/mpi/simul.c:1089:
++    list = (int *)malloc(sizeof(int) * (excl_cnt + 1));$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1129: FILE: lustre/tests/mpi/simul.c:1090:
++    if (list == NULL) FAIL("malloc failed");$
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#1129: FILE: lustre/tests/mpi/simul.c:1090:
++    if (list == NULL) FAIL("malloc failed");
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1131: FILE: lustre/tests/mpi/simul.c:1092:
++    tmp = (strtok(string, ", "));$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1132: FILE: lustre/tests/mpi/simul.c:1093:
++    if (tmp == NULL) FAIL("strtok failed");$
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#1132: FILE: lustre/tests/mpi/simul.c:1093:
++    if (tmp == NULL) FAIL("strtok failed");
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1133: FILE: lustre/tests/mpi/simul.c:1094:
++    list[0] = atoi(tmp);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1134: FILE: lustre/tests/mpi/simul.c:1095:
++    for (i = 1; i < excl_cnt; i++) {$
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#1136: FILE: lustre/tests/mpi/simul.c:1097:
++	if (tmp == NULL) FAIL("strtok failed");
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1138: FILE: lustre/tests/mpi/simul.c:1099:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1139: FILE: lustre/tests/mpi/simul.c:1100:
++    list[i] = -1;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1141: FILE: lustre/tests/mpi/simul.c:1102:
++    return list;$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#1144: FILE: lustre/tests/mpi/simul.c:1105:
++void print_help(int testcnt) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1145: FILE: lustre/tests/mpi/simul.c:1106:
++    int i;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1147: FILE: lustre/tests/mpi/simul.c:1108:
++    if (rank == 0) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1165: FILE: lustre/tests/mpi/simul.c:1126:
++	for (i = 0; i < testcnt * 2; i++) {
++	    printf("\tTest #%d: %s, %s mode.\n", i,
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1170: FILE: lustre/tests/mpi/simul.c:1131:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1172: FILE: lustre/tests/mpi/simul.c:1133:
++    MPI_Initialized(&i);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1173: FILE: lustre/tests/mpi/simul.c:1134:
++    if (i) MPI_Finalize();$
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#1173: FILE: lustre/tests/mpi/simul.c:1134:
++    if (i) MPI_Finalize();
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1174: FILE: lustre/tests/mpi/simul.c:1135:
++    exit(0);$
+
+ERROR:OPEN_BRACE: open brace '{' following function definitions go on the next line
+#1177: FILE: lustre/tests/mpi/simul.c:1138:
++int main(int argc, char **argv) {
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1178: FILE: lustre/tests/mpi/simul.c:1139:
++    int testcnt;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1179: FILE: lustre/tests/mpi/simul.c:1140:
++    int first;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1180: FILE: lustre/tests/mpi/simul.c:1141:
++    int last;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1181: FILE: lustre/tests/mpi/simul.c:1142:
++    int i, j, k, c;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1182: FILE: lustre/tests/mpi/simul.c:1143:
++    int *excl_list = NULL;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1183: FILE: lustre/tests/mpi/simul.c:1144:
++    int *incl_list = NULL;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1184: FILE: lustre/tests/mpi/simul.c:1145:
++    int test;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1185: FILE: lustre/tests/mpi/simul.c:1146:
++    int singlestep = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1186: FILE: lustre/tests/mpi/simul.c:1147:
++    int iterations = 1;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1187: FILE: lustre/tests/mpi/simul.c:1148:
++    int set_iterations = 1;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1188: FILE: lustre/tests/mpi/simul.c:1149:
++    char linebuf[80];$
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use * on subsequent lines
+#1191: FILE: lustre/tests/mpi/simul.c:1152:
++    /* Check for -h parameter before MPI_Init so the simul binary can be
++       called directly, without, for instance, mpirun. */
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use a trailing */ on a separate line
+#1191: FILE: lustre/tests/mpi/simul.c:1152:
++       called directly, without, for instance, mpirun. */
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1192: FILE: lustre/tests/mpi/simul.c:1153:
++    for (testcnt = 1; testlist[testcnt].name != 0; testcnt++) continue;$
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#1192: FILE: lustre/tests/mpi/simul.c:1153:
++    for (testcnt = 1; testlist[testcnt].name != 0; testcnt++) continue;
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1193: FILE: lustre/tests/mpi/simul.c:1154:
++    for (i = 1; i < argc; i++) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1194: FILE: lustre/tests/mpi/simul.c:1155:
++	if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
++	    print_help(testcnt);
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#1194: FILE: lustre/tests/mpi/simul.c:1155:
++	if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
++	    print_help(testcnt);
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1197: FILE: lustre/tests/mpi/simul.c:1158:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1199: FILE: lustre/tests/mpi/simul.c:1160:
++    MPI_Init(&argc, &argv);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1200: FILE: lustre/tests/mpi/simul.c:1161:
++    MPI_Comm_rank(MPI_COMM_WORLD, &rank);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1201: FILE: lustre/tests/mpi/simul.c:1162:
++    MPI_Comm_size(MPI_COMM_WORLD, &size);$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1203: FILE: lustre/tests/mpi/simul.c:1164:
++    if (rank == 0) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1206: FILE: lustre/tests/mpi/simul.c:1167:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1208: FILE: lustre/tests/mpi/simul.c:1169:
++    first = 0;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1209: FILE: lustre/tests/mpi/simul.c:1170:
++    last = testcnt * 2;$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1212: FILE: lustre/tests/mpi/simul.c:1173:
++    while (1) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1214: FILE: lustre/tests/mpi/simul.c:1175:
++	if (c == -1)
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1215: FILE: lustre/tests/mpi/simul.c:1176:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1220: FILE: lustre/tests/mpi/simul.c:1181:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1223: FILE: lustre/tests/mpi/simul.c:1184:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1226: FILE: lustre/tests/mpi/simul.c:1187:
++	    if (first >= last) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1229: FILE: lustre/tests/mpi/simul.c:1190:
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1230: FILE: lustre/tests/mpi/simul.c:1191:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1233: FILE: lustre/tests/mpi/simul.c:1194:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1236: FILE: lustre/tests/mpi/simul.c:1197:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1239: FILE: lustre/tests/mpi/simul.c:1200:
++	    if (last <= first) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1242: FILE: lustre/tests/mpi/simul.c:1203:
++	    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1243: FILE: lustre/tests/mpi/simul.c:1204:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1246: FILE: lustre/tests/mpi/simul.c:1207:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1249: FILE: lustre/tests/mpi/simul.c:1210:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1252: FILE: lustre/tests/mpi/simul.c:1213:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1255: FILE: lustre/tests/mpi/simul.c:1216:
++	    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1258: FILE: lustre/tests/mpi/simul.c:1219:
++	    break;
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1260: FILE: lustre/tests/mpi/simul.c:1221:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1262: FILE: lustre/tests/mpi/simul.c:1223:
++    if (testdir == NULL && rank == 0) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1265: FILE: lustre/tests/mpi/simul.c:1226:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1267: FILE: lustre/tests/mpi/simul.c:1228:
++    if (gethostname(hostname, 1024) == -1) {$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1270: FILE: lustre/tests/mpi/simul.c:1231:
++    }$
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use * on subsequent lines
+#1273: FILE: lustre/tests/mpi/simul.c:1234:
++    /* If a list of tests was not specified with the -i option, then use
++       the first and last number to build a range of included tests. */
+
+WARNING:BLOCK_COMMENT_STYLE: Block comments use a trailing */ on a separate line
+#1273: FILE: lustre/tests/mpi/simul.c:1234:
++       the first and last number to build a range of included tests. */
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1274: FILE: lustre/tests/mpi/simul.c:1235:
++    if (incl_list == NULL) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1276: FILE: lustre/tests/mpi/simul.c:1237:
++	for (i = 0; i < last-first; i++) {
++	    incl_list[i] = i + first;
+
+WARNING:BRACES: braces {} are not necessary for single statement blocks
+#1276: FILE: lustre/tests/mpi/simul.c:1237:
++	for (i = 0; i < last-first; i++) {
++	    incl_list[i] = i + first;
++	}
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1280: FILE: lustre/tests/mpi/simul.c:1241:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1283: FILE: lustre/tests/mpi/simul.c:1244:
++    for (k = 0; k < set_iterations; k++) {$
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1284: FILE: lustre/tests/mpi/simul.c:1245:
++	if ((rank == 0) && (set_iterations > 1))
++	    printf("%s: Set iteration %d\n", timestamp(), k);
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (8, 12)
+#1286: FILE: lustre/tests/mpi/simul.c:1247:
++	for (i = 0; ; ++i) {
++	    test = incl_list[i];
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1288: FILE: lustre/tests/mpi/simul.c:1249:
++	    if (test == -1)
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1290: FILE: lustre/tests/mpi/simul.c:1251:
++	    if (!int_in_list(test, excl_list)) {
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (16, 20)
+#1291: FILE: lustre/tests/mpi/simul.c:1252:
++		for (j = 0; j < iterations; j++) {
++		    if (singlestep) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1292: FILE: lustre/tests/mpi/simul.c:1253:
++		    if (singlestep) {
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (24, 28)
+#1293: FILE: lustre/tests/mpi/simul.c:1254:
++			if (rank == 0)
++			    printf("%s: Hit <Enter> to run test #%d(iter %d): %s, %s mode.\n",
+
+WARNING:SUSPECT_CODE_INDENT: suspect code indent for conditional statements (24, 28)
+#1298: FILE: lustre/tests/mpi/simul.c:1259:
++			if (fgets(linebuf, 80, stdin) == NULL)
++			    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1299: FILE: lustre/tests/mpi/simul.c:1260:
++			    break;
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1300: FILE: lustre/tests/mpi/simul.c:1261:
++		    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1301: FILE: lustre/tests/mpi/simul.c:1262:
++		    if (rank == 0) {
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1306: FILE: lustre/tests/mpi/simul.c:1267:
++		    }
+
+WARNING:TABSTOP: Statements should start on a tabstop
+#1310: FILE: lustre/tests/mpi/simul.c:1271:
++	    }
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1312: FILE: lustre/tests/mpi/simul.c:1273:
++    }$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1314: FILE: lustre/tests/mpi/simul.c:1275:
++    if (rank == 0) printf("%s: All tests passed!\n", timestamp());$
+
+ERROR:TRAILING_STATEMENTS: trailing statements should be on next line
+#1314: FILE: lustre/tests/mpi/simul.c:1275:
++    if (rank == 0) printf("%s: All tests passed!\n", timestamp());
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1315: FILE: lustre/tests/mpi/simul.c:1276:
++    MPI_Finalize();$
+
+WARNING:LEADING_SPACE: please, no spaces at the start of a line
+#1316: FILE: lustre/tests/mpi/simul.c:1277:
++    exit(0);$
+
+total: 95 errors, 753 warnings, 1308 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+NOTE: Whitespace errors detected.
+      You may wish to use scripts/cleanpatch or scripts/cleanfile
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
