@@ -1,0 +1,159 @@
+[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+RDSEED32 is broken. Disabling the corresponding CPUID bit.
+P+q6E616D65\[6n[32766;32766H[6n[!p]104[?7h[1G[0J]3008;start=b8b4b2d6e16849a88fff9e153b713560;user=root;hostname=lustre-bot-kvm;machineid=a79734507b7a4cd085276a3f8d51378f;bootid=b66c5a23540c4619af6604707cbbbf0c;pid=1;pidfdid=2;comm=systemd;type=boot\Kernel version: 6.18.0-ktest-e0ad5ae515-20260518
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.53_23_ge0ad5ae_dirty
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+Lustre: DEBUG MARKER: lustre-bot-kvm: executing set_hostid
+Lustre: lustre-MDT0000: mounting server target with '-t lustre' deprecated, use '-t lustre_tgt'
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+Lustre: lustre-MDT0000: new disk, initializing
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+mount.lustre (2939) used greatest stack depth: 23816 bytes left
+Lustre: Modifying parameter general.debug_raw_pointers=Y in log params
+mount.lustre (3192) used greatest stack depth: 23688 bytes left
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000240000400-0x0000000280000400]:0:ost
+Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:0:ost]
+Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x240000400
+Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x280000400
+Lustre: lustre-MDT0000: local client e3db5960-4cf9-47ed-9cc6-4bfb3e283972 w/o recovery
+Lustre: client wants to enable acl, but mdt not!
+Lustre: Mounted lustre-client
+Lustre: DEBUG MARKER: Using TIMEOUT=100
+Lustre: Setting parameter general.lod.*.mdt_hash=crush in log params
+20s
+CLEANUP LUSTRE ... Lustre: setting import lustre-MDT0000_UUID INACTIVE by administrator request
+LustreError: 3741:0:(lov_obd.c:769:lov_cleanup()) lov_cleanup: refcount BEFORE getref = 0, deathrow = 0
+LustreError: 3741:0:(lov_obd.c:601:lov_del_target()) uuid: lustre-OST0000_UUID idx: 0 gen: 1 exp: ffff8881a19c0000 active: 0
+==================================================================
+BUG: KASAN: slab-use-after-free in lov_cleanup+0x683/0x9c0 [lov]
+Read of size 4 at addr ffff8881a25e6c38 by task umount/3741
+
+CPU: 1 UID: 0 PID: 3741 Comm: umount Tainted: G           O        6.18.0-ktest-e0ad5ae515-20260518 #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2024.02-2ubuntu0.8 12/10/2025
+Call Trace:
+ <TASK>
+ dump_stack_lvl+0x8a/0xd0
+ print_report+0xc8/0x270
+ ? lov_cleanup+0x683/0x9c0 [lov]
+ kasan_report+0xa3/0xe0
+ ? lov_cleanup+0x683/0x9c0 [lov]
+ lov_cleanup+0x683/0x9c0 [lov]
+ lov_device_free+0x5b/0x710 [lov]
+ lu_stack_fini+0x358/0x530 [obdclass]
+ cl_sb_fini+0x18f/0x2e0 [lustre]
+ ll_put_super+0x4b5/0x15e0 [lustre]
+ ? __cond_resched+0x3d/0xb0
+ ? evict_inodes+0x43a/0x520
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0x9d/0xe0
+ do_syscall_64+0x150/0x1f0
+ ? arch_exit_to_user_mode_prepare+0x9/0x70
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fd096a46217
+Code: 0d 00 f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 31 f6 e9 09 00 00 00 66 0f 1f 84 00 00 00 00 00 b8 a6 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 01 c3 48 8b 15 b1 5b 0d 00 f7 d8 64 89 02 b8
+RSP: 002b:00007ffcb547c288 EFLAGS: 00000202 ORIG_RAX: 00000000000000a6
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 00007fd096a46217
+RDX: 0000000000000001 RSI: 0000000000000001 RDI: 000056094c559b70
+RBP: 00007fd096ba626c R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000008 R11: 0000000000000202 R12: 000056094c554e68
+R13: 000056094c559b70 R14: 000056094c554d60 R15: 000056094c5551a0
+ </TASK>
+
+Allocated by task 3243:
+ kasan_save_track+0x2f/0x70
+ __kasan_kmalloc+0x72/0x80
+ lov_add_target+0x430/0x1550 [lov]
+ lov_process_config_base+0x7af/0xe50 [lov]
+ lov_process_config+0xa7/0x1ee0 [lov]
+ obd_process_config+0x1b0/0x3e0 [obdclass]
+ class_process_config+0x345b/0x7d20 [obdclass]
+ class_config_llog_handler+0x2ab0/0x4b90 [obdclass]
+ llog_process_thread+0x2002/0x4c20 [obdclass]
+ llog_process_thread_daemonize+0x165/0x1b0 [obdclass]
+ kthread+0x565/0x6c0
+ ret_from_fork+0xf1/0x260
+ ret_from_fork_asm+0x11/0x20
+
+Freed by task 3741:
+ kasan_save_track+0x2f/0x70
+ __kasan_save_free_info+0x46/0x50
+ __kasan_slab_free+0x3a/0x60
+ kfree+0x136/0x500
+ lov_tgts_putref+0xfdc/0x1580 [lov]
+ lov_del_target+0x878/0xc50 [lov]
+ lov_cleanup+0x522/0x9c0 [lov]
+ lov_device_free+0x5b/0x710 [lov]
+ lu_stack_fini+0x358/0x530 [obdclass]
+ cl_sb_fini+0x18f/0x2e0 [lustre]
+ ll_put_super+0x4b5/0x15e0 [lustre]
+ generic_shutdown_super+0x101/0x320
+ kill_anon_super+0x3d/0x70
+ deactivate_locked_super+0x95/0xe0
+ cleanup_mnt+0x1e3/0x3d0
+ task_work_run+0xff/0x170
+ exit_to_user_mode_loop+0x9d/0xe0
+ do_syscall_64+0x150/0x1f0
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+
+The buggy address belongs to the object at ffff8881a25e6c00
+ which belongs to the cache kmalloc-512 of size 512
+The buggy address is located 56 bytes inside of
+ freed 512-byte region [ffff8881a25e6c00, ffff8881a25e6e00)
+
+The buggy address belongs to the physical page:
+page: refcount:0 mapcount:0 mapping:0000000000000000 index:0xffff8881a25e7400 pfn:0x1a25e0
+head: order:3 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
+flags: 0x8000000000000240(workingset|head|zone=2)
+page_type: f5(slab)
+raw: 8000000000000240 ffff888100042c80 ffffea0004eed610 ffffea00041a3610
+raw: ffff8881a25e7400 000000000020001d 00000000f5000000 0000000000000000
+head: 8000000000000240 ffff888100042c80 ffffea0004eed610 ffffea00041a3610
+head: ffff8881a25e7400 000000000020001d 00000000f5000000 0000000000000000
+head: 8000000000000003 ffffea0006897801 00000000ffffffff 00000000ffffffff
+head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff8881a25e6b00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff8881a25e6b80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+>ffff8881a25e6c00: fa fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+                                        ^
+ ffff8881a25e6c80: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff8881a25e6d00: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+==================================================================
+Disabling lock debugging due to kernel taint
+LustreError: 3741:0:(lov_obd.c:804:lov_cleanup()) lov_cleanup: refcount AFTER getref = 0
+Lustre: Unmounted lustre-client
+Lustre: server umount lustre-MDT0000 complete
+LustreError: 2943:0:(ldlm_lockd.c:2564:ldlm_cancel_handler()) ldlm_cancel from 0@lo arrived at 1779097779 with bad export cookie 10225683686158601521
+LustreError: MGC10.0.2.15@tcp: Connection to MGS (at 0@lo) was lost; in progress operations using this service will fail
+Lustre: server umount lustre-OST0000 complete
+Lustre: server umount lustre-OST0001 complete
+LNet: 4126:0:(lib-ptl.c:967:lnet_clear_lazy_portal()) Active lazy portal 0 on exit
+LNetError: 4126:0:(acceptor.c:246:lnet_acceptor_remove_socket()) Interface eth0 not found
+LNet: Removed LNI 10.0.2.15@tcp
+52s
+
+========= PASSED llmount in 82s
+
+Passed: llmount
+Failed: 
+NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+Kernel version: 6.18.0-ktest-e0ad5ae515-20260518
+TEST SUCCESS
+Failed to connect to system scope bus via local transport: No such file or directory
+]3008;end=b8b4b2d6e16849a88fff9e153b713560\EXT4-fs (vda): re-mounted 88f4410a-2dea-4a38-86ba-3ebc2db2db54 ro.
