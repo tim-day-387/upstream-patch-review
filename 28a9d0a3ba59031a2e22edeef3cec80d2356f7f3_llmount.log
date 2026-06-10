@@ -1,0 +1,1811 @@
+[2J[001;001H[=3h[2J[001;001H[2J[001;001H[8;056;240t[2J[001;001H[2J[001;001H[=3h[2J[001;001H[2J[001;001H[8;056;240t[2J[001;001HKernel compiled without mitigations, ignoring 'mitigations'; system may still be vulnerable
+RDSEED32 is broken. Disabling the corresponding CPUID bit.
+Kernel version: 6.19.0-ktest-28a9d0a3ba-20260610
+hook init_noop
+
+Running tests llmount
+
+========= TEST   llmount
+SETUP LUSTRE ... libcfs: loading out-of-tree module taints kernel.
+libcfs: HW NUMA nodes: 1, HW CPU cores: 16, npartitions: 1
+Lustre: Lustre: Build Version: 2.17.53_3_g28a9d0a_dirty
+------------[ cut here ]------------
+Unexpected gfp: 0x2 (__GFP_HIGHMEM). Fixing up to gfp: 0xd40 (GFP_NOFS|__GFP_ZERO). Fix your code!
+WARNING: mm/vmalloc.c:3940 at vmalloc_fix_flags+0x34/0x60, CPU#13: modprobe/935
+Modules linked in: obdclass(O+) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 13 UID: 0 PID: 935 Comm: modprobe Tainted: G           O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:vmalloc_fix_flags+0x3c/0x60
+Code: 02 48 89 44 24 08 89 fe 81 e6 1f 52 ae fe 89 34 24 81 e1 e0 ad 51 01 89 4c 24 04 48 8d 3d 6c ae 44 02 48 89 e2 4c 8d 44 24 04 <67> 48 0f b9 3a 8b 44 24 04 65 48 8b 0d 03 6d b9 02 48 3b 4c 24 08
+RSP: 0018:ffffc900016e79a0 EFLAGS: 00010202
+RAX: d9c00b0b053c3400 RBX: 0000000000000d42 RCX: 0000000000000d40
+RDX: ffffc900016e79a0 RSI: 0000000000000002 RDI: ffffffff83dd6170
+RBP: ffffc900016e7d18 R08: ffffc900016e79a4 R09: 1ffffffff0777bc6
+R10: dffffc0000000000 R11: fffffbfff0777bc7 R12: 1ffff110256f2007
+R13: 0000000000000000 R14: 0000000000480000 R15: dffffc0000000000
+FS:  00007fdb2eb9e3c0(0000) GS:ffff88831ed7e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007ffc3d3ec6f8 CR3: 000000015faca000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ __vmalloc_noprof+0xd8/0xe0
+ class_handle_init+0x75/0x3b0 [obdclass]
+ init_module+0xc7/0x2f0 [obdclass]
+ do_one_initcall+0x113/0x3e0
+ ? cleanup_module+0xee0/0xee0 [ksocklnd]
+ ? stack_depot_save_flags+0x34/0x7f0
+ ? kasan_save_track+0x40/0x60
+ ? kasan_save_track+0x2f/0x60
+ ? __kasan_kmalloc+0x72/0x80
+ ? do_init_module+0x92/0x780
+ ? __x64_sys_finit_module+0x3b5/0x5b0
+ ? do_syscall_64+0x69/0x270
+ ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+ ? free_frozen_page_commit+0x5dd/0x1040
+ ? do_raw_spin_unlock+0x52/0x230
+ ? vfree+0x1a0/0x220
+ ? kfree+0x1b5/0x530
+ ? vfree+0x1a0/0x220
+ ? kfree+0x1b5/0x530
+ ? lock_acquire+0xbf/0x190
+ ? __kmalloc_cache_noprof+0x38/0x3e0
+ ? kasan_unpoison+0x48/0x70
+ ? __kasan_slab_alloc+0x37/0x60
+ ? kasan_unpoison+0x48/0x70
+ ? __asan_register_globals+0x59/0x70
+ do_init_module+0x273/0x780
+ __x64_sys_finit_module+0x3b5/0x5b0
+ do_syscall_64+0x69/0x270
+ entry_SYSCALL_64_after_hwframe+0x4b/0x53
+RIP: 0033:0x7fdb2e32728d
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 5b bb 0d 00 f7 d8 64 89 01 48
+RSP: 002b:00007ffc3d3ef6d8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+RAX: ffffffffffffffda RBX: 00005615c2885a00 RCX: 00007fdb2e32728d
+RDX: 0000000000000000 RSI: 00005615b0811e52 RDI: 0000000000000003
+RBP: 00007ffc3d3ef790 R08: 0000000000000040 R09: 00007ffc3d3ef720
+R10: 00007fdb2e403b20 R11: 0000000000000246 R12: 00005615b0811e52
+R13: 0000000000040000 R14: 00005615c2885a80 R15: 0000000000000000
+ </TASK>
+---[ end trace 0000000000000000 ]---
+LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+Lustre: Echo OBD driver; http://www.lustre.org/
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#9: ll_mgs_0002/1106
+Modules linked in: mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 9 UID: 0 PID: 1106 Comm: ll_mgs_0002 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001d07718 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88813686ac00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88816400bb90 RDI: ffff88813e8da9e0
+RBP: ffff88816400bb00 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888129e4b400
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff110253c968f
+FS:  0000000000000000(0000) GS:ffff88831eb7e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055f4d8753900 CR3: 0000000139438000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x155/0x290 [obdclass]
+ ? llog_osd_create+0x354/0x1260 [obdclass]
+ ? llog_create+0x2ed/0x530 [obdclass]
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+ ? mgs_find_or_make_fsdb_nolock+0x16d4/0x2d80 [mgs]
+ ? class_find_param+0x25/0x70 [obdclass]
+ ? mgs_find_or_make_fsdb+0xda/0x1f0 [mgs]
+ ? mgs_target_reg+0x2274/0x4290 [mgs]
+ ? req_capsule_server_pack+0xcc/0x670 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#9: ll_mgs_0002/1106
+Modules linked in: mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 9 UID: 0 PID: 1106 Comm: ll_mgs_0002 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001d07660 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88813686bc00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88816400c2a8 RDI: ffff88813e8da9e0
+RBP: ffff88816400c218 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888129e4b400
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff110253c968f
+FS:  0000000000000000(0000) GS:ffff88831eb7e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055f4d8753900 CR3: 0000000139438000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x155/0x290 [obdclass]
+ ? llog_osd_create+0x354/0x1260 [obdclass]
+ ? llog_create+0x2ed/0x530 [obdclass]
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+ ? record_start_log+0x348/0xa40 [mgs]
+ ? mgs_write_log_lov+0x3ac/0xde0 [mgs]
+ ? mgs_write_log_target+0x17a4/0x6ab0 [mgs]
+ ? mgs_target_reg+0x2498/0x4290 [mgs]
+ ? req_capsule_server_pack+0xcc/0x670 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7430 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881592f8800 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec882d0 RDI: ffff888138a50950
+RBP: ffff88813ec88240 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d9103d R12: ffff8881310b4700
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003dcebd
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? fld_index_init+0x404/0x1610 [fld]
+ ? is_module_address+0x54/0x60
+ ? __asan_memset+0x22/0x40
+ ? fld_server_init+0x1d7/0x580 [fld]
+ ? mdt_device_alloc+0x36b4/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7408 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881592f9800 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec889e8 RDI: ffff888138a50950
+RBP: ffff88813ec88958 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc90001ee7518
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003dcea1
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? seq_store_init+0x155/0x360 [fid]
+ ? seq_server_init+0x290/0xba0 [fid]
+ ? mdt_seq_init+0x513/0x1f00 [mdt]
+ ? mdt_device_alloc+0x39c5/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7408 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881592fe400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec89100 RDI: ffff888138a50950
+RBP: ffff88813ec89070 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc90001ee7518
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003dcea1
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? seq_store_init+0x155/0x360 [fid]
+ ? seq_server_init+0x290/0xba0 [fid]
+ ? mdt_seq_init+0x2c1/0x1f00 [mdt]
+ ? mdt_device_alloc+0x39c5/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7450 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881358ba000 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec89818 RDI: ffff888138a50950
+RBP: ffff88813ec89788 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc90001ee75d0
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003dcec7
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? tgt_init+0xb6e/0x2a60 [ptlrpc]
+ ? mdt_device_alloc+0x3ce7/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+Lustre: lustre-MDT0000: new disk, initializing
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7450 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881358bc800 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec89f30 RDI: ffff888138a50950
+RBP: ffff88813ec89ea0 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc90001ee75d0
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003dcec7
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? tgt_init+0x1a94/0x2a60 [ptlrpc]
+ ? mdt_device_alloc+0x3ce7/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7360 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881382c4c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec8a648 RDI: ffff888138a50950
+RBP: ffff88813ec8a5b8 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_file_find_or_create+0x13c/0x1d0 [obdclass]
+ ? lquota_disk_dir_find_create+0x31f/0xd10 [lquota]
+ ? qmt_device_prepare+0x122/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7260 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88812c0dec00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec8ad60 RDI: ffff888138a50950
+RBP: ffff88813ec8acd0 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_file_find_or_create+0x13c/0x1d0 [obdclass]
+ ? lquota_disk_dir_find_create+0x31f/0xd10 [lquota]
+ ? qmt_pool_prepare+0x3ee/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7248 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88812c0da400 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8b478 RDI: ffff888138a50950
+RBP: ffff88813ec8b3e8 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d91672 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create_with_fid+0x20d/0x3c0 [obdclass]
+ ? lquota_disk_glb_find_create+0x3e7/0xe50 [lquota]
+ ? qmt_pool_prepare+0x5af/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7248 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881392af000 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8bb90 RDI: ffff888138a50950
+RBP: ffff88813ec8bb00 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d91755 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create_with_fid+0x20d/0x3c0 [obdclass]
+ ? lquota_disk_glb_find_create+0x3e7/0xe50 [lquota]
+ ? lprocfs_seq_create+0x120/0x340 [obdclass]
+ ? qmt_pool_prepare+0x5af/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7248 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88813517d800 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8c2a8 RDI: ffff888138a50950
+RBP: ffff88813ec8c218 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d91838 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create_with_fid+0x20d/0x3c0 [obdclass]
+ ? lquota_disk_glb_find_create+0x3e7/0xe50 [lquota]
+ ? lprocfs_seq_create+0x120/0x340 [obdclass]
+ ? qmt_pool_prepare+0x5af/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7260 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff888135179c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec8c9c0 RDI: ffff888138a50950
+RBP: ffff88813ec8c930 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_file_find_or_create+0x13c/0x1d0 [obdclass]
+ ? lquota_disk_dir_find_create+0x31f/0xd10 [lquota]
+ ? qmt_pool_prepare+0x3ee/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7248 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff888135178800 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8d0d8 RDI: ffff888138a50950
+RBP: ffff88813ec8d048 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d919fe R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create_with_fid+0x20d/0x3c0 [obdclass]
+ ? lquota_disk_glb_find_create+0x3e7/0xe50 [lquota]
+ ? qmt_pool_prepare+0x5af/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7248 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88810b436c00 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8d7f0 RDI: ffff888138a50950
+RBP: ffff88813ec8d760 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d91ae1 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create_with_fid+0x20d/0x3c0 [obdclass]
+ ? lquota_disk_glb_find_create+0x3e7/0xe50 [lquota]
+ ? lprocfs_seq_create+0x120/0x340 [obdclass]
+ ? qmt_pool_prepare+0x5af/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1129
+Modules linked in: mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1129 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ee7248 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88810b437400 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8df08 RDI: ffff888138a50950
+RBP: ffff88813ec8de78 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d91bc4 R12: ffff88813d0c9418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027a19292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create_with_fid+0x20d/0x3c0 [obdclass]
+ ? lquota_disk_glb_find_create+0x3e7/0xe50 [lquota]
+ ? lprocfs_seq_create+0x120/0x340 [obdclass]
+ ? qmt_pool_prepare+0x5af/0x16f0 [lquota]
+ ? qmt_device_prepare+0x22a/0x600 [lquota]
+ ? mdt_quota_init+0x1a6d/0x3220 [mdt]
+ ? mdt_tunables_init+0x3e6/0x530 [mdt]
+ ? mdt_device_alloc+0x46ae/0x66c0 [mdt]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#15: ll_mgs_0000/1104
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 15 UID: 0 PID: 1104 Comm: ll_mgs_0000 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ce76d0 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881056e1c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff8881423902d0 RDI: ffff88813f52a9e0
+RBP: ffff888142390240 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888135575418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11026aaea92
+FS:  0000000000000000(0000) GS:ffff88831ee7e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fb0be1e62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_file_find_or_create+0x13c/0x1d0 [obdclass]
+ ? mgs_ir_update+0x1cd8/0x39f0 [mgs]
+ ? mgs_target_reg+0xce4/0x4290 [mgs]
+ ? req_capsule_server_pack+0xcc/0x670 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#0: lod0000_rec0000/1139
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 0 UID: 0 PID: 1139 Comm: lod0000_rec0000 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc900022afb38 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff888134fb4400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff8881371102d0 RDI: ffff888105c1a990
+RBP: ffff888137110240 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88812f7bdc00
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11025ef7b8f
+FS:  0000000000000000(0000) GS:ffff88831e6fe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f21e9de62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? llog_osd_create+0x601/0x1260 [obdclass]
+ ? llog_create+0x2ed/0x530 [obdclass]
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+ ? lod_sub_prep_llog+0xdfd/0x1b40 [lod]
+ ? lod_sub_recovery_thread+0x316/0x18d0 [lod]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? lod_sub_init_llog+0x1180/0x1180 [lod]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#15: ll_mgs_0000/1104
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 15 UID: 0 PID: 1104 Comm: ll_mgs_0000 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001ce7660 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881056e4400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff8881423909e8 RDI: ffff88813f52a9e0
+RBP: ffff888142390958 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88813e293400
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11027c5268f
+FS:  0000000000000000(0000) GS:ffff88831ee7e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fb0be1e62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x155/0x290 [obdclass]
+ ? llog_osd_create+0x354/0x1260 [obdclass]
+ ? llog_create+0x2ed/0x530 [obdclass]
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+ ? record_start_log+0x348/0xa40 [mgs]
+ ? mgs_write_log_lov+0x3ac/0xde0 [mgs]
+ ? mgs_write_log_target+0x17a4/0x6ab0 [mgs]
+ ? mgs_target_reg+0x2498/0x4290 [mgs]
+ ? req_capsule_server_pack+0xcc/0x670 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1145
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1145 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc900023d7430 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881065c7400 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88813ec8e620 RDI: ffff888133ba2990
+RBP: ffff88813ec8e590 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed1027d91ca7 R12: ffff88815e704f00
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff9200047aebd
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? fld_index_init+0x404/0x1610 [fld]
+ ? is_module_address+0x54/0x60
+ ? __asan_memset+0x22/0x40
+ ? fld_server_init+0x1d7/0x580 [fld]
+ ? mdt_device_alloc+0x36b4/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1145
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1145 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc900023d7408 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8881065c7c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec8ed38 RDI: ffff888133ba2990
+RBP: ffff88813ec8eca8 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc900023d7518
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff9200047aea1
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? seq_store_init+0x155/0x360 [fid]
+ ? seq_server_init+0x290/0xba0 [fid]
+ ? mdt_seq_init+0x2c1/0x1f00 [mdt]
+ ? mdt_device_alloc+0x39c5/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1145
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1145 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc900023d7450 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff888106641000 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec8f450 RDI: ffff888133ba2990
+RBP: ffff88813ec8f3c0 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc900023d75d0
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff9200047aec7
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? tgt_init+0xb6e/0x2a60 [ptlrpc]
+ ? mdt_device_alloc+0x3ce7/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1145
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1145 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc900023d7450 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff888106641400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88813ec8fb68 RDI: ffff888133ba2990
+RBP: ffff88813ec8fad8 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc900023d75d0
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff9200047aec7
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f2962de62f4 CR3: 0000000119ae4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? tgt_init+0x1a94/0x2a60 [ptlrpc]
+ ? mdt_device_alloc+0x3ce7/0x66c0 [mdt]
+ ? __kasan_slab_alloc+0x37/0x60
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#9: lod0001_rec0001/1154
+Modules linked in: osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 9 UID: 0 PID: 1154 Comm: lod0001_rec0001 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+------------[ cut here ]------------
+RSP: 0018:ffffc90006f2fb38 EFLAGS: 00010246
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#1: mdt_out00_000/1115
+RAX: 0000000000000000 RBX: ffff8881348af400 RCX: 0000000000000046
+Modules linked in:
+RDX: 0000000000000000 RSI: ffff88816400c9c0 RDI: ffff888137070950
+ osp(O)
+RBP: ffff88816400c930 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+ mdd(O) lod(O)
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888129caec00
+ mdt(O)
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11025395d8f
+ lquota(O)
+FS:  0000000000000000(0000) GS:ffff88831eb7e000(0000) knlGS:0000000000000000
+ lfsck(O)
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+ mgs(O)
+CR2: 000055f4d8753900 CR3: 0000000139438000 CR4: 0000000000750eb0
+ osd_wbcfs(O)
+PKRU: 55555554
+ lustre(O) obdecho(O)
+Call Trace:
+ mgc(O) mdc(O)
+ <TASK>
+ lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+ ? llog_osd_create+0x601/0x1260 [obdclass]
+CPU: 1 UID: 0 PID: 1115 Comm: mdt_out00_000 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+ ? llog_create+0x2ed/0x530 [obdclass]
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+ ? lod_sub_prep_llog+0xdfd/0x1b40 [lod]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001da77d0 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88813e177800 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff888141bd82d0 RDI: ffff888139292990
+ ? lod_sub_recovery_thread+0x316/0x18d0 [lod]
+RBP: ffff888141bd8240 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+ ? __kthread_parkme+0x70/0x110
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88812ef90e30
+ ? kthread+0x58a/0x700
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11025df21d8
+ ? lod_sub_init_llog+0x1180/0x1180 [lod]
+FS:  0000000000000000(0000) GS:ffff88831e77e000(0000) knlGS:0000000000000000
+ ? kthread_unuse_mm+0x130/0x130
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+ ? ret_from_fork+0x18a/0x450
+CR2: 00007fc7ee3e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+ ? kthread_unuse_mm+0x130/0x130
+PKRU: 55555554
+ ? ret_from_fork_asm+0x11/0x20
+Call Trace:
+ </TASK>
+ <TASK>
+---[ end trace 0000000000000000 ]---
+ ? out_tx_create_exec+0x435/0xa70 [ptlrpc]
+ ? tx_add_exec+0xd70/0xd70 [ptlrpc]
+ ? out_tx_end+0x48b/0x1280 [ptlrpc]
+ ? out_handle+0x5286/0x6240 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+lod0001_rec0000 (1155) used greatest stack depth: 25920 bytes left
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#13: ll_mgs_0001/1105
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 13 UID: 0 PID: 1105 Comm: ll_mgs_0001 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001cf76c8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88813165b400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff8881402702d0 RDI: ffff88813e8d89a0
+RBP: ffff888140270240 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88812c17a400
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff1102582f48f
+FS:  0000000000000000(0000) GS:ffff88831ed7e000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f45a97e62f4 CR3: 00000001644d4000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x155/0x290 [obdclass]
+ ? llog_osd_create+0x354/0x1260 [obdclass]
+ ? llog_create+0x2ed/0x530 [obdclass]
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+ ? record_start_log+0x348/0xa40 [mgs]
+ ? mgs_write_log_target+0x16f2/0x6ab0 [mgs]
+ ? mgs_target_reg+0x2498/0x4290 [mgs]
+ ? req_capsule_server_pack+0xcc/0x670 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1173
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1173 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001fa75f8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817aec9400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d02d0 RDI: ffff88812b2da990
+RBP: ffff88817e8d0240 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc90001fa7778
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003f4efc
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? tgt_init+0xb6e/0x2a60 [ptlrpc]
+ ? ofd_device_alloc+0x1da8/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1173
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1173 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001fa74c8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817aec9c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d09e8 RDI: ffff88812b2da990
+RBP: ffff88817e8d0958 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc90001fa75d8
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003f4eb9
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? seq_store_init+0x155/0x360 [fid]
+ ? seq_server_init+0x290/0xba0 [fid]
+ ? ofd_fid_init+0x41c/0xf80 [ofd]
+ ? ofd_seqs_init+0xb6/0x1370 [ofd]
+ ? ofd_fs_setup+0x155/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1173
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1173 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001fa7508 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817aecac00 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88817e8d1100 RDI: ffff88812b2da990
+RBP: ffff88817e8d1070 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed102fd1a203 R12: ffff88813943fd00
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff920003f4ed8
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? fld_index_init+0x404/0x1610 [fld]
+ ? is_module_address+0x54/0x60
+ ? __asan_memset+0x22/0x40
+ ? fld_server_init+0x1d7/0x580 [fld]
+ ? ofd_seqs_init+0x430/0x1370 [ofd]
+ ? ofd_fs_setup+0x155/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1173
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1173 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001fa76b8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817aecb000 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d1818 RDI: ffff88812b2da990
+RBP: ffff88817e8d1788 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888137215030
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11026e42a42
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? ofd_fs_setup+0x442/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1173
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1173 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001fa76b8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817aecb400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d1f30 RDI: ffff88812b2da990
+RBP: ffff88817e8d1ea0 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888137215030
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff11026e42a42
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? ofd_fs_setup+0x5b1/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1173
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1173 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001fa7490 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817aecc000 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88817e8d2648 RDI: ffff88812b2da990
+RBP: ffff88817e8d25b8 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed102fd1a4ac R12: ffff888169761418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff1102d2ec292
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create+0x1dc/0x2c0 [obdclass]
+ ? nodemap_cache_find_create+0x4f9/0xe80 [ptlrpc]
+ ? nodemap_save_config_cache+0x123/0x1c70 [ptlrpc]
+ ? nm_config_file_register_tgt+0x19b/0x860 [ptlrpc]
+ ? nm_config_file_register_tgt+0x1a9/0x860 [ptlrpc]
+ ? ofd_device_alloc+0x219a/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#12: ll_mgs_0002/1106
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 12 UID: 0 PID: 1106 Comm: ll_mgs_0002 Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc90001d076c8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88813073e400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff888142a282d0 RDI: ffff88813e8da9e0
+RBP: ffff888142a28240 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff888129e4b400
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff110253c968f
+FS:  0000000000000000(0000) GS:ffff88831ecfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f5a793e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x155/0x290 [obdclass]
+ ? llog_osd_create+0x354/0x1260 [obdclass]
+ ? llog_create+0x2ed/0x530 [obdclass]
+ ? llog_open_create+0x6e7/0xb30 [obdclass]
+ ? record_start_log+0x348/0xa40 [mgs]
+ ? mgs_write_log_target+0x16f2/0x6ab0 [mgs]
+ ? mgs_target_reg+0x2498/0x4290 [mgs]
+ ? req_capsule_server_pack+0xcc/0x670 [ptlrpc]
+ ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+ ? ptlrpc_main+0x635f/0x9700 [ptlrpc]
+ ? __kthread_parkme+0x70/0x110
+ ? kthread+0x58a/0x700
+ ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1180
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1180 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc9000753f5f8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817e9a3c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d2d60 RDI: ffff88817ae6a990
+RBP: ffff88817e8d2cd0 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc9000753f778
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff92000ea7efc
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? tgt_init+0xb6e/0x2a60 [ptlrpc]
+ ? ofd_device_alloc+0x1da8/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1180
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1180 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc9000753f4c8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817e9a4400 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d3478 RDI: ffff88817ae6a990
+RBP: ffff88817e8d33e8 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffffc9000753f5d8
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff92000ea7eb9
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? seq_store_init+0x155/0x360 [fid]
+ ? seq_server_init+0x290/0xba0 [fid]
+ ? ofd_fid_init+0x41c/0xf80 [ofd]
+ ? ofd_seqs_init+0xb6/0x1370 [ofd]
+ ? ofd_fs_setup+0x155/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1180
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1180 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc9000753f508 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817e9a5800 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88817e8d3b90 RDI: ffff88817ae6a990
+RBP: ffff88817e8d3b00 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed102fd1a755 R12: ffff888163055100
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff92000ea7ed8
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? fld_index_init+0x404/0x1610 [fld]
+ ? is_module_address+0x54/0x60
+ ? __asan_memset+0x22/0x40
+ ? fld_server_init+0x1d7/0x580 [fld]
+ ? ofd_seqs_init+0x430/0x1370 [ofd]
+ ? ofd_fs_setup+0x155/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1180
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1180 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc9000753f6b8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817e9a5c00 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d42a8 RDI: ffff88817ae6a990
+RBP: ffff88817e8d4218 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88817e8df830
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff1102fd1bf42
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? ofd_fs_setup+0x442/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1180
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1180 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc9000753f6b8 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817e9a6000 RCX: 0000000000000046
+RDX: 0000000000000000 RSI: ffff88817e8d49c0 RDI: ffff88817ae6a990
+RBP: ffff88817e8d4930 R08: ffffffff838167c3 R09: 1ffffffff0702cf8
+R10: dffffc0000000000 R11: fffffbfff0702cf9 R12: ffff88817e8df830
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff1102fd1bf42
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? dt_find_or_create+0x9c1/0x14d0 [obdclass]
+ ? ofd_fs_setup+0x5b1/0xef0 [ofd]
+ ? ofd_device_alloc+0x1fc1/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+------------[ cut here ]------------
+WARNING: /home/ktest/git/linux/include/linux/fs.h:888 at osd_create+0xae0/0xe00 [osd_wbcfs], CPU#10: llog_process_th/1180
+Modules linked in: ofd(O) osp(O) mdd(O) lod(O) mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) obdclass(O) ksocklnd(O) lnet(O) libcfs(O) efivarfs
+CPU: 10 UID: 0 PID: 1180 Comm: llog_process_th Tainted: G        W  O        6.19.0-ktest-28a9d0a3ba-20260610 #1 NONE 
+Tainted: [W]=WARN, [O]=OOT_MODULE
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+RIP: 0010:osd_create+0xae0/0xe00 [osd_wbcfs]
+Code: c7 c7 c0 86 7a a1 48 c7 c6 a0 02 7c a1 48 c7 c2 c0 0c 7c a1 e8 d1 0c 44 ff 48 c7 c7 c0 86 7a a1 e8 f5 9b 44 ff e9 b8 fc ff ff <0f> 0b e9 60 fa ff ff 48 c7 c1 00 e5 5d a0 80 e1 07 80 c1 03 38 c1
+RSP: 0018:ffffc9000753f490 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff88817e9a6c00 RCX: 0000000000000046
+RDX: ffffffff8496bea0 RSI: ffff88817e8d50d8 RDI: ffff88817ae6a990
+RBP: ffff88817e8d5048 R08: 0000000000000000 R09: 0000000000000000
+R10: dffffc0000000000 R11: ffffed102fd1a9fe R12: ffff88817e8e6418
+R13: dffffc0000000000 R14: 0000000000000000 R15: 1ffff1102fd1cc92
+FS:  0000000000000000(0000) GS:ffff88831ebfe000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f60191e62f4 CR3: 000000000406e000 CR4: 0000000000750eb0
+PKRU: 55555554
+Call Trace:
+ <TASK>
+ ? local_object_create+0x107/0x640 [obdclass]
+ ? dt_write_lock+0x164/0x2a0 [obdclass]
+ ? __local_file_create+0xce4/0x1bc0 [obdclass]
+ ? local_index_find_or_create+0x1dc/0x2c0 [obdclass]
+ ? nodemap_cache_find_create+0x4f9/0xe80 [ptlrpc]
+ ? nodemap_save_config_cache+0x123/0x1c70 [ptlrpc]
+ ? nm_config_file_register_tgt+0x19b/0x860 [ptlrpc]
+ ? nm_config_file_register_tgt+0x1a9/0x860 [ptlrpc]
+ ? ofd_device_alloc+0x219a/0x35e0 [ofd]
+ ? obd_setup+0x25c/0x950 [obdclass]
+ ? class_setup+0xc7d/0x10e0 [obdclass]
+ ? class_process_config+0x2edb/0x7cb0 [obdclass]
+ ? alloc_slab_obj_exts+0x60/0x130
+ ? __kasan_kmalloc+0x72/0x80
+ ? class_config_llog_handler+0x29d3/0x5110 [obdclass]
+ ? class_config_llog_handler+0x2d7a/0x5110 [obdclass]
+ ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+ ? llog_process_thread+0x205e/0x4f80 [obdclass]
+ ? _raw_spin_unlock+0x23/0x30
+ ? llog_process_thread_daemonize+0x16d/0x1b0 [obdclass]
+ ? kthread+0x58a/0x700
+ ? llog_process_or_fork+0xc90/0xc90 [obdclass]
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork+0x18a/0x450
+ ? kthread_unuse_mm+0x130/0x130
+ ? ret_from_fork_asm+0x11/0x20
+ </TASK>
+---[ end trace 0000000000000000 ]---
+CLEANUP LUSTRE ... LustreError: 1223:0:(lov_obd.c:792:lov_cleanup()) lustre-clilov-ffff88810bc7c000: lov tgt 0 not cleaned! deathrow=0, lovrc=1
+Lustre: Unmounted lustre-client
+Lustre: server umount lustre-OST0000 complete
+Lustre: server umount lustre-OST0001 complete
+LustreError: lustre-MDT0001-osp-MDT0000: operation mds_statfs to node 0@lo failed: rc = -107
+Lustre: lustre-MDT0001-osp-MDT0000: Connection to lustre-MDT0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+Lustre: lustre-MDT0001: Not available for connect from 0@lo (stopping)
+Lustre: server umount lustre-MDT0001 complete
+Lustre: server umount lustre-MDT0000 complete
+21s
+
+========= PASSED llmount in 51s
+
+Passed: llmount
+Failed: 
+NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+Kernel version: 6.19.0-ktest-28a9d0a3ba-20260610
+TEST SUCCESS
+sysrq: Power Off
