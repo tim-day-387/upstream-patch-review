@@ -1,0 +1,50 @@
+WARNING:MACRO_ARG_UNUSED: Argument 'page' is not used in function-like macro
+#113: FILE: include/lustre_compat/linux/folio.h:38:
++#define folio_order(page)		(0)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'page' is not used in function-like macro
+#114: FILE: include/lustre_compat/linux/folio.h:39:
++#define folio_size(page)		(PAGE_SIZE)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'page' is not used in function-like macro
+#145: FILE: include/lustre_compat/linux/folio.h:444:
++#define wbe_folio_size(page)		(PAGE_SIZE)
+
+WARNING:LONG_LINE_STRING: line length of 110 exceeds 100 columns
+#825: FILE: lustre/llite/llite_mmap.c:445:
++	       "COMPLETED: "DFID": vma=%p start=%#lx end=%#lx vm_flags=%#lx pgoff=%lu vmf_flags=%#x: rc=%d\n",
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#3242: FILE: lustre/osc/osc_cache.c:1222:
++		LASSERTF(ext->oe_npgs <=
++			 (LNET_MAX_IOV * osc_max_brw_imp(osc_cli(obj))),
++			 "ext:%px [%lu-%lu] oe_npgs:%d\n",
++			 ext, ext->oe_start, ext->oe_end, ext->oe_npgs);
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#3850: FILE: lustre/osc/osc_cache.c:2765:
++		LASSERTF(ext->oe_npgs <= (LNET_MAX_IOV * osc_max_brw_imp(cli)),
++			 "ext:%px [%lu-%lu] oe_npgs:%d (added:%d)\n",
++			 ext, ext->oe_start, ext->oe_end, ext->oe_npgs, npgs);
+
+WARNING:VSPRINTF_SPECIFIER_PX: Using vsprintf specifier '%px' potentially exposes the kernel memory layout, if you don't really need the address please consider using '%p'.
+#5706: FILE: lustre/osc/osc_request.c:1996:
++		LASSERTF(brw_count == 1 ||
++			 (ergo(i == 0, poff + pg->bp_count == brw_size(pg)) &&
++			  ergo(i > 0 && i < brw_count - 1,
++			       poff == 0 && pg->bp_count == brw_size(pg)) &&
++			  ergo(i == brw_count - 1, poff == 0)),
++			 "i:%d/%d pg:%px f:%px bp_off:%llu, bp_pgoff:%d poff:%d bp_count:%u size:%zu npgs:%d\n",
++			 i, brw_count, pg, pg->bp_folio,
++			 pg->bp_off, pg->bp_pgoff, poff,
++			 pg->bp_count, brw_size(pg), brw_npgs(pg));
+
+total: 0 errors, 7 warnings, 6054 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
