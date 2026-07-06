@@ -1,0 +1,38 @@
+CLI: ./podman-ktest --podman-socket unix:///run/podman/podman.sock --shared-filesystem /tmp --tarball-input job mainline-zfs --output /var/www/ci-lustre/upstream-patch-review --git-hash b7d6750398325a604e34e981e369fa5ea8b3d78a_mainline-zfs --change-id master_b7d6750398325a604e34e981e369fa5ea8b3d78a_mainline-zfs --subject [mainline-zfs] Main development branch
+
+Environment validated successfully
+Creating kernel tarball at /tmp/ktest-kernel.tar.gz...
+Creating lustre tarball at /tmp/ktest-lustre.tar.gz...
+Creating ZFS tarball at /tmp/ktest-zfs.tar.gz...
+Executing 11 jobs
+Jobs will start as soon as their dependencies are satisfied
+Using tarball input mode
+
+START ml-zfs-miscvm:lustre_mainline_native build tests/fs/lustre/boot.ktest
+START ml-zfs-llmount:lustre_mainline build tests/fs/lustre/llmount.ktest
+PUT /tmp/ktest-kernel.tar.gz 5s
+PUT /tmp/ktest-kernel.tar.gz 5s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+GET /tmp/ktest_ml-zfs-llmount:lustre_mainline_a4q_m_sp.tar 3s
+GET /tmp/ktest_ml-zfs-miscvm:lustre_mainline_native_a90gv3d_.tar 3s
+END ml-zfs-llmount:lustre_mainline build tests/fs/lustre/llmount.ktest FAIL 115s (exit code: 1)
+END ml-zfs-miscvm:lustre_mainline_native build tests/fs/lustre/boot.ktest FAIL 116s (exit code: 1)
+
+============================================================
+Final Results:
+  ml-zfs-llmount:lustre_mainline: FAIL (115s) (log: /var/www/ci-lustre/upstream-patch-review/b7d6750398325a604e34e981e369fa5ea8b3d78a_mainline-zfs_ml-zfs-llmount:lustre_mainline.log)
+  ml-zfs-llmount:boot: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:lustre_mainline_native: FAIL (116s) (log: /var/www/ci-lustre/upstream-patch-review/b7d6750398325a604e34e981e369fa5ea8b3d78a_mainline-zfs_ml-zfs-miscvm:lustre_mainline_native.log)
+  ml-zfs-miscvm:boot: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:llmount: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:llog-unit: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:mgs-setup: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:sanity-1: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:sanity-2: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:sanity-3: SKIPPED (due to dependency failure)
+  ml-zfs-miscvm:sanity-4: SKIPPED (due to dependency failure)
+
+Total execution time: 146s
