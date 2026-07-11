@@ -1,0 +1,169 @@
+00001 
+00002 RDSEED32 is broken. Disabling the corresponding CPUID bit.
+00003 init: failed to load nvme_core
+00003 init: failed to load nvme
+00003 init: failed to load zfs
+00004 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00004 LNetError: Error -100 starting up LNI tcp
+00004 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00005 init: finit_module /lib/modules/7.0.0-ktest-450b4fd-6330a45-20260711-dirty/updates/ptlrpc.ko: Network is down
+00005 init: failed to load lustre
+00005 init: failed to load osd_zfs
+00005 init: failed to load iwlwifi
+00005 init: failed to load iwlmvm
+00005 init: failed to load mt7921e
+00005 init: failed to load i915
+00005 init: failed to load nouveau
+00048 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00048 Kernel version: 7.0.0-ktest-450b4fd-6330a45-20260711-dirty
+00049 hook init_noop
+00049 
+00049 Running tests llmount
+00049 
+00049 ========= TEST   llmount
+00053 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00054 Lustre: Echo OBD driver; http://www.lustre.org/
+00055 
+00055 ============================================
+00055 WARNING: possible recursive locking detected
+00055 7.0.0-ktest-450b4fd-6330a45-20260711-dirty #1 Tainted: G           O       
+00055 --------------------------------------------
+00055 lustre-ktest/1946 is trying to acquire lock:
+00055 ffff88813e55a3f0 (sb_writers#11){.+.+}-{0:0}, at: kernel_write+0xf4/0x300
+00055 
+00055 but task is already holding lock:
+00055 ffff88813e55a3f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00055 
+00055 other info that might help us debug this:
+00055  Possible unsafe locking scenario:
+00055 
+00055        CPU0
+00055        ----
+00055   lock(sb_writers#11);
+00055   lock(sb_writers#11);
+00055 
+00055  *** DEADLOCK ***
+00055 
+00055  May be due to missing lock nesting notation
+00055 
+00055 4 locks held by lustre-ktest/1946:
+00055  #0: ffff888186d5c0e0 (&type->s_umount_key#42/1){+.+.}-{4:4}, at: alloc_super+0x181/0x850
+00055  #1: ffff88814068e9d8 (&ls->ls_los_mutex){+.+.}-{4:4}, at: local_oid_storage_init+0x1b7/0x2420 [obdclass]
+00055  #2: ffff88813e55a3f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00055  #3: ffff88814068a4b0 (&obj->oo_dt.dd_sem){+.+.}-{4:4}, at: dt_write_lock+0x16d/0x2a0 [obdclass]
+00055 
+00055 stack backtrace:
+00055 CPU: 9 UID: 0 PID: 1946 Comm: lustre-ktest Tainted: G           O        7.0.0-ktest-450b4fd-6330a45-20260711-dirty #1 PREEMPT 
+00055 Tainted: [O]=OOT_MODULE
+00055 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00055 Call Trace:
+00055  <TASK>
+00055  dump_stack_lvl+0x6d/0xa0
+00055  print_deadlock_bug+0x273/0x290
+00055  __lock_acquire+0x128f/0x2a30
+00055  lock_acquire+0xe7/0x2a0
+00055  ? kernel_write+0xf4/0x300
+00055  sb_start_write+0x42/0x130
+00055  ? kernel_write+0xf4/0x300
+00055  kernel_write+0xf4/0x300
+00055  ? alloc_file_pseudo+0x114/0x180
+00055  osd_write+0x4a2/0x720 [osd_wbcfs]
+00055  dt_record_write+0xea/0x3e0 [obdclass]
+00055  local_oid_storage_init+0x19c0/0x2420 [obdclass]
+00055  mgs_fs_setup+0x206/0x1140 [mgs]
+00055  ? ldlm_namespace_new+0x16a3/0x1f10 [ptlrpc]
+00055  mgs_device_alloc+0x10a0/0x25c0 [mgs]
+00055  ? keys_fill+0x3c7/0x420 [obdclass]
+00055  ? lu_context_init+0x2c4/0x3b0 [obdclass]
+00055  obd_setup+0x26d/0x970 [obdclass]
+00055  class_setup+0xc7d/0x10e0 [obdclass]
+00055  lustre_start_simple+0xe68/0x1b50 [obdclass]
+00055  server_fill_super+0x1852/0x2f70 [ptlrpc]
+00055  ? lustre_init_lsi+0x330/0x6c0 [obdclass]
+00055  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00055  ? lustre_tgt_get_tree+0x20/0x20 [ptlrpc]
+00055  get_tree_nodev+0x9e/0x110
+00055  vfs_get_tree+0x86/0x200
+00055  do_new_mount+0x1ee/0xa10
+00055  __x64_sys_mount+0x2a9/0x350
+00055  do_syscall_64+0xda/0x430
+00055  ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00055  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00055 RIP: 0033:0x56187317c0d6
+00055 Code: 60 83 fb 01 41 89 de 41 83 d6 00 44 89 74 24 68 b8 a5 00 00 00 4c 89 e7 48 89 ee 48 8b 54 24 18 45 31 d2 4c 8b 44 24 10 0f 05 <48> 3d 01 f0 ff ff 0f 82 89 02 00 00 f7 d8 89 44 24 28 44 89 f0 ff
+00055 RSP: 002b:00007ffc700062f0 EFLAGS: 00000246 ORIG_RAX: 00000000000000a5
+00055 RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000056187317c0d6
+00055 RDX: 000056189a4dc8f0 RSI: 000056189a4dcc00 RDI: 000056189a4dc7a0
+00055 RBP: 000056189a4dcc00 R08: 000056189a4dc730 R09: 0000000000000060
+00055 R10: 0000000000000000 R11: 0000000000000246 R12: 000056189a4dc7a0
+00055 R13: 00007ffc70006508 R14: 0000000000000001 R15: 000000000000000d
+00055  </TASK>
+00055 Lustre: New target detected, checking nodemap for lustre-MDT0000
+00055 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+00055 Lustre: lustre-MDT0000: new disk, initializing
+00055 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+00055 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+00055 Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+00055 LustreError: 1971:0:(osd_dirent.c:113:osd_index_dir_insert()) lustre-MDT0000: lookup [0x240000400:0x2:0x0] from icache failed: rc=-22
+00055 Lustre: 1971:0:(out_handler.c:886:out_tx_end()) lustre-MDT0000-osd: error during execution of #0 from lustre/ptlrpc/../target/out_handler.c:535: rc = -22
+00055 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) lustre-MDT0001: Trash dir setup failed: rc = -22
+00056 LustreError: 1971:0:(osd_dirent.c:113:osd_index_dir_insert()) lustre-MDT0000: lookup [0x240000400:0xb0:0x0] from icache failed: rc=-22
+00056 LustreError: 1971:0:(osd_dirent.c:113:osd_index_dir_insert()) Skipped 171 previous similar messages
+00056 Lustre: 1971:0:(out_handler.c:886:out_tx_end()) lustre-MDT0000-osd: error during execution of #0 from lustre/ptlrpc/../target/out_handler.c:535: rc = -22
+00056 Lustre: 1971:0:(out_handler.c:886:out_tx_end()) Skipped 171 previous similar messages
+00056 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) lustre-MDT0001: Trash dir setup failed: rc = -22
+00056 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) Skipped 171 previous similar messages
+00057 LustreError: 2031:0:(osd_dirent.c:113:osd_index_dir_insert()) lustre-MDT0000: lookup [0x240000400:0x21d:0x0] from icache failed: rc=-22
+00057 LustreError: 2031:0:(osd_dirent.c:113:osd_index_dir_insert()) Skipped 364 previous similar messages
+00057 Lustre: 2031:0:(out_handler.c:886:out_tx_end()) lustre-MDT0000-osd: error during execution of #0 from lustre/ptlrpc/../target/out_handler.c:535: rc = -22
+00057 Lustre: 2031:0:(out_handler.c:886:out_tx_end()) Skipped 364 previous similar messages
+00057 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) lustre-MDT0001: Trash dir setup failed: rc = -22
+00057 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) Skipped 364 previous similar messages
+00059 LustreError: 2019:0:(osd_dirent.c:113:osd_index_dir_insert()) lustre-MDT0000: lookup [0x240000400:0x517:0x0] from icache failed: rc=-22
+00059 LustreError: 2019:0:(osd_dirent.c:113:osd_index_dir_insert()) Skipped 761 previous similar messages
+00059 Lustre: 2019:0:(out_handler.c:886:out_tx_end()) lustre-MDT0000-osd: error during execution of #0 from lustre/ptlrpc/../target/out_handler.c:535: rc = -22
+00059 Lustre: 2019:0:(out_handler.c:886:out_tx_end()) Skipped 761 previous similar messages
+00059 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) lustre-MDT0001: Trash dir setup failed: rc = -22
+00059 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) Skipped 761 previous similar messages
+00063 LustreError: 2019:0:(osd_dirent.c:113:osd_index_dir_insert()) lustre-MDT0000: lookup [0x240000400:0xaea:0x0] from icache failed: rc=-22
+00063 LustreError: 2019:0:(osd_dirent.c:113:osd_index_dir_insert()) Skipped 1489 previous similar messages
+00063 Lustre: 2019:0:(out_handler.c:886:out_tx_end()) lustre-MDT0000-osd: error during execution of #0 from lustre/ptlrpc/../target/out_handler.c:535: rc = -22
+00063 Lustre: 2019:0:(out_handler.c:886:out_tx_end()) Skipped 1489 previous similar messages
+00063 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) lustre-MDT0001: Trash dir setup failed: rc = -22
+00063 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) Skipped 1489 previous similar messages
+00063 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+00063 Lustre: Skipped 1 previous similar message
+00063 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+00063 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000401
+00063 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x2c0000401
+00068 Lustre: lustre-MDT0000: local client cf69d432-e619-46cc-9492-bd845e29818b w/o recovery
+00068 Lustre: Skipped 1 previous similar message
+00068 Lustre: client wants to enable acl, but mdt not!
+00068 Lustre: Mounted lustre-client
+00068 lustre-ktest (1946) used greatest stack depth: 23560 bytes left
+00068 20s
+00071 LustreError: 2019:0:(osd_dirent.c:113:osd_index_dir_insert()) lustre-MDT0000: lookup [0x240000400:0x16c9:0x0] from icache failed: rc=-22
+00071 LustreError: 2019:0:(osd_dirent.c:113:osd_index_dir_insert()) Skipped 3037 previous similar messages
+00071 Lustre: 2019:0:(out_handler.c:886:out_tx_end()) lustre-MDT0000-osd: error during execution of #0 from lustre/ptlrpc/../target/out_handler.c:535: rc = -22
+00071 Lustre: 2019:0:(out_handler.c:886:out_tx_end()) Skipped 3037 previous similar messages
+00071 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) lustre-MDT0001: Trash dir setup failed: rc = -22
+00071 LustreError: 2016:0:(mdt_handler.c:8423:mdt_trash_setup_thread()) Skipped 3037 previous similar messages
+00078 CLEANUP LUSTRE ... Lustre: Unmounted lustre-client
+00078 Lustre: server umount lustre-OST0000 complete
+00078 Lustre: server umount lustre-OST0001 complete
+00078 LustreError: 2016:0:(osp_object.c:618:osp_attr_get()) lustre-MDT0000-osp-MDT0001: osp_attr_get update error [0x200000002:0x4:0x0]: rc = -108
+00078 LustreError: 2016:0:(client.c:1381:ptlrpc_import_delay_req()) @@@ IMP_CLOSED  req@0000000081ffff62 x1870403934836608/t0(0) o1000->lustre-MDT0000-osp-MDT0001@0@lo:24/4 lens 304/4320 e 0 to 0 dl 0 ref 2 fl Rpc:QU/200/ffffffff rc 0/-1 job:'' uid:0 gid:0 projid:4294967295
+00083 LustreError: lustre-MDT0001-osp-MDT0000: operation mds_statfs to node 0@lo failed: rc = -107
+00083 Lustre: lustre-MDT0001-osp-MDT0000: Connection to lustre-MDT0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+00083 Lustre: lustre-MDT0001: Not available for connect from 0@lo (stopping)
+00088 Lustre: server umount lustre-MDT0001 complete
+00098 Lustre: server umount lustre-MDT0000 complete
+00098 21s
+00098 
+00098 ========= PASSED llmount in 51s
+00098 
+00098 Passed: llmount
+00098 Failed: 
+00098 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+00098 Kernel version: 7.0.0-ktest-450b4fd-6330a45-20260711-dirty
+00098 TEST SUCCESS
