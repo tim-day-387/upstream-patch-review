@@ -1,0 +1,149 @@
+00001 
+00001 RDSEED32 is broken. Disabling the corresponding CPUID bit.
+00003 init: failed to load nvme_core
+00003 init: failed to load nvme
+00003 init: failed to load zfs
+00003 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00003 LNetError: Error -100 starting up LNI tcp
+00004 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00004 init: finit_module /lib/modules/7.0.0-ktest-a71fb5b-6330a45-20260717-dirty/updates/ptlrpc.ko: Network is down
+00004 init: failed to load lustre
+00004 init: failed to load osd_zfs
+00004 init: failed to load iwlwifi
+00004 init: failed to load iwlmvm
+00004 init: failed to load mt7921e
+00004 init: failed to load i915
+00004 init: failed to load nouveau
+00040 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00041 Kernel version: 7.0.0-ktest-a71fb5b-6330a45-20260717-dirty
+00041 hook init_noop
+00041 
+00041 Running tests mgs-setup
+00041 
+00041 ========= TEST   mgs-setup
+00041 /host/home/ktest/git/lustre-release/lustre/tests/test-framework.sh: line 6934: cd: HOME not set
+00041 /host/home/ktest/git/lustre-release/lustre/tests/test-framework.sh: line 6934: cd: HOME not set
+00041 /host/home/ktest/git/lustre-release/lustre/tests/test-framework.sh: line 6934: cd: HOME not set
+00043 MGS_OS_VERSION_ID=24.04
+00043 MGS_OS_ID=ubuntu
+00043 MGS_OS_VERSION_CODE=402915328
+00043 MGS_OS_ID_LIKE=debian ubuntu
+00043 MDS1_OS_ID=ubuntu
+00043 MDS1_OS_VERSION_CODE=402915328
+00043 MDS1_OS_ID_LIKE=debian ubuntu
+00043 MDS1_OS_VERSION_ID=24.04
+00043 OST1_OS_VERSION_ID=24.04
+00043 OST1_OS_VERSION_CODE=402915328
+00043 OST1_OS_ID=ubuntu
+00043 OST1_OS_ID_LIKE=debian ubuntu
+00044 CLIENT_OS_VERSION_ID=24.04
+00044 CLIENT_OS_ID_LIKE=debian ubuntu
+00044 CLIENT_OS_ID=ubuntu
+00044 CLIENT_OS_VERSION_CODE=402915328
+00044 Loading modules from /host/home/ktest/git/lustre-release/lustre
+00044 detected 16 online CPUs by sysfs
+00044 MODOPTS_LIBCFS=
+00044 libcfs will create CPU partition based on online CPUs
+00045 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00045 gss/krb5 is not supported
+00046 Lustre: Echo OBD driver; http://www.lustre.org/
+00046 
+00046 
+00046 ============================================
+00046 WARNING: possible recursive locking detected
+00046 7.0.0-ktest-a71fb5b-6330a45-20260717-dirty #1 Tainted: G           O       
+00046 --------------------------------------------
+00046 lustre-ktest/1949 is trying to acquire lock:
+00046 ffff8881839263f0 (sb_writers#11){.+.+}-{0:0}, at: kernel_write+0xf4/0x300
+00046 
+00046 but task is already holding lock:
+00046 ffff8881839263f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00046 
+00046 other info that might help us debug this:
+00046  Possible unsafe locking scenario:
+00046 
+00046        CPU0
+00046        ----
+00046   lock(sb_writers#11);
+00046   lock(sb_writers#11);
+00046 
+00046  *** DEADLOCK ***
+00046 
+00046  May be due to missing lock nesting notation
+00046 
+00046 4 locks held by lustre-ktest/1949:
+00046  #0: ffff8881397400e0 (&type->s_umount_key#42/1){+.+.}-{4:4}, at: alloc_super+0x181/0x850
+00046  #1: ffff8881382055d8 (&ls->ls_los_mutex){+.+.}-{4:4}, at: local_oid_storage_init+0x1b7/0x2420 [obdclass]
+00046  #2: ffff8881839263f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00046  #3: ffff888138204cb0 (&obj->oo_dt.dd_sem){+.+.}-{4:4}, at: dt_write_lock+0x16d/0x2a0 [obdclass]
+00046 
+00046 stack backtrace:
+00046 CPU: 5 UID: 0 PID: 1949 Comm: lustre-ktest Tainted: G           O        7.0.0-ktest-a71fb5b-6330a45-20260717-dirty #1 PREEMPT 
+00046 Tainted: [O]=OOT_MODULE
+00046 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00046 Call Trace:
+00046  <TASK>
+00046  dump_stack_lvl+0x6d/0xa0
+00046  print_deadlock_bug+0x273/0x290
+00046  __lock_acquire+0x128f/0x2a30
+00046  lock_acquire+0xe7/0x2a0
+00046  ? kernel_write+0xf4/0x300
+00046  sb_start_write+0x42/0x130
+00046  ? kernel_write+0xf4/0x300
+00046  kernel_write+0xf4/0x300
+00046  ? alloc_file_pseudo+0x114/0x180
+00046  osd_write+0x4a2/0x720 [osd_wbcfs]
+00046  dt_record_write+0xea/0x3e0 [obdclass]
+00046  local_oid_storage_init+0x19c0/0x2420 [obdclass]
+00046  mgs_fs_setup+0x206/0x1140 [mgs]
+00046  ? ldlm_namespace_new+0x16a3/0x1f10 [ptlrpc]
+00046  mgs_device_alloc+0x10a0/0x25c0 [mgs]
+00046  ? keys_fill+0x3c7/0x420 [obdclass]
+00046  ? lu_context_init+0x2c4/0x3b0 [obdclass]
+00046  obd_setup+0x26d/0x970 [obdclass]
+00046  class_setup+0xc7d/0x10e0 [obdclass]
+00046  lustre_start_simple+0xe68/0x1b50 [obdclass]
+00046  server_fill_super+0x1852/0x2f70 [ptlrpc]
+00046  ? lustre_init_lsi+0x330/0x6c0 [obdclass]
+00046  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00046  ? lustre_tgt_get_tree+0x20/0x20 [ptlrpc]
+00046  get_tree_nodev+0x9e/0x110
+00046  vfs_get_tree+0x86/0x200
+00046  do_new_mount+0x1ee/0xa10
+00046  __x64_sys_mount+0x2a9/0x350
+00046  do_syscall_64+0xda/0x430
+00046  ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00046  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00046 RIP: 0033:0x55c871550066
+00046 Code: 60 83 fb 01 41 89 de 41 83 d6 00 44 89 74 24 68 b8 a5 00 00 00 4c 89 e7 48 89 ee 48 8b 54 24 18 45 31 d2 4c 8b 44 24 10 0f 05 <48> 3d 01 f0 ff ff 0f 82 89 02 00 00 f7 d8 89 44 24 28 44 89 f0 ff
+00046 RSP: 002b:00007ffe83d3d0d0 EFLAGS: 00000246 ORIG_RAX: 00000000000000a5
+00046 RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000055c871550066
+00046 RDX: 000055c8822c5af0 RSI: 000055c8822c2c00 RDI: 000055c8822c5ad0
+00046 RBP: 000055c8822c2c00 R08: 000055c8822c2c30 R09: 0000000000000040
+00046 R10: 0000000000000000 R11: 0000000000000246 R12: 000055c8822c5ad0
+00046 R13: 00007ffe83d3d2b8 R14: 0000000000000001 R15: 000000000000000d
+00046  </TASK>
+00046 
+00051 
+00051 
+00051 
+00051 Lustre: server umount MGS0000 complete
+00051 
+00051 Removed directory: /mnt/lustre-eO3wye-MGS0000
+00051 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 466 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+00051 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 485 from: ( set -e; run_test $i ), exiting
+00051 
+00051 ========= FAILED mgs-setup in 11s
+00051 
+00051 Passed: 
+00051 Failed: mgs-setup
+00051 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 594 from: return ${#tests_failed[@]}, exiting
+00051 Error 1 at /host/home/ktest/ktest/tests/fs/lustre/mgs-setup.ktest 34 from: return ${#tests_failed[@]}, exiting
+00051 Error 1 at /host/home/ktest/ktest/tests/test-libs.sh 105 from: . $(dirname $(readlink -e ${BASH_SOURCE[2]}))/$fname, exiting
+00051 Error 1 at /host/home/ktest/ktest/tests/fs/lustre/../../lockdep-base.sh 15 from: . $(dirname $(readlink -e ${BASH_SOURCE[2]}))/$fname, exiting
+00051 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+00051 Kernel version: 7.0.0-ktest-a71fb5b-6330a45-20260717-dirty
+00051 TEST FAILED
+Error 1 at /home/ktest/ktest/lib/libktest.sh 587 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 182 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 1159 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
