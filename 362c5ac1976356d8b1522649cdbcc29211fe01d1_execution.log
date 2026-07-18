@@ -1,0 +1,58 @@
+CLI: ./podman-ktest --podman-socket unix:///run/podman/podman.sock --shared-filesystem /tmp --tarball-input job lustre-ci --output /var/www/ci-lustre/upstream-patch-review --git-hash 362c5ac1976356d8b1522649cdbcc29211fe01d1 --change-id 66735_362c5ac1976356d8b1522649cdbcc29211fe01d1 --subject LU-20315 target: add __init and __exit annotations
+
+Environment validated successfully
+Note: custom LLVM is not synced in tarball input mode
+Creating kernel tarball at /tmp/ktest-kernel.tar.gz...
+Creating lustre tarball at /tmp/ktest-lustre.tar.gz...
+Creating ZFS tarball at /tmp/ktest-zfs.tar.gz...
+Executing 14 jobs
+Jobs will start as soon as their dependencies are satisfied
+Using tarball input mode
+
+START ml-miscvm:lustre_mainline_native build tests/fs/lustre/boot.ktest
+START ml-strict:lustre_mainline build tests/fs/lustre/boot-strict.ktest
+START ml:lustre_mainline build tests/fs/lustre/boot.ktest
+START checkpatch:checkpatch tool checkpatch
+START u24:u24 build tests/fs/lustre/boot.ktest
+START al2023:al2023 build tests/fs/lustre/boot.ktest
+PUT /tmp/ktest-lustre.tar.gz 1s
+PUT /tmp/ktest-lustre.tar.gz 2s
+PUT /tmp/ktest-kernel.tar.gz 6s
+PUT /tmp/ktest-kernel.tar.gz 7s
+PUT /tmp/ktest-kernel.tar.gz 7s
+PUT /tmp/ktest-kernel.tar.gz 7s
+PUT /tmp/ktest-lustre.tar.gz 4s
+PUT /tmp/ktest-lustre.tar.gz 3s
+PUT /tmp/ktest-lustre.tar.gz 3s
+PUT /tmp/ktest-lustre.tar.gz 3s
+PUT /tmp/ktest-zfs.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+END checkpatch:checkpatch tool checkpatch PASS 13s
+END al2023:al2023 build tests/fs/lustre/boot.ktest PASS 60s
+END u24:u24 build tests/fs/lustre/boot.ktest PASS 70s
+GET /tmp/ktest_ml-miscvm:lustre_mainline_native_tzk8rw5e.tar 4s
+END ml-miscvm:lustre_mainline_native build tests/fs/lustre/boot.ktest FAIL 143s (exit code: 1)
+GET /tmp/ktest_ml-strict:lustre_mainline_pt4mebjg.tar 12s
+GET /tmp/ktest_ml:lustre_mainline_im8tqy1p.tar 13s
+END ml-strict:lustre_mainline build tests/fs/lustre/boot-strict.ktest FAIL 153s (exit code: 1)
+END ml:lustre_mainline build tests/fs/lustre/boot.ktest FAIL 154s (exit code: 1)
+
+============================================================
+Final Results:
+  checkpatch:checkpatch: PASS (13s) (log: /var/www/ci-lustre/upstream-patch-review/362c5ac1976356d8b1522649cdbcc29211fe01d1_checkpatch:checkpatch.log)
+  u24:u24: PASS (70s) (log: /var/www/ci-lustre/upstream-patch-review/362c5ac1976356d8b1522649cdbcc29211fe01d1_u24:u24.log)
+  al2023:al2023: PASS (60s) (log: /var/www/ci-lustre/upstream-patch-review/362c5ac1976356d8b1522649cdbcc29211fe01d1_al2023:al2023.log)
+  ml-strict:lustre_mainline: FAIL (153s) (log: /var/www/ci-lustre/upstream-patch-review/362c5ac1976356d8b1522649cdbcc29211fe01d1_ml-strict:lustre_mainline.log)
+  ml:lustre_mainline: FAIL (154s) (log: /var/www/ci-lustre/upstream-patch-review/362c5ac1976356d8b1522649cdbcc29211fe01d1_ml:lustre_mainline.log)
+  ml-miscvm:lustre_mainline_native: FAIL (143s) (log: /var/www/ci-lustre/upstream-patch-review/362c5ac1976356d8b1522649cdbcc29211fe01d1_ml-miscvm:lustre_mainline_native.log)
+  ml-miscvm:boot: SKIPPED (due to dependency failure)
+  ml-miscvm:llmount: SKIPPED (due to dependency failure)
+  ml-miscvm:llog-unit: SKIPPED (due to dependency failure)
+  ml-miscvm:mgs-setup: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-1: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-2: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-3: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-4: SKIPPED (due to dependency failure)
+
+Total execution time: 184s
