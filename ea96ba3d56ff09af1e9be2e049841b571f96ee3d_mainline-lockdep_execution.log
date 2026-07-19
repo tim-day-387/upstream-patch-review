@@ -1,0 +1,39 @@
+CLI: ./podman-ktest --podman-socket unix:///run/podman/podman.sock --shared-filesystem /tmp --tarball-input job mainline-lockdep --output /var/www/ci-lustre/upstream-patch-review --git-hash ea96ba3d56ff09af1e9be2e049841b571f96ee3d_mainline-lockdep --change-id master-next_ea96ba3d56ff09af1e9be2e049841b571f96ee3d_mainline-lockdep --subject [mainline-lockdep] Staging branch for new changes
+
+Environment validated successfully
+Note: custom LLVM is not synced in tarball input mode
+Creating kernel tarball at /tmp/ktest-kernel.tar.gz...
+Creating lustre tarball at /tmp/ktest-lustre.tar.gz...
+Creating ZFS tarball at /tmp/ktest-zfs.tar.gz...
+Executing 11 jobs
+Jobs will start as soon as their dependencies are satisfied
+Using tarball input mode
+
+START ml-lockdep-miscvm:lustre_mainline_native build tests/fs/lustre/lockdep-boot.ktest
+START ml-lockdep-llmount:lustre_mainline build tests/fs/lustre/lockdep-llmount.ktest
+PUT /tmp/ktest-kernel.tar.gz 5s
+PUT /tmp/ktest-kernel.tar.gz 5s
+PUT /tmp/ktest-lustre.tar.gz 1s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+GET /tmp/ktest_ml-lockdep-miscvm:lustre_mainline_native_akda63y4.tar 5s
+GET /tmp/ktest_ml-lockdep-llmount:lustre_mainline_6mw80ms9.tar 5s
+END ml-lockdep-miscvm:lustre_mainline_native build tests/fs/lustre/lockdep-boot.ktest FAIL 141s (exit code: 1)
+END ml-lockdep-llmount:lustre_mainline build tests/fs/lustre/lockdep-llmount.ktest FAIL 143s (exit code: 1)
+
+============================================================
+Final Results:
+  ml-lockdep-llmount:lustre_mainline: FAIL (143s) (log: /var/www/ci-lustre/upstream-patch-review/ea96ba3d56ff09af1e9be2e049841b571f96ee3d_mainline-lockdep_ml-lockdep-llmount:lustre_mainline.log)
+  ml-lockdep-llmount:boot: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:lustre_mainline_native: FAIL (141s) (log: /var/www/ci-lustre/upstream-patch-review/ea96ba3d56ff09af1e9be2e049841b571f96ee3d_mainline-lockdep_ml-lockdep-miscvm:lustre_mainline_native.log)
+  ml-lockdep-miscvm:boot: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:llmount: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:llog-unit: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:mgs-setup: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:sanity-1: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:sanity-2: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:sanity-3: SKIPPED (due to dependency failure)
+  ml-lockdep-miscvm:sanity-4: SKIPPED (due to dependency failure)
+
+Total execution time: 174s
