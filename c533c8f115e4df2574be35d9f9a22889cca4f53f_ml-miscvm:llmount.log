@@ -1,0 +1,115 @@
+00001 
+00001 RDSEED32 is broken. Disabling the corresponding CPUID bit.
+00002 init: failed to load nvme_core
+00002 init: failed to load nvme
+00002 init: failed to load zfs
+00003 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00003 LNetError: Error -100 starting up LNI tcp
+00003 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00004 init: finit_module /lib/modules/7.0.0-ktest-c533c8f-6330a45-20260722-dirty/updates/ptlrpc.ko: Network is down
+00004 init: failed to load lustre
+00004 init: failed to load osd_zfs
+00004 init: failed to load iwlwifi
+00004 init: failed to load iwlmvm
+00004 init: failed to load mt7921e
+00004 init: failed to load i915
+00004 init: failed to load nouveau
+00046 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00046 Kernel version: 7.0.0-ktest-c533c8f-6330a45-20260722-dirty
+00046 hook init_noop
+00046 
+00046 Running tests llmount
+00046 
+00046 ========= TEST   llmount
+00049 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00050 Lustre: Echo OBD driver; http://www.lustre.org/
+00051 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+00051 Lustre: lustre-MDT0000: new disk, initializing
+00051 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+00051 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+00051 Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+00057 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+00057 Lustre: Skipped 1 previous similar message
+00057 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+00057 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000401
+00057 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x2c0000401
+00062 Lustre: lustre-MDT0000: local client 2872bae8-f7b5-4508-8b0a-07a6f02842f8 w/o recovery
+00062 Lustre: Skipped 1 previous similar message
+00062 Lustre: client wants to enable acl, but mdt not!
+00062 Lustre: Mounted lustre-client
+00062 lustre-ktest (1886) used greatest stack depth: 24144 bytes left
+00062 16s
+00073 CLEANUP LUSTRE ... Lustre: Unmounted lustre-client
+00073 Lustre: server umount lustre-OST0000 complete
+00073 Lustre: server umount lustre-OST0001 complete
+00078 LustreError: lustre-MDT0001-osp-MDT0000: operation mds_statfs to node 0@lo failed: rc = -107
+00078 Lustre: lustre-MDT0001-osp-MDT0000: Connection to lustre-MDT0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+00078 Lustre: lustre-MDT0001: Not available for connect from 0@lo (stopping)
+00084 INFO: task lustre-ktest:2022 blocked for more than 10 seconds.
+00084       Tainted: G           O        7.0.0-ktest-c533c8f-6330a45-20260722-dirty #1
+00084 "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+00084 task:lustre-ktest    state:D stack:25448 pid:2022  tgid:2022  ppid:2021   task_flags:0x400100 flags:0x00080001
+00084 Call Trace:
+00084  <TASK>
+00084  __schedule+0x1202/0x24b0
+00084  schedule+0x16c/0x360
+00084  ? schedule+0x98/0x360
+00084  schedule_timeout+0x35/0x170
+00084  ? do_raw_spin_unlock+0x52/0x230
+00084  wait_for_completion+0x1e9/0x460
+00084  osp_process_config+0x761/0xe20 [osp]
+00084  lod_sub_process_config+0x1ce/0x510 [lod]
+00084  lod_process_config+0x214/0x2760 [lod]
+00084  ? kobject_put+0x8d/0x1b0
+00084  mdd_process_config+0x18f/0xaa0 [mdd]
+00084  mdt_stack_fini+0xffe/0x1e50 [mdt]
+00084  mdt_device_fini+0x1f78/0x2d30 [mdt]
+00084  class_cleanup+0x1087/0x1a10 [obdclass]
+00084  ? _raw_spin_unlock+0x23/0x40
+00084  ? class_name2obd+0x168/0x1a0 [obdclass]
+00084  class_process_config+0x1f22/0x7cb0 [obdclass]
+00084  ? __kasan_kmalloc+0x72/0x80
+00084  ? class_manual_cleanup+0xf58/0x2040 [obdclass]
+00084  class_manual_cleanup+0x10d5/0x2040 [obdclass]
+00084  ? _raw_spin_unlock+0x23/0x40
+00084  ? class_name2obd+0x168/0x1a0 [obdclass]
+00084  server_put_super+0x34eb/0x52e0 [ptlrpc]
+00084  ? _raw_spin_unlock+0x23/0x40
+00084  generic_shutdown_super+0x105/0x310
+00084  kill_anon_super+0x3d/0x70
+00084  deactivate_locked_super+0x99/0x100
+00084  cleanup_mnt+0x3e6/0x460
+00084  task_work_run+0xfe/0x170
+00084  exit_to_user_mode_loop+0x135/0x440
+00084  ? __x64_sys_umount+0x93/0xc0
+00084  do_syscall_64+0x1a8/0x350
+00084  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00084 RIP: 0033:0x55e0f6e86b71
+00084 RSP: 002b:00007fffdc833790 EFLAGS: 00000246 ORIG_RAX: 00000000000000a6
+00084 RAX: 0000000000000000 RBX: 00007fffdc8339a8 RCX: 000055e0f6e86b71
+00084 RDX: 000000000000000f RSI: 0000000000000003 RDI: 000055e117e7ea20
+00084 RBP: 0000000000000010 R08: 8080808080808080 R09: 0101010101010100
+00084 R10: 0000000000000000 R11: 0000000000000246 R12: 00007fffdc8338b0
+00084 R13: 0000000000000003 R14: 000000000000001b R15: 000055e117e7ea20
+00084  </TASK>
+00084 
+00084 Showing all locks held in the system:
+00084 1 lock held by khungtaskd/100:
+00084  #0: ffffffff83b9b420 (rcu_read_lock){....}-{1:2}, at: debug_show_all_locks+0x2e/0xf0
+00084 2 locks held by lustre-ktest/2022:
+00084  #0: ffff888137a900e0 (&type->s_umount_key#46){....}-{3:3}, at: deactivate_super+0x5b/0x80
+00084  #1: ffff888190120750 (&ltd->ltd_rw_sem){....}-{3:3}, at: lod_getref+0x1b/0x50 [lod]
+00084 
+00084 =============================================
+00084 
+00084 Lustre: server umount lustre-MDT0001 complete
+00094 Lustre: server umount lustre-MDT0000 complete
+00094 22s
+00094 
+00094 ========= PASSED llmount in 48s
+00094 
+00094 Passed: llmount
+00094 Failed: 
+00094 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+00094 Kernel version: 7.0.0-ktest-c533c8f-6330a45-20260722-dirty
+00094 TEST SUCCESS
