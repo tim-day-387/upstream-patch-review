@@ -1,0 +1,124 @@
+00001 
+00003 RDSEED32 is broken. Disabling the corresponding CPUID bit.
+00008 init: failed to load nvme_core
+00008 init: failed to load nvme
+00008 init: failed to load zfs
+00010 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00010 LNetError: Error -100 starting up LNI tcp
+00010 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00011 init: finit_module /lib/modules/7.0.0-ktest-ea96ba3-6330a45-20260723-dirty/updates/ptlrpc.ko: Network is down
+00011 init: failed to load lustre
+00011 init: failed to load osd_zfs
+00011 init: failed to load iwlwifi
+00011 init: failed to load iwlmvm
+00011 init: failed to load mt7921e
+00011 init: failed to load i915
+00011 init: failed to load nouveau
+00025 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00025 Kernel version: 7.0.0-ktest-ea96ba3-6330a45-20260723-dirty
+00026 hook init_noop
+00026 
+00026 Running tests llmount
+00026 
+00026 ========= TEST   llmount
+00033 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00034 Lustre: Echo OBD driver; http://www.lustre.org/
+00034 
+00034 ============================================
+00034 WARNING: possible recursive locking detected
+00034 7.0.0-ktest-ea96ba3-6330a45-20260723-dirty #1 Tainted: G           O       
+00034 --------------------------------------------
+00034 lustre-ktest/1946 is trying to acquire lock:
+00034 ffff88813fe063f0 (sb_writers#11){.+.+}-{0:0}, at: kernel_write+0xf4/0x300
+00034 
+00034 but task is already holding lock:
+00034 ffff88813fe063f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00034 
+00034 other info that might help us debug this:
+00034  Possible unsafe locking scenario:
+00034 
+00034        CPU0
+00034        ----
+00034   lock(sb_writers#11);
+00034   lock(sb_writers#11);
+00034 
+00034  *** DEADLOCK ***
+00034 
+00034  May be due to missing lock nesting notation
+00034 
+00034 4 locks held by lustre-ktest/1946:
+00034  #0: ffff88819e0960e0 (&type->s_umount_key#42/1){+.+.}-{4:4}, at: alloc_super+0x181/0x850
+00034  #1: ffff888140b99dd8 (&ls->ls_los_mutex){+.+.}-{4:4}, at: local_oid_storage_init+0x1b7/0x2420 [obdclass]
+00034  #2: ffff88813fe063f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00034  #3: ffff888140b9e4b0 (&obj->oo_dt.dd_sem){+.+.}-{4:4}, at: dt_write_lock+0x16d/0x2a0 [obdclass]
+00034 
+00034 stack backtrace:
+00034 CPU: 1 UID: 0 PID: 1946 Comm: lustre-ktest Tainted: G           O        7.0.0-ktest-ea96ba3-6330a45-20260723-dirty #1 PREEMPT 
+00034 Tainted: [O]=OOT_MODULE
+00034 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00034 Call Trace:
+00034  <TASK>
+00034  dump_stack_lvl+0x6d/0xa0
+00034  print_deadlock_bug+0x273/0x290
+00034  __lock_acquire+0x128f/0x2a30
+00034  lock_acquire+0xe7/0x2a0
+00034  ? kernel_write+0xf4/0x300
+00034  sb_start_write+0x42/0x130
+00034  ? kernel_write+0xf4/0x300
+00034  kernel_write+0xf4/0x300
+00034  ? alloc_file_pseudo+0x114/0x180
+00034  osd_write+0x4a2/0x720 [osd_wbcfs]
+00034  dt_record_write+0xea/0x3e0 [obdclass]
+00034  local_oid_storage_init+0x19c0/0x2420 [obdclass]
+00034  mgs_fs_setup+0x206/0x1140 [mgs]
+00034  ? ldlm_namespace_new+0x16a3/0x1f10 [ptlrpc]
+00034  mgs_device_alloc+0x10a0/0x25c0 [mgs]
+00034  ? keys_fill+0x3c7/0x420 [obdclass]
+00034  ? lu_context_init+0x2c4/0x3b0 [obdclass]
+00034  obd_setup+0x26d/0x970 [obdclass]
+00034  class_setup+0xc7d/0x10e0 [obdclass]
+00034  lustre_start_simple+0xe68/0x1b50 [obdclass]
+00034  server_fill_super+0x1852/0x2f70 [ptlrpc]
+00034  ? lustre_init_lsi+0x330/0x6c0 [obdclass]
+00034  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00034  ? lustre_tgt_get_tree+0x20/0x20 [ptlrpc]
+00034  get_tree_nodev+0x9e/0x110
+00034  vfs_get_tree+0x86/0x200
+00034  do_new_mount+0x1ee/0xa10
+00034  __x64_sys_mount+0x2a9/0x350
+00034  do_syscall_64+0xda/0x430
+00034  ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00034  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00034 RIP: 0033:0x5556bf821066
+00034 Code: 60 83 fb 01 41 89 de 41 83 d6 00 44 89 74 24 68 b8 a5 00 00 00 4c 89 e7 48 89 ee 48 8b 54 24 18 45 31 d2 4c 8b 44 24 10 0f 05 <48> 3d 01 f0 ff ff 0f 82 89 02 00 00 f7 d8 89 44 24 28 44 89 f0 ff
+00034 RSP: 002b:00007ffd0820a030 EFLAGS: 00000246 ORIG_RAX: 00000000000000a5
+00034 RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00005556bf821066
+00034 RDX: 00005556f04248f0 RSI: 00005556f0424c00 RDI: 00005556f04247a0
+00034 RBP: 00005556f0424c00 R08: 00005556f0424730 R09: 0000000000000060
+00034 R10: 0000000000000000 R11: 0000000000000246 R12: 00005556f04247a0
+00034 R13: 00007ffd0820a248 R14: 0000000000000001 R15: 000000000000000d
+00034  </TASK>
+00035 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+00035 Lustre: lustre-MDT0000: new disk, initializing
+00035 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+00035 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+00035 Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+00036 distilled base BTF type 'circ_buf' [96] is not mapped to base BTF id
+00036 failed to validate module [ofd] BTF: -22
+00036 LustreError: Can't load module 'ofd'
+00036 LustreError: 1946:0:(genops.c:359:class_newdev()) OBD: unknown type: ost
+00036 LustreError: 1946:0:(obd_config.c:694:class_attach_name()) Cannot create device OSS of type ost : -19
+00036 LustreError: 1946:0:(obd_mount.c:234:lustre_start_simple()) OSS attach error -19
+00036 LustreError: 1946:0:(tgt_mount.c:1836:server_start_targets()) failed to start OSS: -19
+00036 LustreError: 1946:0:(tgt_mount.c:2611:server_fill_super()) Unable to start targets: -19
+00036 LustreError: 1946:0:(tgt_mount.c:2129:server_put_super()) no obd lustre-OST0000
+00036 LustreError: 1946:0:(tgt_mount.c:116:server_deregister_mount()) lustre-OST0000 not registered
+00036 Lustre: server umount lustre-OST0000 complete
+00036 LustreError: 1946:0:(tgt_mount.c:2753:lustre_tgt_fill_super()) Unable to mount  (-19)
+00036 distilled base BTF type 'circ_buf' [96] is not mapped to base BTF id
+00036 failed to validate module [ofd] BTF: -22
+00036 Lustre: server umount lustre-OST0001 complete
+00266 ========= FAILED TIMEOUT llmount in 240s
+Error 1 at /home/ktest/ktest/lib/libktest.sh 587 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 182 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 1161 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
