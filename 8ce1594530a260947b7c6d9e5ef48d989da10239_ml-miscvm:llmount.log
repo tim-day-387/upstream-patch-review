@@ -1,0 +1,110 @@
+00003 
+00010 RDSEED32 is broken. Disabling the corresponding CPUID bit.
+00015 init: failed to load nvme_core
+00015 init: failed to load nvme
+00015 init: failed to load zfs
+00017 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00017 LNetError: Error -100 starting up LNI tcp
+00017 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00018 init: finit_module /lib/modules/7.0.0-ktest-8ce1594-6330a45-20260724-dirty/updates/ptlrpc.ko: Network is down
+00018 init: failed to load lustre
+00018 init: failed to load osd_zfs
+00018 init: failed to load iwlwifi
+00018 init: failed to load iwlmvm
+00018 init: failed to load mt7921e
+00018 init: failed to load i915
+00018 init: failed to load nouveau
+00024 Kernel version: 7.0.0-ktest-8ce1594-6330a45-20260724-dirty
+00024 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00024 hook init_noop
+00025 
+00025 Running tests llmount
+00025 
+00025 ========= TEST   llmount
+00029 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00030 Lustre: Echo OBD driver; http://www.lustre.org/
+00031 ------------[ cut here ]------------
+00031 WARNING: /home/ktest/git/linux/include/linux/fs.h:889 at osd_create+0x9cf/0xcf0 [osd_wbcfs], CPU#4: ll_mgs_0002/1911
+00031 Modules linked in: mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) efivarfs obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+00031 CPU: 4 UID: 0 PID: 1911 Comm: ll_mgs_0002 Tainted: G           O        7.0.0-ktest-8ce1594-6330a45-20260724-dirty #1 PREEMPT 
+00031 Tainted: [O]=OOT_MODULE
+00031 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00031 RIP: 0010:osd_create+0x9cf/0xcf0 [osd_wbcfs]
+00031 Code: c7 c7 00 96 7b a1 48 c7 c6 a0 12 7d a1 48 c7 c2 00 1c 7d a1 e8 52 f1 43 ff 48 c7 c7 00 96 7b a1 e8 46 81 44 ff e9 fe fc ff ff <0f> 0b e9 a5 fa ff ff 48 c7 c1 80 44 5d a0 80 e1 07 80 c1 03 38 c1
+00031 RSP: 0018:ffffc90001c47740 EFLAGS: 00010246
+00031 RAX: 0000000000000000 RBX: ffff888149a49000 RCX: 0000000000000046
+00031 RDX: 0000000000000000 RSI: ffff888120f0a648 RDI: ffff88818d052aa8
+00031 RBP: ffff888120f0a5b8 R08: ffffffff83a16803 R09: 1ffffffff0742d00
+00031 R10: dffffc0000000000 R11: fffffbfff0742d01 R12: ffff88811e991000
+00031 R13: dffffc0000000000 R14: 1ffff11029349200 R15: 1ffff11023d3220f
+00031 FS:  0000000000000000(0000) GS:ffff88831e62d000(0000) knlGS:0000000000000000
+00031 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+00031 CR2: 0000559ee9663820 CR3: 000000015fddf000 CR4: 0000000000750eb0
+00031 PKRU: 55555554
+00031 Call Trace:
+00031  <TASK>
+00031  ? local_object_create+0x109/0x640 [obdclass]
+00031  ? dt_write_lock+0x16d/0x2a0 [obdclass]
+00031  ? llog_osd_create+0x356/0x10d0 [obdclass]
+00031  ? llog_create+0x2ed/0x530 [obdclass]
+00031  ? llog_open_create+0x6e7/0xb30 [obdclass]
+00031  ? mgs_find_or_make_fsdb_nolock+0x16d4/0x2d80 [mgs]
+00031  ? class_find_param+0x25/0x70 [obdclass]
+00031  ? mgs_find_or_make_fsdb+0xda/0x1f0 [mgs]
+00031  ? mgs_target_reg+0x2333/0x4480 [mgs]
+00031  ? tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+00031  ? ptlrpc_main+0x6359/0x96f0 [ptlrpc]
+00031  ? __kthread_parkme+0x73/0x130
+00031  ? kthread+0x2cd/0x3a0
+00031  ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+00031  ? kthread_unuse_mm+0x130/0x130
+00031  ? ret_from_fork+0x18c/0x520
+00031  ? kthread_unuse_mm+0x130/0x130
+00031  ? ret_from_fork_asm+0x11/0x20
+00031  </TASK>
+00031 ---[ end trace 0000000000000000 ]---
+00031 ------------[ cut here ]------------
+00031 WARNING: /home/ktest/git/linux/include/linux/fs.h:889 at osd_create+0x9cf/0xcf0 [osd_wbcfs], CPU#4: ll_mgs_0002/1911
+00031 Modules linked in: mdt(O) lquota(O) lfsck(O) mgs(O) osd_wbcfs(O) lustre(O) obdecho(O) mgc(O) mdc(O) lov(O) osc(O) lmv(O) ec(O) fid(O) fld(O) ptlrpc(O) efivarfs obdclass(O) ksocklnd(O) lnet(O) libcfs(O)
+00031 CPU: 4 UID: 0 PID: 1911 Comm: ll_mgs_0002 Tainted: G        W  O        7.0.0-ktest-8ce1594-6330a45-20260724-dirty #1 PREEMPT 
+00031 Tainted: [W]=WARN, [O]=OOT_MODULE
+00031 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00031 RIP: 0010:osd_create+0x9cf/0xcf0 [osd_wbcfs]
+00031 Code: c7 c7 00 96 7b a1 48 c7 c6 a0 12 7d a1 48 c7 c2 00 1c 7d a1 e8 52 f1 43 ff 48 c7 c7 00 96 7b a1 e8 46 81 44 ff e9 fe fc ff ff <0f> 0b e9 a5 fa ff ff 48 c7 c1 80 44 5d a0 80 e1 07 80 c1 03 38 c1
+00031 RSP: 0018:ffffc90001c47688 EFLAGS: 00010246
+00031 RAX: 0000000000000000 RBX: ffff888149a48800 RCX: 0000000000000046
+00031 RDX: 0000000000000000 RSI: ffff888120f09f30 RDI: ffff88818d052aa8
+00031 RBP: ffff888120f09ea0 R08: ffffffff83a16803 R09: 1ffffffff0742d00
+00031 R10: dffffc0000000000 R11: fffffbfff0742d01 R12: ffff88811e991000
+00031 R13: dffffc0000000000 R14: 1ffff11029349100 R15: 1ffff11023d3220f
+00031 FS:  0000000000000000(0000) GS:ffff88831e62d000(0000) knlGS:0000000000000000
+00031 CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+00031 CR2: 0000559ee9663820 CR3: 000000015fddf000 CR4: 0000000000750eb0
+00031 PKRU: 55555554
+00031 Call Trace:
+00031  <TASK>
+00031  ? local_object_create+0x109/0x640 [obdclass]
+00031  ? dt_write_lock+0x16d/0x2a0 [obdclass]
+00031  ? llog_osd_create+0x356/0x10d0 [obdclass]
+00031  ? llog_create+0x2ed/0x530 [obdclass]
+00031  ? llog_open_create+0x6e7/0xb30 [obdclass]
+00031  ? record_start_log+0x348/0xa40 [mgs]
+00031  ? mgs_write_log_lov+0x3ac/0xde0 [mgs]
+00031  ? mgs_write_log_target+0x17a4/0x6ab0 [mgs]
+00055 CLEANUP LUSTRE ... Lustre: Unmounted lustre-client
+00055 Lustre: server umount lustre-OST0000 complete
+00055 Lustre: server umount lustre-OST0001 complete
+00060 LustreError: lustre-MDT0001-osp-MDT0000: operation mds_statfs to node 0@lo failed: rc = -107
+00060 Lustre: lustre-MDT0001-osp-MDT0000: Connection to lustre-MDT0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+00060 Lustre: lustre-MDT0001: Not available for connect from 0@lo (stopping)
+00065 Lustre: server umount lustre-MDT0001 complete
+00075 Lustre: server umount lustre-MDT0000 complete
+00075 21s
+00075 
+00075 ========= PASSED llmount in 51s
+00075 
+00075 Passed: llmount
+00075 Failed: 
+00075 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+00075 Kernel version: 7.0.0-ktest-8ce1594-6330a45-20260724-dirty
+00075 TEST SUCCESS
