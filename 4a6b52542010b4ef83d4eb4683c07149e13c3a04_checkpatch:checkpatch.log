@@ -1,0 +1,28 @@
+WARNING:MACRO_ARG_UNUSED: Argument 'custom_seq_write' is not used in function-like macro
+#10: FILE: lustre/include/lprocfs_status.h:777:
++#define __LDEBUGFS_SEQ_FOPS(storage, name, custom_seq_write)		\
+ static int name##_single_open(struct inode *inode, struct file *file)	\
+ {									\
+ 	return single_open(file, name##_seq_show, inode->i_private);	\
+ }									\
++storage const struct file_operations name##_fops = {			\
+ 	.owner	 = THIS_MODULE,						\
+ 	.open	 = name##_single_open,					\
+ 	.read	 = seq_read,						\
+
+WARNING:MACRO_ARG_UNUSED: Argument 'storage' is not used in function-like macro
+#46: FILE: lustre/include/lprocfs_status.h:807:
++#define __LDEBUGFS_SEQ_FOPS_RW_TYPE(storage, name, type)		\
+ 	static int name##_##type##_seq_show(struct seq_file *m, void *v)\
+ 	{								\
+ 		if (!m->private)					\
+
+total: 0 errors, 2 warnings, 149 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
