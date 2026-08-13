@@ -1,0 +1,156 @@
+WARNING:FILE_PATH_CHANGES: added, moved or deleted file(s), does MAINTAINERS need updating?
+#179: 
+new file mode 100644
+
+WARNING:NEW_TYPEDEFS: do not add new typedefs
+#309: FILE: include/lustre_compat/linux/mnt_idmapping.h:126:
++typedef kuid_t vfsuid_t;
+
+WARNING:NEW_TYPEDEFS: do not add new typedefs
+#310: FILE: include/lustre_compat/linux/mnt_idmapping.h:127:
++typedef kgid_t vfsgid_t;
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#315: FILE: include/lustre_compat/linux/mnt_idmapping.h:132:
++#define from_vfsuid(idmap, fs_userns, vfsuid)	(vfsuid)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'fs_userns' is not used in function-like macro
+#315: FILE: include/lustre_compat/linux/mnt_idmapping.h:132:
++#define from_vfsuid(idmap, fs_userns, vfsuid)	(vfsuid)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#316: FILE: include/lustre_compat/linux/mnt_idmapping.h:133:
++#define from_vfsgid(idmap, fs_userns, vfsgid)	(vfsgid)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'fs_userns' is not used in function-like macro
+#316: FILE: include/lustre_compat/linux/mnt_idmapping.h:133:
++#define from_vfsgid(idmap, fs_userns, vfsgid)	(vfsgid)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#324: FILE: include/lustre_compat/linux/mnt_idmapping.h:141:
++#define i_uid_into_vfsuid(idmap, inode)	((inode)->i_uid)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#325: FILE: include/lustre_compat/linux/mnt_idmapping.h:142:
++#define i_gid_into_vfsgid(idmap, inode)	((inode)->i_gid)
+
+ERROR:COMPLEX_MACRO: Macros with complex values should be enclosed in parentheses
+#345: FILE: include/lustre_compat/linux/mnt_idmapping.h:162:
++#define from_vfsuid(idmap, fs_userns, vfsuid) \
++	(from_vfsuid)((idmap), (fs_userns), VFSUIDT_INIT(vfsuid))
+
+BUT SEE:
+
+   do {} while (0) advice is over-stated in a few situations:
+
+   The more obvious case is macros, like MODULE_PARM_DESC, invoked at
+   file-scope, where C disallows code (it must be in functions).  See
+   $exceptions if you have one to add by name.
+
+   More troublesome is declarative macros used at top of new scope,
+   like DECLARE_PER_CPU.  These might just compile with a do-while-0
+   wrapper, but would be incorrect.  Most of these are handled by
+   detecting struct,union,etc declaration primitives in $exceptions.
+
+   Theres also macros called inside an if (block), which "return" an
+   expression.  These cannot do-while, and need a ({}) wrapper.
+
+   Enjoy this qualification while we work to improve our heuristics.
+
+ERROR:COMPLEX_MACRO: Macros with complex values should be enclosed in parentheses
+#347: FILE: include/lustre_compat/linux/mnt_idmapping.h:164:
++#define from_vfsgid(idmap, fs_userns, vfsgid) \
++	(from_vfsgid)((idmap), (fs_userns), VFSGIDT_INIT(vfsgid))
+
+BUT SEE:
+
+   do {} while (0) advice is over-stated in a few situations:
+
+   The more obvious case is macros, like MODULE_PARM_DESC, invoked at
+   file-scope, where C disallows code (it must be in functions).  See
+   $exceptions if you have one to add by name.
+
+   More troublesome is declarative macros used at top of new scope,
+   like DECLARE_PER_CPU.  These might just compile with a do-while-0
+   wrapper, but would be incorrect.  Most of these are handled by
+   detecting struct,union,etc declaration primitives in $exceptions.
+
+   Theres also macros called inside an if (block), which "return" an
+   expression.  These cannot do-while, and need a ({}) wrapper.
+
+   Enjoy this qualification while we work to improve our heuristics.
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#357: FILE: include/lustre_compat/linux/mnt_idmapping.h:174:
++#define capable_wrt_inode_uidgid(idmap, inode, cap) \
++	capable_wrt_inode_uidgid((inode), (cap))
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#359: FILE: include/lustre_compat/linux/mnt_idmapping.h:176:
++#define inode_permission(idmap, inode, mask)	inode_permission(inode, mask)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#360: FILE: include/lustre_compat/linux/mnt_idmapping.h:177:
++#define generic_permission(idmap, inode, mask)	generic_permission(inode, mask)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#361: FILE: include/lustre_compat/linux/mnt_idmapping.h:178:
++#define simple_setattr(idmap, de, iattr)	simple_setattr(de, iattr)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'idmap' is not used in function-like macro
+#362: FILE: include/lustre_compat/linux/mnt_idmapping.h:179:
++#define setattr_prepare(idmap, de, at)		setattr_prepare(de, at)
+
+WARNING:TRAILING_SEMICOLON: macros should not use a trailing semicolon
+#432: FILE: include/lustre_compat/linux/mnt_idmapping.h:249:
++#define LL_DECLARE_GETATTR_COMPAT(name)					\
++int name ## _compat(const struct path *path, struct kstat *stat,	\
++		    u32 request_mask, unsigned int flags);
+
+WARNING:TRAILING_SEMICOLON: macros should not use a trailing semicolon
+#435: FILE: include/lustre_compat/linux/mnt_idmapping.h:252:
++#define LL_DECLARE_SETATTR_COMPAT(name)					\
++int name ## _compat(struct dentry *de, struct iattr *attr);
+
+WARNING:TRAILING_SEMICOLON: macros should not use a trailing semicolon
+#448: FILE: include/lustre_compat/linux/mnt_idmapping.h:265:
++#define LL_DECLARE_SET_ACL_COMPAT(name)					\
++int name ## _compat(struct inode *inode, struct posix_acl *acl, int type);
+
+WARNING:MACRO_WITH_FLOW_CONTROL: Macros with flow control statements should be avoided
+#504: FILE: include/lustre_compat/linux/mnt_idmapping.h:321:
++#define LL_DEFINE_MKDIR(name, worker)					\
++static struct dentry *name(struct mnt_idmap *map, struct inode *dir,	\
++			   struct dentry *de, umode_t mode)		\
++{									\
++	int rc = worker(map, dir, de, mode);				\
++									\
++	return rc ? ERR_PTR(rc) : NULL;					\
++}
+
+WARNING:MACRO_WITH_FLOW_CONTROL: Macros with flow control statements should be avoided
+#513: FILE: include/lustre_compat/linux/mnt_idmapping.h:330:
++#define LL_DEFINE_MKDIR(name, worker)					\
++static int name(struct mnt_idmap *map, struct inode *dir,		\
++		struct dentry *de, umode_t mode)			\
++{									\
++	return worker(map, dir, de, mode);				\
++}
+
+WARNING:MACRO_WITH_FLOW_CONTROL: Macros with flow control statements should be avoided
+#520: FILE: include/lustre_compat/linux/mnt_idmapping.h:337:
++#define LL_DEFINE_MKDIR(name, worker)					\
++static int name(struct inode *dir, struct dentry *de, umode_t mode)	\
++{									\
++	return worker(&nop_mnt_idmap, dir, de, mode);			\
++}
+
+total: 2 errors, 20 warnings, 557 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
