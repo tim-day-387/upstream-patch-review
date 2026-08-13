@@ -1,0 +1,142 @@
+00001 
+00003 init: failed to load nvme_core
+00003 init: failed to load nvme
+00003 init: failed to load zfs
+00004 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00004 LNetError: Error -100 starting up LNI tcp
+00004 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00005 init: finit_module /lib/modules/7.0.0-ktest-4322543-6330a45-20260813-dirty/updates/ptlrpc.ko: Network is down
+00005 init: failed to load lustre
+00005 init: failed to load osd_zfs
+00005 init: failed to load iwlwifi
+00005 init: failed to load iwlmvm
+00005 init: failed to load mt7921e
+00005 init: failed to load i915
+00005 init: failed to load nouveau
+00014 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00014 Kernel version: 7.0.0-ktest-4322543-6330a45-20260813-dirty
+00015 hook init_noop
+00015 
+00015 Running tests llmount
+00015 
+00015 ========= TEST   llmount
+00019 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00020 Lustre: Echo OBD driver; http://www.lustre.org/
+00021 
+00021 ============================================
+00021 WARNING: possible recursive locking detected
+00021 7.0.0-ktest-4322543-6330a45-20260813-dirty #1 Tainted: G           O       
+00021 --------------------------------------------
+00021 lustre-ktest/1955 is trying to acquire lock:
+00021 ffff888136d303f0 (sb_writers#11){.+.+}-{0:0}, at: kernel_write+0xf4/0x300
+00021 
+00021 but task is already holding lock:
+00021 ffff888136d303f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00021 
+00021 other info that might help us debug this:
+00021  Possible unsafe locking scenario:
+00021 
+00021        CPU0
+00021        ----
+00021   lock(sb_writers#11);
+00021   lock(sb_writers#11);
+00021 
+00021  *** DEADLOCK ***
+00021 
+00021  May be due to missing lock nesting notation
+00021 
+00021 4 locks held by lustre-ktest/1955:
+00021  #0: ffff888136d320e0 (&type->s_umount_key#42/1){+.+.}-{4:4}, at: alloc_super+0x181/0x850
+00021  #1: ffff8881089941d8 (&ls->ls_los_mutex){+.+.}-{4:4}, at: local_oid_storage_init+0x1b7/0x2420 [obdclass]
+00021  #2: ffff888136d303f0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x120d/0x2420 [obdclass]
+00021  #3: ffff8881089938b0 (&obj->oo_dt.dd_sem){+.+.}-{4:4}, at: dt_write_lock+0x16d/0x2a0 [obdclass]
+00021 
+00021 stack backtrace:
+00021 CPU: 13 UID: 0 PID: 1955 Comm: lustre-ktest Tainted: G           O        7.0.0-ktest-4322543-6330a45-20260813-dirty #1 PREEMPT 
+00021 Tainted: [O]=OOT_MODULE
+00021 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00021 Call Trace:
+00021  <TASK>
+00021  dump_stack_lvl+0x6d/0xa0
+00021  print_deadlock_bug+0x273/0x290
+00021  __lock_acquire+0x128f/0x2a30
+00021  lock_acquire+0xe7/0x2a0
+00021  ? kernel_write+0xf4/0x300
+00021  sb_start_write+0x42/0x130
+00021  ? kernel_write+0xf4/0x300
+00021  kernel_write+0xf4/0x300
+00021  ? alloc_file_pseudo+0x114/0x180
+00021  osd_write+0x4a2/0x720 [osd_wbcfs]
+00021  dt_record_write+0xea/0x3e0 [obdclass]
+00021  local_oid_storage_init+0x19c0/0x2420 [obdclass]
+00021  mgs_fs_setup+0x206/0x1140 [mgs]
+00021  ? ldlm_namespace_new+0x16b8/0x1f30 [ptlrpc]
+00021  mgs_device_alloc+0x1097/0x2590 [mgs]
+00021  ? keys_fill+0x3c7/0x420 [obdclass]
+00021  ? lu_context_init+0x2c4/0x3b0 [obdclass]
+00021  obd_setup+0x26d/0x970 [obdclass]
+00021  class_setup+0xc7d/0x10e0 [obdclass]
+00021  lustre_start_simple+0xe68/0x1b50 [obdclass]
+00021  server_fill_super+0x1852/0x2f70 [ptlrpc]
+00021  ? lustre_init_lsi+0x330/0x6c0 [obdclass]
+00021  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00021  ? lustre_tgt_get_tree+0x20/0x20 [ptlrpc]
+00021  get_tree_nodev+0x9e/0x110
+00021  vfs_get_tree+0x86/0x200
+00021  do_new_mount+0x1ee/0xa10
+00021  __x64_sys_mount+0x2a9/0x350
+00021  do_syscall_64+0xda/0x430
+00021  ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00021  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00021 RIP: 0033:0x55a86a46c066
+00021 Code: 60 83 fb 01 41 89 de 41 83 d6 00 44 89 74 24 68 b8 a5 00 00 00 4c 89 e7 48 89 ee 48 8b 54 24 18 45 31 d2 4c 8b 44 24 10 0f 05 <48> 3d 01 f0 ff ff 0f 82 89 02 00 00 f7 d8 89 44 24 28 44 89 f0 ff
+00021 RSP: 002b:00007ffe77259fc0 EFLAGS: 00000246 ORIG_RAX: 00000000000000a5
+00021 RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000055a86a46c066
+00021 RDX: 000055a8854908f0 RSI: 000055a885490c00 RDI: 000055a8854907a0
+00021 RBP: 000055a885490c00 R08: 000055a885490730 R09: 0000000000000060
+00021 R10: 0000000000000000 R11: 0000000000000246 R12: 000055a8854907a0
+00021 R13: 00007ffe7725a1d8 R14: 0000000000000001 R15: 000000000000000d
+00021  </TASK>
+00021 Lustre: 1975:0:(mdt_handler.c:64:mdt_max_mod_rpcs_per_client_set()) max_mod_rpcs_per_client is deprecated, set mdt.*.max_mod_rpcs_in_flight parameter instead
+00021 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+00021 Lustre: lustre-MDT0000: new disk, initializing
+00021 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+00021 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+00021 Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+00026 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+00026 Lustre: Skipped 1 previous similar message
+00026 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+00026 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000401
+00026 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x2c0000401
+00046 Lustre: lustre-MDT0000: local client 9d5f098a-f978-4117-a22e-749d564ecd3a w/o recovery
+00046 Lustre: Skipped 1 previous similar message
+00046 Lustre: client wants to enable acl, but mdt not!
+00046 Lustre: Mounted lustre-client - version 2.17.57
+00046 lustre-ktest (1955) used greatest stack depth: 24104 bytes left
+00046 31s
+00056 CLEANUP LUSTRE ... Lustre: Unmounted lustre-client
+00056 Lustre: server umount lustre-OST0000 complete
+00056 Lustre: server umount lustre-OST0001 complete
+00057 LustreError: lustre-MDT0001-osp-MDT0000: operation mds_statfs to node 0@lo failed: rc = -107
+00057 Lustre: lustre-MDT0001-osp-MDT0000: Connection to lustre-MDT0001 (at 0@lo) was lost; in progress operations using this service will wait for recovery to complete
+00057 Lustre: lustre-MDT0001: Not available for connect from 0@lo (stopping)
+00066 Lustre: server umount lustre-MDT0001 complete
+00076 Lustre: server umount lustre-MDT0000 complete
+00076 20s
+00076 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 416 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+00076 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 435 from: ( set -e; run_test $i ), exiting
+00076 
+00076 ========= FAILED llmount in 61s
+00076 
+00076 Passed: 
+00076 Failed: llmount
+00076 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 544 from: return ${#tests_failed[@]}, exiting
+00076 Error 1 at /host/home/ktest/ktest/tests/fs/lustre/llmount.ktest 33 from: return ${#tests_failed[@]}, exiting
+00076 Error 1 at /host/home/ktest/ktest/tests/test-libs.sh 95 from: . $(dirname $(readlink -e ${BASH_SOURCE[2]}))/$fname, exiting
+00076 Error 1 at /host/home/ktest/ktest/tests/fs/lustre/../../lockdep-base.sh 15 from: . $(dirname $(readlink -e ${BASH_SOURCE[2]}))/$fname, exiting
+00076 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+00076 Kernel version: 7.0.0-ktest-4322543-6330a45-20260813-dirty
+00076 TEST FAILED
+Error 1 at /home/ktest/ktest/lib/libktest.sh 524 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 194 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 1262 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
