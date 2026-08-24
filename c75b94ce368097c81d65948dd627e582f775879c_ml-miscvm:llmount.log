@@ -1,0 +1,80 @@
+00001 
+00002 init: failed to load nvme_core
+00002 init: failed to load nvme
+00002 init: failed to load zfs
+00003 LNetError: 1:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00003 LNetError: Error -100 starting up LNI tcp
+00003 LustreError: 1:0:(events.c:627:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00004 init: finit_module /lib/modules/7.0.0-ktest-c75b94c-6330a45-20260824-dirty/updates/ptlrpc.ko: Network is down
+00004 init: failed to load lustre
+00004 init: failed to load osd_zfs
+00004 init: failed to load iwlwifi
+00004 init: failed to load iwlmvm
+00004 init: failed to load mt7921e
+00004 init: failed to load i915
+00004 init: failed to load nouveau
+00007 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00007 Kernel version: 7.0.0-ktest-c75b94c-6330a45-20260824-dirty
+00008 hook init_noop
+00008 
+00008 Running tests llmount
+00008 
+00008 ========= TEST   llmount
+00011 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00012 Lustre: Echo OBD driver; http://www.lustre.org/
+00013 Lustre: 1902:0:(mdt_handler.c:64:mdt_max_mod_rpcs_per_client_set()) max_mod_rpcs_per_client is deprecated, set mdt.*.max_mod_rpcs_in_flight parameter instead
+00013 LustreError: 1899:0:(llog_server.c:952:llog_write_cookie()) ASSERTION( !loghandle->lgh_obj ) failed: 
+00013 LustreError: 1899:0:(llog_server.c:952:llog_write_cookie()) LBUG
+00013 CPU: 13 UID: 0 PID: 1899 Comm: ll_mgs_0002 Tainted: G           O        7.0.0-ktest-c75b94c-6330a45-20260824-dirty #1 PREEMPT 
+00013 Tainted: [O]=OOT_MODULE
+00013 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00013 Call Trace:
+00013  <TASK>
+00013  dump_stack_lvl+0x52/0x80
+00013  lbug_with_loc+0x33/0xa0 [libcfs]
+00013  llog_write_cookie+0x986/0xdf0 [obdclass]
+00013  record_marker+0x2be/0x420 [mgs]
+00013  mgs_write_log_lov+0x44e/0xde0 [mgs]
+00013  mgs_write_log_target+0x17a4/0x6ab0 [mgs]
+00013  mgs_target_reg+0x254e/0x4480 [mgs]
+00013  tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+00013  ptlrpc_main+0x6359/0x96f0 [ptlrpc]
+00013  ? __kthread_parkme+0x73/0x130
+00013  kthread+0x2cd/0x3a0
+00013  ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+00013  ? kthread_unuse_mm+0x130/0x130
+00013  ret_from_fork+0x18c/0x520
+00013  ? kthread_unuse_mm+0x130/0x130
+00013  ret_from_fork_asm+0x11/0x20
+00013  </TASK>
+00013 Kernel panic - not syncing: LBUG
+00013 CPU: 13 UID: 0 PID: 1899 Comm: ll_mgs_0002 Tainted: G           O        7.0.0-ktest-c75b94c-6330a45-20260824-dirty #1 PREEMPT 
+00013 Tainted: [O]=OOT_MODULE
+00013 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00013 Call Trace:
+00013  <TASK>
+00013  vpanic+0x161/0x420
+00013  panic+0x60/0x60
+00013  ? __printk_cpu_sync_put+0x4d/0x60
+00013  lbug_with_loc+0x8a/0xa0 [libcfs]
+00013  llog_write_cookie+0x986/0xdf0 [obdclass]
+00013  record_marker+0x2be/0x420 [mgs]
+00013  mgs_write_log_lov+0x44e/0xde0 [mgs]
+00013  mgs_write_log_target+0x17a4/0x6ab0 [mgs]
+00013  mgs_target_reg+0x254e/0x4480 [mgs]
+00013  tgt_request_handle+0x23ad/0x3d30 [ptlrpc]
+00013  ptlrpc_main+0x6359/0x96f0 [ptlrpc]
+00013  ? __kthread_parkme+0x73/0x130
+00013  kthread+0x2cd/0x3a0
+00013  ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+00013  ? kthread_unuse_mm+0x130/0x130
+00013  ret_from_fork+0x18c/0x520
+00013  ? kthread_unuse_mm+0x130/0x130
+00013  ret_from_fork_asm+0x11/0x20
+00013  </TASK>
+00013 Kernel Offset: disabled
+00013 ---[ end Kernel panic - not syncing: LBUG ]---
+00018 ========= FAILED TIMEOUT llmount in 240s
+Error 1 at /home/ktest/ktest/lib/libktest.sh 524 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 194 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 1262 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
