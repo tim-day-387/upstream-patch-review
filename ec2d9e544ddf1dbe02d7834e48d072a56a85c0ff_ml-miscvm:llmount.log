@@ -1,0 +1,85 @@
+00001 
+00003 LNetError: 152:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00003 LNetError: Error -100 starting up LNI tcp
+00004 LustreError: 152:0:(events.c:632:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00009 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00009 Kernel version: 7.0.0-ktest-ec2d9e5-6330a45-20260910-dirty
+00009 hook init_noop
+00009 
+00009 Running tests llmount
+00009 
+00010 ========= TEST   llmount
+00013 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00014 Lustre: Echo OBD driver; http://www.lustre.org/
+00015 Lustre: 1919:0:(mdt_handler.c:64:mdt_max_mod_rpcs_per_client_set()) max_mod_rpcs_per_client is deprecated, set mdt.*.max_mod_rpcs_in_flight parameter instead
+00015 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+00015 Lustre: lustre-MDT0000: new disk, initializing
+00015 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+00015 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+00015 Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+00024 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000280000400-0x00000002c0000400]:0:ost
+00024 Lustre: Skipped 1 previous similar message
+00024 Lustre: cli-lustre-OST0000-super: Allocated super-sequence [0x0000000280000400-0x00000002c0000400]:0:ost]
+00024 Lustre: lustre-OST0000-osc-MDT0000: update sequence from 0x100000000 to 0x280000401
+00024 Lustre: lustre-OST0001-osc-MDT0000: update sequence from 0x100010000 to 0x2c0000401
+00029 Lustre: lustre-MDT0000: local client 4640797c-311e-42ab-a5ea-c0e235d167b2 w/o recovery
+00029 Lustre: Skipped 1 previous similar message
+00029 Lustre: client wants to enable acl, but mdt not!
+00029 Lustre: Mounted lustre-client - version 2.17.58
+00029 lustre-ktest (1899) used greatest stack depth: 24144 bytes left
+00029 21s
+00039 CLEANUP LUSTRE ... LustreError: 103:0:(ldlm_lib.c:1798:target_destroy_export()) ASSERTION( atomic_read(&exp->exp_rpc_count) == 0 ) failed: 
+00039 LustreError: 1972:0:(genops.c:876:class_export_put()) ASSERTION( refcount_read(&exp->exp_handle.h_ref) > 0 ) failed: 
+00039 LustreError: 103:0:(ldlm_lib.c:1798:target_destroy_export()) LBUG
+00039 LustreError: 1972:0:(genops.c:876:class_export_put()) LBUG
+00039 CPU: 3 UID: 0 PID: 1972 Comm: ll_ost00_001 Tainted: G           O        7.0.0-ktest-ec2d9e5-6330a45-20260910-dirty #1 PREEMPT 
+00039 Tainted: [O]=OOT_MODULE
+00039 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00039 Call Trace:
+00039  <TASK>
+00039  dump_stack_lvl+0x52/0x80
+00039  lbug_with_loc+0x33/0xa0 [libcfs]
+00039  class_export_put+0x445/0x600 [obdclass]
+00039  ptlrpc_server_drop_request+0x17d/0x11f0 [ptlrpc]
+00039  ? do_raw_spin_lock+0xde/0x260
+00039  ? do_raw_spin_unlock+0x52/0x230
+00039  ptlrpc_main+0x6995/0x9700 [ptlrpc]
+00039  ? __kthread_parkme+0x73/0x130
+00039  kthread+0x2cd/0x3a0
+00039  ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+00039  ? kthread_unuse_mm+0x130/0x130
+00039  ret_from_fork+0x18c/0x520
+00039  ? kthread_unuse_mm+0x130/0x130
+00039  ret_from_fork_asm+0x11/0x20
+00039  </TASK>
+00039 Kernel panic - not syncing: LBUG
+00039 CPU: 3 UID: 0 PID: 1972 Comm: ll_ost00_001 Tainted: G           O        7.0.0-ktest-ec2d9e5-6330a45-20260910-dirty #1 PREEMPT 
+00039 Tainted: [O]=OOT_MODULE
+00039 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00039 Call Trace:
+00039  <TASK>
+00039  vpanic+0x161/0x420
+00039  panic+0x60/0x60
+00039  ? __printk_cpu_sync_put+0x4d/0x60
+00039  ? __printk_cpu_sync_put+0x4d/0x60
+00039  lbug_with_loc+0x8a/0xa0 [libcfs]
+00039  class_export_put+0x445/0x600 [obdclass]
+00039  ptlrpc_server_drop_request+0x17d/0x11f0 [ptlrpc]
+00039  ? do_raw_spin_lock+0xde/0x260
+00039  ? do_raw_spin_unlock+0x52/0x230
+00039  ptlrpc_main+0x6995/0x9700 [ptlrpc]
+00039  ? __kthread_parkme+0x73/0x130
+00039  kthread+0x2cd/0x3a0
+00039  ? ptlrpc_start_thread+0x1f10/0x1f10 [ptlrpc]
+00039  ? kthread_unuse_mm+0x130/0x130
+00039  ret_from_fork+0x18c/0x520
+00039  ? kthread_unuse_mm+0x130/0x130
+00039  ret_from_fork_asm+0x11/0x20
+00039  </TASK>
+00040 Shutting down cpus with NMI
+00040 Kernel Offset: disabled
+00040 ---[ end Kernel panic - not syncing: LBUG ]---
+00045 ========= FAILED TIMEOUT llmount in 240s
+Error 1 at /home/ktest/ktest/lib/libktest.sh 527 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 194 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 1262 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
