@@ -1,0 +1,124 @@
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#18: FILE: include/lustre_compat/linux/fs.h:215:
++#define posix_acl_update_mode(ns, inode, mode, acl) \
++	posix_acl_update_mode(inode, mode, acl)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#20: FILE: include/lustre_compat/linux/fs.h:217:
++#define notify_change(ns, de, attr, inode)	notify_change(de, attr, inode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#21: FILE: include/lustre_compat/linux/fs.h:218:
++#define inode_owner_or_capable(ns, inode)	inode_owner_or_capable(inode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#22: FILE: include/lustre_compat/linux/fs.h:219:
++#define vfs_mkdir(ns, dir, de, mode)		vfs_mkdir(dir, de, mode)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#23: FILE: include/lustre_compat/linux/fs.h:220:
++#define vfs_unlink(ns, dir, de, delegate)	vfs_unlink(dir, de, delegate)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#24: FILE: include/lustre_compat/linux/fs.h:221:
++#define ll_set_acl(ns, inode, acl, type)	ll_set_acl(inode, acl, type)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#25: FILE: include/lustre_compat/linux/fs.h:222:
++#define ll_create_nd(ns, dir, de, mode, ex)	ll_create_nd(dir, de, mode, ex)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#26: FILE: include/lustre_compat/linux/fs.h:223:
++#define ll_mknod(ns, dir, dch, mode, rd)	ll_mknod(dir, dch, mode, rd)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#27: FILE: include/lustre_compat/linux/fs.h:224:
++#define ll_rename(ns, src, sdc, tgt, tdc, fl)	ll_rename(src, sdc, tgt, tdc, fl)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'nd' is not used in function-like macro
+#28: FILE: include/lustre_compat/linux/fs.h:225:
++#define ll_symlink(nd, dir, dch, old)		ll_symlink(dir, dch, old)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#29: FILE: include/lustre_compat/linux/fs.h:226:
++#define inode_permission(ns, inode, mask)	inode_permission(inode, mask)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#30: FILE: include/lustre_compat/linux/fs.h:227:
++#define generic_permission(ns, inode, mask)	generic_permission(inode, mask)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#31: FILE: include/lustre_compat/linux/fs.h:228:
++#define simple_setattr(ns, de, iattr)		simple_setattr(de, iattr)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#32: FILE: include/lustre_compat/linux/fs.h:229:
++#define ll_setattr(ns, de, attr)		ll_setattr(de, attr)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#33: FILE: include/lustre_compat/linux/fs.h:230:
++#define setattr_prepare(ns, de, at)		setattr_prepare(de, at)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#34: FILE: include/lustre_compat/linux/fs.h:231:
++#define ll_inode_permission(ns, inode, mask)	ll_inode_permission(inode, mask)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#35: FILE: include/lustre_compat/linux/fs.h:232:
++#define ll_getattr(ns, path, stat, mask, fl)	ll_getattr(path, stat, mask, fl)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#37: FILE: include/lustre_compat/linux/fs.h:234:
++#define ll_getattr_link(ns, path, stat, request_mask, flags)		\
++	ll_getattr_link(path, stat, request_mask, flags)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#40: FILE: include/lustre_compat/linux/fs.h:237:
++#define ll_foreign_symlink_getattr(ns, path, stat, request_mask, flags)	\
++	ll_foreign_symlink_getattr(path, stat, request_mask, flags)
+
+ERROR:COMPLEX_MACRO: Macros with complex values should be enclosed in parentheses
+#58: FILE: include/lustre_compat/linux/security.h:24:
++# define XATTR_NAME_SELINUX XATTR_SECURITY_PREFIX XATTR_SELINUX_SUFFIX
+
+BUT SEE:
+
+   do {} while (0) advice is over-stated in a few situations:
+
+   The more obvious case is macros, like MODULE_PARM_DESC, invoked at
+   file-scope, where C disallows code (it must be in functions).  See
+   $exceptions if you have one to add by name.
+
+   More troublesome is declarative macros used at top of new scope,
+   like DECLARE_PER_CPU.  These might just compile with a do-while-0
+   wrapper, but would be incorrect.  Most of these are handled by
+   detecting struct,union,etc declaration primitives in $exceptions.
+
+   Theres also macros called inside an if (block), which "return" an
+   expression.  These cannot do-while, and need a ({}) wrapper.
+
+   Enjoy this qualification while we work to improve our heuristics.
+
+WARNING:FILE_PATH_CHANGES: added, moved or deleted file(s), does MAINTAINERS need updating?
+#97: 
+new file mode 100644
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#116: FILE: include/lustre_compat/linux/xattr.h:15:
++#define ll_xattr_set_common(hd, ns, de, inode, name, value, size, flags) \
++	ll_xattr_set_common(hd, de, inode, name, value, size, flags)
+
+WARNING:MACRO_ARG_UNUSED: Argument 'ns' is not used in function-like macro
+#119: FILE: include/lustre_compat/linux/xattr.h:18:
++#define ll_xattr_set(hd, ns, de, inode, name, value, size, flags) \
++	ll_xattr_set(hd, de, inode, name, value, size, flags)
+
+total: 1 errors, 22 warnings, 495 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
