@@ -1,0 +1,170 @@
+00001 
+00004 LNetError: 152:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00004 LNetError: Error -100 starting up LNI tcp
+00004 LustreError: 152:0:(events.c:632:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00009 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00009 Kernel version: 7.0.0-ktest-e13bd43-6330a45-20260926-dirty
+00009 hook init_noop
+00009 
+00009 Running tests llmount
+00009 
+00009 ========= TEST   llmount
+00013 SETUP LUSTRE ... LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00014 Lustre: Echo OBD driver; http://www.lustre.org/
+00014 Lustre: 1926:0:(mdt_handler.c:64:mdt_max_mod_rpcs_per_client_set()) max_mod_rpcs_per_client is deprecated, set mdt.*.max_mod_rpcs_in_flight parameter instead
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 ==================================================================
+00014 BUG: KASAN: slab-use-after-free in llog_init_handle+0x111c/0x14b0 [obdclass]
+00014 Read of size 4 at addr ffff8881b2808024 by task lustre-ktest/1907
+00014 
+00014 CPU: 14 UID: 0 PID: 1907 Comm: lustre-ktest Tainted: G           O        7.0.0-ktest-e13bd43-6330a45-20260926-dirty #1 PREEMPT 
+00014 Tainted: [O]=OOT_MODULE
+00014 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7 03/31/2026
+00014 Call Trace:
+00014  <TASK>
+00014  dump_stack_lvl+0x52/0x80
+00014  print_report+0xbc/0x260
+00014  ? llog_init_handle+0x111c/0x14b0 [obdclass]
+00014  kasan_report+0xa2/0xd0
+00014  ? llog_init_handle+0x111c/0x14b0 [obdclass]
+00014  llog_init_handle+0x111c/0x14b0 [obdclass]
+00014  class_config_parse_llog+0x1fd/0x6b0 [obdclass]
+00014  mgc_process_log+0x1512/0x61e0 [mgc]
+00014  ? is_module_address+0x1b/0x70
+00014  ? register_lock_class+0x31/0x2c0
+00014  ? __lock_acquire+0x73/0x620
+00014  ? mgc_process_config+0x1d69/0x29e0 [mgc]
+00014  ? mgc_process_config+0x1d69/0x29e0 [mgc]
+00014  ? mgc_process_config+0x12f2/0x29e0 [mgc]
+00014  ? __mutex_unlock_slowpath+0x133/0x680
+00014  mgc_process_config+0x1a65/0x29e0 [mgc]
+00014  ? keys_fill+0x3c7/0x420 [obdclass]
+00014  ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+00014  obd_process_config+0x1b2/0x390 [obdclass]
+00014  lustre_process_log+0xfac/0x2160 [obdclass]
+00014  server_start_targets+0x11b4/0x2660 [ptlrpc]
+00014  ? ptlrpc_pinger_add_import+0x487/0x740 [ptlrpc]
+00014  ? client_connect_import+0x69a/0xe70 [ptlrpc]
+00014  ? up_write+0x145/0x390
+00014  ? ptlrpc_pinger_add_import+0x487/0x740 [ptlrpc]
+00014  ? client_connect_import+0x69a/0xe70 [ptlrpc]
+00014  ? lustre_start_mgc+0x1698/0x2700 [obdclass]
+00014  ? lustre_start_mgc+0x18e9/0x2700 [obdclass]
+00014  ? kfree+0x1b5/0x530
+00014  ? lustre_start_mgc+0x18e9/0x2700 [obdclass]
+00014  ? lustre_cfg_rec_free+0x350/0x350 [obdclass]
+00014  server_fill_super+0x1ab8/0x2f70 [ptlrpc]
+00014  ? lustre_init_lsi+0x330/0x6c0 [obdclass]
+00014  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00014  ? lustre_tgt_get_tree+0x20/0x20 [ptlrpc]
+00014  get_tree_nodev+0x9e/0x110
+00014  vfs_get_tree+0x86/0x200
+00014  do_new_mount+0x1ee/0x9a0
+00014  __x64_sys_mount+0x290/0x330
+00014  do_syscall_64+0xc1/0x350
+00014  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00014 RIP: 0033:0x55ec8c256031
+00014 Code: 60 83 fb 01 41 89 de 41 83 d6 00 44 89 74 24 68 b8 a5 00 00 00 4c 89 e7 48 89 ee 48 8b 54 24 18 45 31 d2 4c 8b 44 24 10 0f 05 <48> 3d 01 f0 ff ff 0f 82 89 02 00 00 f7 d8 89 44 24 28 44 89 f0 ff
+00014 RSP: 002b:00007ffef4fd14c0 EFLAGS: 00000246 ORIG_RAX: 00000000000000a5
+00014 RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000055ec8c256031
+00014 RDX: 000055eccbb0d8f0 RSI: 000055eccbb0dc00 RDI: 000055eccbb0d7a0
+00014 RBP: 000055eccbb0dc00 R08: 000055eccbb0d730 R09: 0000000000000060
+00014 R10: 0000000000000000 R11: 0000000000000246 R12: 000055eccbb0d7a0
+00014 R13: 00007ffef4fd16d8 R14: 0000000000000001 R15: 000000000000000d
+00014  </TASK>
+00014 
+00014 Allocated by task 1907:
+00014  kasan_save_track+0x2f/0x60
+00014  __kasan_kmalloc+0x72/0x80
+00014  __kmalloc_noprof+0x1d2/0x4b0
+00014  llog_init_handle+0x2ce/0x14b0 [obdclass]
+00014  class_config_parse_llog+0x1fd/0x6b0 [obdclass]
+00014  mgc_process_log+0x1512/0x61e0 [mgc]
+00014  mgc_process_config+0x1a65/0x29e0 [mgc]
+00014  obd_process_config+0x1b2/0x390 [obdclass]
+00014  lustre_process_log+0xfac/0x2160 [obdclass]
+00014  server_start_targets+0x11b4/0x2660 [ptlrpc]
+00014  server_fill_super+0x1ab8/0x2f70 [ptlrpc]
+00014  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00014  get_tree_nodev+0x9e/0x110
+00014  vfs_get_tree+0x86/0x200
+00014  do_new_mount+0x1ee/0x9a0
+00014  __x64_sys_mount+0x290/0x330
+00014  do_syscall_64+0xc1/0x350
+00014  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00014 
+00014 Freed by task 1907:
+00014  kasan_save_track+0x2f/0x60
+00014  kasan_save_free_info+0x40/0x50
+00014  __kasan_slab_free+0x3a/0x60
+00014  kfree+0x1b5/0x530
+00014  llog_client_read_header+0xbe8/0x26f0 [ptlrpc]
+00014  llog_read_header+0x119/0xcb0 [obdclass]
+00014  llog_init_handle+0x44f/0x14b0 [obdclass]
+00014  class_config_parse_llog+0x1fd/0x6b0 [obdclass]
+00014  mgc_process_log+0x1512/0x61e0 [mgc]
+00014  mgc_process_config+0x1a65/0x29e0 [mgc]
+00014  obd_process_config+0x1b2/0x390 [obdclass]
+00014  lustre_process_log+0xfac/0x2160 [obdclass]
+00014  server_start_targets+0x11b4/0x2660 [ptlrpc]
+00014  server_fill_super+0x1ab8/0x2f70 [ptlrpc]
+00014  lustre_tgt_fill_super+0x273/0x730 [ptlrpc]
+00014  get_tree_nodev+0x9e/0x110
+00014  vfs_get_tree+0x86/0x200
+00014  do_new_mount+0x1ee/0x9a0
+00014  __x64_sys_mount+0x290/0x330
+00014  do_syscall_64+0xc1/0x350
+00014  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00014 
+00014 The buggy address belongs to the object at ffff8881b2808000
+00014  which belongs to the cache kmalloc-8k of size 8192
+00014 The buggy address is located 36 bytes inside of
+00014  freed 8192-byte region [ffff8881b2808000, ffff8881b280a000)
+00014 
+00014 The buggy address belongs to the physical page:
+00014 page: refcount:0 mapcount:0 mapping:0000000000000000 index:0xffff8881b280c000 pfn:0x1b2808
+00014 head: order:3 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
+00014 flags: 0x8000000000000240(workingset|head|zone=2)
+00014 page_type: f5(slab)
+00014 raw: 8000000000000240 ffff888100042e00 ffff888100040ac8 ffff888100040ac8
+00014 raw: ffff8881b280c000 0000400000020001 00000000f5000000 ffff8881b280a010
+00014 head: 8000000000000240 ffff888100042e00 ffff888100040ac8 ffff888100040ac8
+00014 head: ffff8881b280c000 0000400000020001 00000000f5000000 ffff8881b280a010
+00014 head: 8000000000000003 ffffea0006ca0201 00000000ffffffff 00000000ffffffff
+00014 head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000008
+00014 page dumped because: kasan: bad access detected
+00014 
+00014 Memory state around the buggy address:
+00014  ffff8881b2807f00: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+00014  ffff8881b2807f80: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+00014 >ffff8881b2808000: fa fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+00014                                ^
+00014  ffff8881b2808080: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+00014  ffff8881b2808100: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+00014 ==================================================================
+00014 Disabling lock debugging due to kernel taint
+00014 Lustre: ctl-lustre-MDT0000: No data found on store. Initialize space.
+00014 Lustre: lustre-MDT0000: new disk, initializing
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: lustre-MDT0000: Imperative Recovery not enabled, recovery window 300-900
+00014 Lustre: ctl-lustre-MDT0000: super-sequence allocation rc = 0 [0x0000000200000400-0x0000000240000400]:0:mdt
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: cli-ctl-lustre-MDT0001: Allocated super-sequence [0x0000000240000400-0x0000000280000400]:1:mdt]
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00014 Lustre: 1907:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00019 Lustre: 1925:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00019 Lustre: 1925:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00019 Lustre: 1925:0:(llog_client.c:304:llog_client_read_header()) change llog chunk: 8192 -> 32768
+00019 ========= FAILED TIMEOUT llmount in 240s
+Error 1 at /home/ktest/ktest/lib/libktest.sh 549 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 194 from: return $ret, exiting
+Error 1 at ./qlkbuild 1262 from: return $ret, exiting
