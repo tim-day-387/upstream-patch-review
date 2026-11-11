@@ -1,0 +1,143 @@
+00001 
+00005 LNetError: 150:0:(lib-socket.c:619:lnet_inet_enumerate()) lnet: Can't find any usable interfaces, rc = -ENOENT
+00005 LNetError: Error -100 starting up LNI tcp
+00005 LustreError: 150:0:(events.c:632:ptlrpc_init_portals()) network initialisation failed: rc = -100
+00049 tlp: vm.laptop_mode is deprecated. Ignoring setting.
+00049 Kernel version: 7.1.0-ktest-35b898e-6330a45-20261111-dirty
+00050 hook init_noop
+00050 
+00050 Running tests mgs-setup
+00050 
+00050 ========= TEST   mgs-setup
+00050 /host/home/ktest/git/lustre-release/lustre/tests/test-framework.sh: line 7411: cd: HOME not set
+00050 /host/home/ktest/git/lustre-release/lustre/tests/test-framework.sh: line 7411: cd: HOME not set
+00050 /host/home/ktest/git/lustre-release/lustre/tests/test-framework.sh: line 7411: cd: HOME not set
+00052 MGS_OS_VERSION_ID=24.04
+00052 MGS_OS_ID=ubuntu
+00052 MGS_OS_VERSION_CODE=402915328
+00052 MGS_OS_ID_LIKE=debian ubuntu
+00052 MDS1_OS_ID=ubuntu
+00052 MDS1_OS_VERSION_CODE=402915328
+00052 MDS1_OS_ID_LIKE=debian ubuntu
+00052 MDS1_OS_VERSION_ID=24.04
+00053 OST1_OS_VERSION_ID=24.04
+00053 OST1_OS_VERSION_CODE=402915328
+00053 OST1_OS_ID=ubuntu
+00053 OST1_OS_ID_LIKE=debian ubuntu
+00053 CLIENT_OS_VERSION_ID=24.04
+00053 CLIENT_OS_ID_LIKE=debian ubuntu
+00053 CLIENT_OS_ID=ubuntu
+00053 CLIENT_OS_VERSION_CODE=402915328
+00053 Loading modules from /host/home/ktest/git/lustre-release/lustre
+00053 detected 16 online CPUs by sysfs
+00053 MODOPTS_LIBCFS=
+00053 libcfs will create CPU partition based on online CPUs
+00054 LNet: Added LNI 10.0.2.15@tcp [8/256/0/180]
+00054 gss/krb5 is not supported
+00055 Lustre: Echo OBD driver; http://www.lustre.org/
+00055 llite/lustre options: 'llite_enable_flr_ec=1'
+00056 '/usr/sbin/mount.lustre_tgt' -> 'mount.lustre'
+00056 
+00056 
+00056 ============================================
+00056 WARNING: possible recursive locking detected
+00056 7.1.0-ktest-35b898e-6330a45-20261111-dirty #1 Tainted: G           O       
+00056 --------------------------------------------
+00056 lustre-ktest/1974 is trying to acquire lock:
+00056 ffff88812715a3e0 (sb_writers#11){.+.+}-{0:0}, at: kernel_write+0xf4/0x300
+00056 
+00056 but task is already holding lock:
+00056 ffff88812715a3e0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x12c5/0x28c0 [obdclass]
+00056 
+00056 other info that might help us debug this:
+00056  Possible unsafe locking scenario:
+00056 
+00056        CPU0
+00056        ----
+00056   lock(sb_writers#11);
+00056   lock(sb_writers#11);
+00056 
+00056  *** DEADLOCK ***
+00056 
+00056  May be due to missing lock nesting notation
+00056 
+00056 4 locks held by lustre-ktest/1974:
+00056  #0: ffff88812715c0d8 (&type->s_umount_key#43/1){+.+.}-{4:4}, at: alloc_super+0x181/0x850
+00056  #1: ffff8881392b05d0 (&ls->ls_los_mutex){+.+.}-{4:4}, at: local_oid_storage_init+0x1a8/0x28c0 [obdclass]
+00056  #2: ffff88812715a3e0 (sb_writers#11){.+.+}-{0:0}, at: local_oid_storage_init+0x12c5/0x28c0 [obdclass]
+00056  #3: ffff8881392b1ca8 (&obj->oo_dt.dd_sem){+.+.}-{4:4}, at: dt_write_lock+0xec/0x270 [obdclass]
+00056 
+00056 stack backtrace:
+00056 CPU: 2 UID: 0 PID: 1974 Comm: lustre-ktest Tainted: G           O        7.1.0-ktest-35b898e-6330a45-20261111-dirty #1 PREEMPT 
+00056 Tainted: [O]=OOT_MODULE
+00056 Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 2025.11-3ubuntu7.3 09/23/2026
+00056 Call Trace:
+00056  <TASK>
+00056  dump_stack_lvl+0x6d/0xa0
+00056  print_deadlock_bug+0x273/0x290
+00056  __lock_acquire+0x128f/0x2a30
+00056  ? kmem_cache_alloc_noprof+0x182/0x390
+00056  ? lock_acquire+0xfa/0x2b0
+00056  ? kernel_write+0xf4/0x300
+00056  lock_acquire+0xfa/0x2b0
+00056  ? kernel_write+0xf4/0x300
+00056  sb_start_write+0x42/0x130
+00056  ? kernel_write+0xf4/0x300
+00056  kernel_write+0xf4/0x300
+00056  ? alloc_file_pseudo+0x114/0x180
+00056  osd_write+0x45d/0x7c0 [osd_wbcfs]
+00056  dt_record_write+0xa5/0x320 [obdclass]
+00056  local_oid_storage_init+0x1b9a/0x28c0 [obdclass]
+00056  mgs_fs_setup+0x243/0x13b0 [mgs]
+00056  ? ldlm_namespace_new+0x18ae/0x23b0 [ptlrpc]
+00056  mgs_device_alloc+0x1328/0x2d20 [mgs]
+00056  ? keys_fill+0x2c7/0x340 [obdclass]
+00056  ? lu_context_init+0x2f0/0x400 [obdclass]
+00056  obd_setup+0x28f/0x990 [obdclass]
+00056  class_setup+0xe5f/0x13e0 [obdclass]
+00056  lustre_start_simple+0xf13/0x1dd0 [obdclass]
+00056  server_fill_super+0x1abc/0x3800 [ptlrpc]
+00056  ? lustre_init_lsi+0x3bb/0x850 [obdclass]
+00056  lustre_tgt_fill_super+0x2e5/0x8f0 [ptlrpc]
+00056  ? lustre_tgt_get_tree+0x20/0x20 [ptlrpc]
+00056  get_tree_nodev+0x9e/0x110
+00056  vfs_get_tree+0x86/0x200
+00056  do_new_mount+0x1ee/0xa10
+00056  __x64_sys_mount+0x2a9/0x350
+00056  do_syscall_64+0xea/0x4a0
+00056  ? trace_irq_disable+0x36/0x120
+00056  ? entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00056  entry_SYSCALL_64_after_hwframe+0x4b/0x53
+00056 RIP: 0033:0x563024579687
+00056 Code: 8b 84 24 b0 00 00 00 48 89 44 24 18 c7 44 24 08 00 00 00 00 b8 a5 00 00 00 4c 89 f7 4c 89 ee 48 89 ea 45 31 d2 4d 89 f8 0f 05 <48> 3d 00 f0 ff ff 76 5a f7 d8 89 84 24 50 01 00 00 48 8d 84 24 50
+00056 RSP: 002b:00007ffc4d1086f0 EFLAGS: 00000246 ORIG_RAX: 00000000000000a5
+00056 RAX: ffffffffffffffda RBX: 000000000000000d RCX: 0000563024579687
+00056 RDX: 0000563039556af0 RSI: 0000563039553c00 RDI: 0000563039556ad0
+00056 RBP: 0000563039556af0 R08: 0000563039554a00 R09: 0000000000000040
+00056 R10: 0000000000000000 R11: 0000000000000246 R12: 000000000000001b
+00056 R13: 0000563039553c00 R14: 0000563039556ad0 R15: 0000563039554a00
+00056  </TASK>
+00056 
+00061 
+00061 
+00061 
+00061 Lustre: server umount MGS0000 complete
+00061 
+00061 Removed directory: /mnt/lustre-3Fmhbb-MGS0000
+00061 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 445 from: grep -E -q -e "kernel BUG at" -e "WARNING:" -e "\bBUG:" -e "Oops:" -e "possible recursive locking detected" -e "Internal error" -e "(INFO|ERR): suspicious RCU usage" -e "INFO: possible circular locking dependency detected" -e "general protection fault:" -e "BUG .* remaining" -e "UBSAN:", exiting
+00061 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 464 from: ( set -e; run_test $i ), exiting
+00061 
+00061 ========= FAILED mgs-setup in 11s
+00061 
+00061 Passed: 
+00061 Failed: mgs-setup
+00061 Error 1 at /host/home/ktest/ktest/tests/prelude.sh 575 from: return ${#tests_failed[@]}, exiting
+00061 Error 1 at /host/home/ktest/ktest/tests/fs/lustre/mgs-setup.ktest 34 from: return ${#tests_failed[@]}, exiting
+00061 Error 1 at /host/home/ktest/ktest/tests/test-libs.sh 95 from: . $(dirname $(readlink -e ${BASH_SOURCE[2]}))/$fname, exiting
+00061 Error 1 at /host/home/ktest/ktest/tests/fs/lustre/../../lockdep-base.sh 15 from: . $(dirname $(readlink -e ${BASH_SOURCE[2]}))/$fname, exiting
+00061 NOTICE: Automounting of tracing to debugfs is deprecated and will be removed in 2030
+00061 Kernel version: 7.1.0-ktest-35b898e-6330a45-20261111-dirty
+00061 TEST FAILED
+Error 1 at /home/ktest/ktest/lib/libktest.sh 528 from: "$ktest_dir/lib/supervisor" -S -F -T "$ktest_timeout" -b "$test_basename" -o "$test_logdir" -f "$test_basename.$(date -Iseconds).log" -- "${qemu_cmd[@]}", exiting
+Error 1 at ./qlkbuild 195 from: return $ret, exiting
+Error 1 at ./qlkbuild 1281 from: return $ret, exiting
