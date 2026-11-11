@@ -1,0 +1,62 @@
+CLI: ./pk --podman-socket unix:///run/user/1000/podman/podman.sock --shared-filesystem /tmp --tarball-input job lustre-ci --output /var/www/ci-lustre/upstream-patch-review --git-hash 2015483f351d72082583995091326ca4448c55a6 --change-id 70646_2015483f351d72082583995091326ca4448c55a6 --subject LU-20901 target: check all peer connects for listed NID
+
+Environment validated successfully
+Note: custom LLVM is not synced in tarball input mode
+Creating kernel tarball at /tmp/ktest-kernel.tar.gz...
+Creating lustre tarball at /tmp/ktest-lustre.tar.gz...
+Creating ZFS tarball at /tmp/ktest-zfs.tar.gz...
+Executing 14 jobs
+Jobs will start as soon as their dependencies are satisfied
+Using tarball input mode
+
+START ml-strict:lustre_mainline build tests/fs/lustre/boot-strict.ktest
+START checkpatch:checkpatch tool checkpatch
+START ml:lustre_mainline build tests/fs/lustre/boot.ktest
+START ml-miscvm:lustre_mainline_native build tests/fs/lustre/boot.ktest
+START u24:u24 build tests/fs/lustre/boot.ktest
+START al2023:al2023 build tests/fs/lustre/boot.ktest
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-lustre.tar.gz 0s
+Error running job al2023:al2023: APIError: 500 Server Error: Internal Server Error (workdir "/home/ktest/git/lustre-release/" does not exist on container 0d76c40bc98e1496a17e1f31f780e654275941bccec2ba7a1f63c61c2f88e123)
+END al2023:al2023 build tests/fs/lustre/boot.ktest FAIL 0s (exit code: -1)
+END u24:u24 build tests/fs/lustre/boot.ktest FAIL 0s (exit code: 2)
+PUT /tmp/ktest-kernel.tar.gz 6s
+PUT /tmp/ktest-kernel.tar.gz 7s
+PUT /tmp/ktest-kernel.tar.gz 7s
+PUT /tmp/ktest-kernel.tar.gz 7s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-lustre.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+PUT /tmp/ktest-zfs.tar.gz 0s
+END checkpatch:checkpatch tool checkpatch PASS 8s
+GET /tmp/ktest_ml-miscvm:lustre_mainline_native_nhi303l1.tar 5s
+GET /tmp/ktest_ml-strict:lustre_mainline_biaqn9j_.tar 5s
+GET /tmp/ktest_ml:lustre_mainline_3f_6wsmy.tar 5s
+END ml-miscvm:lustre_mainline_native build tests/fs/lustre/boot.ktest FAIL 92s (exit code: 1)
+END ml:lustre_mainline build tests/fs/lustre/boot.ktest FAIL 93s (exit code: 1)
+END ml-strict:lustre_mainline build tests/fs/lustre/boot-strict.ktest FAIL 94s (exit code: 1)
+
+============================================================
+Final Results:
+  checkpatch:checkpatch: PASS (8s) (log: /var/www/ci-lustre/upstream-patch-review/2015483f351d72082583995091326ca4448c55a6_checkpatch:checkpatch.log)
+  u24:u24: FAIL (0s) (log: /var/www/ci-lustre/upstream-patch-review/2015483f351d72082583995091326ca4448c55a6_u24:u24.log)
+  al2023:al2023: FAIL (0s) (log: /var/www/ci-lustre/upstream-patch-review/2015483f351d72082583995091326ca4448c55a6_al2023:al2023.log)
+  ml-strict:lustre_mainline: FAIL (94s) (log: /var/www/ci-lustre/upstream-patch-review/2015483f351d72082583995091326ca4448c55a6_ml-strict:lustre_mainline.log)
+  ml:lustre_mainline: FAIL (93s) (log: /var/www/ci-lustre/upstream-patch-review/2015483f351d72082583995091326ca4448c55a6_ml:lustre_mainline.log)
+  ml-miscvm:lustre_mainline_native: FAIL (92s) (log: /var/www/ci-lustre/upstream-patch-review/2015483f351d72082583995091326ca4448c55a6_ml-miscvm:lustre_mainline_native.log)
+  ml-miscvm:boot: SKIPPED (due to dependency failure)
+  ml-miscvm:llmount: SKIPPED (due to dependency failure)
+  ml-miscvm:llog-unit: SKIPPED (due to dependency failure)
+  ml-miscvm:mgs-setup: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-1: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-2: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-3: SKIPPED (due to dependency failure)
+  ml-miscvm:sanity-4: SKIPPED (due to dependency failure)
+
+Total execution time: 118s
+
+Packed 1752 logs from /var/www/ci-lustre/upstream-patch-review into /home/ktest/ktest/local-site/local_data.js
+Open /home/ktest/ktest/local-site/index.html in a browser
